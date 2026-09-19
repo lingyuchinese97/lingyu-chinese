@@ -1,0 +1,26 @@
+name: lingyu_chinese
+description: LingYu Chinese - app luyện tập tiếng Trung cho học viên Việt Nam.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  audioplayers: ^6.1.0
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/branding/
+    - assets/icons/bai1/
+    - assets/audio/bai1/listening/
+    - assets/audio/bai1/blending/
