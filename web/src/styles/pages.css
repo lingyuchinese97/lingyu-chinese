@@ -395,3 +395,38 @@
   .celebrate { width: 220px; }
   .set-card { padding: 20px 16px; }
 }
+
+/* ---------- Vocabulary: bulk action toolbar ---------- */
+.bulkbar { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--bg); }
+.bulkbar__sel { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text); cursor: pointer; min-width: 150px; }
+.bulkbar__actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.bulk-btn { background: #fff; color: var(--blue-600); border-color: var(--border-strong); position: relative; cursor: pointer; }
+.bulk-btn:hover:not([aria-disabled="true"]) { background: var(--blue-50); border-color: #A9D3F8; }
+.bulk-btn--danger { color: var(--red); }
+.bulk-btn--danger:hover:not([aria-disabled="true"]) { background: var(--red-50); border-color: var(--red-100); }
+/* Disabled: vẫn hiện icon + chữ, nhạt hơn, không bấm được. */
+.bulk-btn[aria-disabled="true"] { opacity: 1; background: #F3F7FC; color: var(--text-3); border-color: var(--border); cursor: not-allowed; box-shadow: none; }
+.bulk-btn[aria-disabled="true"]:active { transform: none; }
+.bulk-btn.is-busy { cursor: progress; }
+.bulk-btn.is-busy svg { visibility: hidden; }
+.bulk-btn.is-busy::before { content: ""; position: absolute; left: 14px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; }
+/* Tooltip cho nút đang disabled */
+.bulk-btn.has-tip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 20; white-space: nowrap; padding: 7px 10px; border-radius: 8px; background: var(--navy-900); color: #fff; font-size: 12.5px; font-weight: 500; line-height: 1.3; pointer-events: none; opacity: 0; transition: opacity .12s; }
+.bulk-btn.has-tip:hover::after, .bulk-btn.has-tip:focus-visible::after { opacity: 1; }
+@media (max-width: 720px) {
+  .bulkbar__actions { margin-left: 0; width: 100%; }
+  .bulk-btn { flex: 1 1 auto; padding: 0 10px; }
+  .bulk-btn.has-tip::after { white-space: normal; width: 200px; text-align: center; }
+}
+
+/* ---------- Share Vocabulary Modal ---------- */
+.share-list { list-style: none; margin: 0 0 16px; padding: 4px; max-height: 260px; overflow: auto; border: 1px solid var(--border); border-radius: var(--r-md); }
+.share-list li { display: grid; grid-template-columns: minmax(64px, auto) minmax(70px, auto) 1fr; gap: 12px; align-items: baseline; padding: 8px 10px; border-radius: 8px; }
+.share-list li:nth-child(odd) { background: var(--bg); }
+.share-list .hanzi { font-size: 18px; color: var(--text); }
+.share-list .pinyin { color: var(--pinyin); }
+.share-list__vi { color: var(--text-2); }
+.share-fmt { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.share-fmt__label { font-weight: 600; color: var(--text); }
+.share-fmt__opt { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.bulk-tags { max-height: 240px; overflow: auto; border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px; }

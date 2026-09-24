@@ -6,8 +6,19 @@ import { toast, confirmDialog, openMenu, openModal } from "../../components/ui/f
 import { buildPath, navigate } from "../../routes/router.js";
 import { flashcard } from "../home/home.js";
 import { BRAND } from "../../components/layout/appShell.js";
+import * as reviewApi from "../../services/api/reviewApi.js";
+import { openShareModal, openAddTagModal, openMoveModal } from "./bulkActions.js";
 
 const PAGE_SIZE = 8;
+// Toolbar thao tác hàng loạt: luôn hiển thị đủ, chỉ đổi Disabled ↔ Active theo số từ đã chọn
+// (không ẩn/hiện nút → không bị dịch layout khi chọn/bỏ chọn).
+const BULK_ACTIONS = [
+  { id: "review", label: "Ôn tập", icon: "review", hint: "Chọn ít nhất 1 từ vựng để ôn tập" },
+  { id: "tag", label: "Thêm tag", icon: "tag", hint: "Chọn ít nhất 1 từ vựng để thêm tag" },
+  { id: "move", label: "Di chuyển", icon: "move", hint: "Chọn ít nhất 1 từ vựng để di chuyển" },
+  { id: "share", label: "Chia sẻ", icon: "share", hint: "Chọn ít nhất 1 từ vựng để chia sẻ" },
+  { id: "delete", label: "Xóa", icon: "trash", hint: "Chọn ít nhất 1 từ vựng để xóa", danger: true },
+];
 // Ghi chú dài quá NOTE_PREVIEW ký tự → hiện "…" + nút con mắt để xem đầy đủ.
 const NOTE_PREVIEW = 10;
 const isLongNote = (note) => Array.from(String(note || "").trim()).length > NOTE_PREVIEW;
@@ -139,6 +150,13 @@ export async function renderVocabularyList(page, ctx) {
     const start = (data.page - 1) * data.pageSize;
     const allOnPage = data.items.length > 0 && data.items.every((v) => selected.has(v.id));
     results.innerHTML = `
+      <div class="bulkbar" role="toolbar" aria-label="Thao tác với từ đã chọn">
+        <label class="bulkbar__sel"><input type="checkbox" class="checkbox" id="bulk-all" aria-label="Chọn tất cả trên trang" /><span id="sel-count" aria-live="polite"></span></label>
+        <button type="button" class="link-btn" id="sel-clear" hidden>Bỏ chọn</button>
+        <div class="bulkbar__actions">
+          ${BULK_ACTIONS.map((a) => `<button type="button" class="btn btn--sm bulk-btn ${a.danger ? "bulk-btn--danger" : ""}" data-bulk="${a.id}" data-tip="${esc(a.hint)}">${icon(a.icon)}<span>${a.label}</span></button>`).join("")}
+        </div>
+      </div>
       <div class="table-wrap">
         <table class="vtable">
           <caption class="sr-only">Danh sách từ vựng, trang ${data.page}/${data.pageCount}</caption>
@@ -170,13 +188,11 @@ export async function renderVocabularyList(page, ctx) {
         </table>
       </div>
       <div class="vl-foot">
-        <div class="vl-foot__sel"><span id="sel-count">Đã chọn ${selected.size} từ</span>
-          <button type="button" class="btn btn--sm btn--muted" id="bulk-del" ${selected.size ? "" : "disabled"}>${icon("trash")}Xóa</button>
-          ${selected.size ? `<button type="button" class="link-btn" id="sel-clear">Bỏ chọn</button>` : ""}
-        </div>
+        <span class="field__hint">${data.total} từ vựng</span>
         ${pager(data)}
       </div>`;
     wireTable(data);
+    updateSelUi();
   }
 
   function thumb(v) {
@@ -185,7 +201,7 @@ export async function renderVocabularyList(page, ctx) {
   }
 
   function pager(data) {
-    if (data.pageCount <= 1) return `<span class="field__hint">${data.total} từ vựng</span>`;
+    if (data.pageCount <= 1) return "";
     const p = data.page, n = data.pageCount;
     const nums = new Set([1, n, p - 1, p, p + 1]);
     if (p <= 3) [2, 3, 4].forEach((x) => nums.add(x));
@@ -204,19 +220,27 @@ export async function renderVocabularyList(page, ctx) {
     </nav>`;
   }
 
+  /** selectedVocabularyIds.length === 0 → các action Disabled; > 0 → Active. */
   function updateSelUi() {
     const c = page.querySelector("#sel-count");
     if (!c) return;
-    c.textContent = `Đã chọn ${selected.size} từ`;
-    page.querySelector("#bulk-del").disabled = !selected.size;
-    const foot = page.querySelector(".vl-foot__sel");
-    const clr = page.querySelector("#sel-clear");
-    if (selected.size && !clr) {
-      foot.insertAdjacentHTML("beforeend", `<button type="button" class="link-btn" id="sel-clear">Bỏ chọn</button>`);
-      page.querySelector("#sel-clear").addEventListener("click", clearSel);
-    } else if (!selected.size && clr) clr.remove();
-    const all = page.querySelector("#check-all");
-    if (all && lastData) all.checked = lastData.items.every((v) => selected.has(v.id));
+    const n = selected.size;
+    c.textContent = n ? `Đã chọn ${n} từ` : "Chưa chọn từ nào";
+    page.querySelectorAll("[data-bulk]").forEach((b) => {
+      const off = n === 0;
+      b.setAttribute("aria-disabled", String(off));
+      b.classList.toggle("has-tip", off);
+      if (off) b.setAttribute("aria-label", `${b.textContent.trim()} (${b.dataset.tip})`);
+      else b.removeAttribute("aria-label");
+    });
+    page.querySelector("#sel-clear").hidden = !n;
+    const onPage = lastData ? lastData.items.filter((v) => selected.has(v.id)).length : 0;
+    const total = lastData ? lastData.items.length : 0;
+    for (const box of [page.querySelector("#check-all"), page.querySelector("#bulk-all")]) {
+      if (!box) continue;
+      box.checked = total > 0 && onPage === total;
+      box.indeterminate = onPage > 0 && onPage < total;
+    }
   }
   function clearSel() {
     selected.clear();
@@ -237,11 +261,13 @@ export async function renderVocabularyList(page, ctx) {
       c.closest("tr").classList.toggle("is-selected", c.checked);
       updateSelUi();
     }));
-    results.querySelector("#check-all").addEventListener("change", (e) => {
+    const toggleAll = (e) => {
       data.items.forEach((v) => (e.target.checked ? selected.add(v.id) : selected.delete(v.id)));
       results.querySelectorAll("[data-check]").forEach((c) => { c.checked = e.target.checked; c.closest("tr").classList.toggle("is-selected", c.checked); });
       updateSelUi();
-    });
+    };
+    results.querySelector("#check-all").addEventListener("change", toggleAll);
+    results.querySelector("#bulk-all").addEventListener("change", toggleAll);
     results.querySelector("#sel-clear")?.addEventListener("click", clearSel);
     results.querySelectorAll("[data-page]").forEach((b) => b.addEventListener("click", () => {
       state.page = Number(b.dataset.page);
@@ -272,7 +298,56 @@ export async function renderVocabularyList(page, ctx) {
         { label: "Xóa từ vựng", icon: "trash", danger: true, onClick: () => doDelete([v.id], `“${v.hanzi}”`) },
       ], { width: 230 });
     }));
-    results.querySelector("#bulk-del").addEventListener("click", () => doDelete([...selected], `${selected.size} từ đã chọn`));
+    results.querySelectorAll("[data-bulk]").forEach((b) => b.addEventListener("click", () => runBulk(b)));
+  }
+
+  async function runBulk(btn) {
+    // Disabled: không mở modal, không gọi API.
+    if (btn.getAttribute("aria-disabled") === "true" || btn.dataset.busy === "1") return;
+    const ids = [...selected];
+    const action = btn.dataset.bulk;
+    if (action === "delete") return doDelete(ids, `${ids.length} từ đã chọn`);
+    if (action === "review") return startReview(ids, btn);
+    bulkBusy(btn, true);
+    try {
+      if (action === "share") {
+        const words = await vocabApi.getMany(ids);
+        if (!words.length) { toast("Các từ đã chọn không còn tồn tại.", "error"); return; }
+        openShareModal(words);
+      } else if (action === "tag") {
+        await openAddTagModal(ids, () => load());
+      } else if (action === "move") {
+        await openMoveModal(ids, state.tag, () => load());
+      }
+    } catch (ex) {
+      toast(ex.message || "Không thực hiện được. Vui lòng thử lại.", "error");
+    } finally {
+      bulkBusy(btn, false);
+    }
+  }
+
+  async function startReview(ids, btn) {
+    if (reviewApi.getActiveSession()) {
+      const ok = await confirmDialog({ title: "Bắt đầu bài mới?", message: "Bài ôn tập đang làm dở sẽ bị bỏ để tạo bài mới.", confirmLabel: "Bắt đầu bài mới", iconName: "review" });
+      if (!ok) return;
+      reviewApi.abandonSession();
+    }
+    const last = reviewApi.getLastConfig();
+    bulkBusy(btn, true);
+    try {
+      await reviewApi.createSession({ tagIds: [], vocabIds: ids, count: ids.length, mode: last?.mode || "meaning", showImage: last ? last.showImage : true });
+      navigate("/review/session");
+    } catch (ex) {
+      bulkBusy(btn, false);
+      toast(ex.message || "Không thể tạo bài ôn tập.", "error");
+    }
+  }
+
+  /** Trạng thái đang xử lý cho nút toolbar: giữ nguyên chữ/độ rộng, chỉ thêm spinner thay icon. */
+  function bulkBusy(btn, busy) {
+    btn.dataset.busy = busy ? "1" : "";
+    btn.classList.toggle("is-busy", busy);
+    if (busy) btn.setAttribute("aria-busy", "true"); else btn.removeAttribute("aria-busy");
   }
 
   function showNote(v) {
