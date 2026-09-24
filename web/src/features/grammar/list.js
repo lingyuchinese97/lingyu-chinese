@@ -136,19 +136,18 @@ export async function renderGrammarList(page, ctx) {
   }
 
   function card(g) {
-    const desc = g.meaning || g.structure || (g.examples[0]?.chinese ?? "");
     return `<article class="gcard" data-id="${g.id}">
       <div class="gcard__head">
         <h2 class="gcard__title"><a href="#/grammar/${g.id}">${esc(g.title)}</a></h2>
         <button type="button" class="icon-btn gbm ${g.isSaved ? "is-saved" : ""}" data-bm="${g.id}" aria-pressed="${g.isSaved}" aria-label="${g.isSaved ? "Bỏ lưu" : "Lưu"} “${esc(g.title)}”">${bookmarkIcon(g.isSaved)}</button>
         <button type="button" class="icon-btn" data-more="${g.id}" aria-haspopup="menu" aria-expanded="false" aria-label="Thao tác cho “${esc(g.title)}”">${icon("more")}</button>
       </div>
-      ${g.structure ? `<div class="gcard__structure" lang="zh">${esc(g.structure)}</div>` : ""}
-      <p class="gcard__desc">${esc(desc) || '<span class="field__hint">Chưa có mô tả.</span>'}</p>
-      <div class="gcard__tags">${g.tags.map((t) => tagHtml(t.name)).join("")}</div>
+      ${g.structure ? `<div class="gcard__structure"><span class="gcard__structure-icon" aria-hidden="true">${icon("bookOpen")}</span><span class="gcard__structure-text" lang="zh">${esc(g.structure)}</span></div>` : ""}
+      ${g.meaning ? `<div class="gcard__meaning"><span class="gcard__meaning-label">${icon("bulb")}Ý nghĩa:</span><span class="gcard__meaning-text">${esc(g.meaning)}</span></div>` : ""}
+      ${g.tags.length ? `<div class="gcard__tags">${g.tags.map((t) => `<span class="tag">${esc(t.name)}</span>`).join("")}</div>` : ""}
       ${g.examples.length || g.sourceGrammarId ? `<div class="gcard__meta">
         ${g.examples.length ? `<span>${icon("book")}${g.examples.length} ví dụ</span>` : ""}
-        ${g.sourceGrammarId ? `<span class="gcard__from">${icon("share")}Từ ${esc(g.sourceOwnerName || "người khác")}</span>` : ""}
+        ${g.sourceGrammarId ? `<span class="gcard__from">${icon("share")}Nhận từ ${esc(g.sourceOwnerName || "người khác")}</span>` : ""}
       </div>` : ""}
     </article>`;
   }

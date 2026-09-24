@@ -9,6 +9,9 @@ import { BRAND } from "../../components/layout/appShell.js";
 import * as reviewApi from "../../services/api/reviewApi.js";
 import { openShareModal, openAddTagModal } from "./bulkActions.js";
 import * as radicalApi from "../../services/api/radicalApi.js";
+import * as vocabShareApi from "../../services/api/vocabShareApi.js";
+import { onNotificationsChange } from "../../services/api/notificationApi.js";
+import { openVocabInvite, rejectVocabInvite } from "./shareInvites.js";
 
 const PAGE_SIZE = 8;
 // Toolbar thao tác hàng loạt: luôn hiển thị đủ, chỉ đổi Disabled ↔ Active theo số từ đã chọn
@@ -66,6 +69,7 @@ export async function renderVocabularyList(page, ctx) {
         <div class="chips-scroll" id="vl-chips" role="group" aria-label="Lọc nhanh theo tag"></div>
         <button type="button" class="icon-btn" id="chips-next" aria-label="Xem thêm tag">${icon("chevronRight")}</button>
       </div>
+      <div class="vl-invites" id="vl-invites" hidden></div>
       <div class="vl-radical" id="vl-radical" hidden></div>
       <div id="vl-results" aria-live="polite"></div>
     </section>`;
@@ -309,6 +313,7 @@ export async function renderVocabularyList(page, ctx) {
           catch (ex) { toast(ex.message, "error"); }
         } },
         { label: "Sửa từ vựng", icon: "edit", onClick: () => navigate(`/vocabulary/${v.id}/edit`) },
+        { label: "Chia sẻ", icon: "share", onClick: () => openShareModal([v]) },
         "sep",
         { label: "Xóa từ vựng", icon: "trash", danger: true, onClick: () => doDelete([v.id], `“${v.hanzi}”`) },
       ], { width: 230 });
@@ -407,8 +412,30 @@ export async function renderVocabularyList(page, ctx) {
   });
   $("#chips-next").addEventListener("click", () => { $("#vl-chips").scrollBy({ left: 260 }); });
 
+  // ----- Lời mời chia sẻ từ vựng đang chờ mình -----
+  function renderInvites() {
+    const box = $("#vl-invites");
+    if (!box) return;
+    const list = vocabShareApi.listReceived();
+    box.hidden = !list.length;
+    box.innerHTML = list.map((s) => `
+      <div class="vl-invite">
+        <span class="ginvite__icon">${icon("share")}</span>
+        <div class="vl-invite__text"><strong>${esc(s.senderName)}</strong> đã chia sẻ ${s.count} từ vựng với bạn: <span class="hanzi" lang="zh">${esc(s.title)}</span></div>
+        <div class="vl-invite__actions">
+          <button type="button" class="btn btn--sm btn--solid" data-inv-open="${s.id}">Xem & chấp nhận</button>
+          <button type="button" class="btn btn--sm btn--muted" data-inv-reject="${s.id}">Từ chối</button>
+        </div>
+      </div>`).join("");
+    const byId = new Map(list.map((s) => [s.id, s]));
+    box.querySelectorAll("[data-inv-open]").forEach((b) => b.addEventListener("click", () => openVocabInvite(byId.get(b.dataset.invOpen), { onDone: () => { renderInvites(); load(); } })));
+    box.querySelectorAll("[data-inv-reject]").forEach((b) => b.addEventListener("click", async () => { if (await rejectVocabInvite(byId.get(b.dataset.invReject))) renderInvites(); }));
+  }
+  renderInvites();
+  const offNoti = onNotificationsChange(() => { if (ctx.isCurrent()) renderInvites(); });
+
   await load();
-  return () => onSearch.cancel();
+  return () => { onSearch.cancel(); offNoti(); };
 }
 
 function skeleton() {

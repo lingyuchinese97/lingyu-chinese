@@ -7,6 +7,8 @@ import { getCurrentUser, logout } from "../../services/api/authApi.js";
 import * as notificationApi from "../../services/api/notificationApi.js";
 import * as grammarApi from "../../services/api/grammarApi.js";
 import { openAcceptShareModal, rejectShare, formatDateTime } from "../../features/grammar/shared.js";
+import * as vocabShareApi from "../../services/api/vocabShareApi.js";
+import { openVocabInvite, rejectVocabInvite } from "../../features/vocabulary/shareInvites.js";
 
 export const BRAND = {
   logo: "src/assets/brand/lingyu-logo.png",
@@ -128,6 +130,7 @@ function updateBell() {
 async function openNotifications(anchor) {
   const items = notificationApi.list();
   const pending = new Map((await grammarApi.listReceived()).map((s) => [s.id, s]));
+  const vocabPending = new Map(vocabShareApi.listReceived().map((s) => [s.id, s]));
   const row = (n) => {
     const when = `<span class="noti__time">${formatDateTime(n.createdAt)}</span>`;
     if (n.type === "grammar_share") {
@@ -140,6 +143,20 @@ async function openNotifications(anchor) {
           <button type="button" class="btn btn--sm btn--muted" data-noti-reject="${s.id}">Từ chối</button></div>`
         : `<div class="noti__done">Đã phản hồi</div>`}
       </div>`;
+    }
+    if (n.type === "vocab_share") {
+      const s = vocabPending.get(n.shareId);
+      return `<div class="noti ${n.readAt ? "" : "is-unread"}">
+        <div class="noti__text"><strong>${esc(n.actorName)}</strong> đã chia sẻ ${n.count || ""} từ vựng với bạn.<div class="noti__title hanzi" lang="zh">${esc(n.title)}</div>${when}</div>
+        ${s ? `<div class="noti__actions">
+          <button type="button" class="btn btn--sm btn--secondary" data-vnoti-view="${s.id}">Xem</button>
+          <button type="button" class="btn btn--sm btn--solid" data-vnoti-view="${s.id}">Chấp nhận</button>
+          <button type="button" class="btn btn--sm btn--muted" data-vnoti-reject="${s.id}">Từ chối</button></div>`
+        : `<div class="noti__done">Đã phản hồi</div>`}
+      </div>`;
+    }
+    if (n.type === "vocab_share_accepted") {
+      return `<div class="noti ${n.readAt ? "" : "is-unread"}"><div class="noti__text"><strong>${esc(n.actorName)}</strong> đã chấp nhận ${n.count || ""} từ vựng bạn chia sẻ.<div class="noti__title hanzi" lang="zh">${esc(n.title)}</div>${when}</div></div>`;
     }
     if (n.type === "grammar_share_accepted") {
       return `<div class="noti ${n.readAt ? "" : "is-unread"}"><div class="noti__text"><strong>${esc(n.actorName)}</strong> đã chấp nhận ngữ pháp bạn chia sẻ.<div class="noti__title">${esc(n.title)}</div>${when}</div></div>`;
@@ -162,6 +179,18 @@ async function openNotifications(anchor) {
     const s = pending.get(b.dataset.notiReject);
     closeMenu();
     await rejectShare(s);
+  }));
+  // Từ vựng: "Xem" và "Chấp nhận" cùng mở hộp thoại xem trước (có chọn tag trước khi chấp nhận).
+  const reloadVocab = () => { if (location.hash.startsWith("#/vocabulary")) window.dispatchEvent(new HashChangeEvent("hashchange")); };
+  menu.querySelectorAll("[data-vnoti-view]").forEach((b) => b.addEventListener("click", () => {
+    const s = vocabPending.get(b.dataset.vnotiView);
+    closeMenu();
+    openVocabInvite(s, { onDone: () => (location.hash.startsWith("#/vocabulary") ? reloadVocab() : navigate("/vocabulary")) });
+  }));
+  menu.querySelectorAll("[data-vnoti-reject]").forEach((b) => b.addEventListener("click", async () => {
+    const s = vocabPending.get(b.dataset.vnotiReject);
+    closeMenu();
+    if (await rejectVocabInvite(s)) reloadVocab();
   }));
 }
 
