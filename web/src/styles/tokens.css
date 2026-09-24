@@ -1,0 +1,55 @@
+/* LingYu Chinese — design tokens (theo mục 2 của UI Handoff) */
+:root {
+  color-scheme: light;
+
+  /* Brand */
+  --navy: #073B8C;
+  --navy-900: #0A2350;
+  --blue: #1595F5;
+  --blue-600: #0B7BE0;
+  --blue-700: #0864BA;
+  --cyan: #19C7D6;
+  --green: #16C98D;
+  --green-700: #0B9A69;
+  --red: #D71920;
+  --amber: #F29A17;
+
+  /* Surfaces */
+  --bg: #F6FBFF;
+  --bg-2: #EEF6FE;
+  --card: #FFFFFF;
+  --border: #DCEAF6;
+  --border-strong: #C4DBF0;
+  --blue-50: #EDF6FF;
+  --blue-100: #DCEEFE;
+  --red-50: #FFF2F2;
+  --red-100: #FFE0E0;
+  --green-50: #EAFBF3;
+  --green-100: #CDF3E2;
+  --amber-50: #FFF5E5;
+
+  /* Text */
+  --text: #0E1F3F;
+  --text-2: #4B6384;
+  --text-3: #8398B5;
+  --pinyin: #5E7596;
+
+  /* Shape */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 22px;
+  --shadow: 0 8px 30px rgba(34, 93, 150, .08);
+  --shadow-sm: 0 2px 10px rgba(34, 93, 150, .06);
+  --shadow-cta: 0 8px 20px rgba(21, 149, 245, .28);
+  --grad-primary: linear-gradient(90deg, #1595F5 0%, #19C7D6 100%);
+  --grad-primary-hover: linear-gradient(90deg, #0B86E6 0%, #12B6C4 100%);
+  --focus: 0 0 0 3px rgba(21, 149, 245, .28);
+
+  /* Type */
+  --font: "Inter", "Noto Sans", Arial, system-ui, sans-serif;
+  --font-cn: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Inter", sans-serif;
+  --font-hand: "Dancing Script", "Segoe Script", cursive;
+
+  --sidebar-w: 280px;
+}

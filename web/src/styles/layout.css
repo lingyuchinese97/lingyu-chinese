@@ -1,0 +1,136 @@
+/* ---------- App shell (desktop: sidebar trái + top user + content) ---------- */
+.app {
+  display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  min-height: 100vh; position: relative;
+  background:
+    radial-gradient(1200px 500px at 70% -10%, #EAF5FF 0%, transparent 60%),
+    linear-gradient(180deg, #F7FBFF 0%, #F2F8FE 100%);
+}
+.app__bg-wave {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 140px; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 90px at 20% 100%, rgba(173, 214, 247, .35), transparent 70%),
+    radial-gradient(50% 80px at 80% 100%, rgba(173, 225, 240, .35), transparent 70%);
+}
+
+/* Decorative leaves — chỉ trang trí, không chặn click */
+.decor { position: absolute; pointer-events: none; user-select: none; z-index: 0; }
+.decor-leaf { width: 44px; opacity: .45; }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: sticky; top: 0; height: 100vh; z-index: 30;
+  display: flex; flex-direction: column;
+  padding: 26px 18px 18px;
+  background: linear-gradient(180deg, #F9FCFF 0%, #F1F8FF 100%);
+  border-right: 1px solid #E3EEF8;
+  overflow: hidden;
+}
+.sidebar__logo { display: block; padding: 0 6px; margin-bottom: 26px; }
+.sidebar__logo img { width: 100%; height: 76px; object-fit: contain; object-position: left center; mix-blend-mode: multiply; }
+.nav { display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 1; }
+.nav__link {
+  position: relative; display: flex; align-items: center; gap: 16px;
+  height: 58px; padding: 0 20px; border-radius: 12px;
+  color: var(--text-2); font-size: 17px; font-weight: 500;
+  transition: background .15s, color .15s;
+}
+.nav__link svg { width: 28px; height: 28px; color: var(--blue-600); flex-shrink: 0; opacity: .85; }
+.nav__link:hover { background: #EAF4FE; color: var(--navy); }
+.nav__link.is-active { background: linear-gradient(90deg, #DDEEFF 0%, #E8F4FF 100%); color: var(--blue-600); font-weight: 700; }
+.nav__link.is-active svg { opacity: 1; }
+.nav__link.is-active::before { content: ""; position: absolute; left: -18px; top: 12px; bottom: 12px; width: 4px; border-radius: 0 4px 4px 0; background: var(--blue); }
+
+.sidebar__mascot { margin-top: auto; position: relative; padding-top: 20px; text-align: left; }
+.sidebar__mascot img { width: 190px; margin: 0 auto 4px; object-fit: contain; aspect-ratio: 1536 / 1024; height: auto; }
+.sidebar__quote { font-size: 21px; line-height: 1.3; padding: 0 12px; transform: rotate(-6deg); transform-origin: left; }
+.sidebar__quote .heart { display: inline-block; width: 26px; height: 26px; vertical-align: -4px; color: var(--blue-600); margin-left: 6px; }
+.sidebar__tag { margin-top: 18px; display: flex; gap: 10px; align-items: center; color: var(--text-3); font-style: italic; font-size: 13.5px; line-height: 1.3; padding-left: 6px; }
+.sidebar__tag img { width: 30px; }
+
+/* ---------- Main ---------- */
+.main { position: relative; z-index: 1; min-width: 0; padding: 18px 32px 28px; display: flex; flex-direction: column; }
+.topbar { display: flex; align-items: center; justify-content: flex-end; gap: 14px; min-height: 60px; position: relative; }
+.topbar__menu { display: none; margin-right: auto; }
+.topbar__divider { width: 1px; height: 30px; background: var(--border); }
+.bell { position: relative; }
+.bell svg { width: 26px; height: 26px; }
+.user-btn { display: flex; align-items: center; gap: 12px; background: none; border: 0; padding: 4px 6px; border-radius: 14px; color: var(--navy); font-weight: 600; font-size: 17px; }
+.user-btn:hover { background: var(--blue-50); }
+.user-btn svg { width: 20px; height: 20px; color: var(--text-2); }
+.avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #fff; background: linear-gradient(135deg, #3BA7F7, #19C7D6); border: 3px solid #fff; box-shadow: var(--shadow-sm); flex-shrink: 0; }
+.topbar__quote { position: absolute; right: 0; top: 64px; font-size: 19px; line-height: 1.15; text-align: right; transform: rotate(-6deg); display: flex; align-items: center; gap: 10px; pointer-events: none; }
+.topbar__quote img { width: 38px; }
+
+.page { flex: 1; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.page-footer { margin-top: 26px; text-align: center; font-size: 13.5px; color: var(--text-2); display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.page-footer strong { color: var(--navy); font-weight: 600; }
+.page-footer .sep { width: 1px; height: 14px; background: var(--border-strong); }
+.page-footer svg { width: 18px; height: 18px; color: var(--blue-600); }
+
+/* Breadcrumb */
+.crumb { display: flex; align-items: center; gap: 14px; font-size: 20px; min-height: 44px; margin-top: -6px; flex-wrap: wrap; }
+.crumb__back { width: 40px; height: 40px; margin-left: -8px; }
+.crumb__back svg { width: 26px; height: 26px; }
+.crumb a { color: var(--text-2); }
+.crumb a:hover { color: var(--blue-600); }
+.crumb__chev { width: 20px; height: 20px; color: var(--text-2); }
+.crumb__current { color: var(--text); font-weight: 600; }
+
+/* Two-column page with right rail */
+.with-rail { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 24px; align-items: start; }
+.rail { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.rail-card { background: rgba(255,255,255,.75); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow); overflow: hidden; }
+.rail-card__head { display: flex; align-items: center; gap: 14px; padding: 16px 20px; font-size: 20px; font-weight: 600; color: var(--text); background: linear-gradient(90deg, #EEF6FF, #F6FAFF); }
+.rail-card__icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #E1EFFD; color: var(--blue-600); flex-shrink: 0; }
+.rail-card__icon svg { width: 24px; height: 24px; }
+.rail-card__body { padding: 18px 22px 22px; background: #fff; }
+
+/* Sidebar drawer backdrop */
+.backdrop { position: fixed; inset: 0; background: rgba(9, 35, 80, .35); z-index: 25; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1440px) {
+  .with-rail { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+@media (max-width: 1279px) {
+  :root { --sidebar-w: 96px; }
+  .sidebar { padding: 22px 12px; align-items: center; }
+  .sidebar__logo { padding: 0; margin-bottom: 22px; width: 72px; }
+  .sidebar__logo img { height: 56px; object-position: center; }
+  .nav__link { justify-content: center; padding: 0; width: 64px; }
+  .nav__link span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .nav__link.is-active::before { left: -12px; }
+  .sidebar__mascot, .sidebar__tag { display: none; }
+  .with-rail { grid-template-columns: minmax(0, 1fr) 320px; }
+  .topbar__quote { display: none; }
+}
+@media (max-width: 1023px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 280px; align-items: stretch;
+    padding: 26px 18px 18px; transform: translateX(-102%); transition: transform .25s ease;
+    box-shadow: 10px 0 40px rgba(9, 35, 80, .12);
+  }
+  .app.nav-open .sidebar { transform: none; }
+  .sidebar__logo { width: auto; }
+  .sidebar__logo img { height: 70px; object-position: left center; }
+  .nav__link { justify-content: flex-start; padding: 0 20px; width: auto; }
+  .nav__link span { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .nav__link.is-active::before { left: -18px; }
+  .sidebar__mascot { display: block; }
+  .sidebar__mascot img { width: 130px; }
+  .sidebar__quote { font-size: 18px; }
+  .topbar__menu { display: inline-flex; }
+  .with-rail { grid-template-columns: minmax(0, 1fr); }
+  .main { padding: 14px 24px 24px; }
+}
+@media (max-width: 767px) {
+  .main { padding: 10px 16px 20px; }
+  .user-btn .user-btn__name { display: none; }
+  .avatar { width: 44px; height: 44px; font-size: 16px; }
+  .crumb { font-size: 17px; gap: 8px; }
+  .toast-root { left: 16px; right: 16px; }
+  .toast { max-width: none; }
+  .btn { min-height: max(var(--h), 44px); }
+}
