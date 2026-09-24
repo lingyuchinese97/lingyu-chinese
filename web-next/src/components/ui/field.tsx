@@ -27,15 +27,15 @@ export function Field({
       <Label htmlFor={id}>
         {label}
         {required ? (
-          <span className="text-red ml-0.5" aria-hidden="true">
+          <span className="ml-0.5 text-red" aria-hidden="true">
             *
           </span>
         ) : null}
-        {optional ? <span className="text-text-2 font-medium"> {optional}</span> : null}
+        {optional ? <span className="font-medium text-text-2"> {optional}</span> : null}
       </Label>
       {children}
       {hint ? (
-        <span id={`${id}-hint`} className="text-text-3 text-[13.5px]">
+        <span id={`${id}-hint`} className="text-[13.5px] text-text-3">
           {hint}
         </span>
       ) : null}
@@ -47,7 +47,7 @@ export function Field({
 export function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <span id={id} role="alert" className="text-red text-[13.5px]">
+    <span id={id} role="alert" className="text-[13.5px] text-red">
       {message}
     </span>
   );

@@ -11,7 +11,7 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 0   | Đọc & lên kế hoạch (file này)                                                                                                                                     | ✅         |
 | 1   | Khung dự án: Next.js, Tailwind v4 + tokens, UI kit, font, env, pino, ESLint/Prettier, Vitest, Playwright, `/api/health`, trang lỗi, Docker, Caddy, CI, Dependabot | ✅         |
 | 2   | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI                                                                                         | ✅         |
-| 3   | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing                                                                                         |            |
+| 3   | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing                                                                                         | ✅         |
 | 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          |            |
 | 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 |            |
 | 6   | Ôn đến hạn (FSRS)                                                                                                                                                 |            |
@@ -66,6 +66,10 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 
 17. **E2E**: server e2e chạy `db:migrate` lên DB `<db>_e2e` rồi `next start`; mỗi test auth xoá bảng `rate_limit` trước (mọi request cùng IP),
     riêng một test kiểm tra lần thứ 6 bị chặn.
+
+18. **Thanh tab dưới đáy** (điện thoại) có 5 mục: Trang chủ, Từ vựng, Ngữ pháp, Bài học, Ôn tập. Bộ thủ, Cài đặt, Quản trị
+    nằm trong ngăn kéo ☰ (bản cũ để Bộ thủ ở tab bar, nhưng bản mới có thêm Bài học). Màn tập trung được xác định theo đường dẫn
+    (`/…/new`, `/…/edit`, `/review/session`, `/lessons/[id]/[section]`).
 
 ## Chỗ mơ hồ & cách xử lý
 

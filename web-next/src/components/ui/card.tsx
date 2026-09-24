@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export function Card({ className, ...props }: React.ComponentProps<"section">) {
   return (
     <section
-      className={cn("border-border shadow-card relative rounded-xl border bg-white/90 p-5 sm:p-7", className)}
+      className={cn("relative rounded-xl border border-border bg-white/90 p-5 shadow-card sm:p-7", className)}
       {...props}
     />
   );

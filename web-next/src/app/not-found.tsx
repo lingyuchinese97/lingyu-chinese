@@ -14,11 +14,11 @@ export default function NotFound() {
           priority
         />
         <p className="mt-4 text-sm font-semibold text-blue-600">Lỗi 404</p>
-        <h1 className="text-navy mt-1 text-2xl font-bold">Không tìm thấy trang</h1>
-        <p className="text-text-2 mt-2">Trang bạn tìm không tồn tại hoặc đã được chuyển đi.</p>
+        <h1 className="mt-1 text-2xl font-bold text-navy">Không tìm thấy trang</h1>
+        <p className="mt-2 text-text-2">Trang bạn tìm không tồn tại hoặc đã được chuyển đi.</p>
         <Link
           href="/"
-          className="bg-blue shadow-cta mt-6 inline-flex h-11 items-center rounded-md px-5 font-semibold text-white hover:bg-blue-600"
+          className="mt-6 inline-flex h-11 items-center rounded-md bg-blue px-5 font-semibold text-white shadow-cta hover:bg-blue-600"
         >
           Về trang chủ
         </Link>

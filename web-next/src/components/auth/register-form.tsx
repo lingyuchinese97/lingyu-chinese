@@ -106,7 +106,7 @@ export function RegisterForm() {
           <ArrowRight className="absolute right-[22px] !size-7" aria-hidden="true" />
         </Button>
       </form>
-      <p className="text-text-2 text-center text-[15.5px] md:text-lg">
+      <p className="text-center text-[15.5px] text-text-2 md:text-lg">
         Đã có tài khoản?{" "}
         <Link href="/login" className="font-bold text-[#1646B8] hover:underline">
           Đăng nhập

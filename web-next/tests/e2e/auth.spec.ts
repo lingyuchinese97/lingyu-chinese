@@ -26,7 +26,8 @@ test("đăng ký → vào app → đăng xuất → đăng nhập lại", async 
   await page.goto("/login");
   await expect(page).toHaveURL(/\/home$/);
 
-  await page.getByRole("button", { name: "Đăng xuất" }).click();
+  await page.getByRole("button", { name: /Tài khoản/ }).click();
+  await page.getByRole("menuitem", { name: "Đăng xuất" }).click();
   await expect(page).toHaveURL(/\/login$/);
 
   await page.getByLabel("Email").fill(email);

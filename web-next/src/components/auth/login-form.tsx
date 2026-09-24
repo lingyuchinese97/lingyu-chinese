@@ -12,7 +12,7 @@ import { loginErrorMessage } from "@/lib/auth-errors";
 import { loginSchema, type LoginInput } from "@/lib/auth-rules";
 import { AuthField, AuthTitle } from "./auth-field";
 
-export function LoginForm({ initialEmail = "" }: { initialEmail?: string }) {
+export function LoginForm({ initialEmail = "", next = "/home" }: { initialEmail?: string; next?: string }) {
   const router = useRouter();
   const [formError, setFormError] = React.useState("");
   const [showForgot, setShowForgot] = React.useState(false);
@@ -33,7 +33,7 @@ export function LoginForm({ initialEmail = "" }: { initialEmail?: string }) {
       setFormError(loginErrorMessage(error));
       return;
     }
-    router.replace("/home");
+    router.replace(next);
     router.refresh();
   });
 
@@ -87,7 +87,7 @@ export function LoginForm({ initialEmail = "" }: { initialEmail?: string }) {
           <ArrowRight className="absolute right-[22px] !size-7" aria-hidden="true" />
         </Button>
       </form>
-      <p className="text-text-2 text-center text-[15.5px] md:text-lg">
+      <p className="text-center text-[15.5px] text-text-2 md:text-lg">
         Chưa có tài khoản?{" "}
         <Link href="/register" className="font-bold text-[#1646B8] hover:underline">
           Đăng ký ngay

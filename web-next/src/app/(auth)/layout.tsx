@@ -32,18 +32,19 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           width={2171}
           height={724}
           priority
+          sizes="(min-width: 1024px) 520px, 340px"
           className="h-auto w-[min(260px,80%)] mix-blend-multiply md:w-[min(340px,90%)] lg:w-[min(520px,100%)]"
         />
         <p
           aria-hidden="true"
-          className="hand my-1 -mb-2.5 hidden -rotate-[5deg] text-[28px] leading-tight lg:block xl:text-[34px]"
+          className="my-1 -mb-2.5 hidden -rotate-[5deg] hand text-[28px] leading-tight lg:block xl:text-[34px]"
         >
           Cùng LingYu
           <br />
           khám phá thế giới tiếng Trung
           <br />
           thật thú vị nhé!
-          <Heart className="fill-rose text-rose ml-2.5 inline size-9 -translate-y-1" />
+          <Heart className="ml-2.5 inline size-9 -translate-y-1 fill-rose text-rose" />
         </p>
         <div aria-hidden="true" className="relative hidden aspect-[1536/1024] w-[min(560px,100%)] lg:block">
           {BUBBLES.map(([x, y, s]) => (
@@ -55,7 +56,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           ))}
           <Image src="/brand/lingyu-mascot.png" alt="" fill sizes="560px" className="relative z-[1] object-contain" />
         </div>
-        <div className="text-navy mt-3 hidden flex-wrap items-center justify-center gap-5 text-[17px] lg:flex">
+        <div className="mt-3 hidden flex-wrap items-center justify-center gap-5 text-[17px] text-navy lg:flex">
           <span className="inline-flex items-center gap-2.5">
             <BookOpen className="size-7 text-blue-600" aria-hidden="true" />
             Học nhẹ nhàng
