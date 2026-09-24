@@ -231,18 +231,26 @@ export async function pool({ tags = [], ids = null } = {}) {
   return all.filter((v) => v.tags.some((t) => want.has(t.toLowerCase())));
 }
 
+/** Thêm nhiều từ; bỏ qua từ đã có (trùng Hán tự). Trả về { added, skipped: [hanzi...] }. */
 export async function importMany(records) {
   await wait(API_CONFIG.LATENCY);
   const all = await readAll();
   const existing = new Set(all.map((v) => v.hanzi));
   const now = Date.now();
-  const fresh = records.filter((r) => !existing.has(r.hanzi)).map((r, i) => ({
+  const skipped = [];
+  const fresh = records.filter((r) => {
+    if (existing.has(r.hanzi)) { skipped.push(r.hanzi); return false; }
+    existing.add(r.hanzi); // tránh trùng ngay trong danh sách nhập
+    return true;
+  }).map((r, i) => ({
     id: uid("v"), hanzi: r.hanzi, pinyin: r.pinyin, meaningVi: r.meaningVi, note: r.note || "",
-    imageUrl: r.imageUrl || null, tags: cleanTags(r.tags), status: r.status || STATUS.REVIEW, isFavorite: !!r.isFavorite,
+    imageUrl: r.imageUrl || null, tags: cleanTags(r.tags), radicals: cleanRadicals(r.radicals),
+    status: r.status || STATUS.REVIEW, isFavorite: !!r.isFavorite,
     createdAt: new Date(now - i * 60000).toISOString(), updatedAt: new Date(now).toISOString(),
   }));
   await writeAll([...fresh, ...all]);
-  return { added: fresh.length };
+  for (const t of new Set(fresh.flatMap((v) => v.tags))) await createTag(t);
+  return { added: fresh.length, skipped };
 }
 
 export async function clearAll() {

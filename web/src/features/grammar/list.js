@@ -146,11 +146,10 @@ export async function renderGrammarList(page, ctx) {
       ${g.structure ? `<div class="gcard__structure" lang="zh">${esc(g.structure)}</div>` : ""}
       <p class="gcard__desc">${esc(desc) || '<span class="field__hint">Chưa có mô tả.</span>'}</p>
       <div class="gcard__tags">${g.tags.map((t) => tagHtml(t.name)).join("")}</div>
-      <div class="gcard__meta">
-        <span>Tạo: ${formatDate(g.createdAt)}</span><span>Cập nhật: ${formatDate(g.updatedAt)}</span>
-        ${g.examples.length ? `<span>${g.examples.length} ví dụ</span>` : ""}
+      ${g.examples.length || g.sourceGrammarId ? `<div class="gcard__meta">
+        ${g.examples.length ? `<span>${icon("book")}${g.examples.length} ví dụ</span>` : ""}
         ${g.sourceGrammarId ? `<span class="gcard__from">${icon("share")}Từ ${esc(g.sourceOwnerName || "người khác")}</span>` : ""}
-      </div>
+      </div>` : ""}
     </article>`;
   }
 

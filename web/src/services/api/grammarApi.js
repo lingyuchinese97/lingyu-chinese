@@ -3,7 +3,8 @@
 // Mỗi hàm tương ứng 1 endpoint trong spec (ghi ở comment) — khi có backend thật chỉ thay phần thân.
 import { API_CONFIG } from "./config.js";
 import { local, wait, uid, ApiError } from "./storage.js";
-import { getCurrentUser, findUserByEmail, getUserById, isEmail } from "./authApi.js";
+import { getCurrentUser, getUserById } from "./authApi.js";
+import { parseEmails as parse, checkRecipient } from "./shareUtils.js";
 import { notify } from "./notificationApi.js";
 
 const K = {
@@ -328,9 +329,7 @@ function shareView(s) {
 }
 
 /** Tách chuỗi nhiều email (dấu phẩy, chấm phẩy, khoảng trắng, xuống dòng). */
-export function parseEmails(text) {
-  return [...new Set(String(text || "").split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter(Boolean))];
-}
+export const parseEmails = parse;
 
 /**
  * POST /api/grammars/:id/share
@@ -348,10 +347,9 @@ export async function share(id, emails) {
   const shares = read(K.shares);
   const results = [];
   for (const email of [...new Set(list)]) {
-    if (!isEmail(email)) { results.push({ email, ok: false, message: "Email không đúng định dạng." }); continue; }
-    if (email === u.email.toLowerCase()) { results.push({ email, ok: false, message: "Bạn không thể chia sẻ cho chính mình." }); continue; }
-    const r = findUserByEmail(email);
-    if (!r) { results.push({ email, ok: false, message: "Người dùng này chưa có tài khoản LingYu Chinese." }); continue; }
+    const check = checkRecipient(email, u);
+    if (!check.ok) { results.push({ email, ok: false, message: check.message }); continue; }
+    const r = check.user;
     if (shares.some((s) => s.grammarId === id && s.recipientId === r.id && s.status === SHARE_STATUS.PENDING)) {
       results.push({ email, ok: false, message: "Đã gửi lời mời trước đó, đang chờ người nhận phản hồi." }); continue;
     }
