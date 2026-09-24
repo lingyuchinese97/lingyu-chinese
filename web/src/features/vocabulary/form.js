@@ -4,6 +4,7 @@ import { breadcrumb } from "../../components/layout/appShell.js";
 import { esc, setBusy, tagStyle } from "../../lib/dom.js";
 import { toast } from "../../components/ui/feedback.js";
 import { navigate } from "../../routes/router.js";
+import { attachPinyinInput } from "../../lib/pinyin.js";
 
 const ACCEPT = ["image/jpeg", "image/png"];
 
@@ -73,7 +74,7 @@ export async function renderVocabularyForm(page, ctx) {
       <div id="vf-alert" hidden></div>
       <div class="vf-row">
         ${field("hanzi", "Hán tự", true, `<input class="input hanzi-input" id="hanzi" placeholder="Nhập chữ Hán" value="${esc(model.hanzi)}" lang="zh" style="font-family:var(--font-cn)" />`, "Ví dụ: 你")}
-        ${field("pinyin", "Pinyin", true, `<input class="input" id="pinyin" placeholder="Nhập pinyin (có thanh điệu)" value="${esc(model.pinyin)}" autocomplete="off" />`, "Ví dụ: nǐ")}
+        ${field("pinyin", "Pinyin", true, `<input class="input" id="pinyin" placeholder="Nhập pinyin, vd: ni3 hao3" value="${esc(model.pinyin)}" autocomplete="off" autocapitalize="off" spellcheck="false" />`, "Gõ số 1–4 sau âm tiết để thêm dấu: ni3 → nǐ, hao3 → hǎo, lv4 → lǜ")}
       </div>
       ${field("meaningVi", "Nghĩa tiếng Việt", true, `<input class="input" id="meaningVi" placeholder="Nhập nghĩa tiếng Việt" value="${esc(model.meaningVi)}" autocomplete="off" />`, "Ví dụ: bạn, cậu — nhiều nghĩa cách nhau bằng dấu phẩy")}
       <div class="field">
@@ -122,6 +123,8 @@ export async function renderVocabularyForm(page, ctx) {
     err.textContent = msg || "";
     err.hidden = !msg;
   }
+  // Pinyin: đổi số thanh điệu thành dấu ngay khi gõ (đăng ký trước để model nhận giá trị đã đổi).
+  attachPinyinInput($("#pinyin"));
   ["hanzi", "pinyin", "meaningVi"].forEach((id) => $("#" + id).addEventListener("input", (e) => { model[id] = e.target.value; setErr(id, ""); }));
   $("#note").addEventListener("input", (e) => {
     model.note = e.target.value;

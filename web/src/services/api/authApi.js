@@ -23,7 +23,13 @@ function emit() { const u = getCurrentUser(); listeners.forEach((fn) => fn(u)); 
 const users = () => local.get(K_USERS, []);
 const saveUsers = (list) => local.set(K_USERS, list);
 const norm = (email) => String(email || "").trim().toLowerCase();
-export const isEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email || "").trim());
+// Phần trước @: chữ/số và . _ % + - (không bắt đầu/kết thúc bằng dấu chấm, không có ".." liên tiếp).
+// Tên miền: các nhãn chữ/số/gạch nối (không bắt đầu/kết thúc bằng "-"), đuôi cuối ít nhất 2 chữ cái.
+const EMAIL_RE = /^[a-z0-9_%+-]+(\.[a-z0-9_%+-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
+export const isEmail = (email) => {
+  const s = String(email || "").trim();
+  return s.length <= 254 && s.indexOf("@") <= 64 && EMAIL_RE.test(s);
+};
 
 async function hash(password, salt) {
   const data = new TextEncoder().encode(`${salt}:${password}`);

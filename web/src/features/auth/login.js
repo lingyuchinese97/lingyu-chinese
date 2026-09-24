@@ -28,6 +28,11 @@ export function renderLogin(root, { query }) {
   (query.email ? pw : email).focus();
 
   email.addEventListener("input", () => setFieldError(card, "email", ""));
+  // Báo lỗi định dạng ngay khi rời ô email, không đợi bấm Đăng nhập.
+  email.addEventListener("blur", () => {
+    const v = email.value.trim();
+    if (v && !isEmail(v)) setFieldError(card, "email", "Email không đúng định dạng.");
+  });
   pw.addEventListener("input", () => setFieldError(card, "password", ""));
 
   form.addEventListener("submit", async (e) => {

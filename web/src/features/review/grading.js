@@ -1,20 +1,9 @@
 // Chấm đáp án (thuần logic, không phụ thuộc UI).
+import { markSyllable } from "../../lib/pinyin.js";
 
 const collapse = (s) => String(s || "").normalize("NFC").trim().replace(/\s+/g, " ");
 
 // --- Pinyin: chấp nhận dấu thanh hoặc số (ni3 hao3), bỏ khoảng trắng/nháy, v = ü ---
-const TONES = { a: "āáǎà", e: "ēéěè", i: "īíǐì", o: "ōóǒò", u: "ūúǔù", "ü": "ǖǘǚǜ" };
-function markSyllable(syl, tone) {
-  if (tone < 1 || tone > 4) return syl;
-  const s = syl.replace(/v/g, "ü");
-  let idx = s.search(/[ae]/);
-  if (idx < 0 && s.includes("ou")) idx = s.indexOf("o");
-  if (idx < 0) {
-    for (let i = s.length - 1; i >= 0; i--) if ("aeiouü".includes(s[i])) { idx = i; break; }
-  }
-  if (idx < 0) return s;
-  return s.slice(0, idx) + TONES[s[idx]][tone - 1] + s.slice(idx + 1);
-}
 export function normalizePinyin(input) {
   let s = collapse(input).toLowerCase().replace(/u:/g, "ü");
   s = s.replace(/([a-zü]+)([1-5])/g, (_, syl, t) => markSyllable(syl, Number(t)));
