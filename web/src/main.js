@@ -34,12 +34,12 @@ function authPage(render, title) {
   };
 }
 
-function appPage(render, { nav, title, quote, topQuote }) {
+function appPage(render, { nav, title, quote, topQuote, focus }) {
   return (ctx) => {
     document.title = `${title} · LingYu Chinese`;
     if (root.dataset.layout !== "app") { root.dataset.layout = "app"; root.innerHTML = ""; }
     mountAppShell(root);
-    const page = updateShell({ nav, quote, topQuote });
+    const page = updateShell({ nav, quote, topQuote, focus });
     return render(page, ctx);
   };
 }
@@ -70,17 +70,17 @@ route("/forgot-password", authPage(renderForgotPassword, TITLES["/forgot-passwor
 // ----- App -----
 route("/home", appPage(renderHome, { nav: "home", title: "Trang chủ", quote: Q.home }));
 route("/vocabulary", appPage(renderVocabularyList, { nav: "vocabulary", title: "Từ vựng", quote: Q.vocab }));
-route("/vocabulary/new", appPage(renderVocabularyForm, { nav: "vocabulary", title: "Thêm từ vựng", quote: Q.vocab, topQuote: TQ.small }));
-route("/vocabulary/:id/edit", appPage(renderVocabularyForm, { nav: "vocabulary", title: "Sửa từ vựng", quote: Q.vocab, topQuote: TQ.small }));
+route("/vocabulary/new", appPage(renderVocabularyForm, { nav: "vocabulary", title: "Thêm từ vựng", quote: Q.vocab, topQuote: TQ.small, focus: true }));
+route("/vocabulary/:id/edit", appPage(renderVocabularyForm, { nav: "vocabulary", title: "Sửa từ vựng", quote: Q.vocab, topQuote: TQ.small, focus: true }));
 // /grammar/new phải khai báo trước /grammar/:id
 route("/grammar", appPage(renderGrammarList, { nav: "grammar", title: "Ngữ pháp", quote: Q.grammar }));
-route("/grammar/new", appPage(renderGrammarForm, { nav: "grammar", title: "Thêm ngữ pháp", quote: Q.grammar, topQuote: TQ.small }));
-route("/grammar/:id/edit", appPage(renderGrammarForm, { nav: "grammar", title: "Chỉnh sửa ngữ pháp", quote: Q.grammar, topQuote: TQ.small }));
+route("/grammar/new", appPage(renderGrammarForm, { nav: "grammar", title: "Thêm ngữ pháp", quote: Q.grammar, topQuote: TQ.small, focus: true }));
+route("/grammar/:id/edit", appPage(renderGrammarForm, { nav: "grammar", title: "Chỉnh sửa ngữ pháp", quote: Q.grammar, topQuote: TQ.small, focus: true }));
 route("/grammar/:id", appPage(renderGrammarDetail, { nav: "grammar", title: "Ngữ pháp", quote: Q.grammar, topQuote: TQ.learn }));
 route("/radicals", appPage(renderRadicalList, { nav: "radicals", title: "Bộ thủ", quote: Q.radicals }));
 route("/radicals/:num", appPage(renderRadicalDetail, { nav: "radicals", title: "Bộ thủ", quote: Q.radicals, topQuote: TQ.learn }));
 route("/review/setup", appPage(renderReviewSetup, { nav: "review", title: "Thiết lập ôn tập", quote: Q.setup, topQuote: TQ.learn }));
-route("/review/session", appPage(renderReviewSession, { nav: "review", title: "Làm bài ôn tập", quote: Q.session, topQuote: TQ.vi }));
+route("/review/session", appPage(renderReviewSession, { nav: "review", title: "Làm bài ôn tập", quote: Q.session, topQuote: TQ.vi, focus: true }));
 route("/review/result", appPage(renderReviewResult, { nav: "review", title: "Hoàn thành ôn tập", quote: Q.result, topQuote: TQ.vi }));
 route("/settings", appPage(renderSettings, { nav: "settings", title: "Cài đặt", quote: Q.settings }));
 

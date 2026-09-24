@@ -43,6 +43,11 @@ src/
 | `/review/setup` · `/review/session` · `/review/result` | Ôn tập |
 | `/settings` | Cài đặt |
 
+## Điện thoại
+- `index.html` có `meta viewport` (thiếu thẻ này điện thoại sẽ hiển thị bản desktop thu nhỏ), `theme-color` và `manifest.webmanifest` + icon trong `src/assets/app/` → cài được lên màn hình chính như app (Chrome: “Thêm vào màn hình chính”, Safari: Chia sẻ → “Thêm vào MH chính”).
+- `src/styles/mobile.css` (nạp cuối cùng): thanh tab dưới đáy, bảng từ vựng dạng thẻ, hộp thoại dạng bottom sheet, nút Lưu cố định ở đáy form, ô nhập ≥ 16px (tránh iOS tự phóng to), vùng chạm ≥ 40px, safe-area cho iPhone.
+- Màn tập trung (form thêm/sửa, đang làm bài) truyền `focus: true` trong `main.js` → ẩn thanh tab.
+
 ## Nối backend thật
 Toàn bộ dữ liệu đi qua `src/services/api/*`. Bản hiện tại là **mock** (localStorage + IndexedDB, theo từng user).
 Giữ nguyên chữ ký hàm, thay phần thân bằng lời gọi REST/Firebase/Supabase — UI không cần sửa.

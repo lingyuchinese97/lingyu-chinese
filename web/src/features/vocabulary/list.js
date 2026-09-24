@@ -318,7 +318,12 @@ export async function renderVocabularyList(page, ctx) {
 
   async function runBulk(btn) {
     // Disabled: không mở modal, không gọi API.
-    if (btn.getAttribute("aria-disabled") === "true" || btn.dataset.busy === "1") return;
+    if (btn.dataset.busy === "1") return;
+    if (btn.getAttribute("aria-disabled") === "true") {
+      // Màn cảm ứng không có hover để hiện tooltip → báo bằng toast. Không mở modal, không gọi API.
+      if (matchMedia("(hover: none)").matches) toast(btn.dataset.tip, "info");
+      return;
+    }
     const ids = [...selected];
     const action = btn.dataset.bulk;
     if (action === "delete") return doDelete(ids, `${ids.length} từ đã chọn`);

@@ -1,0 +1,159 @@
+/* =========================================================
+   Điện thoại & màn cảm ứng — nạp SAU cùng để ghi đè các file khác.
+   ========================================================= */
+
+/* ----- Chung cho màn cảm ứng ----- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+a, button, [role="button"], label, summary, select { touch-action: manipulation; -webkit-tap-highlight-color: rgba(21, 149, 245, .12); }
+/* Không có hover → tooltip nút khoá được thay bằng toast khi chạm (xem vocabulary/list.js). */
+@media (hover: none) {
+  .bulk-btn.has-tip::after { display: none; }
+  .gcard:hover, .rcard:hover { box-shadow: none; }
+}
+
+/* Thanh tab dưới đáy: chỉ hiện trên điện thoại */
+.tabbar { display: none; }
+
+@media (max-width: 767px) {
+  :root { --tabbar-h: 64px; --safe-b: env(safe-area-inset-bottom, 0px); }
+
+  /* iOS tự phóng to trang khi focus ô nhập có chữ < 16px → giữ tối thiểu 16px */
+  .input, .textarea, .select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea, select, .lang select, .taginput__input, .rpick__input { font-size: 16px; }
+
+  /* Không cho phần trang trí đẩy trang lệch ngang */
+  .page, .main { overflow-x: clip; }
+  .page-card > .decor, .vf-card > .decor, .gf-card > .decor { display: none; }
+
+  /* Vùng chạm tối thiểu ~40px */
+  .checkbox { width: 26px; height: 26px; }
+  .icon-btn { min-width: 40px; min-height: 40px; }
+  .rcard__known { width: 40px; height: 40px; right: 2px; top: 2px; }
+  .gex__tools .icon-btn { width: 40px; height: 40px; }
+  .crumb a, .vf-back, .auth-link, .auth-switch a, .link-btn { display: inline-flex; align-items: center; min-height: 40px; }
+  .crumb { font-size: 16px; gap: 6px; }
+  .crumb__current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
+
+  /* Topbar tôn trọng vùng tai thỏ khi mở dạng app (standalone) */
+  .main { padding-top: max(10px, env(safe-area-inset-top, 0px)); }
+  .topbar { min-height: 52px; gap: 8px; }
+
+  /* ----- Thanh tab dưới đáy ----- */
+  .tabbar {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    height: calc(var(--tabbar-h) + var(--safe-b)); padding-bottom: var(--safe-b);
+    background: rgba(255, 255, 255, .96); border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 20px rgba(20, 60, 110, .06);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px);
+  }
+  .tabbar__link { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text-3); font-size: 11.5px; font-weight: 600; text-decoration: none; position: relative; }
+  .tabbar__link svg { width: 24px; height: 24px; }
+  .tabbar__link.is-active { color: var(--blue-600); }
+  .tabbar__link.is-active::before { content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--blue); }
+  .app:not(.is-focus) .main { padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px); }
+  body:has(.app:not(.is-focus)) .toast-root { bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px); }
+  .app.is-focus .tabbar { display: none; }
+  .page-footer { margin-top: 18px; font-size: 12.5px; }
+
+  /* ----- Form: nút Lưu/Hủy cố định ở đáy (màn tập trung, không có tab bar) ----- */
+  .vf-card .vf-actions, .gf-card .gf-actions {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; margin: 0; max-width: none;
+    grid-template-columns: 1fr 1.6fr; gap: 10px;
+    padding: 10px 16px calc(10px + var(--safe-b));
+    background: rgba(255, 255, 255, .97); border-top: 1px solid var(--border); box-shadow: 0 -6px 20px rgba(20, 60, 110, .08);
+  }
+  .vf-card .vf-actions .btn, .gf-card .gf-actions .btn { min-height: 50px; font-size: 16.5px; }
+  .app.is-focus .main { padding-bottom: calc(84px + var(--safe-b)); }
+  body:has(.vf-actions, .gf-actions) .toast-root { bottom: calc(84px + var(--safe-b)); }
+
+  /* ----- Hộp thoại: dạng "bottom sheet" ----- */
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal, .modal--wide {
+    max-width: none; width: 100%; border-radius: 22px 22px 0 0;
+    padding: 20px 18px calc(18px + var(--safe-b)); max-height: 92vh; max-height: 92dvh;
+    animation: sheetIn .22s ease;
+  }
+  .modal::before { content: ""; display: block; width: 44px; height: 5px; border-radius: 3px; background: var(--border-strong); margin: -8px auto 14px; }
+  .modal__actions { gap: 10px; }
+  .modal__actions .btn { flex: 1 1 calc(50% - 10px); min-height: 48px; }
+  .menu { max-width: calc(100vw - 16px); }
+
+  /* ----- Từ vựng: bảng → thẻ ----- */
+  .table-wrap { overflow: visible; border: 0; background: transparent; border-radius: 0; }
+  .vtable { min-width: 0; display: block; font-size: 15px; }
+  .vtable thead { display: none; } /* chọn tất cả dùng ô ở thanh thao tác */
+  .vtable tbody { display: grid; gap: 10px; }
+  .vtable tbody tr {
+    display: grid; grid-template-columns: 30px 52px minmax(0, 1fr) auto; column-gap: 10px; row-gap: 2px;
+    grid-template-areas:
+      "chk img word act"
+      "chk img py   status"
+      "chk img mean mean"
+      "note note note note"
+      "tags tags tags tags";
+    padding: 12px 10px 8px 12px; border: 1px solid var(--border); border-radius: 16px; background: #fff;
+  }
+  .vtable tbody tr:hover { background: #fff; }
+  .vtable tbody tr.is-selected { background: #F1F8FF; border-color: #A9D3F8; }
+  .vtable td { display: block; padding: 0; border: 0; min-width: 0; }
+  .vtable .c-check { grid-area: chk; width: auto; align-self: center; text-align: left; }
+  .vtable .c-num { display: none; }
+  .vtable .c-img { grid-area: img; width: auto; align-self: center; }
+  .vtable .c-img .thumb { width: 52px; height: 52px; }
+  .vtable .c-hz { grid-area: word; font-size: 22px; line-height: 1.25; overflow-wrap: anywhere; }
+  .vtable td.pinyin { grid-area: py; font-size: 14.5px; }
+  .vtable .c-mean { grid-area: mean; color: var(--text); }
+  .vtable .c-note { grid-area: note; margin-top: 6px; font-size: 14px; }
+  .vtable .c-note:not(:has(.note-cell)) { display: none; }
+  .vtable .c-tags { grid-area: tags; align-self: center; margin-top: 6px; }
+  .vtable .c-tags > div { display: flex; flex-wrap: wrap; gap: 4px; }
+  .vtable td:nth-child(9) { grid-area: status; justify-self: end; align-self: center; }
+  .vtable .c-act { grid-area: act; width: auto; display: flex; justify-content: flex-end; align-items: flex-start; margin: -6px -4px 0 0; white-space: nowrap; }
+  .vtable .c-act .icon-btn { width: 40px; height: 40px; }
+
+  /* Thanh thao tác hàng loạt: 2 cột nút gọn */
+  .bulkbar { padding: 10px; }
+  .bulkbar__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bulk-btn { width: 100%; }
+
+  /* Chip lọc cuộn ngang, không xuống dòng */
+  .chips-row .icon-btn#chips-next { display: none; }
+  .gl-views { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-left: -4px; margin-right: -4px; padding: 0 4px 12px; }
+  .gl-views::-webkit-scrollbar { display: none; }
+  .gl-view { flex-shrink: 0; }
+  .gl-tags .chips-scroll { margin-right: -16px; padding-right: 16px; }
+
+  /* Ngữ pháp */
+  .gcard { padding: 14px; }
+  .gd-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .ginvite { padding: 14px; }
+  .ginvite__actions { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ginvite__actions .btn { padding: 0 8px; }
+
+  /* Bộ thủ */
+  .rl-grid { gap: 10px; }
+  .rcard__char { font-size: 36px; }
+  .rd-examples { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .rd-nav .btn { flex: 1 1 0; min-width: 0; padding: 0 12px; }
+  .rpick__opt { grid-template-columns: 52px 1fr; }
+  .rpick__meta { display: none; }
+
+  /* Ôn tập: nút lớn dễ bấm, ô trả lời không bị bàn phím che khi cuộn */
+  .q-input { scroll-margin-bottom: 120px; }
+
+  /* Auth */
+  .lang { height: 44px; padding: 0 12px; }
+}
+
+@media (max-width: 380px) {
+  .tabbar__link { font-size: 10.5px; }
+  .vtable tbody tr { grid-template-columns: 28px 44px minmax(0, 1fr) auto; column-gap: 8px; }
+  .vtable .c-img .thumb { width: 44px; height: 44px; }
+  .rl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ginvite__actions { grid-template-columns: 1fr 1fr; }
+  .ginvite__actions .btn:first-child { grid-column: 1 / -1; }
+}
+
+@keyframes sheetIn { from { transform: translateY(24px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .modal, .modal--wide { animation: none; } }

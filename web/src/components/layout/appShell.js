@@ -24,6 +24,15 @@ const NAV = [
   { key: "settings", href: "#/settings", label: "Cài đặt", icon: "settings" },
 ];
 
+// Thanh tab dưới đáy màn hình trên điện thoại (Cài đặt nằm trong menu ☰ / menu tài khoản).
+const TABS = [
+  { key: "home", href: "#/home", label: "Trang chủ", icon: "home" },
+  { key: "vocabulary", href: "#/vocabulary", label: "Từ vựng", icon: "book" },
+  { key: "grammar", href: "#/grammar", label: "Ngữ pháp", icon: "grammar" },
+  { key: "radicals", href: "#/radicals", label: "Bộ thủ", icon: "radical" },
+  { key: "review", href: "#/review/setup", label: "Ôn tập", icon: "review" },
+];
+
 let shell = null;
 
 function leaf(style, rot = 0, w = 44) {
@@ -62,6 +71,9 @@ export function mountAppShell(root) {
           <div class="topbar__quote hand" id="top-quote" aria-hidden="true"></div>
         </header>
         <main class="page" id="page" tabindex="-1"></main>
+        <nav class="tabbar" id="tabbar" aria-label="Điều hướng nhanh">
+          ${TABS.map((t) => `<a class="tabbar__link" href="${t.href}" data-tab="${t.key}">${icon(t.icon)}<span>${t.label}</span></a>`).join("")}
+        </nav>
         <footer class="page-footer" id="page-footer">
           <strong>LingYu Chinese</strong><span class="sep" aria-hidden="true"></span><span>${BRAND.slogan}</span>${icon("heart")}
         </footer>
@@ -153,7 +165,11 @@ async function openNotifications(anchor) {
   }));
 }
 
-export function updateShell({ nav, quote, topQuote }) {
+/**
+ * focus: màn tập trung (form nhập, đang làm bài) → ẩn thanh tab dưới đáy trên điện thoại
+ * để có thêm chỗ cho bàn phím và nút Lưu/Kiểm tra.
+ */
+export function updateShell({ nav, quote, topQuote, focus = false }) {
   const u = getCurrentUser();
   shell.querySelector("#user-avatar").textContent = initials(u?.name);
   shell.querySelector("#user-name").textContent = u?.name || "";
@@ -162,6 +178,12 @@ export function updateShell({ nav, quote, topQuote }) {
     a.classList.toggle("is-active", active);
     if (active) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
+  shell.querySelectorAll(".tabbar__link").forEach((a) => {
+    const active = a.dataset.tab === nav;
+    a.classList.toggle("is-active", active);
+    if (active) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  shell.classList.toggle("is-focus", !!focus);
   setSidebarQuote(quote);
   const tq = shell.querySelector("#top-quote");
   tq.innerHTML = topQuote ? `<span style="width:38px;display:inline-block">${leafDecor}</span><span>${topQuote}</span>` : "";

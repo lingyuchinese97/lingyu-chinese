@@ -1,5 +1,25 @@
-<title>LingYu Chinese Web</title>
-<meta name="description" content="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày" />
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<!-- viewport-fit=cover: dùng được vùng tai thỏ/thanh home trên iPhone (xử lý bằng env(safe-area-inset-*)) -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>LingYu Chinese</title>
+<meta name="description" content="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày. Lưu từ vựng, ngữ pháp, bộ thủ và ôn tập mỗi ngày." />
+<meta name="theme-color" content="#F6FBFF" />
+<meta name="color-scheme" content="light" />
+<!-- Cài lên màn hình chính như một app -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="LingYu" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="apple-touch-icon" href="src/assets/app/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="48x48" href="src/assets/app/favicon-48.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="src/assets/app/icon-192.png" />
+<!-- Không tự biến số thành link gọi điện trên iOS -->
+<meta name="format-detection" content="telephone=no" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@500;600;700&family=Dancing+Script:wght@600;700&display=swap" />
@@ -8,8 +28,12 @@
 <link rel="stylesheet" href="src/styles/layout.css" />
 <link rel="stylesheet" href="src/styles/auth.css" />
 <link rel="stylesheet" href="src/styles/pages.css" />
-
+<link rel="stylesheet" href="src/styles/mobile.css" />
+</head>
+<body>
 <div id="root"></div>
 <div id="toast-root" class="toast-root" aria-live="polite"></div>
 <noscript>LingYu Chinese cần bật JavaScript để hoạt động.</noscript>
 <script type="module" src="src/main.js"></script>
+</body>
+</html>
