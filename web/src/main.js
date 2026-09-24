@@ -13,6 +13,9 @@ import { renderReviewSetup } from "./features/review/setup.js";
 import { renderReviewSession } from "./features/review/session.js";
 import { renderReviewResult } from "./features/review/result.js";
 import { renderSettings } from "./features/settings/settings.js";
+import { renderGrammarList } from "./features/grammar/list.js";
+import { renderGrammarForm } from "./features/grammar/form.js";
+import { renderGrammarDetail } from "./features/grammar/detail.js";
 
 const root = document.getElementById("root");
 
@@ -46,6 +49,7 @@ const Q = {
   session: "Cố gắng mỗi ngày<br/>Tiếng Trung sẽ gần hơn!",
   result: "Kiên trì hôm nay,<br/>tiến bộ mỗi ngày!",
   settings: "Small steps,<br/>big future!",
+  grammar: "Nắm vững ngữ pháp,<br/>nói tiếng Trung<br/>tự tin hơn!",
 };
 const TQ = {
   learn: "Learn Today<br/>A Brighter Tomorrow",
@@ -65,6 +69,11 @@ route("/home", appPage(renderHome, { nav: "home", title: "Trang chủ", quote: Q
 route("/vocabulary", appPage(renderVocabularyList, { nav: "vocabulary", title: "Từ vựng", quote: Q.vocab }));
 route("/vocabulary/new", appPage(renderVocabularyForm, { nav: "vocabulary", title: "Thêm từ vựng", quote: Q.vocab, topQuote: TQ.small }));
 route("/vocabulary/:id/edit", appPage(renderVocabularyForm, { nav: "vocabulary", title: "Sửa từ vựng", quote: Q.vocab, topQuote: TQ.small }));
+// /grammar/new phải khai báo trước /grammar/:id
+route("/grammar", appPage(renderGrammarList, { nav: "grammar", title: "Ngữ pháp", quote: Q.grammar }));
+route("/grammar/new", appPage(renderGrammarForm, { nav: "grammar", title: "Thêm ngữ pháp", quote: Q.grammar, topQuote: TQ.small }));
+route("/grammar/:id/edit", appPage(renderGrammarForm, { nav: "grammar", title: "Chỉnh sửa ngữ pháp", quote: Q.grammar, topQuote: TQ.small }));
+route("/grammar/:id", appPage(renderGrammarDetail, { nav: "grammar", title: "Ngữ pháp", quote: Q.grammar, topQuote: TQ.learn }));
 route("/review/setup", appPage(renderReviewSetup, { nav: "review", title: "Thiết lập ôn tập", quote: Q.setup, topQuote: TQ.learn }));
 route("/review/session", appPage(renderReviewSession, { nav: "review", title: "Làm bài ôn tập", quote: Q.session, topQuote: TQ.vi }));
 route("/review/result", appPage(renderReviewResult, { nav: "review", title: "Hoàn thành ôn tập", quote: Q.result, topQuote: TQ.vi }));

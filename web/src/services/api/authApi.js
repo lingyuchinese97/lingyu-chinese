@@ -85,6 +85,16 @@ function pendingView(p) {
   };
 }
 
+/** Tìm tài khoản đã xác thực theo email (dùng khi chia sẻ). Trả về thông tin công khai hoặc null. */
+export function findUserByEmail(email) {
+  const u = users().find((x) => x.email === norm(email) && x.verified);
+  return u ? { id: u.id, name: u.name, email: u.email } : null;
+}
+export function getUserById(id) {
+  const u = users().find((x) => x.id === id);
+  return u ? { id: u.id, name: u.name, email: u.email } : null;
+}
+
 export function getCurrentUser() {
   return local.get(K_SESSION, null);
 }
