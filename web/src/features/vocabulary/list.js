@@ -7,7 +7,7 @@ import { buildPath, navigate } from "../../routes/router.js";
 import { flashcard } from "../home/home.js";
 import { BRAND } from "../../components/layout/appShell.js";
 import * as reviewApi from "../../services/api/reviewApi.js";
-import { openShareModal, openAddTagModal, openMoveModal } from "./bulkActions.js";
+import { openShareModal, openAddTagModal } from "./bulkActions.js";
 
 const PAGE_SIZE = 8;
 // Toolbar thao tác hàng loạt: luôn hiển thị đủ, chỉ đổi Disabled ↔ Active theo số từ đã chọn
@@ -15,7 +15,6 @@ const PAGE_SIZE = 8;
 const BULK_ACTIONS = [
   { id: "review", label: "Ôn tập", icon: "review", hint: "Chọn ít nhất 1 từ vựng để ôn tập" },
   { id: "tag", label: "Thêm tag", icon: "tag", hint: "Chọn ít nhất 1 từ vựng để thêm tag" },
-  { id: "move", label: "Di chuyển", icon: "move", hint: "Chọn ít nhất 1 từ vựng để di chuyển" },
   { id: "share", label: "Chia sẻ", icon: "share", hint: "Chọn ít nhất 1 từ vựng để chia sẻ" },
   { id: "delete", label: "Xóa", icon: "trash", hint: "Chọn ít nhất 1 từ vựng để xóa", danger: true },
 ];
@@ -316,8 +315,6 @@ export async function renderVocabularyList(page, ctx) {
         openShareModal(words);
       } else if (action === "tag") {
         await openAddTagModal(ids, () => load());
-      } else if (action === "move") {
-        await openMoveModal(ids, state.tag, () => load());
       }
     } catch (ex) {
       toast(ex.message || "Không thực hiện được. Vui lòng thử lại.", "error");

@@ -172,31 +172,6 @@ export async function addTags(ids, tags) {
   return { updated };
 }
 
-/**
- * Di chuyển nhiều từ sang tag khác.
- * from: tag nguồn cần bỏ (vd. tag đang lọc); from rỗng → thay toàn bộ tag hiện có bằng tag đích.
- */
-export async function moveToTag(ids, { from = "", to }) {
-  await wait(API_CONFIG.LATENCY);
-  const [target] = cleanTags([to]);
-  if (!target) throw new ApiError("validation", "Vui lòng chọn tag đích.");
-  const src = String(from || "").trim().toLowerCase();
-  const set = new Set([].concat(ids));
-  const all = await readAll();
-  const now = new Date().toISOString();
-  let updated = 0;
-  all.forEach((v) => {
-    if (!set.has(v.id)) return;
-    const kept = src ? v.tags.filter((t) => t.toLowerCase() !== src) : [];
-    v.tags = cleanTags([...kept, target]);
-    v.updatedAt = now;
-    updated++;
-  });
-  await writeAll(all);
-  await createTag(target);
-  return { updated };
-}
-
 export async function remove(ids) {
   await wait(API_CONFIG.LATENCY);
   const set = new Set([].concat(ids));

@@ -1,4 +1,4 @@
-// Hộp thoại cho các thao tác hàng loạt trên màn Từ vựng: Chia sẻ, Thêm tag, Di chuyển.
+// Hộp thoại cho các thao tác hàng loạt trên màn Từ vựng: Chia sẻ, Thêm tag.
 import * as vocabApi from "../../services/api/vocabApi.js";
 import { esc, setBusy, tagHtml } from "../../lib/dom.js";
 import { toast, openModal } from "../../components/ui/feedback.js";
@@ -90,14 +90,13 @@ export function openShareModal(words) {
   el.querySelectorAll('[name="share-fmt"]').forEach((r) => r.addEventListener("change", () => { fmt = r.value; }));
 }
 
-// ---------- Chọn tag (dùng chung cho Thêm tag / Di chuyển) ----------
+// ---------- Thêm tag ----------
 
-function tagPickerBody({ tags, multiple, intro }) {
-  const type = multiple ? "checkbox" : "radio";
+function tagPickerBody({ tags, intro }) {
   return `
     ${intro ? `<p style="margin:0 0 12px">${intro}</p>` : ""}
-    <div class="bulk-tags" role="${multiple ? "group" : "radiogroup"}" aria-label="Danh sách tag">
-      ${tags.length ? tags.map((t, i) => `<label class="tagpick__opt"><input type="${type}" class="${multiple ? "checkbox" : ""}" name="bulk-tag" value="${esc(t.name)}" id="bt-${i}" />${tagHtml(t.name)}<span class="field__hint" style="margin-left:auto">${t.count} từ</span></label>`).join("")
+    <div class="bulk-tags" role="group" aria-label="Danh sách tag">
+      ${tags.length ? tags.map((t, i) => `<label class="tagpick__opt"><input type="checkbox" class="checkbox" name="bulk-tag" value="${esc(t.name)}" id="bt-${i}" />${tagHtml(t.name)}<span class="field__hint" style="margin-left:auto">${t.count} từ</span></label>`).join("")
         : `<p class="field__hint">Chưa có tag nào. Tạo tag mới bên dưới.</p>`}
     </div>
     <div class="tagpick__new" style="margin-top:12px">
@@ -125,7 +124,7 @@ export async function openAddTagModal(ids, onDone) {
     title: `Thêm tag cho ${ids.length} từ`,
     iconName: "tag",
     wide: true,
-    body: tagPickerBody({ tags, multiple: true, intro: "Tag được thêm vào, các tag hiện có của từ vẫn giữ nguyên." }),
+    body: tagPickerBody({ tags, intro: "Tag được thêm vào, các tag hiện có của từ vẫn giữ nguyên." }),
     actions: [
       { label: "Hủy", variant: "btn--secondary", value: false },
       { label: "Thêm tag", variant: "btn--solid", onClick: async ({ close, button }) => {
@@ -138,40 +137,6 @@ export async function openAddTagModal(ids, onDone) {
           toast(`Đã thêm ${picked.length} tag cho ${ids.length} từ.`, "success");
           onDone?.();
         } catch (ex) { setBusy(button, false); showErr(el, ex.message || "Không lưu được. Vui lòng thử lại."); }
-      } },
-    ],
-  });
-  el.addEventListener("change", () => showErr(el, ""));
-  el.querySelector("#bulk-new-tag").addEventListener("input", () => showErr(el, ""));
-}
-
-/**
- * Di chuyển các từ đã chọn sang 1 tag khác.
- * fromTag: tag đang lọc (nếu có) → bỏ tag đó, thêm tag đích. Không lọc → thay toàn bộ tag bằng tag đích.
- */
-export async function openMoveModal(ids, fromTag, onDone) {
-  const tags = (await vocabApi.listTags()).filter((t) => t.name.toLowerCase() !== String(fromTag || "").toLowerCase());
-  const intro = fromTag
-    ? `Chuyển ${ids.length} từ từ tag ${tagHtml(fromTag)} sang tag mới. Các tag khác của từ vẫn giữ nguyên.`
-    : `Tag hiện có của ${ids.length} từ sẽ được <strong>thay bằng</strong> tag bạn chọn.`;
-  const { el } = openModal({
-    title: `Di chuyển ${ids.length} từ`,
-    iconName: "move",
-    wide: true,
-    body: tagPickerBody({ tags, multiple: false, intro }),
-    actions: [
-      { label: "Hủy", variant: "btn--secondary", value: false },
-      { label: "Di chuyển", variant: "btn--solid", onClick: async ({ close, button }) => {
-        const fresh = el.querySelector("#bulk-new-tag").value.trim();
-        const to = fresh || el.querySelector('[name="bulk-tag"]:checked')?.value;
-        if (!to) return showErr(el, "Vui lòng chọn hoặc tạo tag đích.");
-        setBusy(button, true, "Đang di chuyển...");
-        try {
-          await vocabApi.moveToTag(ids, { from: fromTag, to });
-          close(true);
-          toast(`Đã di chuyển ${ids.length} từ sang “${to}”.`, "success");
-          onDone?.();
-        } catch (ex) { setBusy(button, false); showErr(el, ex.message || "Không di chuyển được. Vui lòng thử lại."); }
       } },
     ],
   });
