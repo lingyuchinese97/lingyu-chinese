@@ -1,0 +1,17 @@
+# Chỉ cần đặt DOMAIN trong .env (vd DOMAIN=lingyuchinese.com). Caddy tự xin chứng chỉ HTTPS (Let's Encrypt).
+# www.<domain> tự chuyển về <domain>.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy app:3000 {
+		health_uri /api/health
+		health_interval 30s
+	}
+	log {
+		output stdout
+		format json
+	}
+}
+
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

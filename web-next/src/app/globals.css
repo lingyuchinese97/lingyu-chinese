@@ -1,0 +1,132 @@
+/* Font tự host (fontsource → bundle vào /_next/static, không gọi CDN). */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource/noto-sans-sc/500.css";
+@import "@fontsource/noto-sans-sc/700.css";
+@import "@fontsource/dancing-script/600.css";
+
+@import "tailwindcss";
+
+/*
+ * Design tokens — chép từ web/src/styles/tokens.css (bản cũ) để giữ đúng màu, bo góc, bóng đổ.
+ * Tailwind v4: mỗi biến --color-* / --radius-* / --shadow-* sinh ra utility tương ứng (bg-navy, rounded-lg, shadow-cta...).
+ */
+@theme {
+  --color-navy: #073b8c;
+  --color-navy-900: #0a2350;
+  --color-blue: #1595f5;
+  --color-blue-50: #edf6ff;
+  --color-blue-100: #dceefe;
+  --color-blue-600: #0b7be0;
+  --color-blue-700: #0864ba;
+  --color-cyan: #19c7d6;
+  --color-green: #16c98d;
+  --color-green-50: #eafbf3;
+  --color-green-100: #cdf3e2;
+  --color-green-700: #0b9a69;
+  --color-red: #d71920;
+  --color-red-50: #fff2f2;
+  --color-red-100: #ffe0e0;
+  --color-rose: #ee3b55;
+  --color-amber: #f29a17;
+  --color-amber-50: #fff5e5;
+
+  --color-bg: #f6fbff;
+  --color-bg-2: #eef6fe;
+  --color-card: #ffffff;
+  --color-border: #dceaf6;
+  --color-border-strong: #c4dbf0;
+
+  --color-text: #0e1f3f;
+  --color-text-2: #4b6384;
+  --color-text-3: #8398b5;
+  --color-pinyin: #5e7596;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+
+  --shadow-card: 0 8px 30px rgba(34, 93, 150, 0.08);
+  --shadow-soft: 0 2px 10px rgba(34, 93, 150, 0.06);
+  --shadow-cta: 0 8px 20px rgba(21, 149, 245, 0.28);
+
+  --font-sans: "Inter Variable", "Inter", "Noto Sans", Arial, system-ui, sans-serif;
+  --font-cn: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Inter Variable", sans-serif;
+  --font-hand: "Dancing Script", "Segoe Script", cursive;
+
+  --animate-sheet-in: sheet-in 0.22s ease;
+  @keyframes sheet-in {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --grad-primary: linear-gradient(90deg, #1595f5 0%, #19c7d6 100%);
+    --grad-primary-hover: linear-gradient(90deg, #0b86e6 0%, #12b6c4 100%);
+    --focus-ring: 0 0 0 3px rgba(21, 149, 245, 0.28);
+    --sidebar-w: 280px;
+    --tabbar-h: 64px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-text font-sans text-[15px] leading-normal antialiased;
+  }
+  a,
+  button,
+  [role="button"],
+  label,
+  summary,
+  select {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(21, 149, 245, 0.12);
+  }
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  /* iOS tự phóng to khi focus ô nhập < 16px → giữ tối thiểu 16px trên điện thoại */
+  @media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@utility hanzi {
+  font-family: var(--font-cn);
+  color: var(--color-red);
+  font-weight: 600;
+}
+@utility pinyin {
+  color: var(--color-pinyin);
+}
+@utility hand {
+  font-family: var(--font-hand);
+  color: var(--color-blue-600);
+  font-weight: 600;
+}
+@utility bg-grad-primary {
+  background: var(--grad-primary);
+}
+@utility pb-safe {
+  padding-bottom: var(--safe-b);
+}

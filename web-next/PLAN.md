@@ -6,28 +6,30 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 
 ## Phase
 
-| # | Nội dung | Trạng thái |
-|---|---|---|
-| 0 | Đọc & lên kế hoạch (file này) | ✅ |
-| 1 | Khung dự án: Next.js, Tailwind v4 + tokens, UI kit, font, env, pino, ESLint/Prettier, Vitest, Playwright, `/api/health`, trang lỗi, Docker, Caddy, CI, Dependabot | |
-| 2 | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI | |
-| 3 | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing | |
-| 4 | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]` | |
-| 5 | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server) | |
-| 6 | Ôn đến hạn (FSRS) | |
-| 7 | Ngữ pháp + chia sẻ + thông báo | |
-| 8 | Bộ thủ + chia sẻ từ vựng + chuông thông báo | |
-| 9 | Bài học (schema Zod + màn hình chung + Bài 1) | |
-| 10 | Cài đặt (xuất/nhập/xoá tài khoản) + Admin | |
-| 11 | PWA, security headers, a11y, seed, e2e | |
-| 12 | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG) | |
+| #   | Nội dung                                                                                                                                                          | Trạng thái |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 0   | Đọc & lên kế hoạch (file này)                                                                                                                                     | ✅         |
+| 1   | Khung dự án: Next.js, Tailwind v4 + tokens, UI kit, font, env, pino, ESLint/Prettier, Vitest, Playwright, `/api/health`, trang lỗi, Docker, Caddy, CI, Dependabot |            |
+| 2   | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI                                                                                         |            |
+| 3   | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing                                                                                         |            |
+| 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          |            |
+| 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 |            |
+| 6   | Ôn đến hạn (FSRS)                                                                                                                                                 |            |
+| 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            |
+| 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       |            |
+| 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     |            |
+| 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         |            |
+| 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            |            |
+| 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    |            |
 
 Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e khi có) → CHANGELOG → commit → push.
 
 ## Môi trường làm việc (container Claude Code)
 
 - Node 22, pnpm 10, **PostgreSQL 16 cài sẵn** (chạy cụm local bằng `initdb`/`pg_ctl` cho dev + test) → mọi tính năng thử với Postgres thật.
-- Docker CLI có nhưng **daemon không chạy** → thử bật `dockerd`; nếu không được thì chỉ kiểm tra `Dockerfile`/compose hợp lệ và ghi rõ trong báo cáo.
+- Docker: bật được `dockerd` trong container → **đã chạy thử** `docker compose -f docker-compose.prod.yml up` (app + Postgres + Caddy, HTTPS `localhost`, `/api/health` = 200, migrate tự chạy).
+  Mạng của container build phải đi qua proxy có CA riêng nên khi thử local dùng một bản Dockerfile tạm (ngoài repo) thêm CA; `Dockerfile` trong repo giữ nguyên cho production.
+- Playwright 1.63 cần Chromium mới hơn bản cài sẵn và không được tải trình duyệt → local chạy e2e với `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; CI cài bằng `playwright install`.
 - **Không truy cập được trang tài liệu** (nextjs.org, better-auth.com, orm.drizzle.team, serwist, ui.shadcn.com bị proxy chặn).
   → Đọc tài liệu đi kèm gói npm (README, `dist/docs`, file `.d.ts`) của **đúng phiên bản đã cài** thay cho docs online.
 
@@ -37,8 +39,10 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 2. **shadcn/ui**: registry `ui.shadcn.com` bị chặn nên không chạy được `shadcn add`. Component viết tay **theo đúng mẫu shadcn**
    (Radix primitives qua gói `radix-ui` + `class-variance-authority` + `tailwind-merge`, file trong `src/components/ui/`), Drawer dùng `vaul`
    như shadcn. Sau này có mạng có thể thay bằng bản CLI mà không đổi chỗ dùng.
-3. **Font**: `next/font/local` với file woff2 từ `@fontsource-variable/inter` và `@fontsource/noto-sans-sc` (tự host, build không cần mạng,
-   runtime không gọi CDN). Noto Sans SC dùng các subset theo `unicode-range` của fontsource để không tải cả bộ ~8MB.
+3. **Font**: tự host qua gói `@fontsource-variable/inter` và `@fontsource/noto-sans-sc` (import CSS trong `globals.css`; Next bundle
+   các file woff2 vào `/_next/static`, build không cần mạng, runtime không gọi CDN). Không dùng `next/font/local` vì font chia
+   **subset theo `unicode-range`** (Noto Sans SC ~1.800 file, Inter tách latin/vietnamese) — `next/font/local` không hỗ trợ
+   gộp subset, còn nạp nguyên file thì Noto Sans SC nặng ~8MB. Trình duyệt chỉ tải subset chứa ký tự đang hiển thị.
 4. **Dữ liệu nét hanzi-writer**: gói `hanzi-writer-data` có ~9.500 file JSON (~30MB). Thay vì chép hết vào `public/`, script
    `scripts/copy-hanzi-data.ts` (chạy ở `postinstall`/`prebuild`) chỉ chép các chữ cần cho trang Bộ thủ (214 bộ + chữ ví dụ) vào
    `public/hanzi-data/`, còn chữ khác (từ vựng của user) phục vụ qua `/api/hanzi/[char]` đọc từ gói. Vẫn tự host, không CDN.

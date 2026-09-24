@@ -1,0 +1,67 @@
+# CI cho web-next — chỉ chạy khi web-next/** (hoặc chính file này) thay đổi.
+name: web-next CI
+
+on:
+  push:
+    paths: ["web-next/**", ".github/workflows/web-next-ci.yml"]
+  pull_request:
+    paths: ["web-next/**", ".github/workflows/web-next-ci.yml"]
+
+concurrency:
+  group: web-next-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-next
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lingyu
+          POSTGRES_PASSWORD: lingyu
+          POSTGRES_DB: lingyu
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U lingyu" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://lingyu:lingyu@localhost:5432/lingyu
+      TEST_DATABASE_URL: postgres://lingyu:lingyu@localhost:5432/lingyu_test
+      E2E_DATABASE_URL: postgres://lingyu:lingyu@localhost:5432/lingyu_e2e
+      BETTER_AUTH_SECRET: ci-secret-ci-secret-ci-secret-ci-secret-1234
+      BETTER_AUTH_URL: http://127.0.0.1:3100
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3100
+      ADMIN_EMAILS: admin@lingyu.local
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web-next/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web-next/pnpm-lock.yaml
+      - name: Tạo DB test / e2e
+        run: |
+          PGPASSWORD=lingyu psql -h localhost -U lingyu -d lingyu -c "CREATE DATABASE lingyu_test;"
+          PGPASSWORD=lingyu psql -h localhost -U lingyu -d lingyu -c "CREATE DATABASE lingyu_e2e;"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Cài trình duyệt cho Playwright
+        run: pnpm exec playwright install --with-deps chromium
+      - name: E2E (Playwright)
+        run: pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: web-next/playwright-report
+          retention-days: 7

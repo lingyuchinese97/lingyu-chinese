@@ -1,0 +1,8 @@
+.next
+node_modules
+drizzle
+public
+pnpm-lock.yaml
+playwright-report
+test-results
+dist
