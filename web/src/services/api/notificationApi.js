@@ -8,7 +8,7 @@ const listeners = new Set();
 /** Đăng ký nghe thay đổi thông báo (cùng tab + tab khác qua sự kiện storage). */
 export function onNotificationsChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 const emit = () => listeners.forEach((fn) => { try { fn(); } catch { /* ignore */ } });
-window.addEventListener("storage", (e) => { if (e.key === K_NOTI || e.key === "ly_grammar_shares") emit(); });
+window.addEventListener("storage", (e) => { if (e.key === K_NOTI || e.key === "ly_grammar_shares" || e.key === "ly_vocab_shares") emit(); });
 
 const read = () => local.get(K_NOTI, []) || [];
 const write = (v) => { local.set(K_NOTI, v); emit(); };

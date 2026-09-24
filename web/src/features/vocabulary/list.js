@@ -8,6 +8,10 @@ import { flashcard } from "../home/home.js";
 import { BRAND } from "../../components/layout/appShell.js";
 import * as reviewApi from "../../services/api/reviewApi.js";
 import { openShareModal, openAddTagModal } from "./bulkActions.js";
+import * as radicalApi from "../../services/api/radicalApi.js";
+import * as vocabShareApi from "../../services/api/vocabShareApi.js";
+import { onNotificationsChange } from "../../services/api/notificationApi.js";
+import { openVocabInvite, rejectVocabInvite } from "./shareInvites.js";
 
 const PAGE_SIZE = 8;
 // Toolbar thao tác hàng loạt: luôn hiển thị đủ, chỉ đổi Disabled ↔ Active theo số từ đã chọn
@@ -30,6 +34,7 @@ export async function renderVocabularyList(page, ctx) {
   const state = {
     q: ctx.query.q || "",
     tag: ctx.query.tag || "",
+    radical: Number(ctx.query.radical) || 0,
     sort: vocabApi.SORTS.some((s) => s.value === ctx.query.sort) ? ctx.query.sort : "newest",
     page: Number(ctx.query.page) || 1,
   };
@@ -64,6 +69,8 @@ export async function renderVocabularyList(page, ctx) {
         <div class="chips-scroll" id="vl-chips" role="group" aria-label="Lọc nhanh theo tag"></div>
         <button type="button" class="icon-btn" id="chips-next" aria-label="Xem thêm tag">${icon("chevronRight")}</button>
       </div>
+      <div class="vl-invites" id="vl-invites" hidden></div>
+      <div class="vl-radical" id="vl-radical" hidden></div>
       <div id="vl-results" aria-live="polite"></div>
     </section>`;
 
@@ -74,7 +81,7 @@ export async function renderVocabularyList(page, ctx) {
   const sortSel = $("#vl-sort");
 
   function syncUrl() {
-    history.replaceState(null, "", "#" + buildPath("/vocabulary", { q: state.q.trim(), tag: state.tag, sort: state.sort === "newest" ? "" : state.sort, page: state.page }));
+    history.replaceState(null, "", "#" + buildPath("/vocabulary", { q: state.q.trim(), tag: state.tag, radical: state.radical || "", sort: state.sort === "newest" ? "" : state.sort, page: state.page }));
   }
 
   async function load() {
@@ -101,7 +108,20 @@ export async function renderVocabularyList(page, ctx) {
     }
   }
 
+  function renderRadicalFilter() {
+    const box = $("#vl-radical");
+    let r = null;
+    try { r = state.radical ? radicalApi.get(state.radical) : null; } catch { state.radical = 0; }
+    box.hidden = !r;
+    if (!r) { box.innerHTML = ""; return; }
+    box.innerHTML = `<span>Lọc theo bộ thủ:</span>
+      <a class="vl-radical__chip" href="#/radicals/${r.num}"><span class="hanzi" lang="zh">${esc(r.char)}</span>${esc(radicalApi.label(r))}</a>
+      <button type="button" class="link-btn" id="vl-radical-clear">${icon("x")}Bỏ lọc</button>`;
+    $("#vl-radical-clear").addEventListener("click", () => { state.radical = 0; state.page = 1; selected.clear(); load(); });
+  }
+
   function renderFilters(data) {
+    renderRadicalFilter();
     const tags = data.tagCounts;
     tagSel.innerHTML = `<option value="">Tất cả tag</option>` + tags.map((t) => `<option value="${esc(t.name)}" ${t.name.toLowerCase() === state.tag.toLowerCase() ? "selected" : ""}>${esc(t.name)} (${t.count})</option>`).join("");
     if (state.tag && !tags.some((t) => t.name.toLowerCase() === state.tag.toLowerCase())) {
@@ -141,9 +161,9 @@ export async function renderVocabularyList(page, ctx) {
       results.innerHTML = `<div class="state">
         <div class="state__icon">${icon("search")}</div>
         <h3>Không tìm thấy từ vựng phù hợp</h3>
-        <p>Thử từ khoá khác hoặc bỏ bộ lọc tag${state.q ? ` cho “${esc(state.q)}”` : ""}.</p>
+        <p>Thử từ khoá khác hoặc bỏ bộ lọc${state.q ? ` cho “${esc(state.q)}”` : ""}.</p>
         <div class="state__actions"><button type="button" class="btn btn--secondary" id="vl-clear">${icon("x")}Xóa bộ lọc</button></div></div>`;
-      $("#vl-clear").addEventListener("click", () => { state.q = ""; state.tag = ""; state.page = 1; search.value = ""; selected.clear(); load(); });
+      $("#vl-clear").addEventListener("click", () => { state.q = ""; state.tag = ""; state.radical = 0; state.page = 1; search.value = ""; selected.clear(); load(); });
       return;
     }
     const start = (data.page - 1) * data.pageSize;
@@ -293,6 +313,7 @@ export async function renderVocabularyList(page, ctx) {
           catch (ex) { toast(ex.message, "error"); }
         } },
         { label: "Sửa từ vựng", icon: "edit", onClick: () => navigate(`/vocabulary/${v.id}/edit`) },
+        { label: "Chia sẻ", icon: "share", onClick: () => openShareModal([v]) },
         "sep",
         { label: "Xóa từ vựng", icon: "trash", danger: true, onClick: () => doDelete([v.id], `“${v.hanzi}”`) },
       ], { width: 230 });
@@ -302,7 +323,12 @@ export async function renderVocabularyList(page, ctx) {
 
   async function runBulk(btn) {
     // Disabled: không mở modal, không gọi API.
-    if (btn.getAttribute("aria-disabled") === "true" || btn.dataset.busy === "1") return;
+    if (btn.dataset.busy === "1") return;
+    if (btn.getAttribute("aria-disabled") === "true") {
+      // Màn cảm ứng không có hover để hiện tooltip → báo bằng toast. Không mở modal, không gọi API.
+      if (matchMedia("(hover: none)").matches) toast(btn.dataset.tip, "info");
+      return;
+    }
     const ids = [...selected];
     const action = btn.dataset.bulk;
     if (action === "delete") return doDelete(ids, `${ids.length} từ đã chọn`);
@@ -386,8 +412,30 @@ export async function renderVocabularyList(page, ctx) {
   });
   $("#chips-next").addEventListener("click", () => { $("#vl-chips").scrollBy({ left: 260 }); });
 
+  // ----- Lời mời chia sẻ từ vựng đang chờ mình -----
+  function renderInvites() {
+    const box = $("#vl-invites");
+    if (!box) return;
+    const list = vocabShareApi.listReceived();
+    box.hidden = !list.length;
+    box.innerHTML = list.map((s) => `
+      <div class="vl-invite">
+        <span class="ginvite__icon">${icon("share")}</span>
+        <div class="vl-invite__text"><strong>${esc(s.senderName)}</strong> đã chia sẻ ${s.count} từ vựng với bạn: <span class="hanzi" lang="zh">${esc(s.title)}</span></div>
+        <div class="vl-invite__actions">
+          <button type="button" class="btn btn--sm btn--solid" data-inv-open="${s.id}">Xem & chấp nhận</button>
+          <button type="button" class="btn btn--sm btn--muted" data-inv-reject="${s.id}">Từ chối</button>
+        </div>
+      </div>`).join("");
+    const byId = new Map(list.map((s) => [s.id, s]));
+    box.querySelectorAll("[data-inv-open]").forEach((b) => b.addEventListener("click", () => openVocabInvite(byId.get(b.dataset.invOpen), { onDone: () => { renderInvites(); load(); } })));
+    box.querySelectorAll("[data-inv-reject]").forEach((b) => b.addEventListener("click", async () => { if (await rejectVocabInvite(byId.get(b.dataset.invReject))) renderInvites(); }));
+  }
+  renderInvites();
+  const offNoti = onNotificationsChange(() => { if (ctx.isCurrent()) renderInvites(); });
+
   await load();
-  return () => onSearch.cancel();
+  return () => { onSearch.cancel(); offNoti(); };
 }
 
 function skeleton() {

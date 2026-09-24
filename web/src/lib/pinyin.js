@@ -73,32 +73,56 @@ export function markSyllable(syl, tone) {
   return s.slice(0, idx) + (s[idx] === lower[idx] ? mark : mark.toUpperCase()) + s.slice(idx + 1);
 }
 
-/** Đặt dấu cho âm tiết CUỐI của một cụm chữ viết liền (số thanh đứng sau cụm). */
-function markRun(run, tone) {
+/** Bỏ dấu thanh nhưng giữ chữ hoa/thường: "Hǎo" → "Hao". */
+const stripMarks = (s) => [...s].map((c) => {
+  const base = MARKED[c.toLowerCase()];
+  return base ? (c === c.toLowerCase() ? base : base.toUpperCase()) : c;
+}).join("");
+const hasMark = (s) => [...s].some((c) => MARKED[c.toLowerCase()]);
+
+/**
+ * Đặt dấu cho âm tiết CUỐI của một cụm chữ viết liền (số thanh đứng sau cụm).
+ * strict: chỉ đổi khi cả cụm tách được thành các âm tiết pinyin hợp lệ và âm tiết cuối chưa có dấu
+ *         (dùng cho ô ghi chú có lẫn tiếng Việt, "HSK1", "Bài2"...). Không đổi → trả về null.
+ */
+function markRun(run, tone, strict) {
   const word = run.replace(/u:/g, "ü").replace(/U:/g, "Ü").replace(/v/g, "ü").replace(/V/g, "Ü");
   const parts = segment(word);
+  if (strict && !parts) return null;
   const lastLen = parts ? parts[parts.length - 1] : word.length;
   const cut = word.length - lastLen;
-  return word.slice(0, cut) + markSyllable(word.slice(cut), tone);
+  const last = word.slice(cut);
+  if (hasMark(last) && strict) return null;
+  const base = stripMarks(last); // gõ số mới lên âm tiết đã có dấu → thay dấu cũ
+  const marked = markSyllable(base, tone);
+  // Không có nguyên âm để đặt dấu (vd "HSK1"), hoặc thanh nhẹ trên cụm không phải pinyin → giữ nguyên.
+  if (tone >= 1 && tone <= 4 && marked === base.replace(/v/g, "ü").replace(/V/g, "Ü")) return null;
+  if (tone === 5 && !parts) return null;
+  return word.slice(0, cut) + marked;
 }
 
-/** "ni3 hao3" → "nǐ hǎo", "nihao3" → "nihǎo", "lv4" → "lǜ", "ma5" → "ma". Chữ đã có dấu giữ nguyên. */
-export function toneNumbersToMarks(text) {
-  return String(text ?? "").replace(/([a-zA-ZüÜ:āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+)([1-5])/g, (_, run, t) => markRun(run, Number(t)));
+/**
+ * "ni3 hao3" → "nǐ hǎo", "nihao3" → "nihǎo", "lv4" → "lǜ", "ma5" → "ma". Chữ đã có dấu giữ nguyên.
+ * { strict: true }: bỏ qua những cụm không phải pinyin (vd "HSK1" giữ nguyên).
+ */
+export function toneNumbersToMarks(text, { strict = false } = {}) {
+  return String(text ?? "").replace(/([a-zA-ZüÜ:āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+)([1-5])/g, (m, run, t) => markRun(run, Number(t), strict) ?? m);
 }
 
 /**
  * Gắn vào ô nhập: gõ số 1–5 ngay sau chữ sẽ tự đổi thành dấu, giữ đúng vị trí con trỏ.
  * Bỏ qua khi đang gõ bằng bộ gõ (IME) để không phá chữ đang ghép.
+ * options.strict: dùng cho ô có lẫn tiếng Việt (ghi chú) — chỉ đổi cụm là pinyin hợp lệ.
  */
-export function attachPinyinInput(input, onChange) {
+export function attachPinyinInput(input, onChange, { strict = false } = {}) {
+  const conv = (t) => toneNumbersToMarks(t, { strict });
   input.addEventListener("input", (e) => {
     if (e.isComposing) return;
     const value = input.value;
-    const next = toneNumbersToMarks(value);
+    const next = conv(value);
     if (next === value) return;
     const caret = input.selectionStart ?? value.length;
-    const pos = Math.min(toneNumbersToMarks(value.slice(0, caret)).length, next.length);
+    const pos = Math.min(conv(value.slice(0, caret)).length, next.length);
     input.value = next;
     input.setSelectionRange(pos, pos);
     onChange?.(next);

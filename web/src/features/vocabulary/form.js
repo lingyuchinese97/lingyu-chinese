@@ -5,6 +5,8 @@ import { esc, setBusy, tagStyle } from "../../lib/dom.js";
 import { toast } from "../../components/ui/feedback.js";
 import { navigate } from "../../routes/router.js";
 import { attachPinyinInput } from "../../lib/pinyin.js";
+import * as radicalApi from "../../services/api/radicalApi.js";
+import { radicalPicker } from "./radicalPicker.js";
 
 const ACCEPT = ["image/jpeg", "image/png"];
 
@@ -59,6 +61,7 @@ export async function renderVocabularyForm(page, ctx) {
   const model = {
     hanzi: word?.hanzi || "", pinyin: word?.pinyin || "", meaningVi: word?.meaningVi || "",
     note: word?.note || "", tags: [...(word?.tags || [])], imageUrl: word?.imageUrl || null,
+    radicals: [...(word?.radicals || [])],
   };
   let tagNames = allTags.map((t) => t.name);
 
@@ -76,11 +79,16 @@ export async function renderVocabularyForm(page, ctx) {
         ${field("hanzi", "Hán tự", true, `<input class="input hanzi-input" id="hanzi" placeholder="Nhập chữ Hán" value="${esc(model.hanzi)}" lang="zh" style="font-family:var(--font-cn)" />`, "Ví dụ: 你")}
         ${field("pinyin", "Pinyin", true, `<input class="input" id="pinyin" placeholder="Nhập pinyin, vd: ni3 hao3" value="${esc(model.pinyin)}" autocomplete="off" autocapitalize="off" spellcheck="false" />`, "Gõ số 1–4 sau âm tiết để thêm dấu: ni3 → nǐ, hao3 → hǎo, lv4 → lǜ")}
       </div>
+      <div class="field">
+        <label class="field__label" for="radical-input">Bộ thủ <span class="opt">(không bắt buộc)</span></label>
+        <div id="radical-box"></div>
+        <span class="field__hint" id="radical-hint">Gõ tiếng Việt rồi chọn bộ thủ trong danh sách. Có thể chọn nhiều bộ, hoặc bấm gợi ý từ chữ Hán bên dưới.</span>
+      </div>
       ${field("meaningVi", "Nghĩa tiếng Việt", true, `<input class="input" id="meaningVi" placeholder="Nhập nghĩa tiếng Việt" value="${esc(model.meaningVi)}" autocomplete="off" />`, "Ví dụ: bạn, cậu — nhiều nghĩa cách nhau bằng dấu phẩy")}
       <div class="field">
         <label class="field__label" for="note">Note <span class="opt">(ghi chú, cách dùng, ví dụ...)</span></label>
-        <textarea class="textarea" id="note" maxlength="${vocabApi.MAX_NOTE}" placeholder="Nhập ghi chú, cách dùng, ví dụ..." aria-describedby="note-count">${esc(model.note)}</textarea>
-        <div class="field__foot"><span class="field__error" id="note-err" hidden></span><span class="field__hint tabnum" id="note-count" style="margin-left:auto">${model.note.length}/${vocabApi.MAX_NOTE}</span></div>
+        <textarea class="textarea" id="note" maxlength="${vocabApi.MAX_NOTE}" placeholder="Nhập ghi chú, cách dùng, ví dụ... (gõ ni3 hao3 → nǐ hǎo)" aria-describedby="note-count note-hint">${esc(model.note)}</textarea>
+        <div class="field__foot"><span class="field__error" id="note-err" hidden></span><span class="field__hint" id="note-hint">Pinyin trong ghi chú cũng tự thêm dấu khi gõ số 1–4 (ni3 → nǐ). “HSK1”, “Bài 2”… giữ nguyên.</span><span class="field__hint tabnum" id="note-count" style="margin-left:auto">${model.note.length}/${vocabApi.MAX_NOTE}</span></div>
       </div>
       <div class="field">
         <span class="field__label" id="tag-label">Tag</span>
@@ -126,6 +134,14 @@ export async function renderVocabularyForm(page, ctx) {
   // Pinyin: đổi số thanh điệu thành dấu ngay khi gõ (đăng ký trước để model nhận giá trị đã đổi).
   attachPinyinInput($("#pinyin"));
   ["hanzi", "pinyin", "meaningVi"].forEach((id) => $("#" + id).addEventListener("input", (e) => { model[id] = e.target.value; setErr(id, ""); }));
+
+  // ----- Bộ thủ: người dùng gõ tiếng Việt rồi chọn; gợi ý tự nhận ra từ chữ Hán đang nhập -----
+  const picker = radicalPicker($("#radical-box"), { initial: model.radicals, onChange: (nums) => { model.radicals = nums; } });
+  const suggestRadicals = () => picker.suggest(radicalApi.radicalsOfText(model.hanzi).slice(0, 8));
+  $("#hanzi").addEventListener("input", suggestRadicals);
+  suggestRadicals();
+  // Ghi chú: đổi số thanh điệu thành dấu, chế độ an toàn (chỉ cụm là pinyin hợp lệ).
+  attachPinyinInput($("#note"), null, { strict: true });
   $("#note").addEventListener("input", (e) => {
     model.note = e.target.value;
     $("#note-count").textContent = `${model.note.length}/${vocabApi.MAX_NOTE}`;

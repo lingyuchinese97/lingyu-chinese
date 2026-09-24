@@ -3,6 +3,7 @@
 import { API_CONFIG } from "./config.js";
 import { kv, wait, uid, ApiError } from "./storage.js";
 import { getCurrentUser } from "./authApi.js";
+import { textHasRadical } from "./radicalApi.js";
 
 export const STATUS = { LEARNED: "learned", REVIEW: "review" };
 export const STATUS_LABEL = { learned: "Đã thuộc", review: "Cần ôn" };
@@ -41,6 +42,16 @@ function cleanTags(tags) {
   });
 }
 
+/** Danh sách số bộ thủ người dùng chọn: số nguyên 1–214, không trùng, tối đa 10. */
+export function cleanRadicals(list) {
+  const out = [];
+  for (const x of list || []) {
+    const n = Number(x);
+    if (Number.isInteger(n) && n >= 1 && n <= 214 && !out.includes(n)) out.push(n);
+  }
+  return out.slice(0, 10);
+}
+
 function validate(data) {
   const errors = {};
   const hanzi = String(data.hanzi || "").trim();
@@ -55,13 +66,16 @@ function validate(data) {
   return { hanzi, pinyin, meaningVi };
 }
 
-export async function list({ q = "", tag = "", sort = "newest", page = 1, pageSize = 10 } = {}) {
+/** radical: số bộ thủ (1–214) — chỉ lấy từ có ít nhất 1 chữ Hán thuộc bộ đó. */
+export async function list({ q = "", tag = "", radical = 0, sort = "newest", page = 1, pageSize = 10 } = {}) {
   await wait(API_CONFIG.LATENCY);
   const all = await readAll();
   const tagCounts = countTags(all, await kv.get(kTags(uidOrThrow()), []));
   const fq = fold(q);
   let items = all.filter((v) => {
     if (tag && !v.tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return false;
+    // Bộ thủ người dùng đã chọn cho từ, hoặc bộ tự nhận ra từ chữ Hán.
+    if (radical && !(v.radicals || []).includes(Number(radical)) && !textHasRadical(v.hanzi, radical)) return false;
     if (!fq) return true;
     return v.hanzi.includes(q.trim()) || fold(v.pinyin).replace(/\s/g, "").includes(fq.replace(/\s/g, "")) ||
       fold(v.meaningVi).includes(fq) || v.tags.some((t) => fold(t).includes(fq));
@@ -123,6 +137,7 @@ export async function create(data) {
     note: String(data.note || "").trim(),
     imageUrl: data.imageUrl || null,
     tags: cleanTags(data.tags),
+    radicals: cleanRadicals(data.radicals),
     status: STATUS.REVIEW,
     isFavorite: false,
     createdAt: now, updatedAt: now,
@@ -139,7 +154,7 @@ export async function update(id, data) {
   if (i < 0) throw new ApiError("not-found", "Không tìm thấy từ vựng này. Có thể nó đã bị xóa.");
   const merged = { ...all[i], ...data };
   const base = ("hanzi" in data || "pinyin" in data || "meaningVi" in data) ? validate(merged) : {};
-  all[i] = { ...merged, ...base, tags: cleanTags(merged.tags), updatedAt: new Date().toISOString() };
+  all[i] = { ...merged, ...base, tags: cleanTags(merged.tags), radicals: cleanRadicals(merged.radicals), updatedAt: new Date().toISOString() };
   await writeAll(all);
   for (const t of all[i].tags) await createTag(t);
   return all[i];
@@ -216,18 +231,26 @@ export async function pool({ tags = [], ids = null } = {}) {
   return all.filter((v) => v.tags.some((t) => want.has(t.toLowerCase())));
 }
 
+/** Thêm nhiều từ; bỏ qua từ đã có (trùng Hán tự). Trả về { added, skipped: [hanzi...] }. */
 export async function importMany(records) {
   await wait(API_CONFIG.LATENCY);
   const all = await readAll();
   const existing = new Set(all.map((v) => v.hanzi));
   const now = Date.now();
-  const fresh = records.filter((r) => !existing.has(r.hanzi)).map((r, i) => ({
+  const skipped = [];
+  const fresh = records.filter((r) => {
+    if (existing.has(r.hanzi)) { skipped.push(r.hanzi); return false; }
+    existing.add(r.hanzi); // tránh trùng ngay trong danh sách nhập
+    return true;
+  }).map((r, i) => ({
     id: uid("v"), hanzi: r.hanzi, pinyin: r.pinyin, meaningVi: r.meaningVi, note: r.note || "",
-    imageUrl: r.imageUrl || null, tags: cleanTags(r.tags), status: r.status || STATUS.REVIEW, isFavorite: !!r.isFavorite,
+    imageUrl: r.imageUrl || null, tags: cleanTags(r.tags), radicals: cleanRadicals(r.radicals),
+    status: r.status || STATUS.REVIEW, isFavorite: !!r.isFavorite,
     createdAt: new Date(now - i * 60000).toISOString(), updatedAt: new Date(now).toISOString(),
   }));
   await writeAll([...fresh, ...all]);
-  return { added: fresh.length };
+  for (const t of new Set(fresh.flatMap((v) => v.tags))) await createTag(t);
+  return { added: fresh.length, skipped };
 }
 
 export async function clearAll() {

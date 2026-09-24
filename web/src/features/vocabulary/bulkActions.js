@@ -1,5 +1,8 @@
 // Hộp thoại cho các thao tác hàng loạt trên màn Từ vựng: Chia sẻ, Thêm tag.
 import * as vocabApi from "../../services/api/vocabApi.js";
+import * as vocabShareApi from "../../services/api/vocabShareApi.js";
+import { parseEmails } from "../../services/api/shareUtils.js";
+import { icon } from "../../components/ui/icons.js";
 import { esc, setBusy, tagHtml } from "../../lib/dom.js";
 import { toast, openModal } from "../../components/ui/feedback.js";
 
@@ -51,26 +54,20 @@ function download(fmt, words) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-/** Share Vocabulary Modal — nhận đúng danh sách từ đang được chọn. */
+const statusBadge = (st) => `<span class="gshare-status gshare-status--${st.toLowerCase()}">${vocabShareApi.STATUS_LABEL[st]}</span>`;
+function sentHtml(list) {
+  if (!list.length) return `<p class="field__hint" style="margin:0">Chưa gửi cho ai.</p>`;
+  return `<ul class="gshare-sent">${list.map((x) => `<li><span class="gshare-sent__email">${esc(x.recipientEmail)} <span class="field__hint">· ${esc(x.title)}</span></span>${statusBadge(x.status)}</li>`).join("")}</ul>`;
+}
+
+/**
+ * Share Vocabulary Modal — nhận đúng danh sách từ đang được chọn.
+ * 1) Gửi cho người dùng LingYu qua email (người nhận có thông báo → Chấp nhận / Từ chối).
+ * 2) Sao chép / tải file / chia sẻ qua ứng dụng khác.
+ */
 export function openShareModal(words) {
   let fmt = "text";
   const canNativeShare = typeof navigator.share === "function";
-  const actions = [
-    { label: "Đóng", variant: "btn--muted", value: false },
-    { label: "Tải file", variant: "btn--secondary", onClick: () => { download(fmt, words); toast(`Đã tải file ${words.length} từ vựng.`, "success"); } },
-    { label: "Sao chép", variant: "btn--solid", onClick: async ({ button }) => {
-      const ok = await copyText(build(fmt, words));
-      toast(ok ? `Đã sao chép ${words.length} từ vựng.` : "Không sao chép được. Hãy dùng Tải file.", ok ? "success" : "error");
-      if (ok) { button.textContent = "Đã sao chép"; setTimeout(() => { button.textContent = "Sao chép"; }, 1500); }
-    } },
-  ];
-  if (canNativeShare) {
-    actions.splice(1, 0, { label: "Chia sẻ qua…", variant: "btn--secondary", onClick: async () => {
-      try { await navigator.share({ title: "Từ vựng LingYu Chinese", text: toText(words) }); }
-      catch (ex) { if (ex?.name !== "AbortError") toast("Không mở được chia sẻ của thiết bị.", "error"); }
-    } });
-  }
-
   const { el } = openModal({
     title: `Chia sẻ ${words.length} từ vựng`,
     iconName: "share",
@@ -80,14 +77,79 @@ export function openShareModal(words) {
         <ul class="share-list" aria-label="Từ vựng sẽ chia sẻ">
           ${words.map((v) => `<li><span class="hanzi" lang="zh">${esc(v.hanzi)}</span><span class="pinyin">${esc(v.pinyin)}</span><span class="share-list__vi">${esc(v.meaningVi)}</span></li>`).join("")}
         </ul>
-        <div class="share-fmt" role="radiogroup" aria-label="Định dạng">
-          <span class="share-fmt__label">Định dạng:</span>
-          ${Object.entries(FORMATS).map(([k, f]) => `<label class="share-fmt__opt"><input type="radio" name="share-fmt" value="${k}" ${k === fmt ? "checked" : ""} />${f.label}</label>`).join("")}
-        </div>
+
+        <section class="share-sec" aria-labelledby="vs-h">
+          <h3 class="share-sec__title" id="vs-h">${icon("mail")}Gửi cho người dùng LingYu</h3>
+          <form id="vs-form" novalidate>
+            <label class="sr-only" for="vs-emails">Email người nhận</label>
+            <textarea class="textarea" id="vs-emails" rows="2" placeholder="Email người nhận, vd: ban@gmail.com, linh@gmail.com" aria-describedby="vs-hint vs-err"></textarea>
+            <span class="field__hint" id="vs-hint">Nhập email tài khoản LingYu (Gmail…), nhiều email cách nhau bằng dấu phẩy. Người nhận bấm “Chấp nhận” thì các từ được chép vào kho của họ. Ảnh minh họa không được gửi kèm.</span>
+            <span class="field__error" id="vs-err" role="alert" hidden></span>
+            <button type="submit" class="btn btn--solid btn--block" id="vs-send" style="margin-top:10px">${icon("share")}Gửi chia sẻ</button>
+          </form>
+          <ul class="gshare-results" id="vs-results" hidden></ul>
+          <div class="gshare-block"><strong>Đã gửi gần đây</strong><div id="vs-sent">${sentHtml(vocabShareApi.listSent({ limit: 5 }))}</div></div>
+        </section>
+
+        <details class="share-sec share-sec--more">
+          <summary class="share-sec__title">${icon("copy")}Sao chép hoặc tải file</summary>
+          <div class="share-fmt" role="radiogroup" aria-label="Định dạng">
+            <span class="share-fmt__label">Định dạng:</span>
+            ${Object.entries(FORMATS).map(([k, f]) => `<label class="share-fmt__opt"><input type="radio" name="share-fmt" value="${k}" ${k === fmt ? "checked" : ""} />${f.label}</label>`).join("")}
+          </div>
+          <div class="share-more__actions">
+            <button type="button" class="btn btn--secondary" id="vs-copy">${icon("copy")}Sao chép</button>
+            <button type="button" class="btn btn--secondary" id="vs-download">${icon("download")}Tải file</button>
+            ${canNativeShare ? `<button type="button" class="btn btn--secondary" id="vs-native">${icon("share")}Chia sẻ qua…</button>` : ""}
+          </div>
+        </details>
       </div>`,
-    actions,
+    actions: [{ label: "Đóng", variant: "btn--secondary", value: false }],
   });
+  const $ = (q) => el.querySelector(q);
   el.querySelectorAll('[name="share-fmt"]').forEach((r) => r.addEventListener("change", () => { fmt = r.value; }));
+
+  // ----- Gửi qua email -----
+  const ta = $("#vs-emails"), err = $("#vs-err"), results = $("#vs-results"), send = $("#vs-send");
+  const showErr = (m) => { err.textContent = m || ""; err.hidden = !m; ta.classList.toggle("is-invalid", !!m); ta.setAttribute("aria-invalid", m ? "true" : "false"); };
+  ta.addEventListener("input", () => showErr(""));
+  ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("#vs-form").requestSubmit(); } });
+  $("#vs-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (send.dataset.busy === "1") return;
+    const emails = parseEmails(ta.value);
+    if (!emails.length) { showErr("Vui lòng nhập ít nhất 1 email người nhận."); ta.focus(); return; }
+    showErr("");
+    setBusy(send, true, "Đang gửi...");
+    try {
+      const r = await vocabShareApi.share(words.map((w) => w.id), emails);
+      results.hidden = false;
+      results.innerHTML = r.results.map((x) => `<li class="${x.ok ? "is-ok" : "is-err"}">${icon(x.ok ? "checkCircle" : "alert")}<span><strong>${esc(x.email)}</strong> — ${esc(x.message)}</span></li>`).join("");
+      ta.value = r.results.filter((x) => !x.ok).map((x) => x.email).join(", "); // giữ email lỗi để sửa
+      if (r.sent) {
+        toast(`Đã gửi ${words.length} từ cho ${r.sent} người.`, "success");
+        $("#vs-sent").innerHTML = sentHtml(vocabShareApi.listSent({ limit: 5 }));
+      }
+    } catch (ex) {
+      showErr(ex.message || "Không gửi được. Vui lòng thử lại.");
+    } finally {
+      setBusy(send, false);
+    }
+  });
+
+  // ----- Sao chép / tải file -----
+  $("#vs-copy").addEventListener("click", async (e) => {
+    const b = e.currentTarget;
+    const ok = await copyText(build(fmt, words));
+    toast(ok ? `Đã sao chép ${words.length} từ vựng.` : "Không sao chép được. Hãy dùng Tải file.", ok ? "success" : "error");
+    if (ok) { b.lastChild.textContent = "Đã sao chép"; setTimeout(() => { b.lastChild.textContent = "Sao chép"; }, 1500); }
+  });
+  $("#vs-download").addEventListener("click", () => { download(fmt, words); toast(`Đã tải file ${words.length} từ vựng.`, "success"); });
+  $("#vs-native")?.addEventListener("click", async () => {
+    try { await navigator.share({ title: "Từ vựng LingYu Chinese", text: toText(words) }); }
+    catch (ex) { if (ex?.name !== "AbortError") toast("Không mở được chia sẻ của thiết bị.", "error"); }
+  });
+  setTimeout(() => ta.focus(), 30);
 }
 
 // ---------- Thêm tag ----------
