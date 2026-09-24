@@ -31,6 +31,22 @@ export const isEmail = (email) => {
   return s.length <= 254 && s.indexOf("@") <= 64 && EMAIL_RE.test(s);
 };
 
+/** Gmail (bản mock chỉ nhận tài khoản Google dạng @gmail.com / @googlemail.com). */
+export const isGmail = (email) => isEmail(email) && /@(gmail|googlemail)\.com$/i.test(String(email).trim());
+
+export const MIN_PASSWORD = 6;
+/** Trả về lỗi mật khẩu (chuỗi) hoặc "" nếu hợp lệ. Dùng chung cho UI và API. */
+export function passwordProblem(password) {
+  const pw = String(password ?? "");
+  if (!pw) return "Vui lòng nhập mật khẩu.";
+  if (!pw.trim()) return "Mật khẩu không được chỉ gồm khoảng trắng.";
+  if (pw !== pw.trim()) return "Mật khẩu không được bắt đầu hoặc kết thúc bằng khoảng trắng.";
+  if (pw.length < MIN_PASSWORD) return `Mật khẩu cần ít nhất ${MIN_PASSWORD} ký tự.`;
+  if (pw.length > 64) return "Mật khẩu tối đa 64 ký tự.";
+  return "";
+}
+const hasPassword = (u) => !!(u && u.passwordHash);
+
 async function hash(password, salt) {
   const data = new TextEncoder().encode(`${salt}:${password}`);
   try {
@@ -47,7 +63,7 @@ const newSalt = () => Array.from(crypto.getRandomValues(new Uint8Array(12))).map
 const newOtp = () => String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, "0");
 
 function publicUser(u) {
-  return { id: u.id, name: u.name, email: u.email, provider: u.provider, createdAt: u.createdAt };
+  return { id: u.id, name: u.name, email: u.email, provider: u.provider, hasPassword: hasPassword(u), createdAt: u.createdAt };
 }
 function startSession(u) {
   local.set(K_SESSION, publicUser(u));
@@ -83,10 +99,14 @@ export async function register({ name, email, password }) {
   const cleanEmail = norm(email);
   if (!String(name || "").trim()) throw new ApiError("invalid-name", "Vui lòng nhập họ và tên.");
   if (!isEmail(cleanEmail)) throw new ApiError("invalid-email", "Email không đúng định dạng.");
-  if (!password || password.length < 6) throw new ApiError("weak-password", "Mật khẩu cần ít nhất 6 ký tự.");
+  const pwErr = passwordProblem(password);
+  if (pwErr) throw new ApiError("weak-password", pwErr, { field: "password" });
 
   const list = users();
   const existing = list.find((u) => u.email === cleanEmail);
+  if (existing && existing.verified && !hasPassword(existing)) {
+    throw new ApiError("google-account", "Email này đã đăng ký bằng Google. Hãy tiếp tục bằng Google, sau đó có thể tạo mật khẩu trong Cài đặt.", { email: cleanEmail });
+  }
   if (existing && existing.verified) {
     throw new ApiError("email-exists", "Email này đã được đăng ký. Hãy đăng nhập hoặc dùng email khác.", { field: "email" });
   }
@@ -156,9 +176,10 @@ export async function login({ email, password }) {
     local.set(K_LOCK, { ...lock, [cleanEmail]: entry });
     throw new ApiError("invalid-credentials", "Email hoặc mật khẩu không đúng.");
   };
+  if (!password) throw new ApiError("validation", "Vui lòng nhập mật khẩu.");
   if (!u) fail();
-  if (u.provider === "google" && !u.passwordHash) {
-    throw new ApiError("google-account", "Tài khoản này đăng ký bằng Google. Hãy chọn “Đăng nhập với Google”.");
+  if (!hasPassword(u)) {
+    throw new ApiError("google-account", "Tài khoản này được tạo bằng Google nên chưa có mật khẩu. Hãy đăng nhập bằng Google, sau đó có thể tạo mật khẩu trong Cài đặt.", { email: u.email });
   }
   if ((await hash(password, u.salt)) !== u.passwordHash) fail();
   local.set(K_LOCK, { ...lock, [cleanEmail]: { fails: 0, until: 0 } });
@@ -177,23 +198,52 @@ export async function login({ email, password }) {
 export async function loginWithGoogle({ email, name }) {
   await wait(API_CONFIG.LATENCY + 200);
   const cleanEmail = norm(email);
-  if (!isEmail(cleanEmail)) throw new ApiError("invalid-email", "Email Google không hợp lệ.");
+  if (!isEmail(cleanEmail)) throw new ApiError("invalid-email", "Email không đúng định dạng.");
+  if (!isGmail(cleanEmail)) throw new ApiError("not-gmail", "Vui lòng dùng tài khoản Gmail (@gmail.com).");
   const list = users();
   let u = list.find((x) => x.email === cleanEmail);
   let isNew = false;
+  let linked = false;
   if (!u) {
     isNew = true;
     u = {
       id: uid("u"), name: String(name || "").trim() || cleanEmail.split("@")[0], email: cleanEmail,
       provider: "google", salt: null, passwordHash: null, verified: true, createdAt: new Date().toISOString(),
     };
-    saveUsers([...list, u]);
+    list.push(u);
   } else if (!u.verified) {
-    u.verified = true; // Google đã xác thực email
-    saveUsers(list);
+    // Tài khoản email/mật khẩu chưa xác thực: chưa ai chứng minh sở hữu email này.
+    // Google xác nhận chủ email → bỏ mật khẩu cũ (có thể do người khác đặt) để tránh chiếm tài khoản.
+    Object.assign(u, { provider: "google", salt: null, passwordHash: null, verified: true });
+    const p = local.get(K_PENDING, null);
+    if (p && p.email === cleanEmail) local.remove(K_PENDING);
+  } else if (u.provider !== "google" && !u.googleLinked) {
+    // Tài khoản đã có mật khẩu: liên kết thêm Google, vẫn giữ mật khẩu.
+    u.googleLinked = true;
+    linked = true;
   }
+  saveUsers(list);
   startSession(u);
-  return { user: publicUser(u), isNew };
+  return { user: publicUser(u), isNew, linked };
+}
+
+/** Tạo mật khẩu cho tài khoản chưa có (tạo bằng Google) để đăng nhập được bằng email + mật khẩu. */
+export async function setPassword({ password, confirm }) {
+  await wait(API_CONFIG.LATENCY);
+  const s = getCurrentUser();
+  if (!s) throw new ApiError("unauthenticated", "Phiên đăng nhập đã hết hạn.");
+  const pwErr = passwordProblem(password);
+  if (pwErr) throw new ApiError("weak-password", pwErr, { field: "password" });
+  if (confirm !== password) throw new ApiError("mismatch", "Mật khẩu xác nhận không khớp.", { field: "confirm" });
+  const list = users();
+  const u = list.find((x) => x.id === s.id);
+  if (!u) throw new ApiError("not-found", "Không tìm thấy tài khoản.");
+  if (hasPassword(u)) throw new ApiError("has-password", "Tài khoản đã có mật khẩu.");
+  u.salt = newSalt();
+  u.passwordHash = await hash(password, u.salt);
+  saveUsers(list);
+  startSession(u);
+  return getCurrentUser();
 }
 
 /** Không tiết lộ email có tồn tại hay không. */

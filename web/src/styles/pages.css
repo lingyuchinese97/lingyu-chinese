@@ -430,3 +430,8 @@
 .share-fmt__label { font-weight: 600; color: var(--text); }
 .share-fmt__opt { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .bulk-tags { max-height: 240px; overflow: auto; border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px; }
+
+/* ---------- Settings: tạo mật khẩu cho tài khoản Google ---------- */
+.set-pw { display: grid; gap: 14px; padding: 16px 0; border-top: 1px solid var(--border); }
+.set-pw .set-row__text { display: flex; flex-direction: column; gap: 4px; }
+.set-pw .set-row__text span { color: var(--text-2); }

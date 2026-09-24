@@ -1,5 +1,5 @@
 import { renderAuthShell, afield, wirePasswordToggles, setFieldError, formAlert, ctaButton, googleButton } from "./authShell.js";
-import { register, isEmail } from "../../services/api/authApi.js";
+import { register, isEmail, passwordProblem, MIN_PASSWORD } from "../../services/api/authApi.js";
 import { startGoogleAuth } from "./googleAuth.js";
 import { setBusy, esc } from "../../lib/dom.js";
 import { navigate } from "../../routes/router.js";
@@ -32,7 +32,7 @@ export function renderRegister(root) {
       <div id="form-alert" hidden></div>
       ${afield({ id: "name", label: "Họ và tên", placeholder: "Nhập họ và tên của bạn", iconName: "user", autocomplete: "name" })}
       ${afield({ id: "email", label: "Email", type: "email", placeholder: "Nhập email của bạn", iconName: "mail", autocomplete: "email" })}
-      ${afield({ id: "password", label: "Mật khẩu", placeholder: "Tạo mật khẩu (ít nhất 6 ký tự)", iconName: "lock", autocomplete: "new-password", password: true })}
+      ${afield({ id: "password", label: "Mật khẩu", placeholder: `Tạo mật khẩu (ít nhất ${MIN_PASSWORD} ký tự)`, iconName: "lock", autocomplete: "new-password", password: true })}
       ${afield({ id: "confirm", label: "Xác nhận mật khẩu", placeholder: "Nhập lại mật khẩu", iconName: "lock", autocomplete: "new-password", password: true })}
       <div>
         <div class="terms">
@@ -71,8 +71,8 @@ export function renderRegister(root) {
     if (!v.name) fail("name", "Vui lòng nhập họ và tên.");
     if (!v.email) fail("email", "Vui lòng nhập email.");
     else if (!isEmail(v.email)) fail("email", "Email không đúng định dạng.");
-    if (!v.password) fail("password", "Vui lòng tạo mật khẩu.");
-    else if (v.password.length < 6) fail("password", "Mật khẩu cần ít nhất 6 ký tự.");
+    const pwErr = v.password ? passwordProblem(v.password) : "Vui lòng tạo mật khẩu.";
+    if (pwErr) fail("password", pwErr);
     if (!v.confirm) fail("confirm", "Vui lòng nhập lại mật khẩu.");
     else if (v.password && v.confirm !== v.password) fail("confirm", "Mật khẩu xác nhận không khớp.");
     if (!$("terms").checked) { termsErr.textContent = "Bạn cần đồng ý với Điều khoản sử dụng và Chính sách bảo mật."; termsErr.hidden = false; ok = false; }
@@ -84,9 +84,14 @@ export function renderRegister(root) {
       navigate("/verify-email");
     } catch (ex) {
       setBusy(btn, false);
+      if (ex.code === "google-account") {
+        formAlert(card, `${esc(ex.message)} <button type="button" class="link-btn" id="alert-google">Tiếp tục với Google</button>`, "info");
+        card.querySelector("#alert-google").addEventListener("click", () => startGoogleAuth(ex.email || v.email));
+        return;
+      }
       if (ex.field) { setFieldError(card, ex.field, ex.message); $(ex.field).focus(); }
       else formAlert(card, esc(ex.message || "Không thể tạo tài khoản. Vui lòng thử lại."));
     }
   });
-  $("google-btn").addEventListener("click", startGoogleAuth);
+  $("google-btn").addEventListener("click", () => startGoogleAuth());
 }

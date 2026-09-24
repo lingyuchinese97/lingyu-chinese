@@ -57,8 +57,13 @@ export function renderLogin(root, { query }) {
         navigate("/verify-email");
         return;
       }
+      if (ex.code === "google-account") {
+        formAlert(card, `${esc(ex.message)} <button type="button" class="link-btn" id="alert-google">Đăng nhập với Google</button>`, "info");
+        card.querySelector("#alert-google").addEventListener("click", () => startGoogleAuth(ex.email || email.value.trim()));
+        return;
+      }
       formAlert(card, esc(ex.message || "Không thể đăng nhập. Vui lòng thử lại."));
     }
   });
-  card.querySelector("#google-btn").addEventListener("click", startGoogleAuth);
+  card.querySelector("#google-btn").addEventListener("click", () => startGoogleAuth());
 }
