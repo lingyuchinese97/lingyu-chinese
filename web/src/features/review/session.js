@@ -1,3 +1,4 @@
+import { attachPinyinInput } from "../../lib/pinyin.js";
 import * as reviewApi from "../../services/api/reviewApi.js";
 import * as vocabApi from "../../services/api/vocabApi.js";
 import { icon } from "../../components/ui/icons.js";
@@ -129,7 +130,7 @@ export async function renderReviewSession(page, ctx) {
     $("[data-crumb-current]").textContent = checked ? (q.isCorrect ? "Đáp án đúng" : "Đáp án sai") : "Làm bài ôn tập";
     setSidebarQuote(checked && !q.isCorrect ? "Sai một chút<br/>cũng là tiến bộ!" : "Cố gắng mỗi ngày<br/>Tiếng Trung sẽ gần hơn!");
     $("#rail-tip").hidden = checked;
-    $("#tip-text").textContent = q.promptType === "pinyin" ? " Có thể gõ số thanh điệu, ví dụ ni3 hao3 = nǐ hǎo." :
+    $("#tip-text").textContent = q.promptType === "pinyin" ? " Gõ số 1–4 sau chữ để thêm dấu, ví dụ ni3hao3 → nǐhǎo (viết liền hoặc cách đều được)." :
       q.promptType === "hanzi" ? " Bật bộ gõ tiếng Trung (Pinyin IME) để nhập chữ Hán nhanh hơn." : " Hãy nhớ nghĩa của từ và cách dùng trong ngữ cảnh nhé!";
     renderProgress();
 
@@ -147,6 +148,7 @@ export async function renderReviewSession(page, ctx) {
         <button type="button" class="btn btn--muted" id="next" disabled aria-disabled="true" title="Hãy kiểm tra đáp án trước">${nextLabel}${icon("arrowRight")}</button>
       </div><p class="q-hint" style="margin-top:12px">Nhấn Enter để kiểm tra đáp án</p>`;
       const input = $("#answer"), check = $("#check");
+      if (q.promptType === "pinyin") attachPinyinInput(input);
       input.addEventListener("input", () => { check.disabled = !input.value.trim(); });
       $("#ans-form").addEventListener("submit", async (e) => {
         e.preventDefault();

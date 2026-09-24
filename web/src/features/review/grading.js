@@ -1,12 +1,12 @@
 // Chấm đáp án (thuần logic, không phụ thuộc UI).
-import { markSyllable } from "../../lib/pinyin.js";
+import { toneNumbersToMarks } from "../../lib/pinyin.js";
 
 const collapse = (s) => String(s || "").normalize("NFC").trim().replace(/\s+/g, " ");
 
 // --- Pinyin: chấp nhận dấu thanh hoặc số (ni3 hao3), bỏ khoảng trắng/nháy, v = ü ---
 export function normalizePinyin(input) {
   let s = collapse(input).toLowerCase().replace(/u:/g, "ü");
-  s = s.replace(/([a-zü]+)([1-5])/g, (_, syl, t) => markSyllable(syl, Number(t)));
+  s = toneNumbersToMarks(s);
   return s.replace(/v/g, "ü").replace(/[\s'’·\-]/g, "");
 }
 
