@@ -19,6 +19,7 @@ const NAV = [
   { key: "home", href: "#/home", label: "Trang chủ", icon: "home" },
   { key: "vocabulary", href: "#/vocabulary", label: "Từ vựng", icon: "book" },
   { key: "grammar", href: "#/grammar", label: "Ngữ pháp", icon: "grammar" },
+  { key: "radicals", href: "#/radicals", label: "Bộ thủ", icon: "radical" },
   { key: "review", href: "#/review/setup", label: "Ôn tập", icon: "review" },
   { key: "settings", href: "#/settings", label: "Cài đặt", icon: "settings" },
 ];

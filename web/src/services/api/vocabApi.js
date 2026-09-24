@@ -3,6 +3,7 @@
 import { API_CONFIG } from "./config.js";
 import { kv, wait, uid, ApiError } from "./storage.js";
 import { getCurrentUser } from "./authApi.js";
+import { textHasRadical } from "./radicalApi.js";
 
 export const STATUS = { LEARNED: "learned", REVIEW: "review" };
 export const STATUS_LABEL = { learned: "Đã thuộc", review: "Cần ôn" };
@@ -55,13 +56,15 @@ function validate(data) {
   return { hanzi, pinyin, meaningVi };
 }
 
-export async function list({ q = "", tag = "", sort = "newest", page = 1, pageSize = 10 } = {}) {
+/** radical: số bộ thủ (1–214) — chỉ lấy từ có ít nhất 1 chữ Hán thuộc bộ đó. */
+export async function list({ q = "", tag = "", radical = 0, sort = "newest", page = 1, pageSize = 10 } = {}) {
   await wait(API_CONFIG.LATENCY);
   const all = await readAll();
   const tagCounts = countTags(all, await kv.get(kTags(uidOrThrow()), []));
   const fq = fold(q);
   let items = all.filter((v) => {
     if (tag && !v.tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return false;
+    if (radical && !textHasRadical(v.hanzi, radical)) return false;
     if (!fq) return true;
     return v.hanzi.includes(q.trim()) || fold(v.pinyin).replace(/\s/g, "").includes(fq.replace(/\s/g, "")) ||
       fold(v.meaningVi).includes(fq) || v.tags.some((t) => fold(t).includes(fq));

@@ -16,6 +16,8 @@ import { renderSettings } from "./features/settings/settings.js";
 import { renderGrammarList } from "./features/grammar/list.js";
 import { renderGrammarForm } from "./features/grammar/form.js";
 import { renderGrammarDetail } from "./features/grammar/detail.js";
+import { renderRadicalList } from "./features/radicals/list.js";
+import { renderRadicalDetail } from "./features/radicals/detail.js";
 
 const root = document.getElementById("root");
 
@@ -49,6 +51,7 @@ const Q = {
   session: "Cố gắng mỗi ngày<br/>Tiếng Trung sẽ gần hơn!",
   result: "Kiên trì hôm nay,<br/>tiến bộ mỗi ngày!",
   settings: "Small steps,<br/>big future!",
+  radicals: "Hiểu bộ thủ,<br/>nhớ chữ Hán<br/>thật dễ dàng!",
   grammar: "Nắm vững ngữ pháp,<br/>nói tiếng Trung<br/>tự tin hơn!",
 };
 const TQ = {
@@ -74,6 +77,8 @@ route("/grammar", appPage(renderGrammarList, { nav: "grammar", title: "Ngữ ph�
 route("/grammar/new", appPage(renderGrammarForm, { nav: "grammar", title: "Thêm ngữ pháp", quote: Q.grammar, topQuote: TQ.small }));
 route("/grammar/:id/edit", appPage(renderGrammarForm, { nav: "grammar", title: "Chỉnh sửa ngữ pháp", quote: Q.grammar, topQuote: TQ.small }));
 route("/grammar/:id", appPage(renderGrammarDetail, { nav: "grammar", title: "Ngữ pháp", quote: Q.grammar, topQuote: TQ.learn }));
+route("/radicals", appPage(renderRadicalList, { nav: "radicals", title: "Bộ thủ", quote: Q.radicals }));
+route("/radicals/:num", appPage(renderRadicalDetail, { nav: "radicals", title: "Bộ thủ", quote: Q.radicals, topQuote: TQ.learn }));
 route("/review/setup", appPage(renderReviewSetup, { nav: "review", title: "Thiết lập ôn tập", quote: Q.setup, topQuote: TQ.learn }));
 route("/review/session", appPage(renderReviewSession, { nav: "review", title: "Làm bài ôn tập", quote: Q.session, topQuote: TQ.vi }));
 route("/review/result", appPage(renderReviewResult, { nav: "review", title: "Hoàn thành ôn tập", quote: Q.result, topQuote: TQ.vi }));

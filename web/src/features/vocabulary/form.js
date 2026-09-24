@@ -5,6 +5,7 @@ import { esc, setBusy, tagStyle } from "../../lib/dom.js";
 import { toast } from "../../components/ui/feedback.js";
 import { navigate } from "../../routes/router.js";
 import { attachPinyinInput } from "../../lib/pinyin.js";
+import * as radicalApi from "../../services/api/radicalApi.js";
 
 const ACCEPT = ["image/jpeg", "image/png"];
 
@@ -76,6 +77,7 @@ export async function renderVocabularyForm(page, ctx) {
         ${field("hanzi", "Hán tự", true, `<input class="input hanzi-input" id="hanzi" placeholder="Nhập chữ Hán" value="${esc(model.hanzi)}" lang="zh" style="font-family:var(--font-cn)" />`, "Ví dụ: 你")}
         ${field("pinyin", "Pinyin", true, `<input class="input" id="pinyin" placeholder="Nhập pinyin, vd: ni3 hao3" value="${esc(model.pinyin)}" autocomplete="off" autocapitalize="off" spellcheck="false" />`, "Gõ số 1–4 sau âm tiết để thêm dấu: ni3 → nǐ, hao3 → hǎo, lv4 → lǜ")}
       </div>
+      <div class="radical-hint" id="hanzi-radicals" aria-live="polite" hidden></div>
       ${field("meaningVi", "Nghĩa tiếng Việt", true, `<input class="input" id="meaningVi" placeholder="Nhập nghĩa tiếng Việt" value="${esc(model.meaningVi)}" autocomplete="off" />`, "Ví dụ: bạn, cậu — nhiều nghĩa cách nhau bằng dấu phẩy")}
       <div class="field">
         <label class="field__label" for="note">Note <span class="opt">(ghi chú, cách dùng, ví dụ...)</span></label>
@@ -126,6 +128,18 @@ export async function renderVocabularyForm(page, ctx) {
   // Pinyin: đổi số thanh điệu thành dấu ngay khi gõ (đăng ký trước để model nhận giá trị đã đổi).
   attachPinyinInput($("#pinyin"));
   ["hanzi", "pinyin", "meaningVi"].forEach((id) => $("#" + id).addEventListener("input", (e) => { model[id] = e.target.value; setErr(id, ""); }));
+
+  // ----- Bộ thủ của từng chữ Hán (tự nhận diện khi gõ) -----
+  function renderRadicals() {
+    const box = $("#hanzi-radicals");
+    const list = radicalApi.radicalsOfText(model.hanzi).slice(0, 8);
+    box.hidden = !list.length;
+    box.innerHTML = list.length ? `<span class="radical-hint__label">Bộ thủ:</span>` + list.map(({ char, radical: r }) => r
+      ? `<span class="radical-hint__item" title="Bộ số ${r.num} · ${r.strokes} nét"><span class="hanzi" lang="zh">${esc(char)}</span>→<span class="hanzi radical-hint__rad" lang="zh">${esc(r.variants[0] && !r.variants[0].includes("(") ? `${r.char} ${r.variants[0]}` : r.char)}</span>${esc(radicalApi.label(r))}</span>`
+      : `<span class="radical-hint__item radical-hint__item--unknown"><span class="hanzi" lang="zh">${esc(char)}</span>→ chưa có dữ liệu</span>`).join("") : "";
+  }
+  $("#hanzi").addEventListener("input", renderRadicals);
+  renderRadicals();
   $("#note").addEventListener("input", (e) => {
     model.note = e.target.value;
     $("#note-count").textContent = `${model.note.length}/${vocabApi.MAX_NOTE}`;
