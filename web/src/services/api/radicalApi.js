@@ -26,6 +26,9 @@ function index() {
   return charIndex;
 }
 
+const CLASSIFIER = /^(con|cái|cây|chiếc|màu|quả|tấm|sợi|hạt|mảnh|vật|loài)\s+/;
+/** "cái lưới" → ["lưới"], "tốt, khỏe" → ["tốt", "khỏe"] (chữ thường, giữ dấu). */
+const meaningParts = (m) => String(m).toLowerCase().normalize("NFC").split(/\s*[,;]\s*/).map((x) => x.replace(/\(.*?\)/g, "").trim().replace(CLASSIFIER, ""));
 const fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().trim();
 
 function knownSet() {
@@ -50,14 +53,18 @@ export function list({ q = "", strokes = 0, known = "" } = {}) {
     const f = fold(needle);
     const asNum = /^\d+$/.test(needle) ? Number(needle) : null;
     const hanOf = [...needle].length === 1 ? index().get(needle) : null; // gõ 1 chữ Hán → ra bộ của chữ đó
+    const raw = needle.toLowerCase().normalize("NFC");
     // Điểm khớp (nhỏ = khớp tốt hơn); null = không khớp.
     const score = (r) => {
       if (r.num === asNum || r.char === needle || hanOf === r.num || r.variants.some((v) => v.startsWith(needle))) return 0;
       const name = fold(r.name), meaning = fold(r.meaning);
       if (name === f || name.split(/[\s/()]+/).includes(f) || fold(r.pinyin) === f.replace(/\s+/g, "")) return 1;
-      if (name.startsWith(f)) return 2;
-      if (meaning.split(/[\s,;()]+/).includes(f)) return 3;
-      if (name.includes(f) || meaning.includes(f)) return 4;
+      // Nghĩa khớp trọn một ý (bỏ từ chỉ loại “con, cái…”): "nước" → Thủy trước "nước đá", "chim" → Điểu (con chim).
+      if (meaningParts(r.meaning).includes(raw)) return 1; // đúng cả dấu: "cây" → Mộc, "cay" → Tân
+      if (meaningParts(r.meaning).map(fold).includes(f)) return 2;
+      if (name.startsWith(f)) return 3;
+      if (meaning.split(/[\s,;()]+/).includes(f)) return 4;
+      if (name.includes(f) || meaning.includes(f)) return 5;
       return null;
     };
     items = items.map((r) => ({ r, s: score(r) })).filter((x) => x.s !== null)

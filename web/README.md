@@ -52,7 +52,7 @@ Giữ nguyên chữ ký hàm, thay phần thân bằng lời gọi REST/Firebase
 - `grammarApi` (theo endpoint trong spec): list({q, tagId, sort, saved}), get, create, update, remove, listTags/createTag/renameTag/deleteTag, setBookmark, share(id, emails), listReceived, listSent, accept(shareId, {keepTags, extraTags}), reject.
   - Dữ liệu ngữ pháp, lời mời và thông báo lưu **chung** trong localStorage (đóng vai server) nên có thể thử chia sẻ giữa 2 tài khoản trên cùng trình duyệt (đăng xuất → đăng nhập tài khoản kia).
   - Chấp nhận lời mời tạo **bản copy riêng** cho người nhận (`sourceGrammarId` trỏ về bản gốc). Ghi chú cá nhân lưu tách riêng theo user và không bao giờ được chia sẻ.
-- `radicalApi` (dữ liệu tĩnh, không cần backend): list({q, strokes, known}), get(num), radicalOf(char), radicalsOfText(text), setKnown. `vocabApi.list({ radical })` lọc từ vựng theo bộ thủ.
+- `radicalApi` (dữ liệu tĩnh, không cần backend): list({q, strokes, known}), get(num), radicalOf(char), radicalsOfText(text), setKnown. `vocabApi.list({ radical })` lọc từ vựng theo bộ thủ (bộ người dùng chọn cho từ — field `radicals: number[]` — hoặc bộ tự nhận ra từ chữ Hán).
   - `services/data/radicals.js`: 214 bộ thủ Khang Hy (chữ, biến thể, pinyin, tên Hán Việt, nghĩa).
   - `services/data/radicalMap.js`: **tự sinh** từ Unicode Unihan 9.0 (`kRSUnicode`) cho 7.733 chữ (GB2312 + bảng tần suất). Sinh lại bằng `tools/build_radicals.py`.
 - `notificationApi`: notify, list, unreadCount, markRead (chuông thông báo trên topbar).

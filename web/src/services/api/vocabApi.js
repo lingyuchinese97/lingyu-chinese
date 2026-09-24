@@ -42,6 +42,16 @@ function cleanTags(tags) {
   });
 }
 
+/** Danh sách số bộ thủ người dùng chọn: số nguyên 1–214, không trùng, tối đa 10. */
+export function cleanRadicals(list) {
+  const out = [];
+  for (const x of list || []) {
+    const n = Number(x);
+    if (Number.isInteger(n) && n >= 1 && n <= 214 && !out.includes(n)) out.push(n);
+  }
+  return out.slice(0, 10);
+}
+
 function validate(data) {
   const errors = {};
   const hanzi = String(data.hanzi || "").trim();
@@ -64,7 +74,8 @@ export async function list({ q = "", tag = "", radical = 0, sort = "newest", pag
   const fq = fold(q);
   let items = all.filter((v) => {
     if (tag && !v.tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return false;
-    if (radical && !textHasRadical(v.hanzi, radical)) return false;
+    // Bộ thủ người dùng đã chọn cho từ, hoặc bộ tự nhận ra từ chữ Hán.
+    if (radical && !(v.radicals || []).includes(Number(radical)) && !textHasRadical(v.hanzi, radical)) return false;
     if (!fq) return true;
     return v.hanzi.includes(q.trim()) || fold(v.pinyin).replace(/\s/g, "").includes(fq.replace(/\s/g, "")) ||
       fold(v.meaningVi).includes(fq) || v.tags.some((t) => fold(t).includes(fq));
@@ -126,6 +137,7 @@ export async function create(data) {
     note: String(data.note || "").trim(),
     imageUrl: data.imageUrl || null,
     tags: cleanTags(data.tags),
+    radicals: cleanRadicals(data.radicals),
     status: STATUS.REVIEW,
     isFavorite: false,
     createdAt: now, updatedAt: now,
@@ -142,7 +154,7 @@ export async function update(id, data) {
   if (i < 0) throw new ApiError("not-found", "Không tìm thấy từ vựng này. Có thể nó đã bị xóa.");
   const merged = { ...all[i], ...data };
   const base = ("hanzi" in data || "pinyin" in data || "meaningVi" in data) ? validate(merged) : {};
-  all[i] = { ...merged, ...base, tags: cleanTags(merged.tags), updatedAt: new Date().toISOString() };
+  all[i] = { ...merged, ...base, tags: cleanTags(merged.tags), radicals: cleanRadicals(merged.radicals), updatedAt: new Date().toISOString() };
   await writeAll(all);
   for (const t of all[i].tags) await createTag(t);
   return all[i];
