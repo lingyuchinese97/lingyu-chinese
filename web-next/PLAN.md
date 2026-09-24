@@ -9,8 +9,8 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | #   | Nội dung                                                                                                                                                          | Trạng thái |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | 0   | Đọc & lên kế hoạch (file này)                                                                                                                                     | ✅         |
-| 1   | Khung dự án: Next.js, Tailwind v4 + tokens, UI kit, font, env, pino, ESLint/Prettier, Vitest, Playwright, `/api/health`, trang lỗi, Docker, Caddy, CI, Dependabot |            |
-| 2   | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI                                                                                         |            |
+| 1   | Khung dự án: Next.js, Tailwind v4 + tokens, UI kit, font, env, pino, ESLint/Prettier, Vitest, Playwright, `/api/health`, trang lỗi, Docker, Caddy, CI, Dependabot | ✅         |
+| 2   | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI                                                                                         | ✅         |
 | 3   | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing                                                                                         |            |
 | 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          |            |
 | 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 |            |
@@ -46,7 +46,7 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 4. **Dữ liệu nét hanzi-writer**: gói `hanzi-writer-data` có ~9.500 file JSON (~30MB). Thay vì chép hết vào `public/`, script
    `scripts/copy-hanzi-data.ts` (chạy ở `postinstall`/`prebuild`) chỉ chép các chữ cần cho trang Bộ thủ (214 bộ + chữ ví dụ) vào
    `public/hanzi-data/`, còn chữ khác (từ vựng của user) phục vụ qua `/api/hanzi/[char]` đọc từ gói. Vẫn tự host, không CDN.
-5. **ID**: Better Auth dùng id dạng `text`; bảng của app dùng `uuid` (`gen_random_uuid()`) nhưng khoá ngoại tới `user.id` là `text`.
+5. **ID**: mọi bảng dùng `uuid` — Better Auth cấu hình `advanced.database.generateId: "uuid"` nên `user.id` cũng là `uuid`, khoá ngoại cùng kiểu.
 6. **Mật khẩu**: tối thiểu **8** ký tự (spec) thay cho 6 của bản cũ; vẫn chặn toàn khoảng trắng / khoảng trắng đầu-cuối như bản cũ.
 7. **Chấm bài ở server**: câu hỏi ôn tập không gửi đáp án xuống client; server action `checkAnswer` chấm bằng `lib/grading.ts`.
 8. **FSRS**: sai → `Again`; đúng → `Good` mặc định, người dùng có thể chọn Khó (`Hard`) / Được (`Good`) / Dễ (`Easy`) sau khi trả lời đúng.
@@ -63,6 +63,9 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 15. **Bài học**: nội dung trong `src/data/lessons/<lessonId>/`; loại câu `choice-audio` (nghe chọn đáp án) và `blend` (ghép âm). Bài 1 phần
     Nghe (16 câu) **chưa có audio** trong repo → nút phát bị vô hiệu + ghi chú, không crash (đúng spec).
 16. **Admin**: `ADMIN_EMAILS` gán role admin khi đăng ký/đăng nhập (hook của Better Auth) + `pnpm user:make-admin`.
+
+17. **E2E**: server e2e chạy `db:migrate` lên DB `<db>_e2e` rồi `next start`; mỗi test auth xoá bảng `rate_limit` trước (mọi request cùng IP),
+    riêng một test kiểm tra lần thứ 6 bị chặn.
 
 ## Chỗ mơ hồ & cách xử lý
 

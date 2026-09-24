@@ -19,13 +19,18 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/migrate.ts",
-    "build:migrate": "esbuild scripts/migrate.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/migrate.mjs --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\""
+    "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
+    "build:migrate": "esbuild scripts/migrate.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/migrate.mjs --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
+    "db:seed": "tsx --env-file-if-exists=.env scripts/seed.ts",
+    "user:reset-password": "tsx --env-file-if-exists=.env scripts/reset-password.ts",
+    "user:make-admin": "tsx --env-file-if-exists=.env scripts/make-admin.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource/dancing-script": "^5.3.0",
     "@fontsource/noto-sans-sc": "^5.3.0",
+    "@hookform/resolvers": "^5.9.1",
+    "better-auth": "^1.7.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.3",
@@ -36,6 +41,9 @@
     "radix-ui": "^1.6.7",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "react-hook-form": "^7.88.0",
+    "server-only": "^0.0.1",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
     "vaul": "^1.1.2",
     "zod": "^4.6.5"
