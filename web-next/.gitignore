@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+next-env.d.ts
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+coverage
+playwright-report
+test-results
+/public/hanzi-data
+/public/sw.js
+/public/swe-worker*.js
+.pgdata
+dist

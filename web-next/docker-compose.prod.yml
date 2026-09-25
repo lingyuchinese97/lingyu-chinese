@@ -1,0 +1,52 @@
+# Production trên VPS: app + Postgres + Caddy (HTTPS tự động qua Let's Encrypt).
+#   docker compose -f docker-compose.prod.yml up -d --build
+# Cần file .env cạnh file này (xem .env.example + docs/DEPLOY.md).
+services:
+  app:
+    build: .
+    image: lingyu-web-next:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-lingyu}:${POSTGRES_PASSWORD:?Đặt POSTGRES_PASSWORD trong .env}@postgres:5432/${POSTGRES_DB:-lingyu}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3000"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lingyu}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Đặt POSTGRES_PASSWORD trong .env}
+      POSTGRES_DB: ${POSTGRES_DB:-lingyu}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Không mở port ra ngoài: chỉ app trong mạng docker kết nối được.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lingyu} -d ${POSTGRES_DB:-lingyu}"]
+      interval: 5s
+      retries: 20
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  pgdata:
+  caddy-data:
+  caddy-config:
