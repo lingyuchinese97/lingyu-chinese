@@ -12,12 +12,15 @@ export type SessionUser = {
 };
 
 /** Phiên hiện tại (cache trong 1 request). Null nếu chưa đăng nhập hoặc tài khoản bị khoá. */
-export const getSession = cache(async (): Promise<{ user: SessionUser } | null> => {
+export const getSession = cache(async (): Promise<{ user: SessionUser; sessionId: string } | null> => {
   const s = await auth.api.getSession({ headers: await headers() });
   if (!s) return null;
   const u = s.user as typeof s.user & { role?: string; disabledAt?: Date | null };
   if (u.disabledAt) return null;
-  return { user: { id: u.id, name: u.name, email: u.email, role: u.role === "admin" ? "admin" : "user" } };
+  return {
+    user: { id: u.id, name: u.name, email: u.email, role: u.role === "admin" ? "admin" : "user" },
+    sessionId: s.session.id,
+  };
 });
 
 /** Dùng trong Server Component / layout: chưa đăng nhập → chuyển tới /login. */
