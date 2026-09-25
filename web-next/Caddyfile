@@ -2,6 +2,8 @@
 # www.<domain> tự chuyển về <domain>.
 {$DOMAIN} {
 	encode zstd gzip
+	# HSTS: app đứng sau Caddy (HTTPS) — header bảo mật khác do app tự gửi.
+	header Strict-Transport-Security "max-age=63072000; includeSubDomains"
 	reverse_proxy app:3000 {
 		health_uri /api/health
 		health_interval 30s

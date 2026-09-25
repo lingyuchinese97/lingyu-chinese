@@ -10,6 +10,15 @@
 
 ### Added
 
+- Tài liệu: `README.md` (chạy local, lệnh, cấu trúc, thêm bài học, chuyển dữ liệu bản cũ), `docs/DEPLOY.md` (Vercel + Neon miễn phí,
+  tên miền Cloudflare, VPS Docker + Caddy, sao lưu / khôi phục, chuyển Neon → VPS, chuyển `lingyuchinese.com` sang bản mới, lộ trình),
+  `.env.example` đầy đủ, `scripts/backup.sh`; README gốc trỏ tới bản mới.
+
+### Fixed
+
+- Dữ liệu nét chữ (`/api/hanzi`) trả 404 trong bản Docker/standalone (pnpm không tạo symlink ở gốc `node_modules`).
+- VPS: Caddy gửi header HSTS.
+
 - **PWA**: cài lên màn hình chính (manifest, icon), service worker (Serwist) cache file tĩnh, font, audio bài học và dữ liệu nét chữ;
   mất mạng hiện trang "Bạn đang offline". Không cache trang hay dữ liệu riêng của người dùng.
 - **Header bảo mật**: Content-Security-Policy (chỉ tài nguyên của chính app), `X-Content-Type-Options`, `Referrer-Policy`,

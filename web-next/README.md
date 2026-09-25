@@ -1,6 +1,82 @@
 # LingYu Chinese — bản Next.js (`web-next/`)
 
-> Tài liệu đầy đủ (cài đặt, lệnh, deploy) được hoàn thiện ở phase 12. Mục dưới đây mô tả cách thêm bài học.
+Ứng dụng học tiếng Trung: từ vựng (kèm ảnh), ôn tập tự chọn + ôn đến hạn (FSRS), ngữ pháp, bộ thủ (nét viết),
+bài học, chia sẻ giữa người dùng, thông báo, cài đặt (xuất / nhập dữ liệu), quản trị. Giao diện tiếng Việt, ưu tiên điện thoại,
+cài được như app (PWA).
+
+- Đang chạy: **https://app.lingyuchinese.com** (Vercel + Neon). Triển khai / chuyển VPS / sao lưu: [`docs/DEPLOY.md`](../docs/DEPLOY.md).
+- Kế hoạch, quyết định kỹ thuật và chỗ làm khác spec: [`PLAN.md`](PLAN.md). Thay đổi: [`CHANGELOG.md`](CHANGELOG.md).
+
+## Công nghệ
+
+Next.js 16 (App Router, Server Actions, `output: "standalone"`), React 19, TypeScript strict, Tailwind CSS v4, component theo
+mẫu shadcn/ui (Radix), Postgres + Drizzle ORM, Better Auth (email + mật khẩu), Zod, ts-fsrs, pinyin-pro, hanzi-writer (dữ liệu nét
+tự host), Serwist (PWA), pino. Test: Vitest (Postgres thật) + Playwright (iPhone / Android / desktop) + axe.
+
+Không phụ thuộc dịch vụ bên thứ ba ngoài Postgres: font, audio, dữ liệu nét chữ đều tự host; ảnh lưu trong DB (storage adapter).
+
+## Chạy trên máy
+
+Yêu cầu: Node 22, pnpm 10 (`corepack enable`), Postgres 16 (Docker hoặc cài trực tiếp).
+
+```bash
+cd web-next
+pnpm install
+cp .env.example .env              # điền BETTER_AUTH_SECRET (openssl rand -base64 32), ADMIN_EMAILS...
+docker compose up -d              # Postgres dev ở localhost:5432 (user/pass/db: lingyu) — có sẵn DB lingyu_test, lingyu_e2e
+pnpm db:migrate                   # tạo bảng
+pnpm db:seed                      # (tuỳ chọn) tài khoản demo + dữ liệu mẫu, mật khẩu in ra màn hình
+pnpm dev                          # http://localhost:3000
+```
+
+Trước lần chạy `pnpm test` đầu tiên (và sau mỗi migration mới), áp migration cho DB test:
+
+```bash
+DATABASE_URL=postgres://lingyu:lingyu@localhost:5432/lingyu_test pnpm db:migrate
+```
+
+(`pnpm e2e` tự migrate DB `lingyu_e2e`.)
+
+Không có Docker: cài Postgres 16 rồi tạo user/database `lingyu` (+ `lingyu_test`, `lingyu_e2e` để chạy test) như trong
+`scripts/dev-init.sql`.
+
+## Lệnh
+
+| Lệnh                                           | Việc                                                                    |
+| ---------------------------------------------- | ----------------------------------------------------------------------- |
+| `pnpm dev` / `pnpm build` / `pnpm start`       | Chạy dev / build production / chạy bản build                            |
+| `pnpm lint` / `pnpm typecheck` / `pnpm format` | ESLint / TypeScript / Prettier                                          |
+| `pnpm test`                                    | Unit + integration (Vitest, DB `<db>_test`)                             |
+| `pnpm e2e`                                     | Playwright trên bản build (chạy `pnpm build` trước; DB `<db>_e2e`)      |
+| `pnpm db:generate`                             | Sinh migration mới từ `src/server/db/schema` vào `drizzle/`             |
+| `pnpm db:migrate`                              | Áp migration                                                            |
+| `pnpm db:seed`                                 | Tài khoản demo `admin@demo.lingyu`, `hocvien@demo.lingyu` + dữ liệu mẫu |
+| `pnpm user:reset-password <email>`             | Đặt lại mật khẩu (in mật khẩu tạm 1 lần)                                |
+| `pnpm user:make-admin <email>`                 | Cấp quyền quản trị                                                      |
+| `./scripts/backup.sh`                          | Sao lưu Postgres trên VPS (xem `docs/DEPLOY.md`)                        |
+
+Môi trường không tải được trình duyệt của Playwright: đặt `PW_CHROMIUM_PATH=/đường/dẫn/chrome`.
+
+## Cấu trúc
+
+```
+src/
+  app/                 # route (App Router)
+    (auth)/            # /login, /register
+    (app)/             # trang cần đăng nhập: home, vocabulary, review, grammar, radicals, lessons, settings, admin
+    api/               # auth, health, images/[id] (chỉ chủ ảnh), hanzi/[char], account/export|import
+    sw.ts, serwist/    # service worker (PWA), ~offline/ trang mất mạng, manifest.ts
+  features/<tính năng>/ # schema.ts (Zod) · service.ts (truy vấn, luôn lọc theo userId của session) · actions.ts · components/
+  components/          # ui/ (kit theo shadcn), layout/ (sidebar, bottom nav, chuông), auth/
+  lib/                 # fold (tìm kiếm bỏ dấu), pinyin, grading, srs (FSRS), radicals, image-sniff/compress...
+  data/                # dữ liệu tĩnh: bộ thủ, từ/ngữ pháp mẫu, lessons/<id>/
+  server/              # auth (Better Auth), db (Drizzle schema, pool), storage, session, users, log
+tests/unit, tests/e2e
+drizzle/               # migration SQL
+```
+
+Nguyên tắc bảo mật: mọi Server Action / route kiểm tra session (và role cho admin), Zod cho mọi input, không tin `userId` từ client;
+ghi chú cá nhân, ảnh và dữ liệu của người khác không bao giờ lộ (có test). Header bảo mật + CSP ở `next.config.ts`.
 
 ## Thêm bài học mới (ví dụ Bài 2)
 
@@ -18,3 +94,9 @@ Chỉ cần thêm dữ liệu + audio, không phải sửa màn hình:
 4. Chạy `pnpm test` — test kiểm tra mọi bài đúng schema, đã được đăng ký và mọi file audio đều tồn tại.
 
 Tiến độ (điểm cao nhất, lần gần nhất, số lần làm) tự lưu ở bảng `lesson_progress`, trang chủ tự tính % phần đã làm.
+Audio bài học được service worker precache → nghe được cả khi mạng yếu.
+
+## Chuyển dữ liệu từ bản cũ (`web/`, GitHub Pages)
+
+Bản cũ lưu dữ liệu trong trình duyệt. Ở bản cũ: **Từ vựng → chọn tất cả → Chia sẻ → Sao chép hoặc tải file → CSV → Tải file**;
+ở bản mới: **Cài đặt → Nhập dữ liệu** → chọn file `.csv` đó (gộp, bỏ qua từ trùng).

@@ -20,7 +20,7 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     | ✅         |
 | 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         | ✅         |
 | 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            | ✅         |
-| 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    |            |
+| 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    | ✅         |
 
 Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e khi có) → CHANGELOG → commit → push.
 
@@ -118,6 +118,11 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     thêm file `.csv` đó (gộp, bỏ qua từ trùng). Ngữ pháp ở bản cũ không có chức năng xuất → phải nhập lại bằng tay.
 36. **Seed** (`pnpm db:seed`): `admin@demo.lingyu` + `hocvien@demo.lingyu` (kèm dữ liệu mẫu), mật khẩu sinh ngẫu nhiên in ra 1 lần
     (hoặc đặt `SEED_*_PASSWORD`). Chạy lại không tạo trùng.
+
+37. **Docker (chạy thử lại ở phase 12)**: build image + `docker compose -f docker-compose.prod.yml up` (app + Postgres + Caddy,
+    HTTPS `localhost`): `/api/health`, service worker, audio, dữ liệu nét chữ đều 200; `scripts/backup.sh` (xoay vòng) và lệnh
+    khôi phục trong `docs/DEPLOY.md` chạy đúng. Bản standalone không có symlink `node_modules/hanzi-writer-data` của pnpm
+    → `/api/hanzi` tự tìm trong `node_modules/.pnpm/`. HSTS trên VPS do Caddy gửi (header của app cố định lúc build).
 
 ## Chỗ mơ hồ & cách xử lý
 
