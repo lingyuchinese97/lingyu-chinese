@@ -12,9 +12,11 @@ import {
   ImageIcon,
   MoreHorizontal,
   Pencil,
+  PlayCircle,
   Plus,
   RefreshCw,
   Search,
+  Share2,
   Star,
   Tag as TagIcon,
   Trash2,
@@ -32,7 +34,16 @@ import { radicalByNum, radicalLabel } from "@/lib/radicals";
 import { SORTS, STATUS_LABEL, type ListParams } from "../schema";
 import type { VocabItem, VocabList } from "../service";
 import { deleteVocabAction, importSampleAction, setStatusAction, toggleFavoriteAction } from "../actions";
+import { startCustomAction } from "@/features/review/actions";
 import { AddTagDialog } from "./add-tag-dialog";
+import type { ReceivedVocabShare } from "../share-service";
+import {
+  AcceptVocabDialog,
+  rejectVocabWithConfirm,
+  ShareVocabDialog,
+  VocabInvites,
+  type ShareWord,
+} from "./share-dialogs";
 
 /** Ghi chú dài quá 10 ký tự → hiện "…" + nút con mắt để xem đầy đủ (như bản cũ). */
 const NOTE_PREVIEW = 10;
@@ -42,7 +53,15 @@ const shortNote = (note: string) => {
 };
 const isLongNote = (note: string) => Array.from(note.trim()).length > NOTE_PREVIEW;
 
-export function VocabListView({ data, params }: { data: VocabList; params: ListParams }) {
+export function VocabListView({
+  data,
+  params,
+  received,
+}: {
+  data: VocabList;
+  params: ListParams;
+  received: ReceivedVocabShare[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = React.useTransition();
@@ -53,6 +72,13 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
   const [tagFor, setTagFor] = React.useState<string[] | null>(null);
   const [favs, setFavs] = React.useState<Record<string, boolean>>({});
   const listTop = React.useRef<HTMLDivElement>(null);
+  const [shareWords, setShareWords] = React.useState<ShareWord[] | null>(null);
+  const [invite, setInvite] = React.useState<ReceivedVocabShare | null>(null);
+  // Từ đã thấy ở các trang (để hộp thoại Chia sẻ hiện đúng các từ đã chọn dù chọn qua nhiều trang).
+  const seen = React.useRef(new Map<string, VocabItem>());
+  React.useEffect(() => {
+    for (const v of data.items) seen.current.set(v.id, v);
+  }, [data.items]);
 
   const go = React.useCallback(
     (patch: Partial<ListParams>, opts: { keepSelection?: boolean } = {}) => {
@@ -120,6 +146,41 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
     refresh();
   }
 
+  async function doBulkReview() {
+    const ids = [...selected];
+    const r = await startCustomAction({
+      tags: [],
+      vocabIds: ids,
+      count: ids.length,
+      mode: "meaning",
+      showImage: true,
+      label: `${ids.length} từ đã chọn`,
+    });
+    if (!r.ok) return void toast.error(r.message || "Không thể tạo bài ôn tập.");
+    router.push("/review/session");
+  }
+
+  const openShare = (list: string[]) =>
+    setShareWords(
+      list
+        .map((id) => seen.current.get(id))
+        .filter((v): v is VocabItem => !!v)
+        .map((v) => ({
+          id: v.id,
+          hanzi: v.hanzi,
+          pinyin: v.pinyin,
+          meaningVi: v.meaningVi,
+          note: v.note,
+          tags: v.tags,
+        })),
+    );
+  async function rejectInvite(s: ReceivedVocabShare) {
+    if (await rejectVocabWithConfirm(confirm, s)) {
+      setInvite(null);
+      refresh();
+    }
+  }
+
   async function doBulkStatus(status: "learned" | "review") {
     const r = await setStatusAction([...selected], status);
     if (!r.ok) return void toast.error(r.message);
@@ -157,6 +218,10 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
         <MenuItem onSelect={() => setTagFor([v.id])}>
           <TagIcon />
           Thêm tag
+        </MenuItem>
+        <MenuItem onSelect={() => openShare([v.id])}>
+          <Share2 />
+          Chia sẻ
         </MenuItem>
         <MenuSeparator />
         <MenuItem danger onSelect={() => doDelete([v.id], `“${v.hanzi}”`)}>
@@ -240,6 +305,7 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
         ref={listTop}
         className="flex scroll-mt-4 flex-col gap-[18px] rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
+        <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_200px_190px]">
           <label className="relative block">
             <span className="sr-only">Tìm kiếm từ vựng</span>
@@ -374,6 +440,18 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
                   </Button>
                 ) : null}
                 <div className="grid w-full grid-cols-2 gap-2 md:ml-auto md:flex md:w-auto">
+                  <BulkButton disabled={!selected.size} hint="Chọn ít nhất 1 từ vựng để ôn tập" onClick={doBulkReview}>
+                    <PlayCircle />
+                    Ôn tập
+                  </BulkButton>
+                  <BulkButton
+                    disabled={!selected.size}
+                    hint="Chọn ít nhất 1 từ vựng để chia sẻ"
+                    onClick={() => openShare([...selected])}
+                  >
+                    <Share2 />
+                    Chia sẻ
+                  </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
                     hint="Chọn ít nhất 1 từ vựng để thêm tag"
@@ -583,6 +661,17 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
         allTags={data.tagCounts.map((t) => t.name)}
         onClose={() => setTagFor(null)}
         onDone={refresh}
+      />
+      <ShareVocabDialog words={shareWords} onClose={() => setShareWords(null)} />
+      <AcceptVocabDialog
+        share={invite}
+        myTags={data.tagCounts.map((t) => t.name)}
+        onClose={() => setInvite(null)}
+        onDone={() => {
+          setInvite(null);
+          refresh();
+        }}
+        onReject={rejectInvite}
       />
       {confirmNode}
     </>

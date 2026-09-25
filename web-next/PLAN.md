@@ -13,11 +13,11 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 2   | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI                                                                                         | ✅         |
 | 3   | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing                                                                                         | ✅         |
 | 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          | ✅         |
-| 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 |            |
-| 6   | Ôn đến hạn (FSRS)                                                                                                                                                 |            |
-| 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            |
-| 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       |            |
-| 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     |            |
+| 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 | ✅         |
+| 6   | Ôn đến hạn (FSRS)                                                                                                                                                 | ✅         |
+| 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            | ✅  |
+| 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       | ✅         |
+| 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     | ✅         |
 | 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         |            |
 | 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            |            |
 | 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    |            |
@@ -44,8 +44,8 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
    **subset theo `unicode-range`** (Noto Sans SC ~1.800 file, Inter tách latin/vietnamese) — `next/font/local` không hỗ trợ
    gộp subset, còn nạp nguyên file thì Noto Sans SC nặng ~8MB. Trình duyệt chỉ tải subset chứa ký tự đang hiển thị.
 4. **Dữ liệu nét hanzi-writer**: gói `hanzi-writer-data` có ~9.500 file JSON (~30MB). Thay vì chép hết vào `public/`, script
-   `scripts/copy-hanzi-data.ts` (chạy ở `postinstall`/`prebuild`) chỉ chép các chữ cần cho trang Bộ thủ (214 bộ + chữ ví dụ) vào
-   `public/hanzi-data/`, còn chữ khác (từ vựng của user) phục vụ qua `/api/hanzi/[char]` đọc từ gói. Vẫn tự host, không CDN.
+   mọi chữ phục vụ qua `/api/hanzi/[char]` đọc thẳng từ gói (chỉ nhận đúng 1 chữ Hán → không đọc được file khác; cache 1 năm),
+   `outputFileTracingIncludes` chép dữ liệu vào bản standalone. Vẫn tự host, không CDN, không cần script chép file.
 5. **ID**: mọi bảng dùng `uuid` — Better Auth cấu hình `advanced.database.generateId: "uuid"` nên `user.id` cũng là `uuid`, khoá ngoại cùng kiểu.
 6. **Mật khẩu**: tối thiểu **8** ký tự (spec) thay cho 6 của bản cũ; vẫn chặn toàn khoảng trắng / khoảng trắng đầu-cuối như bản cũ.
 7. **Chấm bài ở server**: câu hỏi ôn tập không gửi đáp án xuống client; server action `checkAnswer` chấm bằng `lib/grading.ts`.
@@ -77,6 +77,28 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 21. **Ảnh gửi cùng form** (FormData trong một Server Action) thay vì tải trước → không có ảnh mồ côi. Đổi ảnh = ảnh mới (id mới),
     ảnh cũ bị xoá; nhờ vậy `/api/images/[id]` cache `immutable` an toàn.
 22. **Thanh thao tác hàng loạt** phase 4: Thêm tag, Đã thuộc, Cần ôn, Xoá. Nút "Ôn tập" thêm ở phase 5, "Chia sẻ" ở phase 8.
+
+23. **Phiên ôn tập** ở bảng `review_session` (một phiên "active" mỗi người; tạo bài mới thì bài cũ chuyển "abandoned").
+    Câu hỏi lưu snapshot của từ; client chỉ nhận phần đề bài, đáp án chỉ trả về sau khi chấm (`toClient` trong `features/review/service.ts`).
+    "Thiết lập lần trước" lấy từ phiên ôn tự chọn gần nhất trong DB (thay localStorage của bản cũ) → đổi thiết bị vẫn nhớ.
+24. **Đổi Khó/Được/Dễ**: lưu trạng thái thẻ trước khi chấm trong câu hỏi → đổi đánh giá thì tính lại từ trạng thái đó và thay log cũ
+    (không cộng dồn `reps`). Ôn đến hạn tối đa 50 thẻ mỗi lượt.
+25. **Ghi chú cá nhân của ngữ pháp** ở bảng riêng (`grammarPersonalNote`) → không bao giờ nằm trong truy vấn xem trước / chia sẻ.
+    Người nhận chỉ xem trước qua `?share=<id>` khi lời mời còn "pending"; chấp nhận = tạo bản sao riêng (chọn giữ tag của người gửi),
+    từ chối = không tạo gì. Xoá ngữ pháp thì các lời mời đang chờ bị huỷ.
+26. **Thông báo**: bảng `notification` (payload jsonb: người gửi, tiêu đề, `shareId`); chuông tải lại khi đổi trang, khi quay lại tab
+    và mỗi 60 giây (không cần WebSocket); mở chuông = đánh dấu đã đọc. Lời mời ngữ pháp xử lý được ngay trong chuông.
+
+27. **Chia sẻ từ vựng**: bản chụp lưu cả `imageId` của người gửi nhưng người nhận xem trước chỉ thấy `hasImage` (không lộ id);
+    chấp nhận thì server sao chép ảnh thành ảnh mới của người nhận. Từ trùng Hán tự với kho người nhận được bỏ qua.
+    Kiểm tra người nhận dùng chung với Ngữ pháp (`features/sharing/recipient.ts`).
+28. **Bộ thủ**: "Đã thuộc" lưu ở bảng `radical_known`. Trang chi tiết có khung nét viết (xem animation / luyện viết theo nét),
+    bấm chữ ví dụ để xem cách viết chữ đó.
+
+29. **Bài học**: nội dung tĩnh trong `src/data/lessons/<id>/`, kiểm tra bằng Zod lúc nạp và trong unit test (kể cả audio tồn tại).
+    Đáp án có sẵn ở client để phản hồi ngay từng câu; khi nộp, **server chấm lại** từ nội dung bài rồi mới lưu điểm.
+    Bài làm dở lưu ở `sessionStorage` (refresh không mất). Phần "Nghe & nhận diện" của Bài 1 chưa có audio (bản Flutter cũng chưa có)
+    → nút nghe vô hiệu kèm ghi chú. Sửa chỗ gõ nhầm thanh điệu ở Flutter: "ā á ă à" → "ā á ǎ à".
 
 ## Chỗ mơ hồ & cách xử lý
 
