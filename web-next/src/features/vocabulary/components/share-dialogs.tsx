@@ -155,8 +155,8 @@ function ShareBody({ words }: { words: ShareWord[] }) {
           aria-describedby="vs-hint vs-err"
         />
         <span id="vs-hint" className="text-[13.5px] text-text-3">
-          Nhiều email cách nhau bằng dấu phẩy. Người nhận bấm “Chấp nhận” thì các từ được chép vào kho của họ (kèm ảnh
-          minh họa). Trạng thái học và lịch ôn của bạn không được gửi đi.
+          Nhiều email cách nhau bằng dấu phẩy. Người nhận bấm “Chấp nhận” thì các từ được chép vào kho của họ. Trạng
+          thái học và lịch ôn của bạn không được gửi đi.
         </span>
         <span id="vs-err" role="alert" className={cn("text-sm text-red", !err && "hidden")}>
           {err}

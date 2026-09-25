@@ -76,14 +76,15 @@ describe("chia sẻ từ vựng", () => {
     const [s] = await share.listReceivedVocab(B.id);
     expect(s).toMatchObject({ id: shareId, count: 2, senderName: A.name, senderTags: ["HSK1", "Tính từ"] });
     expect(s!.words[1]!.meaningVi).toBe("tốt");
-    expect(s!.words[0]).toMatchObject({ hanzi: "你", hasImage: true });
+    // Chức năng ảnh đã bỏ: ảnh của người gửi không đi kèm lời mời.
+    expect(s!.words[0]).toMatchObject({ hanzi: "你", hasImage: false });
     expect(JSON.stringify(s)).not.toContain("imageId");
     expect(await share.listReceivedVocab(C.id)).toEqual([]);
     // Người khác không chấp nhận được lời mời không phải của mình.
     await expect(share.acceptVocabShare(C, shareId)).rejects.toThrow("Lời mời chia sẻ không còn tồn tại.");
   });
 
-  it("chấp nhận: chép vào kho người nhận (bỏ từ trùng), sao chép ảnh, tạo thẻ ôn, báo người gửi", async () => {
+  it("chấp nhận: chép vào kho người nhận (bỏ từ trùng), không kèm ảnh, tạo thẻ ôn, báo người gửi", async () => {
     await svc.createVocab(B.id, input({ hanzi: "好", pinyin: "hǎo", meaningVi: "của B" }));
     const r = await share.acceptVocabShare(B, shareId, { keepTags: false, extraTags: ["Từ bạn gửi"] });
     expect(r).toEqual({ added: 1, skipped: ["好"], total: 2 });
@@ -93,14 +94,11 @@ describe("chia sẻ từ vựng", () => {
       .where(and(eq(vocab.userId, B.id), eq(vocab.hanzi, "你")));
     expect(copy).toMatchObject({ pinyin: "nǐ", note: "ghi chú", status: "review" });
     expect((await svc.getVocab(B.id, copy!.id)).tags).toEqual(["Từ bạn gửi"]);
-    // Ảnh là bản mới thuộc B; ảnh của A vẫn còn.
+    // Không sao chép ảnh (chức năng ảnh đã bỏ); ảnh của A vẫn nguyên, B không đọc được.
     const [origA] = await db.select({ imageId: vocab.imageId }).from(vocab).where(eq(vocab.id, ni));
-    expect(copy!.imageId).toBeTruthy();
-    expect(copy!.imageId).not.toBe(origA!.imageId);
-    expect((await storage.get(B.id, copy!.imageId!))?.data.equals(PNG)).toBe(true);
+    expect(copy!.imageId).toBeNull();
     expect(await storage.get(B.id, origA!.imageId!)).toBeNull();
-    const [img] = await db.select({ userId: image.userId }).from(image).where(eq(image.id, copy!.imageId!));
-    expect(img!.userId).toBe(B.id);
+    expect(await db.select().from(image).where(eq(image.userId, B.id))).toEqual([]);
     expect(await db.select().from(srsCard).where(eq(srsCard.vocabId, copy!.id))).toHaveLength(1);
     const n = await listNotifications(A.id);
     expect(n[0]).toMatchObject({ type: "vocab_share_accepted", payload: { actorName: B.name, count: 1 } });

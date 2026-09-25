@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Database,
   Eye,
-  ImageIcon,
   MoreHorizontal,
   Pencil,
   PlayCircle,
@@ -152,7 +151,7 @@ export function VocabListView({
       vocabIds: ids,
       count: ids.length,
       mode: "meaning",
-      showImage: true,
+      showImage: false,
       label: `${ids.length} từ đã chọn`,
     });
     if (!r.ok) return void toast.error(r.message || "Không thể tạo bài ôn tập.");
@@ -489,7 +488,7 @@ export function VocabListView({
 
               {/* Desktop: bảng */}
               <div className="hidden overflow-x-auto rounded-md border border-border md:block">
-                <table className="w-full min-w-[980px] border-collapse text-[15.5px]">
+                <table className="w-full min-w-[900px] border-collapse text-[15.5px]">
                   <caption className="sr-only">
                     Danh sách từ vựng, trang {data.page}/{data.pageCount}
                   </caption>
@@ -499,7 +498,6 @@ export function VocabListView({
                         <span className="sr-only">Chọn</span>
                       </th>
                       <th className="w-11">#</th>
-                      <th className="w-[76px]">Hình ảnh</th>
                       <th>Từ vựng</th>
                       <th>Pinyin</th>
                       <th>Nghĩa tiếng Việt</th>
@@ -528,9 +526,6 @@ export function VocabListView({
                           />
                         </td>
                         <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
-                        <td>
-                          <Thumb v={v} />
-                        </td>
                         <td>
                           <span className="hanzi text-[22px]" lang="zh">
                             {v.hanzi}
@@ -573,7 +568,7 @@ export function VocabListView({
                   <li
                     key={v.id}
                     className={cn(
-                      "grid grid-cols-[30px_52px_minmax(0,1fr)_auto] gap-x-2.5 gap-y-0.5 rounded-2xl border border-border bg-white py-3 pr-2.5 pl-3 [grid-template-areas:'chk_img_word_act''chk_img_py_status''chk_img_mean_mean''note_note_note_note''tags_tags_tags_tags'] max-[380px]:grid-cols-[28px_44px_minmax(0,1fr)_auto]",
+                      "grid grid-cols-[30px_minmax(0,1fr)_auto] gap-x-2.5 gap-y-0.5 rounded-2xl border border-border bg-white py-3 pr-2.5 pl-3 [grid-template-areas:'chk_word_act''chk_py_status''chk_mean_mean''note_note_note''tags_tags_tags'] max-[380px]:grid-cols-[28px_minmax(0,1fr)_auto]",
                       selected.has(v.id) && "border-[#A9D3F8] bg-[#F1F8FF]",
                     )}
                   >
@@ -585,9 +580,6 @@ export function VocabListView({
                         onChange={(e) => toggle(v.id, e.target.checked)}
                         aria-label={`Chọn ${v.hanzi}`}
                       />
-                    </div>
-                    <div className="self-center [grid-area:img]">
-                      <Thumb v={v} className="size-[52px] max-[380px]:size-11" />
                     </div>
                     <div
                       className="min-w-0 hanzi text-[22px] leading-tight [overflow-wrap:anywhere] [grid-area:word]"
@@ -695,34 +687,6 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
     >
       {children}
     </button>
-  );
-}
-
-function Thumb({ v, className }: { v: VocabItem; className?: string }) {
-  const [broken, setBroken] = React.useState(false);
-  if (!v.imageId || broken)
-    return (
-      <span
-        aria-hidden="true"
-        title={broken ? "Không tải được ảnh" : undefined}
-        className={cn(
-          "flex size-[50px] items-center justify-center rounded-[10px] bg-[#EEF5FC] text-[#A6BBD4]",
-          className,
-        )}
-      >
-        <ImageIcon className="size-6" />
-      </span>
-    );
-  return (
-    // Ảnh riêng tư (cần cookie) → không qua next/image.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`/api/images/${v.imageId}`}
-      alt=""
-      loading="lazy"
-      onError={() => setBroken(true)}
-      className={cn("size-[50px] rounded-[10px] bg-[#EEF5FC] object-cover", className)}
-    />
   );
 }
 

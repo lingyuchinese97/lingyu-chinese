@@ -292,8 +292,6 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
               <dd className="font-semibold">{s.total} từ</dd>
               <dt className="text-text-3">Hình thức</dt>
               <dd className="font-semibold">{MODE_LABEL[s.config.mode]}</dd>
-              <dt className="text-text-3">Hiển thị hình ảnh</dt>
-              <dd className="font-semibold">{s.config.showImage ? "Có" : "Không"}</dd>
             </dl>
             {!q.answered ? (
               <div className="mt-4 flex gap-3 rounded-md bg-blue-50 p-3 text-sm text-text-2">

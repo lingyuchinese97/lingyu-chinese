@@ -238,7 +238,8 @@ function toClient(row: Row): ClientSession {
     total: qs.length,
     questions: qs.map((q) => {
       const w = q.word;
-      const imageId = cfg.showImage ? w.imageId : null;
+      // Chức năng ảnh đã bỏ: không trả ảnh cho màn ôn tập.
+      const imageId = null;
       const prompt =
         q.promptType === "meaning"
           ? { hanzi: w.hanzi, pinyin: w.pinyin, imageId }
@@ -257,7 +258,7 @@ function toClient(row: Row): ClientSession {
               reveal: {
                 ...w,
                 imageId,
-                matched: q.matched ? { ...q.matched, imageId: cfg.showImage ? q.matched.imageId : null } : null,
+                matched: q.matched ? { ...q.matched, imageId: null } : null,
                 rating: q.rating,
               },
             }

@@ -3,8 +3,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AuthError, currentUserOrThrow } from "@/server/session";
 import { log } from "@/server/log";
-import { IMAGE } from "@/lib/limits";
-import { imageSize, sniffImage } from "@/lib/image-sniff";
 import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "./schema";
 import * as svc from "./service";
 import * as share from "./share-service";
@@ -28,22 +26,6 @@ function fail(e: unknown): { ok: false; message: string; fieldErrors?: Record<st
   return { ok: false, message: "Đã có lỗi xảy ra. Vui lòng thử lại." };
 }
 
-/** Đọc ảnh từ FormData, kiểm tra magic bytes + kích thước. Không có file → undefined. */
-async function readImage(form: FormData): Promise<svc.NewImage | null | undefined> {
-  if (form.get("removeImage") === "1") return null;
-  const f = form.get("image");
-  if (!(f instanceof File) || f.size === 0) return undefined;
-  if (f.size > IMAGE.MAX_BYTES)
-    throw new svc.VocabError("validation", "Ảnh vượt quá 1MB sau khi nén. Hãy chọn ảnh khác.");
-  const bytes = Buffer.from(await f.arrayBuffer());
-  const mime = sniffImage(bytes);
-  if (!mime) throw new svc.VocabError("validation", "Chỉ hỗ trợ ảnh WebP, JPG hoặc PNG.");
-  const size = imageSize(bytes, mime);
-  if (!size || size.width > 4096 || size.height > 4096)
-    throw new svc.VocabError("validation", "Không đọc được kích thước ảnh. Hãy chọn ảnh khác.");
-  return { bytes, mime, ...size };
-}
-
 function parseInput(form: FormData) {
   const raw = form.get("data");
   let json: unknown = {};
@@ -59,8 +41,8 @@ export async function createVocabAction(form: FormData): Promise<ActionResult<{ 
   try {
     const u = await currentUserOrThrow();
     const input = parseInput(form);
-    const img = await readImage(form);
-    const id = await svc.createVocab(u.id, input, img ?? null);
+    // Chức năng ảnh đã bỏ: không nhận ảnh tải lên.
+    const id = await svc.createVocab(u.id, input, null);
     revalidatePath("/vocabulary");
     return { ok: true, data: { id, hanzi: input.hanzi } };
   } catch (e) {
@@ -73,8 +55,7 @@ export async function updateVocabAction(id: string, form: FormData): Promise<Act
     const u = await currentUserOrThrow();
     const vid = z.uuid().parse(id);
     const input = parseInput(form);
-    const img = await readImage(form);
-    await svc.updateVocab(u.id, vid, input, img);
+    await svc.updateVocab(u.id, vid, input, undefined);
     revalidatePath("/vocabulary");
     return { ok: true, data: { hanzi: input.hanzi } };
   } catch (e) {
