@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Camera, ImageIcon, ImagePlus, Info, Loader2, Save, Sparkles, Trash2 } from "lucide-react";
+import { Loader2, Save, Sparkles } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
@@ -11,14 +11,12 @@ import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { VOCAB } from "@/lib/limits";
 import { applyToneInput } from "@/lib/pinyin";
-import { compressImage, ImageError } from "@/lib/image-compress";
 import { vocabInputSchema } from "../schema";
 import type { VocabItem } from "../service";
 import { createVocabAction, updateVocabAction } from "../actions";
 import { RadicalPicker } from "./radical-picker";
 import { TagPicker } from "./tag-picker";
 
-type Img = { kind: "keep"; id: string } | { kind: "none" } | { kind: "new"; blob: Blob; url: string };
 type Errors = Partial<Record<"hanzi" | "pinyin" | "meaningVi" | "note" | "tags" | "radicals", string>>;
 
 export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: string[] }) {
@@ -32,16 +30,10 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
     tags: word?.tags ?? [],
     radicals: word?.radicals ?? [],
   });
-  const [img, setImg] = React.useState<Img>(word?.imageId ? { kind: "keep", id: word.imageId } : { kind: "none" });
-  const [imgBusy, setImgBusy] = React.useState(false);
-  const [imgErr, setImgErr] = React.useState("");
   const [errors, setErrors] = React.useState<Errors>({});
   const [formError, setFormError] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [suggest, setSuggest] = React.useState("");
-  const [dragOver, setDragOver] = React.useState(false);
-  const fileRef = React.useRef<HTMLInputElement>(null);
-  const camRef = React.useRef<HTMLInputElement>(null);
   const alertRef = React.useRef<HTMLDivElement>(null);
 
   const set = <K extends keyof typeof m>(k: K, v: (typeof m)[K]) => {
@@ -65,23 +57,6 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
   }, [hanOnly, m.pinyin]);
   const showSuggest = !!hanOnly && !m.pinyin.trim() && !!suggest;
 
-  // Giải phóng URL xem trước ảnh.
-  React.useEffect(() => () => void (img.kind === "new" && URL.revokeObjectURL(img.url)), [img]);
-
-  async function takeFile(file: File | undefined) {
-    setImgErr("");
-    if (!file) return;
-    setImgBusy(true);
-    try {
-      const { blob } = await compressImage(file);
-      setImg({ kind: "new", blob, url: URL.createObjectURL(blob) });
-    } catch (e) {
-      setImgErr(e instanceof ImageError ? e.message : "Không xử lý được ảnh này. Hãy chọn ảnh khác.");
-    } finally {
-      setImgBusy(false);
-    }
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (saving) return;
@@ -100,8 +75,6 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
     }
     const fd = new FormData();
     fd.set("data", JSON.stringify(parsed.data));
-    if (img.kind === "new") fd.set("image", new File([img.blob], "image.webp", { type: img.blob.type }));
-    if (editing && img.kind === "none" && word?.imageId) fd.set("removeImage", "1");
     setSaving(true);
     const r = editing ? await updateVocabAction(word!.id, fd) : await createVocabAction(fd);
     if (!r.ok) {
@@ -116,13 +89,11 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
     router.refresh();
   }
 
-  const imgSrc = img.kind === "keep" ? `/api/images/${img.id}` : img.kind === "new" ? img.url : null;
-
   return (
     <form
       onSubmit={onSubmit}
       noValidate
-      className="relative grid gap-6 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-7 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8"
+      className="relative grid gap-6 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-7 lg:gap-6"
     >
       <div className="flex min-w-0 flex-col gap-5">
         <div>
@@ -272,118 +243,12 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2.5">
-          <span className="text-[15px] font-semibold text-text">
-            Hình ảnh <span className="font-medium text-text-2">(không bắt buộc)</span>
-          </span>
-          {imgSrc ? (
-            <div className="relative overflow-hidden rounded-lg border border-border bg-bg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imgSrc}
-                alt="Ảnh minh họa cho từ vựng"
-                className="aspect-[4/3] w-full object-contain"
-                onError={() => setImgErr("Không hiển thị được ảnh này. Hãy chọn ảnh khác.")}
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                className="absolute top-2.5 right-2.5"
-                onClick={() => setImg({ kind: "none" })}
-              >
-                <Trash2 />
-                Xóa ảnh
-              </Button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragOver(false);
-                void takeFile(e.dataTransfer.files[0]);
-              }}
-              aria-label="Tải ảnh lên (JPG, PNG, WebP tối đa 5MB)"
-              className={cn(
-                "flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#BFD9F2] bg-[#F7FBFF] p-4 text-center text-text-2 transition-colors hover:border-blue hover:bg-blue-50",
-                dragOver && "border-blue bg-blue-50",
-              )}
-            >
-              {imgBusy ? (
-                <>
-                  <Loader2 className="size-8 animate-spin text-blue" />
-                  Đang xử lý ảnh...
-                </>
-              ) : (
-                <>
-                  <ImagePlus className="size-10 text-blue-600" />
-                  <strong className="text-navy">Nhấp để tải ảnh lên</strong>
-                  <span className="text-sm">Hỗ trợ JPG, PNG, WebP (tối đa 5MB) — ảnh tự thu nhỏ khi lưu</span>
-                </>
-              )}
-            </button>
-          )}
-          {imgErr ? (
-            <p role="alert" className="text-sm text-red">
-              {imgErr}
-            </p>
-          ) : null}
-          <div className="grid grid-cols-2 gap-2.5">
-            <Button type="button" variant="secondary" onClick={() => camRef.current?.click()} disabled={imgBusy}>
-              <Camera />
-              Chụp ảnh
-            </Button>
-            <Button type="button" variant="secondary" onClick={() => fileRef.current?.click()} disabled={imgBusy}>
-              <ImageIcon />
-              Chọn ảnh
-            </Button>
-          </div>
-          <input
-            ref={camRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            capture="environment"
-            className="sr-only"
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={(e) => {
-              void takeFile(e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="sr-only"
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={(e) => {
-              void takeFile(e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
-          <div className="flex gap-3 rounded-md bg-blue-50 p-3 text-sm text-text-2">
-            <Info className="mt-0.5 size-5 shrink-0 text-blue-600" aria-hidden="true" />
-            <div>
-              <strong className="text-navy">Mẹo nhỏ: </strong>Hình ảnh sẽ giúp bạn ghi nhớ từ vựng nhanh và lâu hơn.
-            </div>
-          </div>
-        </div>
-
         {/* Điện thoại: nút Lưu/Hủy dính ở đáy (màn tập trung không có tab bar). */}
         <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1fr_1.6fr] gap-2.5 border-t border-border bg-white px-4 pt-2.5 pb-[calc(10px+var(--safe-b))] shadow-[0_-6px_20px_rgba(20,60,110,.08)] lg:static lg:mt-auto lg:grid-cols-2 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
           <Button asChild variant="secondary" className="min-h-[50px] lg:min-h-12">
             <Link href="/vocabulary">Hủy</Link>
           </Button>
-          <Button type="submit" variant="primary" disabled={saving || imgBusy} className="min-h-[50px] lg:min-h-12">
+          <Button type="submit" variant="primary" disabled={saving} className="min-h-[50px] lg:min-h-12">
             {saving ? <Loader2 className="animate-spin" /> : <Save />}
             {saving ? "Đang lưu..." : "Lưu từ vựng"}
           </Button>

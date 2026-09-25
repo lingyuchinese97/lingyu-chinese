@@ -15,7 +15,7 @@ export function DueStart({ due, defaultMode }: { due: number; defaultMode: Revie
   const [busy, setBusy] = React.useState(false);
   async function start() {
     setBusy(true);
-    const r = await startDueAction({ mode, showImage: true });
+    const r = await startDueAction({ mode, showImage: false });
     if (!r.ok) {
       setBusy(false);
       return void toast.error(r.message);

@@ -266,7 +266,7 @@ function DataCard() {
     <Card id="set-data" icon={<Database />} title="Dữ liệu học tập">
       <Row
         title="Xuất dữ liệu"
-        desc="Tải file JSON gồm từ vựng (kèm ảnh), tag, ngữ pháp, ghi chú, câu dịch, bộ thủ đã thuộc và tiến độ bài học."
+        desc="Tải file JSON gồm từ vựng, tag, ngữ pháp, ghi chú, câu dịch, bộ thủ đã thuộc và tiến độ bài học."
       >
         <Button asChild variant="secondary">
           <a href="/api/account/export" download>

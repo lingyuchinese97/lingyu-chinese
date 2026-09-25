@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { PNG_2x2, register } from "./helpers";
+import { register } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
@@ -35,7 +35,7 @@ test("dữ liệu mẫu, tìm kiếm bỏ dấu, lọc tag, phân trang", async 
   await expect(page).toHaveURL(/page=3/);
 });
 
-test("thêm từ (pinyin tự thêm dấu, ảnh), sửa, xoá", async ({ page, isMobile }) => {
+test("thêm từ (pinyin tự thêm dấu, không còn phần ảnh), sửa, xoá", async ({ page, isMobile }) => {
   await register(page, "Người Học", "vf");
   await page.goto("/vocabulary/new");
   // Màn tập trung: không có tab bar dưới đáy.
@@ -47,17 +47,16 @@ test("thêm từ (pinyin tự thêm dấu, ảnh), sửa, xoá", async ({ page, 
   await page.getByLabel("Nghĩa tiếng Việt").fill("nước biển");
   await page.locator("#radical-input").fill("nuoc");
   await page.getByRole("option", { name: /Thủy/ }).click();
-  await page
-    .locator("input[type=file]:not([capture])")
-    .setInputFiles({ name: "a.png", mimeType: "image/png", buffer: PNG_2x2 });
-  await expect(page.getByAltText("Ảnh minh họa cho từ vựng")).toBeVisible();
+  // Chức năng ảnh đã bỏ: form không còn ô tải ảnh.
+  await expect(page.locator("input[type=file]")).toHaveCount(0);
+  await expect(page.getByText("Hình ảnh")).toHaveCount(0);
   await page.getByRole("button", { name: "Lưu từ vựng" }).click();
 
   await expect(page).toHaveURL(/\/vocabulary$/);
   await expect(page.getByText("Đã thêm “海水” vào danh sách.")).toBeVisible();
   const list = results(page, isMobile);
   await expect(list.getByText("海水", { exact: true })).toBeVisible();
-  await expect(list.locator("img[src^='/api/images/']")).toHaveCount(1);
+  await expect(list.locator("img[src^='/api/images/']")).toHaveCount(0);
 
   // Sửa qua menu "…"
   await list.getByRole("button", { name: "Thao tác khác cho 海水" }).click();
@@ -87,7 +86,7 @@ test("form báo lỗi khi thiếu trường bắt buộc", async ({ page }) => {
   await expect(page).toHaveURL(/\/vocabulary\/new$/);
 });
 
-test("người khác không xem được từ vựng và ảnh của mình", async ({ browser }) => {
+test("người khác không xem được từ vựng của mình; API ảnh cũ vẫn chặn người lạ", async ({ browser }) => {
   // Chủ dùng màn desktop (bảng có link "Sửa") — context mới kế thừa viewport của project nên phải ghi rõ.
   const a = await (
     await browser.newContext({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false })
@@ -97,20 +96,14 @@ test("người khác không xem được từ vựng và ảnh của mình", asy
   await a.getByLabel("Hán tự").fill("秘密");
   await a.getByLabel("Pinyin").fill("mìmì");
   await a.getByLabel("Nghĩa tiếng Việt").fill("bí mật");
-  await a
-    .locator("input[type=file]:not([capture])")
-    .setInputFiles({ name: "a.png", mimeType: "image/png", buffer: PNG_2x2 });
-  await expect(a.getByAltText("Ảnh minh họa cho từ vựng")).toBeVisible();
   await a.getByRole("button", { name: "Lưu từ vựng" }).click();
   await expect(a).toHaveURL(/\/vocabulary$/);
   await expect(a.getByText("Đã thêm “秘密” vào danh sách.")).toBeVisible();
   const editLink = a.getByRole("link", { name: "Sửa 秘密" });
   await expect(editLink).toBeVisible();
-  const thumb = a.locator("table img[src^='/api/images/']");
-  await expect(thumb).toHaveCount(1);
-  const img = await thumb.getAttribute("src");
   const editHref = await editLink.getAttribute("href");
-  expect(img).toBeTruthy();
+  // Ảnh cũ (tạo trước khi bỏ chức năng) vẫn được bảo vệ: id bất kỳ → người khác 404, chưa đăng nhập 401.
+  const img = "/api/images/00000000-0000-4000-8000-000000000000";
   expect(editHref).toMatch(/\/vocabulary\/.+\/edit$/);
 
   const b = await (await browser.newContext()).newPage();

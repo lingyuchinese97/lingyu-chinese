@@ -7,7 +7,6 @@ import {
   BookOpen,
   Check,
   FileText,
-  ImageIcon,
   ListChecks,
   Loader2,
   Pin,
@@ -49,7 +48,6 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
   const [sel, setSel] = React.useState<string[]>((last?.tags ?? []).filter((t) => tags.some((x) => x.name === t)));
   const [count, setCount] = React.useState(last?.count ?? 10);
   const [mode, setMode] = React.useState<ReviewMode>(last?.mode ?? "meaning");
-  const [showImage, setShowImage] = React.useState(last ? last.showImage : true);
   const [avail, setAvail] = React.useState(total);
   const [busy, setBusy] = React.useState(false);
 
@@ -87,7 +85,7 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
       if (!ok) return;
     }
     setBusy(true);
-    const r = await startCustomAction({ tags: sel, count: effCount, mode, showImage });
+    const r = await startCustomAction({ tags: sel, count: effCount, mode, showImage: false });
     if (!r.ok) {
       setBusy(false);
       return void toast.error(r.message || "Không thể tạo bài ôn tập.");
@@ -231,36 +229,6 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
               })}
             </div>
           </Step>
-
-          <div className="flex gap-4">
-            <StepNum n={4} />
-            <div className="flex flex-1 items-center justify-between gap-4">
-              <div>
-                <label htmlFor="show-img" className="text-[17px] font-bold text-navy">
-                  Hiển thị hình ảnh
-                </label>
-                <p className="text-[14.5px] text-text-2">Bật/tắt hình ảnh minh họa (nếu có).</p>
-              </div>
-              <button
-                id="show-img"
-                type="button"
-                role="switch"
-                aria-checked={showImage}
-                onClick={() => setShowImage((v) => !v)}
-                className={cn(
-                  "relative h-8 w-14 shrink-0 rounded-full transition-colors focus-visible:shadow-[var(--focus-ring)]",
-                  showImage ? "bg-blue" : "bg-[#CFDCEB]",
-                )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-1 left-1 size-6 rounded-full bg-white shadow transition-transform",
-                    showImage && "translate-x-6",
-                  )}
-                />
-              </button>
-            </div>
-          </div>
         </section>
 
         <aside aria-label="Tóm tắt thiết lập" className="flex flex-col gap-5 lg:sticky lg:top-4">
@@ -288,9 +256,6 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
               </SumRow>
               <SumRow icon={<BookOpen />} label="Hình thức ôn tập">
                 {MODE_LABEL[mode]}
-              </SumRow>
-              <SumRow icon={<ImageIcon />} label="Hiển thị hình ảnh">
-                {showImage ? "Có" : "Không"}
               </SumRow>
               <p className="text-center hand text-lg leading-snug">
                 “Ôn tập hôm nay

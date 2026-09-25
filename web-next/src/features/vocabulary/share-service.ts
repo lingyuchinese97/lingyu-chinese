@@ -69,7 +69,8 @@ async function snapshotOwn(userId: string, ids: string[]): Promise<SnapshotWord[
       meaningVi: r.meaningVi,
       note: r.note,
       radicals: r.radicals,
-      imageId: r.imageId,
+      // Chức năng ảnh đã bỏ: không gửi ảnh khi chia sẻ.
+      imageId: null,
       tags: tags.get(r.id) ?? [],
     }));
 }

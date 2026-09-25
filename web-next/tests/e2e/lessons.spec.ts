@@ -22,7 +22,7 @@ async function answerAll(page: Page, n: number) {
 test("bài học: làm Bài 1 (nghe → ghép âm) → kết quả → lưu tiến độ, trang chủ hiện tiến độ", async ({ page }) => {
   test.setTimeout(120_000);
   await register(page, "Người Học", "ls");
-  await expect(page.getByText("Đã làm 0/2 phần (0%)")).toBeVisible();
+  await expect(page.getByText("0 / 2 phần", { exact: true })).toBeVisible();
   await page.goto("/lessons");
   await page.getByRole("link", { name: /Nghe ghép âm/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Nghe ghép âm" })).toBeVisible();
@@ -59,7 +59,7 @@ test("bài học: làm Bài 1 (nghe → ghép âm) → kết quả → lưu ti�
   await expect(page.getByRole("button", { name: "Bài 2 sắp ra mắt" })).toBeDisabled();
 
   await page.goto("/home");
-  await expect(page.getByText(/Đã làm 2\/2 phần \(100%\)/)).toBeVisible();
+  await expect(page.getByText("2 / 2 phần", { exact: true })).toBeVisible();
   await page.goto("/lessons/bai1");
   await expect(page.getByText("Cao nhất 8/20")).toBeVisible();
   expect((await page.goto("/lessons/bai9"))?.status()).toBe(404);
