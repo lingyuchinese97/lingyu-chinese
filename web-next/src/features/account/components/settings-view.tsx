@@ -277,12 +277,12 @@ function DataCard() {
       </Row>
       <Row
         title="Nhập dữ liệu"
-        desc="Chọn file đã xuất. Dữ liệu được gộp vào, không ghi đè; bản ghi trùng sẽ được bỏ qua."
+        desc="Chọn file .json đã xuất, hoặc file .csv tải từ bản LingYu cũ (Từ vựng → chọn từ → Chia sẻ → Tải file → CSV). Dữ liệu được gộp vào, không ghi đè; từ trùng sẽ được bỏ qua."
       >
         <input
           ref={file}
           type="file"
-          accept="application/json,.json"
+          accept="application/json,.json,text/csv,.csv"
           className="sr-only"
           id="import-file"
           onChange={onFile}

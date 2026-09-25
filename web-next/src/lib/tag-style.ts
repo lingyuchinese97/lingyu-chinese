@@ -1,11 +1,11 @@
 /** Màu pastel ổn định cho tag theo tên (như bản cũ); tag bắt đầu bằng "HSK" luôn màu xanh. */
 const TAG_PALETTE: [string, string][] = [
-  ["#E6F2FF", "#0B6FD0"],
+  ["#E6F2FF", "#0A6BC9"],
   ["#FFEAEA", "#D0262D"],
-  ["#E7F8EF", "#138A55"],
-  ["#FFF1E3", "#C66A06"],
+  ["#E7F8EF", "#0F7A4B"],
+  ["#FFF1E3", "#A35604"],
   ["#F1EAFF", "#6B3FD0"],
-  ["#E3F7F8", "#0B8791"],
+  ["#E3F7F8", "#087078"],
   ["#FDEAF5", "#B8327D"],
   ["#EEF1F6", "#4B5E7A"],
 ];

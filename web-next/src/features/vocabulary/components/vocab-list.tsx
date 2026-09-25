@@ -690,7 +690,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       className={cn(
         "inline-flex min-h-10 shrink-0 items-center rounded-[10px] border-[1.5px] px-4 text-[14.5px] font-medium whitespace-nowrap transition-colors",
         on
-          ? "border-blue bg-blue font-semibold text-white"
+          ? "border-blue-600 bg-blue-600 font-semibold text-white"
           : "border-transparent bg-[#EEF5FC] text-text-2 hover:bg-blue-100",
       )}
     >

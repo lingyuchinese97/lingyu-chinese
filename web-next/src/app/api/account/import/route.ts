@@ -1,7 +1,7 @@
 /** Nhập file JSON đã xuất (gộp, không ghi đè) vào tài khoản đang đăng nhập. */
 import { getSession } from "@/server/session";
 import { log } from "@/server/log";
-import { importData, ImportError } from "@/features/account/transfer";
+import { importData, ImportError, legacyCsvToExport } from "@/features/account/transfer";
 
 export const dynamic = "force-dynamic";
 const MAX_BYTES = 30 * 1024 * 1024;
@@ -23,15 +23,18 @@ export async function POST(req: Request) {
     if (!(file instanceof File) || !file.size)
       return Response.json({ message: "Vui lòng chọn file." }, { status: 400 });
     if (file.size > MAX_BYTES) return Response.json({ message: "File quá lớn (tối đa 30MB)." }, { status: 413 });
-    json = JSON.parse(await file.text());
+    const text = await file.text();
+    // File CSV tải từ bản cũ → chuyển sang dạng file xuất.
+    json = /\.csv$/i.test(file.name) || file.type === "text/csv" ? { csv: text } : JSON.parse(text);
   } catch {
     return Response.json(
-      { message: "Không đọc được file. Hãy chọn file .json đã xuất từ LingYu Chinese." },
+      { message: "Không đọc được file. Hãy chọn file .json (hoặc .csv từ bản cũ) đã xuất từ LingYu Chinese." },
       { status: 400 },
     );
   }
   try {
-    const report = await importData(s.user.id, json);
+    const data = json && typeof json === "object" && "csv" in json ? legacyCsvToExport(String(json.csv)) : json;
+    const report = await importData(s.user.id, data);
     return Response.json({ report });
   } catch (e) {
     if (e instanceof ImportError) return Response.json({ message: e.message }, { status: 400 });

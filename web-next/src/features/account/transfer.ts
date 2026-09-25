@@ -371,3 +371,73 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
   });
   return report;
 }
+
+// ---------- Nhập từ bản cũ (CSV) ----------
+
+/** Tách CSV (RFC 4180: ngoặc kép, "" trong ô, xuống dòng trong ô). */
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+  const s = text.replace(/^﻿/, "");
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]!;
+    if (quoted) {
+      if (ch === '"' && s[i + 1] === '"') {
+        cell += '"';
+        i++;
+      } else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && s[i + 1] === "\n") i++;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else cell += ch;
+  }
+  if (cell || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows.filter((r) => r.some((c) => c.trim()));
+}
+
+/**
+ * File CSV từ bản cũ (Từ vựng → chọn từ → Chia sẻ → Tải file → CSV): cột "Hán tự, Pinyin, Nghĩa tiếng Việt, Ghi chú, Tag".
+ * Chuyển thành dạng file xuất để dùng chung luồng nhập (gộp, bỏ qua từ trùng).
+ */
+export function legacyCsvToExport(text: string) {
+  const rows = parseCsv(text);
+  const head = (rows[0] ?? []).map((h) => h.trim().toLowerCase());
+  const col = (names: string[]) => head.findIndex((h) => names.includes(h));
+  const iHanzi = col(["hán tự", "hanzi"]);
+  const iPinyin = col(["pinyin"]);
+  const iMeaning = col(["nghĩa tiếng việt", "nghĩa", "meaning"]);
+  if (iHanzi < 0 || iPinyin < 0 || iMeaning < 0)
+    throw new ImportError("File CSV cần có cột Hán tự, Pinyin và Nghĩa tiếng Việt (file tải từ bản LingYu cũ).");
+  const iNote = col(["ghi chú", "note"]);
+  const iTag = col(["tag", "tags"]);
+  return {
+    format: EXPORT_FORMAT,
+    version: EXPORT_VERSION,
+    vocab: rows.slice(1).map((r) => ({
+      hanzi: r[iHanzi]?.trim() ?? "",
+      pinyin: r[iPinyin]?.trim() ?? "",
+      meaningVi: r[iMeaning]?.trim() ?? "",
+      note: iNote >= 0 ? (r[iNote]?.trim() ?? "") : "",
+      tags:
+        iTag >= 0
+          ? (r[iTag] ?? "")
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
+    })),
+  };
+}

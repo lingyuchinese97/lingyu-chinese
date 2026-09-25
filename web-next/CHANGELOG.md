@@ -10,6 +10,18 @@
 
 ### Added
 
+- **PWA**: cài lên màn hình chính (manifest, icon), service worker (Serwist) cache file tĩnh, font, audio bài học và dữ liệu nét chữ;
+  mất mạng hiện trang "Bạn đang offline". Không cache trang hay dữ liệu riêng của người dùng.
+- **Header bảo mật**: Content-Security-Policy (chỉ tài nguyên của chính app), `X-Content-Type-Options`, `Referrer-Policy`,
+  `Permissions-Policy`, `X-Frame-Options`, `Cross-Origin-Opener-Policy`, HSTS khi chạy https.
+- **Nhập từ bản cũ**: trang Cài đặt nhận file CSV tải từ bản LingYu cũ (Từ vựng → Chia sẻ → Tải file → CSV).
+- `pnpm db:seed`: tài khoản demo (admin + người học có dữ liệu mẫu).
+- Kiểm tra a11y tự động (axe) trên các trang chính; e2e cho PWA/header bảo mật.
+
+### Changed
+
+- Làm đậm nhẹ một số màu chữ (link, gợi ý, pinyin, tag, nút) để đạt tương phản WCAG AA.
+
 - **Cài đặt** (`/settings`): sửa tên; đổi mật khẩu (hiện tại + mới + xác nhận; các thiết bị khác bị đăng xuất); **xuất dữ liệu** JSON
   (từ vựng kèm ảnh base64 và lịch ôn, tag, ngữ pháp, ghi chú cá nhân, bộ thủ đã thuộc, tiến độ bài học); **nhập dữ liệu** (gộp, không
   ghi đè, báo số đã thêm / bỏ qua); dữ liệu mẫu; **xoá tài khoản** (nhập lại mật khẩu); đăng xuất.
