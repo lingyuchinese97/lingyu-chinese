@@ -5,6 +5,7 @@ import { Heart, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BottomNav } from "./bottom-nav";
 import { ADMIN_NAV, NAV, TAB_KEYS, shellState } from "./nav";
+import { NavProgress } from "./nav-progress";
 import { NotificationBell } from "./notification-bell";
 import { Sidebar } from "./sidebar";
 import { UserMenu } from "./user-menu";
@@ -49,6 +50,7 @@ export function AppShell({
       data-focus={focus || undefined}
       className="relative grid min-h-dvh bg-[radial-gradient(1200px_500px_at_70%_-10%,#EAF5FF_0%,transparent_60%),linear-gradient(180deg,#F7FBFF_0%,#F2F8FE_100%)] lg:grid-cols-[96px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]"
     >
+      <NavProgress />
       <a
         href="#main"
         className="sr-only z-[70] rounded-md bg-white px-4 py-2 font-semibold text-blue-600 shadow-card focus:not-sr-only focus:fixed focus:top-3 focus:left-3"

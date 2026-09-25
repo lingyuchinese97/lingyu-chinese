@@ -6,6 +6,9 @@
 
 ### Changed
 
+- **Tăng tốc**: máy chủ Vercel chạy ở Singapore (`sin1`), cùng vùng với database Neon. Trước đây chạy mặc định ở Mỹ nên mỗi
+  truy vấn phải đi vòng qua Thái Bình Dương, làm màn hình phản hồi chậm vài giây.
+- Thanh tải mảnh ở đầu màn hình hiện ngay khi bấm chuyển trang.
 - **Trang chủ thiết kế lại**: lời chào + nút "Bắt đầu học ngay" (vào bài học tiếp theo) + mascot; 4 thẻ Từ vựng / Ôn dịch câu /
   Ngữ pháp / Bài học; "Tiến độ học tập" (vòng % từ đã thuộc, câu đã thuộc, ngữ pháp, thẻ đến hạn, phần bài học đã làm);
   "Học hôm nay" (từ mới, lần ôn, thẻ đến hạn + nút ôn tiếp); "Câu nói mỗi ngày" (đổi câu, nghe đọc).
