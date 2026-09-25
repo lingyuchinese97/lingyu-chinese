@@ -61,6 +61,15 @@
       opacity: 0;
     }
   }
+  --animate-nav-progress: nav-progress 1s ease-in-out infinite;
+  @keyframes nav-progress {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(300%);
+    }
+  }
 }
 
 @layer base {
