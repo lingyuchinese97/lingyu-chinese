@@ -15,7 +15,7 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          | ✅         |
 | 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 | ✅         |
 | 6   | Ôn đến hạn (FSRS)                                                                                                                                                 | ✅         |
-| 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            |
+| 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            | ✅  |
 | 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       |            |
 | 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     |            |
 | 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         |            |
@@ -83,6 +83,11 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     "Thiết lập lần trước" lấy từ phiên ôn tự chọn gần nhất trong DB (thay localStorage của bản cũ) → đổi thiết bị vẫn nhớ.
 24. **Đổi Khó/Được/Dễ**: lưu trạng thái thẻ trước khi chấm trong câu hỏi → đổi đánh giá thì tính lại từ trạng thái đó và thay log cũ
     (không cộng dồn `reps`). Ôn đến hạn tối đa 50 thẻ mỗi lượt.
+25. **Ghi chú cá nhân của ngữ pháp** ở bảng riêng (`grammarPersonalNote`) → không bao giờ nằm trong truy vấn xem trước / chia sẻ.
+    Người nhận chỉ xem trước qua `?share=<id>` khi lời mời còn "pending"; chấp nhận = tạo bản sao riêng (chọn giữ tag của người gửi),
+    từ chối = không tạo gì. Xoá ngữ pháp thì các lời mời đang chờ bị huỷ.
+26. **Thông báo**: bảng `notification` (payload jsonb: người gửi, tiêu đề, `shareId`); chuông tải lại khi đổi trang, khi quay lại tab
+    và mỗi 60 giây (không cần WebSocket); mở chuông = đánh dấu đã đọc. Lời mời ngữ pháp xử lý được ngay trong chuông.
 
 ## Chỗ mơ hồ & cách xử lý
 

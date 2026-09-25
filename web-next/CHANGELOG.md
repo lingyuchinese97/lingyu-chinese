@@ -10,6 +10,13 @@
 
 ### Added
 
+- **Ngữ pháp** (`/grammar`, `/grammar/new`, `/grammar/[id]`, `/grammar/[id]/edit`): tab Tất cả / Đã lưu / Được chia sẻ, tìm kiếm bỏ dấu,
+  sắp xếp, lọc và quản lý thẻ (đổi tên, xoá), lưu (bookmark), ví dụ (Hán tự / pinyin tự thêm dấu / nghĩa, đổi thứ tự), lưu ý,
+  **ghi chú cá nhân** (chỉ mình bạn thấy, không gửi khi chia sẻ), dữ liệu mẫu.
+- **Chia sẻ ngữ pháp** qua email: người nhận xem trước → chấp nhận (nhận bản sao riêng, chọn giữ thẻ) hoặc từ chối; người gửi xem được
+  trạng thái từng người. Người không được mời không xem được.
+- **Chuông thông báo**: số chưa đọc, danh sách, xem / chấp nhận / từ chối lời mời ngay trong chuông.
+
 - **Ôn tập tự chọn** (`/review/setup` → `/review/session` → `/review/result`): chọn tag, số câu 5/10/20/30/50, hình thức
   nghĩa / chữ Hán / pinyin / trộn, bật tắt ảnh; chấm ở server (`lib/grading.ts`), đáp án không gửi xuống trước khi trả lời;
   câu sai hiện từ khác khớp câu trả lời; làm tiếp được sau khi refresh / đổi thiết bị; kết quả + "Ôn lại các từ đã sai".

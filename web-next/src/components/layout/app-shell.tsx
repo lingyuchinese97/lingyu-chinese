@@ -12,7 +12,15 @@ import { UserMenu } from "./user-menu";
 type ShellUser = { name: string; email: string; role: "user" | "admin" };
 
 /** Khung chung của khu vực đã đăng nhập: Sidebar + TopBar + nội dung + BottomNav (mobile). */
-export function AppShell({ user, children }: { user: ShellUser; children: React.ReactNode }) {
+export function AppShell({
+  user,
+  unread = 0,
+  children,
+}: {
+  user: ShellUser;
+  unread?: number;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const { nav, quote, focus } = shellState(pathname);
   // Ngăn kéo gắn với đường dẫn lúc mở → đổi trang (kể cả nút Back) là tự đóng.
@@ -74,7 +82,7 @@ export function AppShell({ user, children }: { user: ShellUser; children: React.
           >
             <Menu className="size-[26px]" aria-hidden="true" />
           </button>
-          <NotificationBell />
+          <NotificationBell initialUnread={unread} />
           <span className="h-[30px] w-px bg-border" aria-hidden="true" />
           <UserMenu name={user.name} email={user.email} />
         </header>
