@@ -352,3 +352,62 @@ export const lessonProgress = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.lessonId, t.section] })],
 );
+
+// ---------- Ôn dịch câu ----------
+export const sentence = pgTable(
+  "sentence",
+  {
+    id: id(),
+    userId: userRef(),
+    chinese: text("chinese").notNull(),
+    pinyin: text("pinyin").notNull().default(""),
+    vietnamese: text("vietnamese").notNull(),
+    /** Bản bỏ dấu của câu tiếng Việt để tìm kiếm (fold), tính lại mỗi lần ghi. */
+    vietnameseFold: text("vietnamese_fold").notNull().default(""),
+    note: text("note").notNull().default(""),
+    status: vocabStatus("status").notNull().default("review"),
+    isFavorite: boolean("is_favorite").notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("sentence_user_created_idx").on(t.userId, t.createdAt)],
+);
+
+export const sentenceTag = pgTable(
+  "sentence_tag",
+  { id: id(), userId: userRef(), name: text("name").notNull(), createdAt: createdAt() },
+  (t) => [uniqueIndex("sentence_tag_user_name_uq").on(t.userId, sql`lower(${t.name})`)],
+);
+
+export const sentenceToTag = pgTable(
+  "sentence_to_tag",
+  {
+    sentenceId: uuid("sentence_id")
+      .notNull()
+      .references(() => sentence.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => sentenceTag.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.sentenceId, t.tagId] }), index("sentence_to_tag_tag_idx").on(t.tagId)],
+);
+
+/** Phiên ôn dịch câu (giống review_session): câu hỏi + đáp án người dùng; đáp án đúng chỉ nằm ở server. */
+export const sentenceSession = pgTable(
+  "sentence_session",
+  {
+    id: id(),
+    userId: userRef(),
+    config: jsonb("config").notNull(),
+    questions: jsonb("questions").notNull(),
+    currentIndex: integer("current_index").notNull().default(0),
+    correctCount: integer("correct_count").notNull().default(0),
+    wrongCount: integer("wrong_count").notNull().default(0),
+    skippedCount: integer("skipped_count").notNull().default(0),
+    /** "active" | "completed" | "abandoned" */
+    status: text("status").notNull().default("active"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => [index("sentence_session_user_status_idx").on(t.userId, t.status)],
+);

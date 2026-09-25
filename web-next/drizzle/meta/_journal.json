@@ -22,6 +22,13 @@
       "when": 1790316766947,
       "tag": "0002_user_last_login",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790322168480,
+      "tag": "0003_sentences",
+      "breakpoints": true
     }
   ]
 }

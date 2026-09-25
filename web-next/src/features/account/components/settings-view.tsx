@@ -266,7 +266,7 @@ function DataCard() {
     <Card id="set-data" icon={<Database />} title="Dữ liệu học tập">
       <Row
         title="Xuất dữ liệu"
-        desc="Tải file JSON gồm từ vựng (kèm ảnh), tag, ngữ pháp, ghi chú, bộ thủ đã thuộc và tiến độ bài học."
+        desc="Tải file JSON gồm từ vựng (kèm ảnh), tag, ngữ pháp, ghi chú, câu dịch, bộ thủ đã thuộc và tiến độ bài học."
       >
         <Button asChild variant="secondary">
           <a href="/api/account/export" download>
@@ -297,8 +297,8 @@ function DataCard() {
         <div role="status" className="rounded-md bg-green-50 px-4 py-3 text-[14.5px] text-green-700">
           <strong className="block">Đã nhập xong:</strong>
           Từ vựng: thêm {report.vocab.added}, bỏ qua {report.vocab.skipped} · Ngữ pháp: thêm {report.grammar.added}, bỏ
-          qua {report.grammar.skipped} · Ảnh: {report.images} · Bộ thủ đã thuộc: {report.radicals} · Tiến độ bài học:{" "}
-          {report.lessons}
+          qua {report.grammar.skipped} · Câu: thêm {report.sentences.added}, bỏ qua {report.sentences.skipped} · Ảnh:{" "}
+          {report.images} · Bộ thủ đã thuộc: {report.radicals} · Tiến độ bài học: {report.lessons}
         </div>
       ) : null}
       <Row title="Dữ liệu mẫu" desc="Thêm các từ vựng HSK mẫu để thử tính năng ôn tập.">

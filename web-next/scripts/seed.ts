@@ -9,6 +9,7 @@ import { pool } from "@/server/db/pool";
 import { findUserByEmail, generateTempPassword, setUserRole } from "@/server/users";
 import { importSample } from "@/features/vocabulary/service";
 import { importSampleGrammar } from "@/features/grammar/service";
+import { importSampleSentences } from "@/features/sentences/service";
 
 const ACCOUNTS = [
   {
@@ -42,7 +43,8 @@ async function main() {
     if (a.sample) {
       const v = await importSample(u.id);
       const g = await importSampleGrammar(u.id);
-      console.log(`  + ${v} từ vựng mẫu, ${g} ngữ pháp mẫu`);
+      const st = await importSampleSentences(u.id);
+      console.log(`  + ${v} từ vựng mẫu, ${g} ngữ pháp mẫu, ${st} câu mẫu`);
     }
   }
 }

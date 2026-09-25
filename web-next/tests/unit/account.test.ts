@@ -13,6 +13,8 @@ import * as g from "@/features/grammar/service";
 import { vocabInputSchema } from "@/features/vocabulary/schema";
 import { grammarInputSchema } from "@/features/grammar/schema";
 import { setKnown } from "@/features/radicals/service";
+import { createSentence } from "@/features/sentences/service";
+import { sentenceInputSchema } from "@/features/sentences/schema";
 import { recordSection } from "@/features/lessons/service";
 import { getLesson } from "@/data/lessons";
 
@@ -106,6 +108,10 @@ describe("xuất / nhập dữ liệu", () => {
         personalNote: "ghi chú riêng",
       }),
     );
+    await createSentence(
+      A.id,
+      sentenceInputSchema.parse({ chinese: "我爱你。", vietnamese: "Tôi yêu bạn.", tags: ["Tình cảm"] }),
+    );
     await setKnown(A.id, 85, true);
     const qs = getLesson("bai1")!.sections[1]!.questions;
     await recordSection(
@@ -122,6 +128,7 @@ describe("xuất / nhập dữ liệu", () => {
     expect(data.vocab[0]!.srs).toMatchObject({ state: 0, reps: 0 });
     expect(data.vocabTags).toEqual(expect.arrayContaining(["HSK1", "Tag trống"]));
     expect(data.grammar[0]).toMatchObject({ personalNote: "ghi chú riêng", tags: ["Câu hỏi"] });
+    expect(data.sentences[0]).toMatchObject({ chinese: "我爱你。", tags: ["Tình cảm"] });
     expect(data.lessonProgress[0]).toMatchObject({ lessonId: "bai1", section: "blending", bestScore: 20 });
     // File xuất chỉ chứa dữ liệu của A.
     expect(JSON.stringify(data)).not.toContain(B.email);
@@ -142,6 +149,7 @@ describe("xuất / nhập dữ liệu", () => {
     expect(r).toEqual({
       vocab: { added: 2, skipped: 2 },
       grammar: { added: 1, skipped: 0 },
+      sentences: { added: 1, skipped: 0 },
       radicals: 1,
       lessons: 1,
       images: 1,
@@ -158,6 +166,7 @@ describe("xuất / nhập dữ liệu", () => {
     const again = await importData(B.id, file);
     expect(again.vocab.added).toBe(0);
     expect(again.grammar).toEqual({ added: 0, skipped: 1 });
+    expect(again.sentences).toEqual({ added: 0, skipped: 1 });
   });
 
   it("từ chối file không đúng định dạng / phiên bản mới hơn", async () => {

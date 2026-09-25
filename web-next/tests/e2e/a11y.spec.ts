@@ -37,10 +37,16 @@ test("a11y (axe): không có lỗi serious/critical ở các trang chính", asyn
   await page.goto("/vocabulary");
   await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
   await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
+  await page.goto("/sentences");
+  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await expect(page.getByText("12 câu", { exact: true })).toBeVisible();
   for (const path of [
     "/home",
     "/vocabulary",
     "/vocabulary/new",
+    "/sentences",
+    "/sentences/new",
+    "/sentences/review/setup",
     "/grammar",
     "/grammar/new",
     "/radicals",
@@ -56,5 +62,13 @@ test("a11y (axe): không có lỗi serious/critical ở các trang chính", asyn
     await page.waitForLoadState("networkidle");
     problems.push(...(await audit(page, path)));
   }
+  // Màn làm bài ôn dịch câu (trước và sau khi trả lời).
+  await page.goto("/sentences/review/setup");
+  await page.getByRole("button", { name: "Bắt đầu ôn tập" }).click();
+  await page.waitForURL(/session/);
+  problems.push(...(await audit(page, "/sentences/review/session")));
+  await page.getByRole("button", { name: "Bỏ qua" }).click();
+  await expect(page.getByText("Đã bỏ qua")).toBeVisible();
+  problems.push(...(await audit(page, "/sentences/review/session (đáp án)")));
   expect(problems).toEqual([]);
 });

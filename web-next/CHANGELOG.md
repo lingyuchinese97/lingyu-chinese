@@ -10,6 +10,12 @@
 
 ### Added
 
+- **Ôn dịch câu** (`/sentences`): kho câu tiếng Trung – tiếng Việt (tìm kiếm bỏ dấu, lọc tag, Yêu thích, chọn nhiều để ôn / đánh dấu /
+  xoá, dữ liệu mẫu), form thêm/sửa có **Tạo Pinyin** và **Quy tắc Pinyin**, tối đa 5 tag, ghi chú 200 ký tự.
+  Ôn tập: chọn chiều dịch (Việt → Trung, Trung → Việt, trộn), số câu, tag, hiện Pinyin, gợi ý chữ Hán đầu tiên; làm bài
+  (Kiểm tra / Bỏ qua / Xem gợi ý, chấm ở server, "Tính là đúng", Tôi nhớ / Tôi chưa nhớ, nghe câu bằng giọng đọc của máy),
+  kết quả (Đúng / Sai / Bỏ qua) và **Ôn lại câu sai**. Làm tiếp được khi tải lại trang. Có trong xuất / nhập dữ liệu.
+
 - Tài liệu: `README.md` (chạy local, lệnh, cấu trúc, thêm bài học, chuyển dữ liệu bản cũ), `docs/DEPLOY.md` (Vercel + Neon miễn phí,
   tên miền Cloudflare, VPS Docker + Caddy, sao lưu / khôi phục, chuyển Neon → VPS, chuyển `lingyuchinese.com` sang bản mới, lộ trình),
   `.env.example` đầy đủ, `scripts/backup.sh`; README gốc trỏ tới bản mới.

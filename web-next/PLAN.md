@@ -124,6 +124,14 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     khôi phục trong `docs/DEPLOY.md` chạy đúng. Bản standalone không có symlink `node_modules/hanzi-writer-data` của pnpm
     → `/api/hanzi` tự tìm trong `node_modules/.pnpm/`. HSTS trên VPS do Caddy gửi (header của app cố định lúc build).
 
+38. **Ôn dịch câu** (tính năng thêm theo thiết kế người dùng gửi, ngoài spec): bảng `sentence`, `sentence_tag`, `sentence_to_tag`,
+    `sentence_session` (migration `0003`). Chấm ở server (`lib/sentence-grading.ts`): Việt → Trung so chữ Hán sau khi bỏ khoảng trắng /
+    dấu câu (cả full-width); Trung → Việt không phân biệt hoa thường, dấu thanh, dấu câu, chấp nhận nhiều cách dịch cách nhau
+    bằng " / " hoặc ";" — và người học được "Tính là đúng" khi dịch đúng nghĩa theo cách khác. "Tôi nhớ / Tôi chưa nhớ" đổi trạng thái
+    câu (Đã thuộc / Cần ôn). "Tạo Pinyin" dùng pinyin-pro theo từng âm tiết (pinyin-pro không tách từ) — người dùng sửa lại nếu cần.
+    Nút loa dùng giọng đọc có sẵn của trình duyệt (Web Speech API, không gọi dịch vụ ngoài); máy không có giọng tiếng Trung → ẩn nút.
+    Câu được xuất / nhập cùng dữ liệu khác.
+
 ## Chỗ mơ hồ & cách xử lý
 
 - "Gợi ý pinyin bằng pinyin-pro": khi nhập Hán tự mà ô Pinyin còn trống → hiện nút gợi ý (bấm để điền), không tự ghi đè.

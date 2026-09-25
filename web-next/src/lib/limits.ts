@@ -19,3 +19,14 @@ export const IMAGE = {
   QUALITY: 0.8,
   MIME: ["image/webp", "image/jpeg", "image/png"] as const,
 } as const;
+
+/** Ôn dịch câu. */
+export const SENTENCE = {
+  MAX_CHINESE: 200,
+  MAX_PINYIN: 400,
+  MAX_VIETNAMESE: 300,
+  MAX_NOTE: 200,
+  MAX_TAGS: 5,
+  MAX_TAG: 24,
+  PAGE_SIZE: 10,
+} as const;

@@ -1,6 +1,6 @@
 # LingYu Chinese — bản Next.js (`web-next/`)
 
-Ứng dụng học tiếng Trung: từ vựng (kèm ảnh), ôn tập tự chọn + ôn đến hạn (FSRS), ngữ pháp, bộ thủ (nét viết),
+Ứng dụng học tiếng Trung: từ vựng (kèm ảnh), ôn tập tự chọn + ôn đến hạn (FSRS), ôn dịch câu, ngữ pháp, bộ thủ (nét viết),
 bài học, chia sẻ giữa người dùng, thông báo, cài đặt (xuất / nhập dữ liệu), quản trị. Giao diện tiếng Việt, ưu tiên điện thoại,
 cài được như app (PWA).
 
@@ -63,7 +63,7 @@ Môi trường không tải được trình duyệt của Playwright: đặt `PW
 src/
   app/                 # route (App Router)
     (auth)/            # /login, /register
-    (app)/             # trang cần đăng nhập: home, vocabulary, review, grammar, radicals, lessons, settings, admin
+    (app)/             # trang cần đăng nhập: home, vocabulary, sentences, review, grammar, radicals, lessons, settings, admin
     api/               # auth, health, images/[id] (chỉ chủ ảnh), hanzi/[char], account/export|import
     sw.ts, serwist/    # service worker (PWA), ~offline/ trang mất mạng, manifest.ts
   features/<tính năng>/ # schema.ts (Zod) · service.ts (truy vấn, luôn lọc theo userId của session) · actions.ts · components/
