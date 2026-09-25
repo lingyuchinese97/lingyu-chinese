@@ -7,6 +7,7 @@ import {
   EMAIL_TAKEN,
   RATE_LIMITED,
   ACCOUNT_DISABLED,
+  BAD_ORIGIN,
 } from "@/lib/auth-errors";
 
 const ok = { name: "Lan", email: "  Lan@Example.COM ", password: "matkhau123", confirm: "matkhau123" };
@@ -59,5 +60,9 @@ describe("thông báo lỗi", () => {
   });
   it("email đã tồn tại", () => {
     expect(registerErrorMessage({ status: 422, code: "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" })).toBe(EMAIL_TAKEN);
+  });
+  it("sai địa chỉ (origin) báo rõ thay vì lỗi chung", () => {
+    expect(registerErrorMessage({ status: 403, code: "INVALID_ORIGIN" })).toBe(BAD_ORIGIN);
+    expect(loginErrorMessage({ status: 403, code: "INVALID_ORIGIN" })).toBe(BAD_ORIGIN);
   });
 });
