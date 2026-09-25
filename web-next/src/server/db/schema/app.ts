@@ -64,6 +64,9 @@ export const vocab = pgTable(
     hanzi: text("hanzi").notNull(),
     pinyin: text("pinyin").notNull(),
     meaningVi: text("meaning_vi").notNull(),
+    /** Bản bỏ dấu để tìm kiếm (fold ở src/lib/fold.ts), tính lại mỗi lần ghi. */
+    pinyinFold: text("pinyin_fold").notNull().default(""),
+    meaningFold: text("meaning_fold").notNull().default(""),
     note: text("note").notNull().default(""),
     imageId: uuid("image_id").references(() => image.id, { onDelete: "set null" }),
     status: vocabStatus("status").notNull().default("review"),

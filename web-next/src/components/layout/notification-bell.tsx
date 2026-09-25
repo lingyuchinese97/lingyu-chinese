@@ -1,7 +1,7 @@
 "use client";
 import { DropdownMenu } from "radix-ui";
 import { Bell } from "lucide-react";
-import { menuContentClass } from "./user-menu";
+import { menuContentClass } from "@/components/ui/menu";
 
 /** Chuông thông báo. Phase 7–8 nối dữ liệu thật (chia sẻ ngữ pháp / từ vựng). */
 export function NotificationBell({ unread = 0 }: { unread?: number }) {
