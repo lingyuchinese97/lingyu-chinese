@@ -17,7 +17,7 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 6   | Ôn đến hạn (FSRS)                                                                                                                                                 | ✅         |
 | 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            | ✅  |
 | 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       | ✅         |
-| 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     |            |
+| 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     | ✅         |
 | 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         |            |
 | 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            |            |
 | 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    |            |
@@ -94,6 +94,11 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     Kiểm tra người nhận dùng chung với Ngữ pháp (`features/sharing/recipient.ts`).
 28. **Bộ thủ**: "Đã thuộc" lưu ở bảng `radical_known`. Trang chi tiết có khung nét viết (xem animation / luyện viết theo nét),
     bấm chữ ví dụ để xem cách viết chữ đó.
+
+29. **Bài học**: nội dung tĩnh trong `src/data/lessons/<id>/`, kiểm tra bằng Zod lúc nạp và trong unit test (kể cả audio tồn tại).
+    Đáp án có sẵn ở client để phản hồi ngay từng câu; khi nộp, **server chấm lại** từ nội dung bài rồi mới lưu điểm.
+    Bài làm dở lưu ở `sessionStorage` (refresh không mất). Phần "Nghe & nhận diện" của Bài 1 chưa có audio (bản Flutter cũng chưa có)
+    → nút nghe vô hiệu kèm ghi chú. Sửa chỗ gõ nhầm thanh điệu ở Flutter: "ā á ă à" → "ā á ǎ à".
 
 ## Chỗ mơ hồ & cách xử lý
 

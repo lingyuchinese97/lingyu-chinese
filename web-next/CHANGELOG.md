@@ -10,6 +10,11 @@
 
 ### Added
 
+- **Bài học** (`/lessons` → `/lessons/[id]` → `/lessons/[id]/[phần]` → `/lessons/[id]/result`): schema Zod cho nội dung bài,
+  màn hình dùng chung (mỗi câu một màn, khoá đáp án sau khi chọn, báo đúng/sai kèm đáp án đúng, thanh tiến độ, nút chính dính đáy),
+  kết quả + Làm lại. **Bài 1** port từ Flutter: Nghe & nhận diện (16 câu) + Ghép âm (20 câu, có audio). Lưu tiến độ `lesson_progress`;
+  trang chủ có thẻ "Tiến độ bài học". README hướng dẫn thêm Bài 2.
+
 - **Bộ thủ** (`/radicals`, `/radicals/[num]`): 214 bộ, tìm theo tên / nghĩa (bỏ dấu) / pinyin / số / gõ 1 chữ Hán, lọc số nét,
   "Đã thuộc" (lưu theo tài khoản) + thanh tiến độ; chi tiết có animation nét viết và luyện viết (hanzi-writer, dữ liệu tự host
   qua `/api/hanzi/[char]`), chữ ví dụ, từ vựng của bạn có bộ này, bộ trước / sau.

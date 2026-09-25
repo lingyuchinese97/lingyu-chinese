@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarClock, FileText, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarClock, FileText, GraduationCap, Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Flashcard, Sparkle } from "@/components/flashcard";
 import { LeafDecor } from "@/components/layout/icons";
@@ -9,6 +9,8 @@ import { requireUser } from "@/server/session";
 import { vocabStats } from "@/features/vocabulary/service";
 import { dueCount, getActiveSession, getLastCustomConfig } from "@/features/review/service";
 import { ReviewStartCard } from "@/features/home/review-start-card";
+import { progressOf, summarize } from "@/features/lessons/service";
+import { ProgressBar } from "@/features/lessons/components/progress-bar";
 
 export const metadata: Metadata = { title: "Trang chủ" };
 
@@ -20,12 +22,15 @@ function firstName(name: string) {
 
 export default async function HomePage() {
   const user = await requireUser();
-  const [stats, due, active, last] = await Promise.all([
+  const [stats, due, active, last, progress] = await Promise.all([
     vocabStats(user.id),
     dueCount(user.id),
     getActiveSession(user.id),
     getLastCustomConfig(user.id),
+    progressOf(user.id),
   ]);
+  const lessons = summarize(progress);
+  const nextLesson = lessons.lessons.find((l) => l.done < l.total) ?? lessons.lessons[0];
   const latest = stats.latest;
 
   return (
@@ -188,6 +193,33 @@ export default async function HomePage() {
           />
         </article>
       </div>
+
+      <article
+        aria-labelledby="c3-title"
+        className="flex flex-col gap-4 rounded-3xl border border-border bg-white/94 p-5 shadow-card md:flex-row md:items-center md:gap-6 md:p-[26px]"
+      >
+        <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#FFF3D6] text-[#C97A06] md:size-20">
+          <GraduationCap className="size-8 md:size-10" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="c3-title" className="text-[22px] font-bold text-navy md:text-[28px]">
+            Tiến độ bài học
+          </h2>
+          <p className="mt-1 text-[15px] text-text-2">
+            Đã làm {lessons.done}/{lessons.total} phần ({lessons.percent}%)
+            {nextLesson ? ` · Tiếp theo: Bài ${nextLesson.number} — ${nextLesson.title}` : ""}
+          </p>
+          <ProgressBar value={lessons.done} max={lessons.total} label="Tiến độ bài học" className="mt-3 h-2.5" />
+        </div>
+        {nextLesson ? (
+          <Button asChild variant="secondary" size="lg" className="max-md:w-full">
+            <Link href={`/lessons/${nextLesson.id}`}>
+              {lessons.done ? "Học tiếp" : "Bắt đầu học"}
+              <ArrowRight />
+            </Link>
+          </Button>
+        ) : null}
+      </article>
     </>
   );
 }
