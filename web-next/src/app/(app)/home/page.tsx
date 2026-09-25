@@ -7,7 +7,7 @@ import { Flashcard, Sparkle } from "@/components/flashcard";
 import { LeafDecor } from "@/components/layout/icons";
 import { requireUser } from "@/server/session";
 import { vocabStats } from "@/features/vocabulary/service";
-import { dueCount } from "@/features/home/queries";
+import { dueCount, getActiveSession, getLastCustomConfig } from "@/features/review/service";
 import { ReviewStartCard } from "@/features/home/review-start-card";
 
 export const metadata: Metadata = { title: "Trang chủ" };
@@ -20,7 +20,12 @@ function firstName(name: string) {
 
 export default async function HomePage() {
   const user = await requireUser();
-  const [stats, due] = await Promise.all([vocabStats(user.id), dueCount(user.id)]);
+  const [stats, due, active, last] = await Promise.all([
+    vocabStats(user.id),
+    dueCount(user.id),
+    getActiveSession(user.id),
+    getLastCustomConfig(user.id),
+  ]);
   const latest = stats.latest;
 
   return (
@@ -174,7 +179,13 @@ export default async function HomePage() {
               <div className="text-[15px] text-text-2">thẻ đến hạn ôn hôm nay</div>
             </div>
           </div>
-          <ReviewStartCard total={stats.total} due={due} />
+          <ReviewStartCard
+            total={stats.total}
+            due={due}
+            hasActive={!!active}
+            lastMode={last?.mode ?? "meaning"}
+            lastShowImage={last ? last.showImage : true}
+          />
         </article>
       </div>
     </>

@@ -13,8 +13,8 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 2   | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI                                                                                         | ✅         |
 | 3   | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing                                                                                         | ✅         |
 | 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          | ✅         |
-| 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 |            |
-| 6   | Ôn đến hạn (FSRS)                                                                                                                                                 |            |
+| 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 | ✅         |
+| 6   | Ôn đến hạn (FSRS)                                                                                                                                                 | ✅         |
 | 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            |
 | 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       |            |
 | 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     |            |
@@ -77,6 +77,12 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 21. **Ảnh gửi cùng form** (FormData trong một Server Action) thay vì tải trước → không có ảnh mồ côi. Đổi ảnh = ảnh mới (id mới),
     ảnh cũ bị xoá; nhờ vậy `/api/images/[id]` cache `immutable` an toàn.
 22. **Thanh thao tác hàng loạt** phase 4: Thêm tag, Đã thuộc, Cần ôn, Xoá. Nút "Ôn tập" thêm ở phase 5, "Chia sẻ" ở phase 8.
+
+23. **Phiên ôn tập** ở bảng `review_session` (một phiên "active" mỗi người; tạo bài mới thì bài cũ chuyển "abandoned").
+    Câu hỏi lưu snapshot của từ; client chỉ nhận phần đề bài, đáp án chỉ trả về sau khi chấm (`toClient` trong `features/review/service.ts`).
+    "Thiết lập lần trước" lấy từ phiên ôn tự chọn gần nhất trong DB (thay localStorage của bản cũ) → đổi thiết bị vẫn nhớ.
+24. **Đổi Khó/Được/Dễ**: lưu trạng thái thẻ trước khi chấm trong câu hỏi → đổi đánh giá thì tính lại từ trạng thái đó và thay log cũ
+    (không cộng dồn `reps`). Ôn đến hạn tối đa 50 thẻ mỗi lượt.
 
 ## Chỗ mơ hồ & cách xử lý
 

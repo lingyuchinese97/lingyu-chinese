@@ -12,6 +12,7 @@ import {
   ImageIcon,
   MoreHorizontal,
   Pencil,
+  PlayCircle,
   Plus,
   RefreshCw,
   Search,
@@ -32,6 +33,7 @@ import { radicalByNum, radicalLabel } from "@/lib/radicals";
 import { SORTS, STATUS_LABEL, type ListParams } from "../schema";
 import type { VocabItem, VocabList } from "../service";
 import { deleteVocabAction, importSampleAction, setStatusAction, toggleFavoriteAction } from "../actions";
+import { startCustomAction } from "@/features/review/actions";
 import { AddTagDialog } from "./add-tag-dialog";
 
 /** Ghi chú dài quá 10 ký tự → hiện "…" + nút con mắt để xem đầy đủ (như bản cũ). */
@@ -118,6 +120,20 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
     if (!r.ok) return void toast.error(r.message);
     toast.success(`Đã chuyển “${v.hanzi}” sang ${STATUS_LABEL[next]}.`);
     refresh();
+  }
+
+  async function doBulkReview() {
+    const ids = [...selected];
+    const r = await startCustomAction({
+      tags: [],
+      vocabIds: ids,
+      count: ids.length,
+      mode: "meaning",
+      showImage: true,
+      label: `${ids.length} từ đã chọn`,
+    });
+    if (!r.ok) return void toast.error(r.message || "Không thể tạo bài ôn tập.");
+    router.push("/review/session");
   }
 
   async function doBulkStatus(status: "learned" | "review") {
@@ -374,6 +390,10 @@ export function VocabListView({ data, params }: { data: VocabList; params: ListP
                   </Button>
                 ) : null}
                 <div className="grid w-full grid-cols-2 gap-2 md:ml-auto md:flex md:w-auto">
+                  <BulkButton disabled={!selected.size} hint="Chọn ít nhất 1 từ vựng để ôn tập" onClick={doBulkReview}>
+                    <PlayCircle />
+                    Ôn tập
+                  </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
                     hint="Chọn ít nhất 1 từ vựng để thêm tag"
