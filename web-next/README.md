@@ -4,7 +4,7 @@
 bài học, chia sẻ giữa người dùng, thông báo, cài đặt (xuất / nhập dữ liệu), quản trị. Giao diện tiếng Việt, ưu tiên điện thoại,
 cài được như app (PWA).
 
-- Đang chạy: **https://app.lingyuchinese.com** (Vercel + Neon). Triển khai / chuyển VPS / sao lưu: [`docs/DEPLOY.md`](../docs/DEPLOY.md).
+- Đang chạy: **https://www.lingyuchinese.com** (Vercel + Neon; bản cũ ở https://old.lingyuchinese.com). Triển khai / chuyển VPS / sao lưu: [`docs/DEPLOY.md`](../docs/DEPLOY.md).
 - Kế hoạch, quyết định kỹ thuật và chỗ làm khác spec: [`PLAN.md`](PLAN.md). Thay đổi: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Công nghệ

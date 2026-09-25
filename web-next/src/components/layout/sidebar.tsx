@@ -29,14 +29,23 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
         aria-label="LingYu Chinese — Trang chủ"
         className="mb-6 block px-1.5 lg:w-[72px] lg:px-0 xl:w-auto xl:px-1.5"
       >
+        {/* Logo chữ (không kèm mascot), cỡ vừa. Thanh thu gọn (lg) không đủ chỗ cho chữ → dùng icon app. */}
         <Image
-          src="/brand/lingyu-logo.png"
+          src="/brand/lingyu-wordmark.png"
           alt="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày"
-          width={2171}
-          height={724}
+          width={1579}
+          height={550}
           priority
-          sizes="244px"
-          className="h-[70px] w-full object-contain object-left mix-blend-multiply lg:h-14 lg:object-center xl:h-[76px] xl:object-left"
+          sizes="190px"
+          className="h-auto w-[190px] lg:hidden xl:block"
+        />
+        <Image
+          src="/icons/icon-192.png"
+          alt="LingYu Chinese"
+          width={192}
+          height={192}
+          sizes="56px"
+          className="hidden size-14 rounded-full lg:mx-auto lg:block xl:hidden"
         />
       </Link>
       <nav className="relative z-[1] flex flex-col gap-2">

@@ -1,6 +1,6 @@
 # LingYu Chinese — Bài 1 (Flutter)
 
-> **Bản web mới (Next.js + Postgres)** nằm ở [`web-next/`](web-next/README.md), đang chạy tại https://app.lingyuchinese.com.
+> **Bản web mới (Next.js + Postgres)** nằm ở [`web-next/`](web-next/README.md), đang chạy tại https://www.lingyuchinese.com.
 > Hướng dẫn triển khai (Vercel + Neon miễn phí, VPS, sao lưu, chuyển tên miền): [`docs/DEPLOY.md`](docs/DEPLOY.md).
 > Bản web cũ (`web/`, GitHub Pages) và app Flutter (`lib/`) bên dưới giữ nguyên.
 

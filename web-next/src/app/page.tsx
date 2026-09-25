@@ -67,13 +67,13 @@ export default async function LandingPage() {
 
       <header className="relative z-[1] mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-2 md:px-6 md:pt-6">
         <Image
-          src="/brand/lingyu-logo-clear.png"
+          src="/brand/lingyu-wordmark.png"
           alt="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày"
-          width={2171}
-          height={660}
+          width={1579}
+          height={550}
           priority
-          sizes="240px"
-          className="h-11 w-auto md:h-[64px]"
+          sizes="180px"
+          className="h-auto w-[140px] md:w-[180px]"
         />
         <Button asChild variant="secondary" className="h-11 rounded-[14px] px-5 md:h-12 md:px-7 md:text-[17px]">
           <Link href="/login">Đăng nhập</Link>

@@ -26,15 +26,15 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       </div>
 
       <section aria-label="LingYu Chinese" className="relative flex min-w-0 flex-col items-center text-center lg:gap-2">
-        {/* Điện thoại/tablet: mascot lớn bị ẩn → dùng logo đầy đủ (có mascot nhỏ). */}
+        {/* Điện thoại/tablet: chỉ logo chữ, cỡ vừa. */}
         <Image
-          src="/brand/lingyu-logo.png"
+          src="/brand/lingyu-wordmark.png"
           alt="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày"
-          width={2171}
-          height={724}
+          width={1579}
+          height={550}
           priority
-          sizes="340px"
-          className="h-auto w-[min(260px,80%)] mix-blend-multiply md:w-[min(340px,90%)] lg:hidden"
+          sizes="220px"
+          className="h-auto w-[180px] md:w-[220px] lg:hidden"
         />
         {/* Desktop: đã có mascot lớn bên dưới → chỉ dùng chữ. */}
         <Image
@@ -43,8 +43,8 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           width={1579}
           height={550}
           priority
-          sizes="440px"
-          className="hidden h-auto w-[min(440px,90%)] lg:block"
+          sizes="320px"
+          className="hidden h-auto w-[min(320px,80%)] lg:block"
         />
         <p
           aria-hidden="true"
