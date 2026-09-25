@@ -93,7 +93,7 @@ export function StatusPill({ status }: { status: SentItem["status"] }) {
     <span
       className={cn(
         "inline-flex rounded-lg px-2.5 py-0.5 text-[13px] font-semibold",
-        status === "PENDING" && "bg-amber-50 text-[#C97A06]",
+        status === "PENDING" && "bg-amber-50 text-[#9A5C03]",
         status === "ACCEPTED" && "bg-green-50 text-green-700",
         status === "REJECTED" && "bg-red-50 text-red",
       )}

@@ -1,6 +1,6 @@
 /**
  * Xuất / nhập dữ liệu học tập (JSON). Xuất: từ vựng (kèm ảnh base64, lịch ôn), tag, ngữ pháp (kèm ví dụ, ghi chú cá nhân,
- * đã lưu), bộ thủ đã thuộc, tiến độ bài học. Nhập: GỘP vào dữ liệu hiện có, không ghi đè — bản ghi trùng thì bỏ qua.
+ * đã lưu), câu (Ôn dịch câu), bộ thủ đã thuộc, tiến độ bài học. Nhập: GỘP vào dữ liệu hiện có, không ghi đè — bản ghi trùng thì bỏ qua.
  */
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -15,6 +15,9 @@ import {
   image,
   lessonProgress,
   radicalKnown,
+  sentence,
+  sentenceTag,
+  sentenceToTag,
   srsCard,
   vocab,
   vocabTag,
@@ -29,6 +32,8 @@ import { vocabInputSchema } from "@/features/vocabulary/schema";
 import { ensureTags, folds } from "@/features/vocabulary/service";
 import { grammarInputSchema } from "@/features/grammar/schema";
 import { getLesson } from "@/data/lessons";
+import { sentenceInputSchema } from "@/features/sentences/schema";
+import { ensureSentenceTags, sentenceValues } from "@/features/sentences/service";
 
 export const EXPORT_FORMAT = "lingyu-export";
 export const EXPORT_VERSION = 1;
@@ -69,6 +74,23 @@ export async function exportData(u: { id: string; name: string; email: string })
   const gTagName = new Map(gTags.map((t) => [t.id, t.name]));
   const marked = new Set(marks.map((m) => m.grammarId));
   const noteBy = new Map(notes.map((n) => [n.grammarId, n.content]));
+
+  const ss = await db.select().from(sentence).where(eq(sentence.userId, userId)).orderBy(asc(sentence.createdAt));
+  const [sTags, sLinks] = await Promise.all([
+    db.select().from(sentenceTag).where(eq(sentenceTag.userId, userId)).orderBy(asc(sentenceTag.createdAt)),
+    ss.length
+      ? db
+          .select()
+          .from(sentenceToTag)
+          .where(
+            inArray(
+              sentenceToTag.sentenceId,
+              ss.map((x) => x.id),
+            ),
+          )
+      : [],
+  ]);
+  const sTagName = new Map(sTags.map((t) => [t.id, t.name]));
 
   const [known, lessons] = await Promise.all([
     db.select().from(radicalKnown).where(eq(radicalKnown.userId, userId)),
@@ -132,6 +154,20 @@ export async function exportData(u: { id: string; name: string; email: string })
       personalNote: noteBy.get(g.id) ?? "",
       createdAt: g.createdAt.toISOString(),
     })),
+    sentenceTags: sTags.map((t) => t.name),
+    sentences: ss.map((x) => ({
+      chinese: x.chinese,
+      pinyin: x.pinyin,
+      vietnamese: x.vietnamese,
+      note: x.note,
+      status: x.status,
+      isFavorite: x.isFavorite,
+      tags: sLinks
+        .filter((l) => l.sentenceId === x.id)
+        .map((l) => sTagName.get(l.tagId)!)
+        .filter(Boolean),
+      createdAt: x.createdAt.toISOString(),
+    })),
     radicalsKnown: known.map((k) => k.radical).sort((a, b) => a - b),
     lessonProgress: lessons.map((l) => ({
       lessonId: l.lessonId,
@@ -170,6 +206,8 @@ const fileSchema = z.object({
   vocab: z.array(z.unknown()).max(20000).default([]),
   grammarTags: z.array(z.unknown()).max(5000).default([]),
   grammar: z.array(z.unknown()).max(5000).default([]),
+  sentenceTags: z.array(z.unknown()).max(5000).default([]),
+  sentences: z.array(z.unknown()).max(20000).default([]),
   radicalsKnown: z.array(z.unknown()).max(214).default([]),
   lessonProgress: z.array(z.unknown()).max(1000).default([]),
 });
@@ -191,6 +229,11 @@ const grammarRow = z.object({
   sourceOwnerName: z.string().max(100).nullable().optional().catch(null),
   createdAt: date.optional().catch(undefined),
 });
+const sentenceRow = z.object({
+  status: z.enum(["review", "learned"]).catch("review"),
+  isFavorite: z.boolean().catch(false),
+  createdAt: date.optional().catch(undefined),
+});
 const lessonRow = z.object({
   lessonId: z.string(),
   section: z.string(),
@@ -206,6 +249,7 @@ export class ImportError extends Error {}
 export type ImportReport = {
   vocab: { added: number; skipped: number };
   grammar: { added: number; skipped: number };
+  sentences: { added: number; skipped: number };
   radicals: number;
   lessons: number;
   images: number;
@@ -251,6 +295,7 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
   const report: ImportReport = {
     vocab: { added: 0, skipped: 0 },
     grammar: { added: 0, skipped: 0 },
+    sentences: { added: 0, skipped: 0 },
     radicals: 0,
     lessons: 0,
     images: 0,
@@ -341,6 +386,38 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
       report.grammar.added++;
     }
 
+    // Câu (Ôn dịch câu): trùng câu tiếng Trung → bỏ qua.
+    await ensureSentenceTags(
+      tx,
+      userId,
+      f.sentenceTags.filter((t): t is string => typeof t === "string" && t.trim().length > 0 && t.length <= 24),
+    );
+    const sExisting = new Set(
+      (await tx.select({ c: sentence.chinese }).from(sentence).where(eq(sentence.userId, userId))).map((r) => r.c),
+    );
+    for (const item of f.sentences) {
+      const input = sentenceInputSchema.safeParse(item);
+      const row = sentenceRow.safeParse(item ?? {});
+      if (!input.success || !row.success || sExisting.has(input.data.chinese)) {
+        report.sentences.skipped++;
+        continue;
+      }
+      sExisting.add(input.data.chinese);
+      const [ins] = await tx
+        .insert(sentence)
+        .values({
+          userId,
+          ...sentenceValues(input.data),
+          status: row.data.status,
+          isFavorite: row.data.isFavorite,
+          ...(row.data.createdAt ? { createdAt: row.data.createdAt } : {}),
+        })
+        .returning({ id: sentence.id });
+      const tagIds = await ensureSentenceTags(tx, userId, input.data.tags);
+      if (tagIds.length) await tx.insert(sentenceToTag).values(tagIds.map((tagId) => ({ sentenceId: ins!.id, tagId })));
+      report.sentences.added++;
+    }
+
     // Bộ thủ đã thuộc: hợp lại.
     const nums = [...new Set(f.radicalsKnown.filter(isRadicalNum))];
     if (nums.length) {
@@ -370,4 +447,74 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
     }
   });
   return report;
+}
+
+// ---------- Nhập từ bản cũ (CSV) ----------
+
+/** Tách CSV (RFC 4180: ngoặc kép, "" trong ô, xuống dòng trong ô). */
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+  const s = text.replace(/^﻿/, "");
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]!;
+    if (quoted) {
+      if (ch === '"' && s[i + 1] === '"') {
+        cell += '"';
+        i++;
+      } else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && s[i + 1] === "\n") i++;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else cell += ch;
+  }
+  if (cell || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows.filter((r) => r.some((c) => c.trim()));
+}
+
+/**
+ * File CSV từ bản cũ (Từ vựng → chọn từ → Chia sẻ → Tải file → CSV): cột "Hán tự, Pinyin, Nghĩa tiếng Việt, Ghi chú, Tag".
+ * Chuyển thành dạng file xuất để dùng chung luồng nhập (gộp, bỏ qua từ trùng).
+ */
+export function legacyCsvToExport(text: string) {
+  const rows = parseCsv(text);
+  const head = (rows[0] ?? []).map((h) => h.trim().toLowerCase());
+  const col = (names: string[]) => head.findIndex((h) => names.includes(h));
+  const iHanzi = col(["hán tự", "hanzi"]);
+  const iPinyin = col(["pinyin"]);
+  const iMeaning = col(["nghĩa tiếng việt", "nghĩa", "meaning"]);
+  if (iHanzi < 0 || iPinyin < 0 || iMeaning < 0)
+    throw new ImportError("File CSV cần có cột Hán tự, Pinyin và Nghĩa tiếng Việt (file tải từ bản LingYu cũ).");
+  const iNote = col(["ghi chú", "note"]);
+  const iTag = col(["tag", "tags"]);
+  return {
+    format: EXPORT_FORMAT,
+    version: EXPORT_VERSION,
+    vocab: rows.slice(1).map((r) => ({
+      hanzi: r[iHanzi]?.trim() ?? "",
+      pinyin: r[iPinyin]?.trim() ?? "",
+      meaningVi: r[iMeaning]?.trim() ?? "",
+      note: iNote >= 0 ? (r[iNote]?.trim() ?? "") : "",
+      tags:
+        iTag >= 0
+          ? (r[iTag] ?? "")
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
+    })),
+  };
 }

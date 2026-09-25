@@ -34,7 +34,7 @@ export function StatusBadge({ status }: { status: "learned" | "review" }) {
     <span
       className={cn(
         "inline-flex items-center rounded-lg px-3 py-1 text-[13.5px] font-medium whitespace-nowrap",
-        status === "learned" ? "bg-green-50 text-green-700" : "bg-amber-50 text-[#C97A06]",
+        status === "learned" ? "bg-green-50 text-green-700" : "bg-amber-50 text-[#9A5C03]",
       )}
     >
       {status === "learned" ? "Đã thuộc" : "Cần ôn"}

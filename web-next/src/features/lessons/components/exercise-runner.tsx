@@ -123,11 +123,11 @@ export function ExerciseRunner({
           ) : null}
         </div>
 
-        <ul role="radiogroup" aria-label="Chọn đáp án" className="grid grid-cols-2 gap-3">
+        <div role="radiogroup" aria-label="Chọn đáp án" className="grid grid-cols-2 gap-3">
           {q.options.map((opt, i) => {
             const state = !answered ? "idle" : i === q.answer ? "correct" : i === picked ? "wrong" : "disabled";
             return (
-              <li key={i}>
+              <div key={i}>
                 <button
                   type="button"
                   role="radio"
@@ -160,10 +160,10 @@ export function ExerciseRunner({
                   ) : null}
                   {state === "wrong" ? <XCircle className="size-6 text-rose" aria-label="Sai" /> : null}
                 </button>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
 
         {answered ? (
           <div

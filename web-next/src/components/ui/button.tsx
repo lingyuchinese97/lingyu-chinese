@@ -10,7 +10,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary: "bg-grad-primary text-white shadow-cta hover:[background:var(--grad-primary-hover)]",
-        solid: "bg-blue text-white shadow-cta hover:bg-blue-600",
+        solid: "bg-blue-600 text-white shadow-cta hover:bg-blue-700",
         secondary: "border-[1.5px] border-[#A9D3F8] bg-white text-blue-600 hover:bg-blue-50",
         ghost: "bg-blue-50 text-blue-600 hover:bg-blue-100",
         muted: "bg-[#EEF4FB] text-text-3 hover:bg-blue-50",

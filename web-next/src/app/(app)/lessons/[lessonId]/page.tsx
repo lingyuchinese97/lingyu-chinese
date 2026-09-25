@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
 
 const TONE = {
   red: { text: "text-red", tag: "bg-red-50 text-red", icon: Mic },
-  blue: { text: "text-[#43ADFC]", tag: "bg-[#E4F3FF] text-[#1F8EFB]", icon: AudioLines },
-  green: { text: "text-[#28D58D]", tag: "bg-[#DFF6E8] text-[#2C8659]", icon: Check },
+  blue: { text: "text-blue-600", tag: "bg-[#E4F3FF] text-blue-600", icon: AudioLines },
+  green: { text: "text-green-700", tag: "bg-[#DFF6E8] text-[#1F6E47]", icon: Check },
 };
 
 export default async function LessonPage({ params }: { params: P }) {
@@ -62,7 +62,7 @@ export default async function LessonPage({ params }: { params: P }) {
         <section aria-labelledby="lh-content" className="rounded-[20px] bg-white p-4 shadow-card md:p-5">
           <h2
             id="lh-content"
-            className="inline-block rounded-full bg-[#DFF6E8] px-3.5 py-1.5 text-[13px] font-extrabold text-[#2C8659]"
+            className="inline-block rounded-full bg-[#DFF6E8] px-3.5 py-1.5 text-[13px] font-extrabold text-[#1F6E47]"
           >
             Nội dung ôn tập
           </h2>

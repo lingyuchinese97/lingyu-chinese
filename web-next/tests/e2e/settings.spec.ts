@@ -76,3 +76,16 @@ test("xuất / nhập dữ liệu yêu cầu đăng nhập và chặn gửi từ
   });
   expect(r.status()).toBe(403);
 });
+
+test("nhập file CSV tải từ bản LingYu cũ", async ({ page }) => {
+  await register(page, "Người Học", "csv");
+  await page.goto("/settings");
+  const csv =
+    '﻿"Hán tự","Pinyin","Nghĩa tiếng Việt","Ghi chú","Tag"\r\n"你好","nǐ hǎo","xin chào","","HSK1, Giao tiếp"\r\n"谢谢","xièxie","cảm ơn","",""';
+  await page
+    .locator("#import-file")
+    .setInputFiles({ name: "lingyu-tu-vung.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+  await expect(page.getByRole("status").filter({ hasText: "Đã nhập xong" })).toContainText("Từ vựng: thêm 2, bỏ qua 0");
+  await page.goto("/vocabulary?tag=Giao%20ti%E1%BA%BFp");
+  await expect(page.getByText("1 từ vựng", { exact: true })).toBeVisible();
+});

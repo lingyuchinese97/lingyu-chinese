@@ -17,6 +17,7 @@ export const config = {
   matcher: [
     "/home/:path*",
     "/vocabulary/:path*",
+    "/sentences/:path*",
     "/grammar/:path*",
     "/radicals/:path*",
     "/review/:path*",

@@ -1,5 +1,9 @@
 # LingYu Chinese — Bài 1 (Flutter)
 
+> **Bản web mới (Next.js + Postgres)** nằm ở [`web-next/`](web-next/README.md), đang chạy tại https://app.lingyuchinese.com.
+> Hướng dẫn triển khai (Vercel + Neon miễn phí, VPS, sao lưu, chuyển tên miền): [`docs/DEPLOY.md`](docs/DEPLOY.md).
+> Bản web cũ (`web/`, GitHub Pages) và app Flutter (`lib/`) bên dưới giữ nguyên.
+
 Module Bài 1 (luyện tập ngữ âm) cho app **LingYu Chinese**, implement theo
 `LingYu_Chinese_Bai1_App_Spec_for_Claude.docx`.
 

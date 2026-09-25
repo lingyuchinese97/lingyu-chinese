@@ -19,8 +19,8 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       | ✅         |
 | 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     | ✅         |
 | 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         | ✅         |
-| 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            |            |
-| 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    |            |
+| 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            | ✅         |
+| 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    | ✅         |
 
 Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e khi có) → CHANGELOG → commit → push.
 
@@ -59,7 +59,9 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     từ ảnh gốc nếu ảnh gốc còn. Ghi chú cá nhân của ngữ pháp **không** bao giờ nằm trong snapshot/preview.
 13. **Middleware**: Next 16 đổi `middleware.ts` → `proxy.ts` (kiểm tra trong docs của gói khi cài). Route guard làm ở cả hai lớp:
     proxy kiểm tra cookie phiên (nhanh, chuyển hướng), **layout `(app)` kiểm tra session thật** bằng Better Auth (an toàn).
-14. **PWA**: Serwist. Nếu `@serwist/next` chưa hỗ trợ Turbopack của Next 16 thì build bằng `next build --webpack` (ghi lại khi làm phase 11).
+14. **PWA**: Serwist bản Turbopack (`@serwist/turbopack`, SW phát ở `/serwist/sw.js` qua route handler, build bằng esbuild) — không cần
+    `next build --webpack`. **Không cache dữ liệu riêng**: trang HTML/RSC, `/api/*` (trừ `/api/hanzi`) và ảnh từ vựng luôn lấy từ mạng;
+    chỉ cache file build, icon, logo/mascot, font, audio bài học, dữ liệu nét chữ. Mất mạng → `/~offline`. Font không precache (~1.800 file).
 15. **Bài học**: nội dung trong `src/data/lessons/<lessonId>/`; loại câu `choice-audio` (nghe chọn đáp án) và `blend` (ghép âm). Bài 1 phần
     Nghe (16 câu) **chưa có audio** trong repo → nút phát bị vô hiệu + ghi chú, không crash (đúng spec).
 16. **Admin**: `ADMIN_EMAILS` gán role admin khi đăng ký/đăng nhập (hook của Better Auth) + `pnpm user:make-admin`.
@@ -106,6 +108,29 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 31. **Đổi mật khẩu** giữ phiên hiện tại, đăng xuất các thiết bị khác. **Xoá tài khoản** nhập lại mật khẩu, đăng xuất rồi xoá (cascade).
 32. **Admin**: thêm cột `user.last_login_at` (migration `0002`, ghi ở hook tạo session) vì phiên bị xoá khi đăng xuất.
     Admin không tự khoá / tự đặt lại mật khẩu cho chính mình. Mật khẩu tạm chỉ hiển thị một lần.
+
+33. **CSP**: `script-src 'self' 'unsafe-inline'` (Next nhúng dữ liệu RSC bằng script inline; dùng nonce sẽ bắt mọi trang render động),
+    mọi thứ khác chỉ `'self'` (không CDN). HSTS chỉ bật khi `BETTER_AUTH_URL` là https.
+34. **A11y**: kiểm tra tự động bằng axe (WCAG 2.1 A/AA, lỗi serious/critical) trên các trang chính, cả mobile và desktop.
+    Làm đậm nhẹ vài màu chữ để đạt tương phản 4.5:1 (blue-600, text-3, pinyin, green-700, màu chữ tag, nút solid).
+    Riêng nút CTA gradient thương hiệu (xanh → cyan) giữ nguyên thiết kế bản cũ nên loại khỏi kiểm tra tương phản.
+35. **Chuyển dữ liệu từ bản cũ**: không sửa `web/`; bản cũ đã có sẵn "Chia sẻ → Tải file → CSV" cho từ vựng, nên trang Cài đặt nhận
+    thêm file `.csv` đó (gộp, bỏ qua từ trùng). Ngữ pháp ở bản cũ không có chức năng xuất → phải nhập lại bằng tay.
+36. **Seed** (`pnpm db:seed`): `admin@demo.lingyu` + `hocvien@demo.lingyu` (kèm dữ liệu mẫu), mật khẩu sinh ngẫu nhiên in ra 1 lần
+    (hoặc đặt `SEED_*_PASSWORD`). Chạy lại không tạo trùng.
+
+37. **Docker (chạy thử lại ở phase 12)**: build image + `docker compose -f docker-compose.prod.yml up` (app + Postgres + Caddy,
+    HTTPS `localhost`): `/api/health`, service worker, audio, dữ liệu nét chữ đều 200; `scripts/backup.sh` (xoay vòng) và lệnh
+    khôi phục trong `docs/DEPLOY.md` chạy đúng. Bản standalone không có symlink `node_modules/hanzi-writer-data` của pnpm
+    → `/api/hanzi` tự tìm trong `node_modules/.pnpm/`. HSTS trên VPS do Caddy gửi (header của app cố định lúc build).
+
+38. **Ôn dịch câu** (tính năng thêm theo thiết kế người dùng gửi, ngoài spec): bảng `sentence`, `sentence_tag`, `sentence_to_tag`,
+    `sentence_session` (migration `0003`). Chấm ở server (`lib/sentence-grading.ts`): Việt → Trung so chữ Hán sau khi bỏ khoảng trắng /
+    dấu câu (cả full-width); Trung → Việt không phân biệt hoa thường, dấu thanh, dấu câu, chấp nhận nhiều cách dịch cách nhau
+    bằng " / " hoặc ";" — và người học được "Tính là đúng" khi dịch đúng nghĩa theo cách khác. "Tôi nhớ / Tôi chưa nhớ" đổi trạng thái
+    câu (Đã thuộc / Cần ôn). "Tạo Pinyin" dùng pinyin-pro theo từng âm tiết (pinyin-pro không tách từ) — người dùng sửa lại nếu cần.
+    Nút loa dùng giọng đọc có sẵn của trình duyệt (Web Speech API, không gọi dịch vụ ngoài); máy không có giọng tiếng Trung → ẩn nút.
+    Câu được xuất / nhập cùng dữ liệu khác.
 
 ## Chỗ mơ hồ & cách xử lý
 

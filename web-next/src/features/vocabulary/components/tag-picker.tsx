@@ -46,7 +46,7 @@ export function TagPicker({
           <button
             type="button"
             aria-labelledby={labelId}
-            className="ml-auto inline-flex min-h-9 flex-1 items-center justify-between gap-2 rounded-md px-2 text-left text-[15px] text-[#9AAAC0] outline-none focus-visible:shadow-[var(--focus-ring)]"
+            className="ml-auto inline-flex min-h-9 flex-1 items-center justify-between gap-2 rounded-md px-2 text-left text-[15px] text-text-3 outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
             <span>{value.length ? "Thêm tag" : "Chọn tag"}</span>
             <ChevronDown className="size-5 text-text-2" />
