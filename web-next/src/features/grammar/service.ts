@@ -15,7 +15,7 @@ import {
   user,
 } from "@/server/db/schema";
 import { fold } from "@/lib/fold";
-import { normalizeEmail } from "@/lib/auth-rules";
+import { cleanEmails, resolveRecipient, type ShareResult } from "@/features/sharing/recipient";
 import { SAMPLE_GRAMMAR } from "@/data/sample-grammar";
 import { notify } from "@/features/notifications/service";
 import type { GrammarInput, GrammarListParams } from "./schema";
@@ -357,7 +357,7 @@ export async function deleteGrammarTag(userId: string, id: string) {
 
 // ---------- Chia sẻ ----------
 
-export type ShareResult = { email: string; ok: boolean; message: string };
+export type { ShareResult };
 
 /**
  * Chia sẻ cho nhiều email. Từng email: đúng định dạng · có tài khoản · không phải chính mình · chưa có lời mời đang chờ.
@@ -372,21 +372,13 @@ export async function shareGrammar(me: { id: string; name: string; email: string
   if (!g) throw new GrammarError("not-found", "Không tìm thấy ngữ pháp này.");
   if (g.userId !== me.id)
     throw new GrammarError("forbidden", "Bạn chỉ có thể chia sẻ ngữ pháp trong thư viện của mình.");
-  const list = [...new Set(emails.map(normalizeEmail).filter(Boolean))];
+  const list = cleanEmails(emails);
   if (!list.length) throw new GrammarError("validation", "Vui lòng nhập ít nhất 1 email người nhận.");
   const results: ShareResult[] = [];
   for (const email of list) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      results.push({ email, ok: false, message: "Email không đúng định dạng." });
-      continue;
-    }
-    if (email === normalizeEmail(me.email)) {
-      results.push({ email, ok: false, message: "Bạn không thể chia sẻ cho chính mình." });
-      continue;
-    }
-    const [r] = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
-    if (!r) {
-      results.push({ email, ok: false, message: "Người dùng này chưa có tài khoản LingYu Chinese." });
+    const r = await resolveRecipient(me, email);
+    if (!r.ok) {
+      results.push({ email, ok: false, message: r.message });
       continue;
     }
     const sent = await db.transaction(async (tx) => {

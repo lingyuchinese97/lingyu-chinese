@@ -16,7 +16,7 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 | ✅         |
 | 6   | Ôn đến hạn (FSRS)                                                                                                                                                 | ✅         |
 | 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            | ✅  |
-| 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       |            |
+| 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       | ✅         |
 | 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     |            |
 | 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         |            |
 | 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            |            |
@@ -44,8 +44,8 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
    **subset theo `unicode-range`** (Noto Sans SC ~1.800 file, Inter tách latin/vietnamese) — `next/font/local` không hỗ trợ
    gộp subset, còn nạp nguyên file thì Noto Sans SC nặng ~8MB. Trình duyệt chỉ tải subset chứa ký tự đang hiển thị.
 4. **Dữ liệu nét hanzi-writer**: gói `hanzi-writer-data` có ~9.500 file JSON (~30MB). Thay vì chép hết vào `public/`, script
-   `scripts/copy-hanzi-data.ts` (chạy ở `postinstall`/`prebuild`) chỉ chép các chữ cần cho trang Bộ thủ (214 bộ + chữ ví dụ) vào
-   `public/hanzi-data/`, còn chữ khác (từ vựng của user) phục vụ qua `/api/hanzi/[char]` đọc từ gói. Vẫn tự host, không CDN.
+   mọi chữ phục vụ qua `/api/hanzi/[char]` đọc thẳng từ gói (chỉ nhận đúng 1 chữ Hán → không đọc được file khác; cache 1 năm),
+   `outputFileTracingIncludes` chép dữ liệu vào bản standalone. Vẫn tự host, không CDN, không cần script chép file.
 5. **ID**: mọi bảng dùng `uuid` — Better Auth cấu hình `advanced.database.generateId: "uuid"` nên `user.id` cũng là `uuid`, khoá ngoại cùng kiểu.
 6. **Mật khẩu**: tối thiểu **8** ký tự (spec) thay cho 6 của bản cũ; vẫn chặn toàn khoảng trắng / khoảng trắng đầu-cuối như bản cũ.
 7. **Chấm bài ở server**: câu hỏi ôn tập không gửi đáp án xuống client; server action `checkAnswer` chấm bằng `lib/grading.ts`.
@@ -88,6 +88,12 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     từ chối = không tạo gì. Xoá ngữ pháp thì các lời mời đang chờ bị huỷ.
 26. **Thông báo**: bảng `notification` (payload jsonb: người gửi, tiêu đề, `shareId`); chuông tải lại khi đổi trang, khi quay lại tab
     và mỗi 60 giây (không cần WebSocket); mở chuông = đánh dấu đã đọc. Lời mời ngữ pháp xử lý được ngay trong chuông.
+
+27. **Chia sẻ từ vựng**: bản chụp lưu cả `imageId` của người gửi nhưng người nhận xem trước chỉ thấy `hasImage` (không lộ id);
+    chấp nhận thì server sao chép ảnh thành ảnh mới của người nhận. Từ trùng Hán tự với kho người nhận được bỏ qua.
+    Kiểm tra người nhận dùng chung với Ngữ pháp (`features/sharing/recipient.ts`).
+28. **Bộ thủ**: "Đã thuộc" lưu ở bảng `radical_known`. Trang chi tiết có khung nét viết (xem animation / luyện viết theo nét),
+    bấm chữ ví dụ để xem cách viết chữ đó.
 
 ## Chỗ mơ hồ & cách xử lý
 

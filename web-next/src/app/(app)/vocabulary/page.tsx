@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireUser } from "@/server/session";
 import { listParamsSchema } from "@/features/vocabulary/schema";
 import { listVocab } from "@/features/vocabulary/service";
+import { listReceivedVocab } from "@/features/vocabulary/share-service";
 import { VocabListView } from "@/features/vocabulary/components/vocab-list";
 
 export const metadata: Metadata = { title: "Từ vựng" };
@@ -19,6 +20,6 @@ export default async function VocabularyPage({ searchParams }: { searchParams: S
     sort: one(sp.sort) ?? "newest",
     page: one(sp.page) ?? 1,
   });
-  const data = await listVocab(user.id, params);
-  return <VocabListView data={data} params={{ ...params, page: data.page }} />;
+  const [data, received] = await Promise.all([listVocab(user.id, params), listReceivedVocab(user.id)]);
+  return <VocabListView data={data} params={{ ...params, page: data.page }} received={received} />;
 }

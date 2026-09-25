@@ -56,7 +56,7 @@ const itemColumns = {
   createdAt: vocab.createdAt,
 };
 
-async function tagsOf(ids: string[]): Promise<Map<string, string[]>> {
+export async function tagsOf(ids: string[]): Promise<Map<string, string[]>> {
   const map = new Map<string, string[]>();
   if (!ids.length) return map;
   const rows = await db
@@ -157,7 +157,7 @@ export async function getVocab(userId: string, id: string): Promise<VocabItem> {
 }
 
 /** Tạo (nếu chưa có) các tag theo tên, trả về id theo thứ tự tên. */
-async function ensureTags(tx: Tx, userId: string, names: string[]): Promise<string[]> {
+export async function ensureTags(tx: Tx, userId: string, names: string[]): Promise<string[]> {
   const clean = cleanTags(names);
   if (!clean.length) return [];
   await tx
@@ -186,7 +186,7 @@ async function setTags(tx: Tx, userId: string, vocabId: string, names: string[])
   if (ids.length) await tx.insert(vocabToTag).values(ids.map((tagId) => ({ vocabId, tagId })));
 }
 
-const folds = (input: Pick<VocabInput, "pinyin" | "meaningVi">) => ({
+export const folds = (input: Pick<VocabInput, "pinyin" | "meaningVi">) => ({
   pinyinFold: foldCompact(input.pinyin),
   meaningFold: fold(input.meaningVi),
 });

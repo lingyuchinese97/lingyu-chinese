@@ -7,6 +7,7 @@ import { IMAGE } from "@/lib/limits";
 import { imageSize, sniffImage } from "@/lib/image-sniff";
 import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "./schema";
 import * as svc from "./service";
+import * as share from "./share-service";
 
 export type ActionResult<T = undefined> =
   | ({ ok: true } & (T extends undefined ? object : { data: T }))
@@ -130,6 +131,74 @@ export async function importSampleAction(): Promise<ActionResult<{ added: number
     const added = await svc.importSample(u.id);
     revalidatePath("/vocabulary");
     return { ok: true, data: { added } };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ---------- Chia sẻ ----------
+
+const emailsSchema = z.array(z.string().max(254)).max(50);
+
+export async function shareVocabAction(
+  ids: string[],
+  emails: string[],
+): Promise<
+  ActionResult<{ results: share.ShareResultRow[]; sent: number; count: number; sentList: share.SentVocabShare[] }>
+> {
+  try {
+    const u = await currentUserOrThrow();
+    const r = await share.shareVocab(u, idsSchema.parse(ids), emailsSchema.parse(emails));
+    return { ok: true, data: { ...r, sentList: await share.listSentVocab(u.id) } };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function listSentVocabAction(): Promise<ActionResult<share.SentVocabShare[]>> {
+  try {
+    const u = await currentUserOrThrow();
+    return { ok: true, data: await share.listSentVocab(u.id) };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function receivedVocabAction(): Promise<ActionResult<share.ReceivedVocabShare[]>> {
+  try {
+    const u = await currentUserOrThrow();
+    return { ok: true, data: await share.listReceivedVocab(u.id) };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function acceptVocabShareAction(
+  shareId: string,
+  opts: { keepTags: boolean; extraTags: string[] },
+): Promise<ActionResult<{ added: number; skipped: string[]; total: number }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const r = await share.acceptVocabShare(u, z.uuid().parse(shareId), {
+      keepTags: !!opts.keepTags,
+      extraTags: z
+        .array(tagNameSchema)
+        .max(20)
+        .parse(opts.extraTags ?? []),
+    });
+    revalidatePath("/vocabulary");
+    return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function rejectVocabShareAction(shareId: string): Promise<ActionResult> {
+  try {
+    const u = await currentUserOrThrow();
+    await share.rejectVocabShare(u, z.uuid().parse(shareId));
+    revalidatePath("/vocabulary");
+    return { ok: true };
   } catch (e) {
     return fail(e);
   }

@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { bellAction, markReadAction } from "@/features/notifications/actions";
 import type { NotificationItem } from "@/features/notifications/service";
 import { AcceptShareDialog, rejectWithConfirm, type PendingShare } from "@/features/grammar/components/grammar-dialogs";
+import { AcceptVocabDialog, rejectVocabWithConfirm } from "@/features/vocabulary/components/share-dialogs";
+import type { ReceivedVocabShare } from "@/features/vocabulary/share-service";
 
 type BellData = Awaited<ReturnType<typeof bellAction>>;
 
@@ -28,6 +30,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
   const [unread, setUnread] = React.useState(initialUnread);
   const [open, setOpen] = React.useState(false);
   const [accept, setAccept] = React.useState<PendingShare | null>(null);
+  const [vocabInvite, setVocabInvite] = React.useState<ReceivedVocabShare | null>(null);
 
   const load = React.useCallback(async () => {
     try {
@@ -70,6 +73,14 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
   };
 
   const pending = new Set(data?.pendingGrammar ?? []);
+  const pendingVocab = new Map((data?.pendingVocab ?? []).map((v) => [v.id, v]));
+  const rejectVocab = async (s: ReceivedVocabShare) => {
+    setOpen(false);
+    if (await rejectVocabWithConfirm(confirm, s)) {
+      setVocabInvite(null);
+      await after();
+    }
+  };
   const items = data?.items ?? [];
 
   return (
@@ -100,6 +111,12 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
                       key={n.id}
                       n={n}
                       pending={!!n.payload.shareId && pending.has(n.payload.shareId)}
+                      vocab={n.payload.shareId ? pendingVocab.get(n.payload.shareId) : undefined}
+                      onOpenVocab={(v) => {
+                        setOpen(false);
+                        setVocabInvite(v);
+                      }}
+                      onRejectVocab={rejectVocab}
                       onView={() => setOpen(false)}
                       onAccept={(s) => {
                         setOpen(false);
@@ -132,6 +149,16 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
           router.push(`/grammar/${g.id}`);
         }}
       />
+      <AcceptVocabDialog
+        share={vocabInvite}
+        myTags={[]}
+        onClose={() => setVocabInvite(null)}
+        onDone={() => {
+          setVocabInvite(null);
+          void after();
+        }}
+        onReject={rejectVocab}
+      />
       {confirmNode}
     </>
   );
@@ -140,12 +167,18 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
 function Row({
   n,
   pending,
+  vocab,
   onView,
   onAccept,
   onReject,
+  onOpenVocab,
+  onRejectVocab,
 }: {
   n: NotificationItem;
   pending: boolean;
+  vocab?: ReceivedVocabShare;
+  onOpenVocab: (s: ReceivedVocabShare) => void;
+  onRejectVocab: (s: ReceivedVocabShare) => void;
   onView: () => void;
   onAccept: (s: PendingShare) => void;
   onReject: (s: PendingShare) => void;
@@ -213,6 +246,20 @@ function Row({
               Chấp nhận
             </Button>
             <Button size="sm" variant="muted" onClick={() => onReject(share)}>
+              Từ chối
+            </Button>
+          </div>
+        ) : (
+          <span className="text-[13px] text-text-3">Đã phản hồi</span>
+        )
+      ) : null}
+      {n.type === "vocab_share" ? (
+        vocab ? (
+          <div className="grid grid-cols-2 gap-1.5">
+            <Button size="sm" variant="solid" onClick={() => onOpenVocab(vocab)}>
+              Xem & chấp nhận
+            </Button>
+            <Button size="sm" variant="muted" onClick={() => onRejectVocab(vocab)}>
               Từ chối
             </Button>
           </div>
