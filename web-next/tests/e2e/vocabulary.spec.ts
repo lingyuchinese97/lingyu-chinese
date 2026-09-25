@@ -88,7 +88,10 @@ test("form báo lỗi khi thiếu trường bắt buộc", async ({ page }) => {
 });
 
 test("người khác không xem được từ vựng và ảnh của mình", async ({ browser }) => {
-  const a = await (await browser.newContext()).newPage();
+  // Chủ dùng màn desktop (bảng có link "Sửa") — context mới kế thừa viewport của project nên phải ghi rõ.
+  const a = await (
+    await browser.newContext({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false })
+  ).newPage();
   await register(a, "Chủ", "va");
   await a.goto("/vocabulary/new");
   await a.getByLabel("Hán tự").fill("秘密");
@@ -100,13 +103,13 @@ test("người khác không xem được từ vựng và ảnh của mình", asy
   await expect(a.getByAltText("Ảnh minh họa cho từ vựng")).toBeVisible();
   await a.getByRole("button", { name: "Lưu từ vựng" }).click();
   await expect(a).toHaveURL(/\/vocabulary$/);
-  const img = await a.locator("img[src^='/api/images/']").first().getAttribute("src");
-  await a
-    .locator("a[aria-label='Sửa 秘密']")
-    .first()
-    .click({ force: true })
-    .catch(() => {});
-  const editHref = await a.locator("a[aria-label='Sửa 秘密']").first().getAttribute("href");
+  await expect(a.getByText("Đã thêm “秘密” vào danh sách.")).toBeVisible();
+  const editLink = a.getByRole("link", { name: "Sửa 秘密" });
+  await expect(editLink).toBeVisible();
+  const thumb = a.locator("table img[src^='/api/images/']");
+  await expect(thumb).toHaveCount(1);
+  const img = await thumb.getAttribute("src");
+  const editHref = await editLink.getAttribute("href");
   expect(img).toBeTruthy();
   expect(editHref).toMatch(/\/vocabulary\/.+\/edit$/);
 

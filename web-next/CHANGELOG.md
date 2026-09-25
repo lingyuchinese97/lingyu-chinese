@@ -10,6 +10,8 @@
 
 ### Added
 
+- **Trang chủ** theo giao diện bản cũ: lời chào theo tên, mascot, thẻ "Từ vựng của tôi" (flashcard từ mới nhất, tổng số từ, số từ cần ôn)
+  và thẻ "Ôn tập từ vựng" (số thẻ FSRS đến hạn hôm nay, chọn số từ; nút bắt đầu mở khi xong phần Ôn tập).
 - **Từ vựng** (`/vocabulary`, `/vocabulary/new`, `/vocabulary/[id]/edit`): tìm kiếm bỏ dấu (Hán tự, pinyin viết liền/tách, nghĩa, tag),
   lọc tag/bộ thủ, sắp xếp, phân trang, chọn nhiều để thêm tag / đổi trạng thái / xoá, yêu thích, xem ghi chú dài, dữ liệu mẫu.
   Bảng trên desktop, thẻ trên điện thoại.
