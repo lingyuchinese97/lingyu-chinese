@@ -18,7 +18,7 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            | ✅  |
 | 8   | Bộ thủ + chia sẻ từ vựng + chuông thông báo                                                                                                                       | ✅         |
 | 9   | Bài học (schema Zod + màn hình chung + Bài 1)                                                                                                                     | ✅         |
-| 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         |            |
+| 10  | Cài đặt (xuất/nhập/xoá tài khoản) + Admin                                                                                                                         | ✅         |
 | 11  | PWA, security headers, a11y, seed, e2e                                                                                                                            |            |
 | 12  | Tài liệu (README, `docs/DEPLOY.md`, `.env.example`, CHANGELOG)                                                                                                    |            |
 
@@ -99,6 +99,13 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     Đáp án có sẵn ở client để phản hồi ngay từng câu; khi nộp, **server chấm lại** từ nội dung bài rồi mới lưu điểm.
     Bài làm dở lưu ở `sessionStorage` (refresh không mất). Phần "Nghe & nhận diện" của Bài 1 chưa có audio (bản Flutter cũng chưa có)
     → nút nghe vô hiệu kèm ghi chú. Sửa chỗ gõ nhầm thanh điệu ở Flutter: "ā á ă à" → "ā á ǎ à".
+
+30. **Xuất / nhập dữ liệu** qua route handler (`/api/account/export`, `/api/account/import`, giới hạn 30MB) thay vì Server Action
+    (giới hạn 2MB không đủ khi có ảnh). Import kiểm tra Origin + session, Zod từng bản ghi (bản ghi lỗi bị bỏ qua), ảnh base64 phải qua
+    kiểm tra magic bytes. Gộp, không ghi đè: từ vựng trùng Hán tự, ngữ pháp trùng tiêu đề → bỏ qua. File có cả lịch ôn FSRS.
+31. **Đổi mật khẩu** giữ phiên hiện tại, đăng xuất các thiết bị khác. **Xoá tài khoản** nhập lại mật khẩu, đăng xuất rồi xoá (cascade).
+32. **Admin**: thêm cột `user.last_login_at` (migration `0002`, ghi ở hook tạo session) vì phiên bị xoá khi đăng xuất.
+    Admin không tự khoá / tự đặt lại mật khẩu cho chính mình. Mật khẩu tạm chỉ hiển thị một lần.
 
 ## Chỗ mơ hồ & cách xử lý
 

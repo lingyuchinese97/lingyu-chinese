@@ -18,3 +18,14 @@ export async function resetRateLimit() {
     await client.end();
   }
 }
+
+/** Chạy 1 câu SQL trên DB e2e (dùng cho các bước chuẩn bị như nâng quyền admin). */
+export async function sql(text: string, params: unknown[] = []) {
+  const client = new pg.Client({ connectionString: e2eDbUrl });
+  await client.connect();
+  try {
+    return (await client.query(text, params)).rows;
+  } finally {
+    await client.end();
+  }
+}

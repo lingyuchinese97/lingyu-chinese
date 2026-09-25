@@ -15,6 +15,13 @@
       "when": 1790305990526,
       "tag": "0001_vocab_search",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790316766947,
+      "tag": "0002_user_last_login",
+      "breakpoints": true
     }
   ]
 }

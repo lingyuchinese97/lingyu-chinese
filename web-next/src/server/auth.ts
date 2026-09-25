@@ -32,6 +32,7 @@ export const auth = betterAuth({
     additionalFields: {
       role: { type: "string", required: false, defaultValue: "user", input: false },
       disabledAt: { type: "date", required: false, input: false },
+      lastLoginAt: { type: "date", required: false, input: false },
     },
   },
   session: {
@@ -69,9 +70,10 @@ export const auth = betterAuth({
             log.info({ userId: u.id }, "auth: blocked sign-in of disabled account");
             throw new APIError("FORBIDDEN", { message: "Tài khoản đã bị khoá. Liên hệ quản trị viên." });
           }
-          if (u.role !== "admin" && isAdminEmail(u.email)) {
-            await db.update(schema.user).set({ role: "admin" }).where(eq(schema.user.id, u.id));
-          }
+          await db
+            .update(schema.user)
+            .set({ lastLoginAt: new Date(), ...(u.role !== "admin" && isAdminEmail(u.email) ? { role: "admin" } : {}) })
+            .where(eq(schema.user.id, u.id));
         },
       },
     },

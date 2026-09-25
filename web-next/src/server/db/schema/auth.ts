@@ -16,6 +16,8 @@ export const user = pgTable("user", {
     .notNull(),
   role: text("role").default("user").notNull(),
   disabledAt: timestamp("disabled_at"),
+  /** Lần đăng nhập gần nhất (ghi ở hook tạo session) — hiển thị ở trang Quản trị. */
+  lastLoginAt: timestamp("last_login_at"),
 });
 
 export const session = pgTable(
