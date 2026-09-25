@@ -22,13 +22,13 @@ export default async function LandingPage() {
     <div className="relative min-h-dvh overflow-hidden bg-[radial-gradient(900px_600px_at_25%_40%,#E6F3FF_0%,transparent_60%),linear-gradient(180deg,#F8FCFF_0%,#EEF7FF_100%)]">
       <header className="relative z-[1] mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-2 md:px-6 md:pt-5">
         <Image
-          src="/brand/lingyu-logo.png"
+          src="/brand/lingyu-wordmark.png"
           alt="LingYu Chinese"
-          width={2171}
-          height={724}
+          width={1579}
+          height={550}
           priority
           sizes="200px"
-          className="h-12 w-auto mix-blend-multiply md:h-16"
+          className="h-11 w-auto md:h-14"
         />
         <Button asChild variant="secondary" size="sm">
           <Link href="/login">Đăng nhập</Link>
