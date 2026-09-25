@@ -30,13 +30,14 @@ export default async function SentenceResultPage() {
           <LeafDecor className="w-9" />
         </h1>
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-center md:gap-12">
-          <div className="relative flex items-center">
+          <div className="flex items-end gap-3">
+            {/* Mascot nền trong suốt, đặt cạnh vòng tròn (không chồng lên). */}
             <Image
-              src="/brand/lesson/mascot_happy.png"
+              src="/brand/lesson/mascot_celebrate.png"
               alt=""
-              width={90}
-              height={86}
-              className="absolute -bottom-2 -left-16 max-md:hidden"
+              width={110}
+              height={105}
+              className="shrink-0 max-md:hidden"
             />
             <svg
               width="150"
