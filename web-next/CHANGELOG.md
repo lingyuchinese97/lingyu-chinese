@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Trang chủ thiết kế lại**: lời chào + nút "Bắt đầu học ngay" (vào bài học tiếp theo) + mascot; 4 thẻ Từ vựng / Ôn dịch câu /
+  Ngữ pháp / Bài học; "Tiến độ học tập" (vòng % từ đã thuộc, câu đã thuộc, ngữ pháp, thẻ đến hạn, phần bài học đã làm);
+  "Học hôm nay" (từ mới, lần ôn, thẻ đến hạn + nút ôn tiếp); "Câu nói mỗi ngày" (đổi câu, nghe đọc).
+
+### Removed
+
+- Chức năng hình ảnh ở Từ vựng (tải / chụp ảnh, cột ảnh trong danh sách, tuỳ chọn hiện ảnh khi ôn, ảnh khi chia sẻ).
+  Ảnh đã lưu trước đây vẫn giữ trong DB và chỉ chủ ảnh xem được.
+
 ### Fixed
 
 - Đăng ký/đăng nhập từ sai địa chỉ (vd `http://` thay vì `https://`) báo rõ nguyên nhân thay vì "Có lỗi xảy ra".

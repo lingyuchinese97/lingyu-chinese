@@ -1,6 +1,6 @@
 # LingYu Chinese — bản Next.js (`web-next/`)
 
-Ứng dụng học tiếng Trung: từ vựng (kèm ảnh), ôn tập tự chọn + ôn đến hạn (FSRS), ôn dịch câu, ngữ pháp, bộ thủ (nét viết),
+Ứng dụng học tiếng Trung: từ vựng, ôn tập tự chọn + ôn đến hạn (FSRS), ôn dịch câu, ngữ pháp, bộ thủ (nét viết),
 bài học, chia sẻ giữa người dùng, thông báo, cài đặt (xuất / nhập dữ liệu), quản trị. Giao diện tiếng Việt, ưu tiên điện thoại,
 cài được như app (PWA).
 
