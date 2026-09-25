@@ -12,7 +12,7 @@ Spec: [`docs/prompts/nextjs-migration.md`](../docs/prompts/nextjs-migration.md).
 | 1   | Khung dự án: Next.js, Tailwind v4 + tokens, UI kit, font, env, pino, ESLint/Prettier, Vitest, Playwright, `/api/health`, trang lỗi, Docker, Caddy, CI, Dependabot | ✅         |
 | 2   | DB (Drizzle, migration) + Better Auth (email + mật khẩu), role admin, CLI                                                                                         | ✅         |
 | 3   | App shell (sidebar, bottom nav, topbar, focus mode), route guard, landing                                                                                         | ✅         |
-| 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          |            |
+| 4   | Từ vựng + storage adapter + nén ảnh + `/api/images/[id]`                                                                                                          | ✅         |
 | 5   | Ôn tập tự chọn + `lib/grading.ts` (chấm ở server)                                                                                                                 |            |
 | 6   | Ôn đến hạn (FSRS)                                                                                                                                                 |            |
 | 7   | Ngữ pháp + chia sẻ + thông báo                                                                                                                                    |            |
@@ -70,6 +70,13 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 18. **Thanh tab dưới đáy** (điện thoại) có 5 mục: Trang chủ, Từ vựng, Ngữ pháp, Bài học, Ôn tập. Bộ thủ, Cài đặt, Quản trị
     nằm trong ngăn kéo ☰ (bản cũ để Bộ thủ ở tab bar, nhưng bản mới có thêm Bài học). Màn tập trung được xác định theo đường dẫn
     (`/…/new`, `/…/edit`, `/review/session`, `/lessons/[id]/[section]`).
+
+19. **Tìm kiếm bỏ dấu ở SQL**: cột `vocab.pinyin_fold` (bỏ dấu + bỏ khoảng trắng) và `vocab.meaning_fold` tính bằng `fold()` mỗi lần ghi
+    (migration `0001_vocab_search`), không cần extension `unaccent`. Tag tìm theo `fold(tên)` trong JS (số tag ít).
+20. **Giới hạn thêm** (bản cũ không có): Hán tự ≤ 40, pinyin ≤ 120, nghĩa ≤ 200, ≤ 20 tag/từ — xem `src/lib/limits.ts`.
+21. **Ảnh gửi cùng form** (FormData trong một Server Action) thay vì tải trước → không có ảnh mồ côi. Đổi ảnh = ảnh mới (id mới),
+    ảnh cũ bị xoá; nhờ vậy `/api/images/[id]` cache `immutable` an toàn.
+22. **Thanh thao tác hàng loạt** phase 4: Thêm tag, Đã thuộc, Cần ôn, Xoá. Nút "Ôn tập" thêm ở phase 5, "Chia sẻ" ở phase 8.
 
 ## Chỗ mơ hồ & cách xử lý
 

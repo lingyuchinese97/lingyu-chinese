@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DropdownMenu } from "radix-ui";
+import { menuContentClass, menuItemClass } from "@/components/ui/menu";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
@@ -11,11 +12,6 @@ export function initials(name: string) {
   const last = parts[parts.length - 1]!;
   return (parts.length > 1 ? parts[0]![0]! + last[0]! : last.slice(0, 2)).toUpperCase();
 }
-
-export const menuContentClass =
-  "z-[60] min-w-[220px] max-w-[calc(100vw-16px)] rounded-lg border border-border bg-white p-1.5 shadow-card";
-export const menuItemClass =
-  "flex min-h-11 cursor-pointer items-center gap-3 rounded-sm px-3 text-[15px] font-medium text-text outline-none select-none data-[highlighted]:bg-blue-50 [&_svg]:size-5 [&_svg]:text-blue-600";
 
 export function UserMenu({ name, email }: { name: string; email: string }) {
   const router = useRouter();

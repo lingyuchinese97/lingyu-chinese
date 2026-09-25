@@ -10,6 +10,13 @@
 
 ### Added
 
+- **Từ vựng** (`/vocabulary`, `/vocabulary/new`, `/vocabulary/[id]/edit`): tìm kiếm bỏ dấu (Hán tự, pinyin viết liền/tách, nghĩa, tag),
+  lọc tag/bộ thủ, sắp xếp, phân trang, chọn nhiều để thêm tag / đổi trạng thái / xoá, yêu thích, xem ghi chú dài, dữ liệu mẫu.
+  Bảng trên desktop, thẻ trên điện thoại.
+- Form từ vựng: pinyin tự thêm dấu khi gõ số (cả trong ghi chú), gợi ý pinyin bằng pinyin-pro, chọn bộ thủ theo tên tiếng Việt
+  (kèm gợi ý từ chữ Hán), chọn/tạo tag, ảnh (nén WebP ≤ 1024px ở trình duyệt, kiểm tra magic bytes ở server), nút Lưu dính đáy trên điện thoại.
+- `/api/images/[id]`: chỉ chủ sở hữu xem được, cache `private, immutable`. Storage adapter (driver `db`).
+- Mỗi từ mới tự tạo thẻ ôn tập FSRS (`srs_card`).
 - Trang giới thiệu làm lại theo thiết kế mới: tiêu đề một màu, nút có icon, mascot lớn với lá bay, 5 ô Từ vựng / Ôn tập / Ngữ pháp / Bộ thủ / Luyện tập; logo nền trong suốt.
 - Logo chỉ có chữ (`lingyu-wordmark.png`, nền trong suốt) dùng ở trang giới thiệu và trang đăng nhập/đăng ký trên desktop — bên cạnh đã có mascot lớn.
 - `vercel.json` cố định Framework Preset = Next.js và lệnh build `pnpm db:migrate && pnpm build`.
