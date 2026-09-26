@@ -3,6 +3,7 @@
  * Đáp án KHÔNG gửi xuống trình duyệt trước khi trả lời / bỏ qua; chấm bằng lib/sentence-grading.ts.
  */
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { recordActivity } from "@/features/progress/service";
 import { db } from "@/server/db/client";
 import { sentence, sentenceSession, sentenceTag, sentenceToTag } from "@/server/db/schema";
 import { firstHanzi, gradeSentence, type Direction } from "@/lib/sentence-grading";
@@ -316,10 +317,19 @@ export async function completeSentenceSession(userId: string, sessionId: string)
   if (!row) throw new SentenceReviewError("not-found", GONE);
   if ((row.questions as Stored[]).some((q) => q.result === null))
     throw new SentenceReviewError("invalid", "Bạn chưa làm hết các câu.");
-  await db
-    .update(sentenceSession)
-    .set({ status: "completed", completedAt: new Date() })
-    .where(eq(sentenceSession.id, row.id));
+  const now = new Date();
+  await db.update(sentenceSession).set({ status: "completed", completedAt: now }).where(eq(sentenceSession.id, row.id));
+  const qs = row.questions as Stored[];
+  const cfg = row.config as SentenceConfig;
+  await recordActivity(db, userId, {
+    kind: "sentence_review",
+    title: cfg.label ?? "",
+    detail: cfg.direction,
+    refId: row.id,
+    correct: qs.filter((q) => q.result === "correct").length,
+    total: qs.length,
+    durationSec: (now.getTime() - row.startedAt.getTime()) / 1000,
+  });
 }
 
 export async function abandonSentenceSession(userId: string) {

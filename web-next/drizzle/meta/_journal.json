@@ -50,6 +50,13 @@
       "when": 1790417960818,
       "tag": "0006_pronunciation",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790438145923,
+      "tag": "0007_study_progress",
+      "breakpoints": true
     }
   ]
 }

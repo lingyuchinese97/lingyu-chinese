@@ -179,6 +179,24 @@ Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu tr�
 - `topic`: `initial:b`, `final:ang`, `tone:3`, `sandhi:third-two`, `sandhi:third-two:0` (ví dụ thứ 1), `sandhi:general`. Mỗi mục một
   ghi chú. Giới hạn: tiêu đề 100, nội dung 2.000 ký tự, tối đa 500 ghi chú.
 
+## Tiến độ học tập `/api/v1/progress`, Tìm kiếm `/api/v1/search`
+
+Mọi số liệu chỉ của người đang đăng nhập (người khác không bao giờ thấy). Ngày tính theo giờ Việt Nam (UTC+7).
+
+| Route                                      | Việc                                                                                                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /progress`                            | `{ summary, today }` — tổng thời gian học, chênh lệch với tuần trước, bài học / từ vựng / ngữ pháp (`done\|learned`, `total`, `percent`), kỹ năng, chuỗi ngày, mục tiêu                    |
+| `GET /progress/daily?days=7\|30\|90`       | Số phút học từng ngày                                                                                                                                                                      |
+| `GET /progress/history?kind=&days=&limit=` | Lịch sử học tập mới nhất trước (`kind`: `vocab_review`, `grammar_review`, `sentence_review`, `translation`, `reading`, `lesson`, `listening`, `pronunciation`, `vocab_add`, `grammar_add`) |
+| `GET /progress/vocab`                      | Từ vựng theo HSK 1–7 (`learned`, `inBank`, `total`, `percent`) và theo tag                                                                                                                 |
+| `GET /progress/grammar`                    | Ngữ pháp theo HSK (tag “HSK n”) và theo tag                                                                                                                                                |
+| `GET\|PUT /progress/goals`                 | Mục tiêu `{ minutes_day (5–600), lessons_week (1–50), vocab_month (1–2000) }`; khoá lạ / ngoài giới hạn → `400`                                                                            |
+| `POST /progress/ping`                      | Nhịp đếm thời gian học (web gửi mỗi 60 giây khi đang mở trang). Cộng tối đa 60 giây mỗi nhịp, nghỉ > 2 phút không cộng                                                                     |
+| `POST /progress/activity`                  | Ghi hoạt động làm ở máy khách (hiện chỉ `pronunciation`): `{ kind, title, correct?, total?, durationSec? }` → `201`                                                                        |
+| `GET /search?q=&limit=`                    | Tìm chung: `{ vocab, grammar, sentences, lessons, radicals, total }`                                                                                                                       |
+
+Các hoạt động khác (ôn từ, ôn câu, bài học, luyện nghe, thêm từ / ngữ pháp) được server tự ghi khi gọi API tương ứng.
+
 ## Quản trị `/api/v1/admin` (chỉ admin)
 
 Người dùng thường → `403`. Không trả mật khẩu hay nội dung học của người dùng (chỉ số lượng).
