@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { LoginForm } from "@/components/auth/login-form";
 import { safeNext } from "@/lib/safe-next";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Đăng nhập" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("auth.loginTitle") };
+}
 
 export default async function LoginPage({
   searchParams,

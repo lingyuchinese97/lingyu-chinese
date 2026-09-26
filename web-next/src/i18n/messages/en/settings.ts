@@ -1,0 +1,51 @@
+import type { Messages } from "../vi";
+
+export const settings: Messages["settings"] = {
+  title: "Settings",
+  subtitle: "Manage your account and learning data.",
+  account: "Account",
+  signedInWithEmail: "Signed in with email",
+  admin: " · Administrator",
+  nameSaved: "Display name saved.",
+  signOutDesc: "Sign out of your account on this device.",
+  language: "Language",
+  languageTitle: "Interface language",
+  languageDesc: "Choose the display language. Your choice is saved to your account.",
+  changePassword: "Change password",
+  currentPassword: "Current password",
+  currentPlaceholder: "Enter your current password",
+  newPassword: "New password",
+  newPlaceholder: "At least {min} characters",
+  confirmNew: "Confirm new password",
+  confirmNewPlaceholder: "Re-enter your new password",
+  passwordChanged: "Password changed. Your other devices have been signed out.",
+  data: "Learning data",
+  export: "Export data",
+  exportDesc:
+    "Download a JSON file with your words, tags, grammar, notes, sentences, learned radicals and lesson progress.",
+  import: "Import data",
+  importDesc:
+    "Choose an exported .json file, or a .csv downloaded from the old LingYu (Vocabulary → select words → Share → Download file → CSV). Data is merged, never overwritten; duplicates are skipped.",
+  importFileLabel: "Choose a data file to import",
+  importing: "Importing...",
+  imported:
+    "Imported {vocab, plural, one {# word} other {# words}} and {grammar, plural, one {# grammar point} other {# grammar points}}.",
+  importDone: "Import complete:",
+  importReport:
+    "Words: {va} added, {vs} skipped · Grammar: {ga} added, {gs} skipped · Sentences: {sa} added, {ss} skipped · Images: {img} · Learned radicals: {rad} · Lesson progress: {les}",
+  sample: "Sample data",
+  sampleDesc: "Add sample HSK words to try out reviews.",
+  sampleAdd: "Add sample data",
+  sampleAdded: "Added {count, plural, one {# sample word} other {# sample words}}.",
+  sampleHave: "You already have all the sample words.",
+  deleteAccount: "Delete account",
+  deleteForever: "Permanently delete account",
+  deleteDesc:
+    "Delete your account and all learning data (words, images, grammar, progress). This can't be undone — export your data first.",
+  deleteTitle: "Delete account?",
+  deleteWarn: "All your data will be permanently deleted and {strong}. Enter your password to confirm.",
+  deleteWarnStrong: "can't be recovered",
+  deleting: "Deleting...",
+  deleteConfirm: "Delete permanently",
+  deleted: "Account deleted. See you again!",
+};

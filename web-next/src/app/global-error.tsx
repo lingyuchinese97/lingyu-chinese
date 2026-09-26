@@ -1,8 +1,20 @@
 "use client";
 
+import { LOCALE_COOKIE, isLocale, type Locale } from "@/i18n/config";
+import { createT } from "@/i18n/translate";
+
+/** Thay cả root layout (không có I18nProvider) → đọc ngôn ngữ từ cookie. */
+function cookieLocale(): Locale {
+  if (typeof document === "undefined") return "vi";
+  const m = new RegExp(`(?:^|; )${LOCALE_COOKIE}=([^;]+)`).exec(document.cookie);
+  return isLocale(m?.[1]) ? m[1] : "vi";
+}
+
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  const locale = cookieLocale();
+  const t = createT(locale);
   return (
-    <html lang="vi">
+    <html lang={locale}>
       <body
         style={{
           fontFamily: "system-ui, sans-serif",
@@ -15,8 +27,8 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
         }}
       >
         <div style={{ textAlign: "center", padding: 24 }}>
-          <h1 style={{ color: "#073B8C" }}>Đã có lỗi xảy ra</h1>
-          <p>Hệ thống gặp sự cố. Vui lòng tải lại trang.</p>
+          <h1 style={{ color: "#073B8C" }}>{t("pages.errorTitle")}</h1>
+          <p>{t("pages.globalErrorDesc")}</p>
           <button
             onClick={reset}
             style={{
@@ -30,7 +42,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
               fontWeight: 600,
             }}
           >
-            Thử lại
+            {t("pages.retry")}
           </button>
         </div>
       </body>

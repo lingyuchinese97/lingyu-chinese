@@ -18,6 +18,8 @@ export const user = pgTable("user", {
   disabledAt: timestamp("disabled_at"),
   /** Lần đăng nhập gần nhất (ghi ở hook tạo session) — hiển thị ở trang Quản trị. */
   lastLoginAt: timestamp("last_login_at"),
+  /** Ngôn ngữ giao diện người dùng tự chọn ("vi" | "en"); null = mặc định tiếng Việt. */
+  locale: text("locale"),
 });
 
 export const session = pgTable(

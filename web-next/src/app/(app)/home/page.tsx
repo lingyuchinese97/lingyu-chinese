@@ -23,8 +23,12 @@ import { progressOf, summarize } from "@/features/lessons/service";
 import { homeStats } from "@/features/home/service";
 import { DailyQuote } from "@/features/home/daily-quote";
 import { quoteIndexForDay } from "@/data/daily-quotes";
+import { getT } from "@/i18n/server";
+import type { T } from "@/i18n/translate";
 
-export const metadata: Metadata = { title: "Trang chủ" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("home.title") };
+}
 
 /** "Nguyễn Văn An" → "Văn An" (2 chữ cuối, như firstName bản cũ). */
 function firstName(name: string) {
@@ -34,6 +38,7 @@ function firstName(name: string) {
 
 export default async function HomePage() {
   const user = await requireUser();
+  const t = await getT();
   const [stats, due, active, progress] = await Promise.all([
     homeStats(user.id),
     dueCount(user.id),
@@ -44,10 +49,10 @@ export default async function HomePage() {
   const nextLesson = lessons.lessons.find((l) => l.done < l.total) ?? lessons.lessons[0];
   const pct = stats.vocab.total ? Math.round((stats.vocab.learned / stats.vocab.total) * 100) : 0;
   const cont = active
-    ? { href: "/review/session", label: "Tiếp tục ôn tập" }
+    ? { href: "/review/session", label: t("home.continueReview") }
     : due
-      ? { href: "/review/due", label: `Ôn ngay (${due})` }
-      : { href: "/review/setup", label: "Bắt đầu ôn tập" };
+      ? { href: "/review/due", label: t("home.reviewNow", { count: due }) }
+      : { href: "/review/setup", label: t("home.startReview") };
 
   return (
     <>
@@ -70,27 +75,23 @@ export default async function HomePage() {
             id="hero-title"
             className="text-[28px] leading-[1.15] font-extrabold tracking-tight text-navy md:text-[38px] xl:text-[42px]"
           >
-            Chào mừng bạn trở lại
+            {t("home.welcome")}
             <br />
             <span className="text-[24px] font-semibold text-text-2 md:text-[30px]">
-              {firstName(user.name) || "bạn"}!
+              {firstName(user.name) || t("home.you")}!
             </span>
           </h1>
           <p className="mt-3 flex items-center gap-2.5 text-base text-text-2 md:text-[18px]">
             <LeafDecor className="w-[26px]" />
-            Tiếng Trung gần hơn mỗi ngày
+            {t("common.tagline")}
           </p>
           <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
-            <p className="hand text-lg leading-snug md:text-[20px]">
-              “Mỗi từ vựng hôm nay
-              <br />
-              là một bước gần hơn đến ước mơ của bạn!”
-            </p>
+            <p className="hand text-lg leading-snug whitespace-pre-line md:text-[20px]">{t("home.motto")}</p>
             <Link
               href={nextLesson ? `/lessons/${nextLesson.id}` : "/lessons"}
               className="inline-flex h-12 w-fit shrink-0 items-center gap-2 rounded-full px-6 font-semibold text-white shadow-cta outline-none bg-grad-primary hover:[background:var(--grad-primary-hover)] focus-visible:[box-shadow:var(--focus-ring)]"
             >
-              Bắt đầu học ngay
+              {t("home.startLearning")}
               <ArrowRight className="size-5" />
             </Link>
           </div>
@@ -120,32 +121,32 @@ export default async function HomePage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <FeatureCard
           href="/vocabulary"
-          title="Từ vựng"
-          desc="Lưu lại những từ vựng mới để học hiệu quả hơn mỗi ngày."
+          title={t("shell.nav.vocabulary")}
+          desc={t("home.cards.vocabulary")}
           icon={<BookOpen />}
           tone="blue"
           art={<CardArt hanzi="你好" />}
         />
         <FeatureCard
           href="/sentences"
-          title="Ôn dịch câu"
-          desc="Luyện dịch Trung ⇄ Việt dễ dàng và hiệu quả."
+          title={t("shell.nav.sentences")}
+          desc={t("home.cards.sentences")}
           icon={<MessageCircle />}
           tone="green"
           art={<BubbleArt />}
         />
         <FeatureCard
           href="/grammar"
-          title="Ngữ pháp"
-          desc="Nắm vững ngữ pháp cơ bản và ứng dụng vào thực tế."
+          title={t("shell.nav.grammar")}
+          desc={t("home.cards.grammar")}
           icon={<FileText />}
           tone="violet"
           art={<NoteArt />}
         />
         <FeatureCard
           href="/lessons"
-          title="Bài học"
-          desc="Học theo bài, có lộ trình rõ ràng từ Bài 1 trở lên."
+          title={t("shell.nav.lessons")}
+          desc={t("home.cards.lessons")}
           icon={<GraduationCap />}
           tone="amber"
           art={<BooksArt />}
@@ -161,42 +162,42 @@ export default async function HomePage() {
           <div className="flex items-center gap-2.5">
             <BarChart3 className="size-6 text-blue-600" aria-hidden="true" />
             <h2 id="pg-title" className="flex-1 text-lg font-bold text-navy">
-              Tiến độ học tập
+              {t("home.progress")}
             </h2>
             <Link href="/vocabulary" className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600">
-              Xem chi tiết
+              {t("home.details")}
               <ArrowRight className="size-4" />
             </Link>
           </div>
           <div className="grid items-center gap-5 sm:grid-cols-[auto_1fr] xl:grid-cols-1 2xl:grid-cols-[auto_1fr]">
             <div className="flex items-center gap-4">
-              <Ring pct={pct} />
+              <Ring pct={pct} t={t} />
               <div>
-                <div className="text-[15px] text-text-2">Đã thuộc</div>
-                <div className="text-xl font-extrabold text-navy">Từ vựng</div>
+                <div className="text-[15px] text-text-2">{t("home.learned")}</div>
+                <div className="text-xl font-extrabold text-navy">{t("shell.nav.vocabulary")}</div>
                 <div className="text-sm text-text-2 tabular-nums">
-                  {stats.vocab.learned} / {stats.vocab.total} từ vựng
+                  {t("home.vocabCount", { learned: stats.vocab.learned, total: stats.vocab.total })}
                 </div>
               </div>
             </div>
             <ul className="flex flex-col gap-2.5 border-border sm:border-l sm:pl-5 xl:border-l-0 xl:pl-0 2xl:border-l 2xl:pl-5">
               <ProgressRow
                 icon={<BookOpen />}
-                label="Từ vựng đã thuộc"
+                label={t("home.rowVocab")}
                 value={`${stats.vocab.learned} / ${stats.vocab.total}`}
               />
-              <ProgressRow icon={<RefreshCw />} label="Thẻ đến hạn ôn" value={String(due)} />
+              <ProgressRow icon={<RefreshCw />} label={t("home.rowDue")} value={String(due)} />
               <ProgressRow
                 icon={<MessagesSquare />}
-                label="Câu đã thuộc"
+                label={t("home.rowSentences")}
                 value={`${stats.sentences.learned} / ${stats.sentences.total}`}
               />
-              <ProgressRow icon={<FileText />} label="Ngữ pháp đã lưu" value={String(stats.grammar)} />
+              <ProgressRow icon={<FileText />} label={t("home.rowGrammar")} value={String(stats.grammar)} />
               <ProgressRow
                 icon={<GraduationCap />}
-                label="Bài học"
-                value={`${lessons.done} / ${lessons.total} phần`}
-                title={`Đã làm ${lessons.done}/${lessons.total} phần (${lessons.percent}%)`}
+                label={t("home.rowLessons")}
+                value={t("home.lessonParts", { done: lessons.done, total: lessons.total })}
+                title={t("home.lessonPartsTitle", { done: lessons.done, total: lessons.total, pct: lessons.percent })}
               />
             </ul>
           </div>
@@ -209,13 +210,13 @@ export default async function HomePage() {
           <div className="flex items-center gap-2.5">
             <CalendarDays className="size-6 text-blue-600" aria-hidden="true" />
             <h2 id="td-title" className="flex-1 text-lg font-bold text-navy">
-              Học hôm nay
+              {t("home.today")}
             </h2>
           </div>
           <div className="grid grid-cols-3 gap-2.5">
-            <TodayTile tone="rose" icon={<BookOpen />} value={stats.newToday} label="từ vựng mới" />
-            <TodayTile tone="green" icon={<CircleCheck />} value={stats.reviewsToday} label="lần ôn tập" />
-            <TodayTile tone="amber" icon={<RefreshCw />} value={due} label="thẻ đến hạn" />
+            <TodayTile tone="rose" icon={<BookOpen />} value={stats.newToday} label={t("home.newWords")} />
+            <TodayTile tone="green" icon={<CircleCheck />} value={stats.reviewsToday} label={t("home.reviews")} />
+            <TodayTile tone="amber" icon={<RefreshCw />} value={due} label={t("home.dueCards")} />
           </div>
           <Link
             href={cont.href}
@@ -370,11 +371,11 @@ function BooksArt() {
   );
 }
 
-function Ring({ pct }: { pct: number }) {
+function Ring({ pct, t }: { pct: number; t: T }) {
   const R = 44;
   const C = 2 * Math.PI * R;
   return (
-    <svg width="112" height="112" viewBox="0 0 112 112" role="img" aria-label={`Đã thuộc ${pct}% từ vựng`}>
+    <svg width="112" height="112" viewBox="0 0 112 112" role="img" aria-label={t("home.ringLabel", { pct })}>
       <circle cx="56" cy="56" r={R} fill="none" stroke="#E6F1FC" strokeWidth="11" />
       <circle
         cx="56"

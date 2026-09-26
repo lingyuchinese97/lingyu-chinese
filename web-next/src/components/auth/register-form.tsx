@@ -11,9 +11,12 @@ import { authClient } from "@/lib/auth-client";
 import { registerErrorMessage } from "@/lib/auth-errors";
 import { MIN_PASSWORD, registerSchema, type RegisterInput } from "@/lib/auth-rules";
 import { AuthField, AuthTitle } from "./auth-field";
+import { useT } from "@/i18n/client";
+import { EMAIL_TAKEN } from "@/lib/auth-errors";
 
 export function RegisterForm() {
   const router = useRouter();
+  const t = useT();
   const [formError, setFormError] = React.useState("");
   const {
     register,
@@ -42,23 +45,23 @@ export function RegisterForm() {
 
   return (
     <>
-      <AuthTitle title="Đăng ký" sub="Tạo tài khoản để bắt đầu học cùng LingYu!" />
+      <AuthTitle title={t("auth.registerTitle")} sub={t("auth.registerSub")} />
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
         {formError && (
           <Alert tone="error">
-            {formError}{" "}
-            {formError.includes("đăng nhập") && (
+            {t.maybe(formError)}{" "}
+            {formError === EMAIL_TAKEN && (
               <Link href="/login" className="font-bold underline">
-                Đăng nhập
+                {t("auth.signIn")}
               </Link>
             )}
           </Alert>
         )}
         <AuthField
           id="name"
-          label="Họ và tên"
+          label={t("auth.name")}
           icon={User}
-          placeholder="Nhập tên của bạn"
+          placeholder={t("auth.namePlaceholder")}
           autoComplete="name"
           autoFocus
           error={errors.name?.message}
@@ -66,10 +69,10 @@ export function RegisterForm() {
         />
         <AuthField
           id="email"
-          label="Email"
+          label={t("auth.email")}
           type="email"
           icon={Mail}
-          placeholder="Nhập email của bạn"
+          placeholder={t("auth.emailPlaceholder")}
           autoComplete="email"
           inputMode="email"
           error={errors.email?.message}
@@ -77,20 +80,20 @@ export function RegisterForm() {
         />
         <AuthField
           id="password"
-          label="Mật khẩu"
+          label={t("auth.password")}
           icon={Lock}
           password
-          placeholder={`Tối thiểu ${MIN_PASSWORD} ký tự`}
+          placeholder={t("auth.passwordMinPlaceholder", { min: MIN_PASSWORD })}
           autoComplete="new-password"
           error={errors.password?.message}
           {...register("password")}
         />
         <AuthField
           id="confirm"
-          label="Nhập lại mật khẩu"
+          label={t("auth.confirm")}
           icon={Lock}
           password
-          placeholder="Nhập lại mật khẩu"
+          placeholder={t("auth.confirmPlaceholder")}
           autoComplete="new-password"
           error={errors.confirm?.message}
           {...register("confirm")}
@@ -102,14 +105,14 @@ export function RegisterForm() {
           disabled={isSubmitting}
           className="relative min-h-14 rounded-md text-[17px] md:min-h-[70px] md:text-xl"
         >
-          <span>{isSubmitting ? "Đang tạo tài khoản..." : "Đăng ký"}</span>
+          <span>{isSubmitting ? t("auth.creating") : t("auth.register")}</span>
           <ArrowRight className="absolute right-[22px] !size-7" aria-hidden="true" />
         </Button>
       </form>
       <p className="text-center text-[15.5px] text-text-2 md:text-lg">
-        Đã có tài khoản?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link href="/login" className="font-bold text-[#1646B8] hover:underline">
-          Đăng nhập
+          {t("auth.signIn")}
         </Link>
       </p>
     </>

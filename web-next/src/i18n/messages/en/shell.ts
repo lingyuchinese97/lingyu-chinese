@@ -1,0 +1,38 @@
+import type { Messages } from "../vi";
+
+export const shell: Messages["shell"] = {
+  nav: {
+    home: "Home",
+    vocabulary: "Vocabulary",
+    sentences: "Sentences",
+    grammar: "Grammar",
+    radicals: "Radicals",
+    lessons: "Lessons",
+    review: "Review",
+    settings: "Settings",
+    admin: "Admin",
+  },
+  quote: {
+    home: "Explore the world\nof Chinese\nwith LingYu!",
+    vocabulary: "Learn every day,\nbecome a better\nversion of yourself!",
+    sentences: "One sentence at a time,\nspeak Chinese\nmore naturally!",
+    grammar: "Master grammar,\nspeak Chinese\nwith confidence!",
+    radicals: "Know the radicals,\nremember characters\nwith ease!",
+    lessons: "One lesson at a time,\ncloser to Chinese\nevery day!",
+    review: "Review today,\nmore confident every day!",
+    reviewSession: "Keep going every day,\nChinese gets closer!",
+    reviewResult: "Persist today,\nprogress every day!",
+    default: "Small steps,\nbig future!",
+  },
+  mainNav: "Main navigation",
+  quickNav: "Quick navigation",
+  skipNav: "Skip navigation",
+  homeLink: "LingYu Chinese — Home",
+  logoAlt: "LingYu Chinese — Closer to Chinese every day",
+  openMenu: "Open menu",
+  closeMenu: "Close menu",
+  account: "Account: {name}",
+  signOut: "Sign out",
+  breadcrumb: "Breadcrumb",
+  languageSwitch: "Change language",
+};

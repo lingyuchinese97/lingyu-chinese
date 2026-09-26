@@ -9,6 +9,7 @@ import { NavProgress } from "./nav-progress";
 import { NotificationBell } from "./notification-bell";
 import { Sidebar } from "./sidebar";
 import { UserMenu } from "./user-menu";
+import { useT } from "@/i18n/client";
 
 type ShellUser = { name: string; email: string; role: "user" | "admin" };
 
@@ -23,6 +24,7 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const t = useT();
   const { nav, quote, focus } = shellState(pathname);
   // Ngăn kéo gắn với đường dẫn lúc mở → đổi trang (kể cả nút Back) là tự đóng.
   const [openAt, setOpenAt] = React.useState<string | null>(null);
@@ -55,7 +57,7 @@ export function AppShell({
         href="#main"
         className="sr-only z-[70] rounded-md bg-white px-4 py-2 font-semibold text-blue-600 shadow-card focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >
-        Bỏ qua điều hướng
+        {t("shell.skipNav")}
       </a>
       <div
         aria-hidden="true"
@@ -77,7 +79,7 @@ export function AppShell({
             ref={toggleRef}
             type="button"
             onClick={() => setNavOpen(!navOpen)}
-            aria-label={navOpen ? "Đóng menu" : "Mở menu"}
+            aria-label={navOpen ? t("shell.closeMenu") : t("shell.openMenu")}
             aria-controls="sidebar"
             aria-expanded={navOpen}
             className="mr-auto flex size-11 items-center justify-center rounded-full text-navy outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)] lg:hidden"
@@ -96,7 +98,7 @@ export function AppShell({
         <footer className="mt-[18px] flex flex-wrap items-center justify-center gap-3 text-center text-[12.5px] text-text-2 md:mt-[26px] md:text-[13.5px]">
           <strong className="font-semibold text-navy">LingYu Chinese</strong>
           <span className="h-3.5 w-px bg-border-strong" aria-hidden="true" />
-          <span>Tiếng Trung gần hơn mỗi ngày</span>
+          <span>{t("common.tagline")}</span>
           <Heart className="size-[18px] text-blue-600" aria-hidden="true" />
         </footer>
       </div>

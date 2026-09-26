@@ -11,9 +11,11 @@ import { authClient } from "@/lib/auth-client";
 import { loginErrorMessage } from "@/lib/auth-errors";
 import { loginSchema, type LoginInput } from "@/lib/auth-rules";
 import { AuthField, AuthTitle } from "./auth-field";
+import { useT } from "@/i18n/client";
 
 export function LoginForm({ initialEmail = "", next = "/home" }: { initialEmail?: string; next?: string }) {
   const router = useRouter();
+  const t = useT();
   const [formError, setFormError] = React.useState("");
   const [showForgot, setShowForgot] = React.useState(false);
   const {
@@ -39,15 +41,15 @@ export function LoginForm({ initialEmail = "", next = "/home" }: { initialEmail?
 
   return (
     <>
-      <AuthTitle title="Đăng nhập" sub="Chào mừng bạn trở lại với LingYu Chinese!" />
+      <AuthTitle title={t("auth.loginTitle")} sub={t("auth.loginSub")} />
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
         {formError && <Alert tone="error">{formError}</Alert>}
         <AuthField
           id="email"
-          label="Email"
+          label={t("auth.email")}
           type="email"
           icon={Mail}
-          placeholder="Nhập email của bạn"
+          placeholder={t("auth.emailPlaceholder")}
           autoComplete="email"
           inputMode="email"
           autoFocus={!initialEmail}
@@ -56,10 +58,10 @@ export function LoginForm({ initialEmail = "", next = "/home" }: { initialEmail?
         />
         <AuthField
           id="password"
-          label="Mật khẩu"
+          label={t("auth.password")}
           icon={Lock}
           password
-          placeholder="Nhập mật khẩu của bạn"
+          placeholder={t("auth.passwordPlaceholder")}
           autoComplete="current-password"
           autoFocus={!!initialEmail}
           error={errors.password?.message}
@@ -72,10 +74,10 @@ export function LoginForm({ initialEmail = "", next = "/home" }: { initialEmail?
             aria-expanded={showForgot}
             onClick={() => setShowForgot((v) => !v)}
           >
-            Quên mật khẩu?
+            {t("auth.forgot")}
           </button>
         </div>
-        {showForgot && <Alert tone="info">Liên hệ quản trị viên để đặt lại mật khẩu.</Alert>}
+        {showForgot && <Alert tone="info">{t("auth.forgotHelp")}</Alert>}
         <Button
           type="submit"
           variant="primary"
@@ -83,14 +85,14 @@ export function LoginForm({ initialEmail = "", next = "/home" }: { initialEmail?
           disabled={isSubmitting}
           className="relative min-h-14 rounded-md text-[17px] md:min-h-[70px] md:text-xl"
         >
-          <span>{isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}</span>
+          <span>{isSubmitting ? t("auth.signingIn") : t("auth.signIn")}</span>
           <ArrowRight className="absolute right-[22px] !size-7" aria-hidden="true" />
         </Button>
       </form>
       <p className="text-center text-[15.5px] text-text-2 md:text-lg">
-        Chưa có tài khoản?{" "}
+        {t("auth.noAccount")}{" "}
         <Link href="/register" className="font-bold text-[#1646B8] hover:underline">
-          Đăng ký ngay
+          {t("auth.registerNow")}
         </Link>
       </p>
     </>

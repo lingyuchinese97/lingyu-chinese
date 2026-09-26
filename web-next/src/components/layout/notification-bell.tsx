@@ -13,17 +13,19 @@ import type { NotificationItem } from "@/features/notifications/service";
 import { AcceptShareDialog, rejectWithConfirm, type PendingShare } from "@/features/grammar/components/grammar-dialogs";
 import { AcceptVocabDialog, rejectVocabWithConfirm } from "@/features/vocabulary/components/share-dialogs";
 import type { ReceivedVocabShare } from "@/features/vocabulary/share-service";
+import { useIntlTag, useT } from "@/i18n/client";
 
 type BellData = Awaited<ReturnType<typeof bellAction>>;
 
-const fmt = (d: Date | string) => {
+const fmt = (d: Date | string, tag: string) => {
   const x = new Date(d);
-  return `${x.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" })} ${x.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+  return `${x.toLocaleDateString(tag, { day: "2-digit", month: "2-digit" })} ${x.toLocaleTimeString(tag, { hour: "2-digit", minute: "2-digit" })}`;
 };
 
 /** Chuông thông báo: số chưa đọc, danh sách, xử lý lời mời chia sẻ ngay trong chuông. Mở chuông = đã xem. */
 export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number }) {
   const router = useRouter();
+  const t = useT();
   const pathname = usePathname();
   const [confirm, confirmNode] = useConfirm();
   const [data, setData] = React.useState<BellData | null>(null);
@@ -89,7 +91,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
         <DropdownMenu.Trigger asChild>
           <button
             type="button"
-            aria-label={unread ? `Thông báo (${unread} chưa đọc)` : "Thông báo"}
+            aria-label={unread ? t("notifications.titleUnread", { count: unread }) : t("notifications.title")}
             className="relative flex size-11 items-center justify-center rounded-full text-navy outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)]"
           >
             <Bell className="size-[26px]" aria-hidden="true" />
@@ -104,7 +106,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
           <DropdownMenu.Content align="end" sideOffset={8} className={cn(menuContentClass, "w-[380px] p-0")}>
             {items.length ? (
               <>
-                <div className="border-b border-border px-4 py-3 font-bold text-navy">Thông báo</div>
+                <div className="border-b border-border px-4 py-3 font-bold text-navy">{t("notifications.title")}</div>
                 <ul className="max-h-[min(70dvh,480px)] overflow-y-auto">
                   {items.map((n) => (
                     <Row
@@ -133,7 +135,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
             ) : (
               <div className="flex flex-col items-center gap-1.5 px-4 py-8 text-center text-text-2">
                 <Bell className="size-7 text-blue-600" aria-hidden="true" />
-                Bạn chưa có thông báo mới.
+                {t("notifications.empty")}
               </div>
             )}
           </DropdownMenu.Content>
@@ -183,26 +185,24 @@ function Row({
   onAccept: (s: PendingShare) => void;
   onReject: (s: PendingShare) => void;
 }) {
+  const t = useT();
+  const tag = useIntlTag();
   const p = n.payload;
   const who = <strong className="text-text">{p.actorName}</strong>;
   let text: React.ReactNode;
   let title: React.ReactNode = p.title;
   switch (n.type) {
     case "grammar_share":
-      text = <>{who} đã chia sẻ một ngữ pháp với bạn.</>;
+      text = t.rich("notifications.grammarShare", { who });
       break;
     case "grammar_share_accepted":
-      text = <>{who} đã chấp nhận ngữ pháp bạn chia sẻ.</>;
+      text = t.rich("notifications.grammarShareAccepted", { who });
       break;
     case "grammar_share_rejected":
-      text = <>{who} đã từ chối ngữ pháp bạn chia sẻ.</>;
+      text = t.rich("notifications.grammarShareRejected", { who });
       break;
     case "vocab_share":
-      text = (
-        <>
-          {who} đã chia sẻ {p.count ?? ""} từ vựng với bạn.
-        </>
-      );
+      text = t.rich("notifications.vocabShare", { who, count: p.count ?? 0 });
       title = (
         <span className="hanzi" lang="zh">
           {p.title}
@@ -210,14 +210,10 @@ function Row({
       );
       break;
     case "vocab_share_accepted":
-      text = (
-        <>
-          {who} đã chấp nhận {p.count ?? ""} từ vựng bạn chia sẻ.
-        </>
-      );
+      text = t.rich("notifications.vocabShareAccepted", { who, count: p.count ?? 0 });
       break;
     case "vocab_share_rejected":
-      text = <>{who} đã từ chối từ vựng bạn chia sẻ.</>;
+      text = t.rich("notifications.vocabShareRejected", { who });
       break;
   }
   const share: PendingShare | null = p.shareId
@@ -230,7 +226,7 @@ function Row({
       <div className="text-[14.5px] text-text-2">
         {text}
         <div className="font-semibold text-navy">{title}</div>
-        <span className="text-xs text-text-3">{fmt(n.createdAt)}</span>
+        <span className="text-xs text-text-3">{fmt(n.createdAt, tag)}</span>
       </div>
       {n.type === "grammar_share" && share ? (
         pending ? (
@@ -238,33 +234,33 @@ function Row({
             {p.grammarId ? (
               <Button asChild size="sm" variant="secondary">
                 <Link href={`/grammar/${p.grammarId}?share=${p.shareId}`} onClick={onView}>
-                  Xem
+                  {t("common.view")}
                 </Link>
               </Button>
             ) : null}
             <Button size="sm" variant="solid" onClick={() => onAccept(share)}>
-              Chấp nhận
+              {t("common.accept")}
             </Button>
             <Button size="sm" variant="muted" onClick={() => onReject(share)}>
-              Từ chối
+              {t("common.reject")}
             </Button>
           </div>
         ) : (
-          <span className="text-[13px] text-text-3">Đã phản hồi</span>
+          <span className="text-[13px] text-text-3">{t("common.responded")}</span>
         )
       ) : null}
       {n.type === "vocab_share" ? (
         vocab ? (
           <div className="grid grid-cols-2 gap-1.5">
             <Button size="sm" variant="solid" onClick={() => onOpenVocab(vocab)}>
-              Xem & chấp nhận
+              {t("notifications.viewAndAccept")}
             </Button>
             <Button size="sm" variant="muted" onClick={() => onRejectVocab(vocab)}>
-              Từ chối
+              {t("common.reject")}
             </Button>
           </div>
         ) : (
-          <span className="text-[13px] text-text-3">Đã phản hồi</span>
+          <span className="text-[13px] text-text-3">{t("common.responded")}</span>
         )
       ) : null}
     </li>

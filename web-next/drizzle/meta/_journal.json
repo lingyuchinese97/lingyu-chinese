@@ -29,6 +29,13 @@
       "when": 1790322168480,
       "tag": "0003_sentences",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790393288632,
+      "tag": "0004_user_locale",
+      "breakpoints": true
     }
   ]
 }

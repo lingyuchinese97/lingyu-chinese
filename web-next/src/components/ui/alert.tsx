@@ -1,4 +1,6 @@
+"use client";
 import * as React from "react";
+import { useT } from "@/i18n/client";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +19,7 @@ export function Alert({
   ...props
 }: React.ComponentProps<"div"> & { tone?: keyof typeof styles }) {
   const Icon = icons[tone];
+  const t = useT();
   return (
     <div
       role={tone === "error" ? "alert" : "status"}
@@ -24,7 +27,7 @@ export function Alert({
       {...props}
     >
       <Icon className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-      <div className="min-w-0 flex-1">{children}</div>
+      <div className="min-w-0 flex-1">{typeof children === "string" ? t.maybe(children) : children}</div>
     </div>
   );
 }

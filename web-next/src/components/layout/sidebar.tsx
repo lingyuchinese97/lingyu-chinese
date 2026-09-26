@@ -4,18 +4,26 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LeafDecor } from "./icons";
-import type { NavItem, NavKey } from "./nav";
+import { useT } from "@/i18n/client";
+import type { NavItem, NavKey, ShellState } from "./nav";
 
-type Props = { items: NavItem[]; active: NavKey | null; quote: string; open: boolean; onNavigate: () => void };
+type Props = {
+  items: NavItem[];
+  active: NavKey | null;
+  quote: ShellState["quote"];
+  open: boolean;
+  onNavigate: () => void;
+};
 
 /**
  * Sidebar: ≥1280px đầy đủ (280px), 1024–1279px thu gọn còn icon (96px), <1024px là ngăn kéo mở bằng nút ☰.
  */
 export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
+  const t = useT();
   return (
     <aside
       id="sidebar"
-      aria-label="Điều hướng chính"
+      aria-label={t("shell.mainNav")}
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col overflow-hidden border-r border-[#E3EEF8] bg-[linear-gradient(180deg,#F9FCFF_0%,#F1F8FF_100%)] px-[18px] pt-[26px] pb-[18px] shadow-[10px_0_40px_rgba(9,35,80,.12)] transition-transform duration-250 ease-out motion-reduce:transition-none",
         open ? "translate-x-0" : "-translate-x-[102%]",
@@ -26,13 +34,13 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
       <Link
         href="/home"
         onClick={onNavigate}
-        aria-label="LingYu Chinese — Trang chủ"
+        aria-label={t("shell.homeLink")}
         className="mb-6 block px-1.5 lg:w-[72px] lg:px-0 xl:w-auto xl:px-1.5"
       >
         {/* Logo chữ (không kèm mascot), cỡ vừa. Thanh thu gọn (lg) không đủ chỗ cho chữ → dùng icon app. */}
         <Image
           src="/brand/lingyu-wordmark.png"
-          alt="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày"
+          alt={t("shell.logoAlt")}
           width={1579}
           height={550}
           priority
@@ -57,7 +65,7 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
               key={n.key}
               href={n.href}
               onClick={onNavigate}
-              title={n.label}
+              title={t(`shell.nav.${n.key}`)}
               aria-current={on ? "page" : undefined}
               className={cn(
                 "relative flex h-[52px] items-center gap-4 rounded-md px-5 text-base font-medium text-text-2 transition-colors hover:bg-[#EAF4FE] hover:text-navy xl:h-14 xl:text-[17px]",
@@ -67,7 +75,7 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
               )}
             >
               <Icon className={cn("size-7 shrink-0 text-blue-600", !on && "opacity-85")} />
-              <span className="lg:sr-only xl:not-sr-only">{n.label}</span>
+              <span className="lg:sr-only xl:not-sr-only">{t(`shell.nav.${n.key}`)}</span>
             </Link>
           );
         })}
@@ -86,7 +94,7 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
         />
         {quote && (
           <p className="origin-left -rotate-6 px-3 hand text-lg leading-snug whitespace-pre-line xl:text-[19px]">
-            {quote}
+            {t(quote)}
             <Heart className="ml-1.5 inline size-6 -translate-y-0.5 text-blue-600" />
           </p>
         )}
