@@ -1,13 +1,17 @@
 import { z } from "zod";
 
 export const MODES = [
-  { value: "meaning", label: "Nhập nghĩa tiếng Việt" },
-  { value: "hanzi", label: "Nhập tiếng Trung" },
-  { value: "pinyin", label: "Nhập Pinyin" },
-  { value: "mixed", label: "Trộn ngẫu nhiên" },
+  { value: "meaning", label: "review.modes.meaning" },
+  { value: "hanzi", label: "review.modes.hanzi" },
+  { value: "pinyin", label: "review.modes.pinyin" },
+  { value: "mixed", label: "review.modes.mixed" },
 ] as const;
 export type ReviewMode = (typeof MODES)[number]["value"];
-export const MODE_LABEL = Object.fromEntries(MODES.map((m) => [m.value, m.label])) as Record<ReviewMode, string>;
+/** Khoá từ điển của nhãn từng hình thức (dịch bằng `t(...)`). */
+export const MODE_LABEL = Object.fromEntries(MODES.map((m) => [m.value, m.label])) as Record<
+  ReviewMode,
+  (typeof MODES)[number]["label"]
+>;
 export const COUNTS = [5, 10, 20, 30, 50] as const;
 /** Ôn đến hạn: tối đa số thẻ mỗi lượt. */
 export const DUE_LIMIT = 50;

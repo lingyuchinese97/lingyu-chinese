@@ -8,38 +8,23 @@ import { useConfirm } from "@/components/ui/confirm";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { applyToneInput } from "@/lib/pinyin";
-import type { PromptType } from "@/lib/grading";
 import { MODE_LABEL } from "../schema";
 import type { ClientQuestion, ClientSession } from "../service";
 import { abandonAction, checkAnswerAction, completeAction, moveToAction, rateAnswerAction } from "../actions";
+import { useT } from "@/i18n/client";
 
-const INSTR: Record<PromptType, string> = {
-  meaning: "Nhập nghĩa tiếng Việt của từ sau:",
-  hanzi: "Nhập chữ Hán (tiếng Trung) của từ sau:",
-  pinyin: "Nhập pinyin của từ sau:",
-};
-const PLACEHOLDER: Record<PromptType, string> = {
-  meaning: "Nhập nghĩa tiếng Việt của từ này...",
-  hanzi: "Nhập chữ Hán...",
-  pinyin: "Nhập pinyin (vd: nǐ hǎo hoặc ni3 hao3)...",
-};
-const TYPE_LABEL: Record<PromptType, string> = { meaning: "Nghĩa tiếng Việt", hanzi: "Chữ Hán", pinyin: "Pinyin" };
-const TIP: Record<PromptType, string> = {
-  pinyin: "Gõ số 1–4 sau chữ để thêm dấu, ví dụ ni3hao3 → nǐhǎo (viết liền hoặc cách đều được).",
-  hanzi: "Bật bộ gõ tiếng Trung (Pinyin IME) để nhập chữ Hán nhanh hơn.",
-  meaning: "Hãy nhớ nghĩa của từ và cách dùng trong ngữ cảnh nhé!",
-};
 /** ts-fsrs Rating */
 const RATINGS = [
-  { value: 2, label: "Khó", hint: "Nhớ ra nhưng vất vả" },
-  { value: 3, label: "Được", hint: "Nhớ bình thường" },
-  { value: 4, label: "Dễ", hint: "Nhớ ngay" },
+  { value: 2, label: "review.session.rateHard", hint: "review.session.rateHardHint" },
+  { value: 3, label: "review.session.rateGood", hint: "review.session.rateGoodHint" },
+  { value: 4, label: "review.session.rateEasy", hint: "review.session.rateEasyHint" },
 ] as const;
 
 const img = (id: string | null | undefined) => (id ? `/api/images/${id}` : null);
 
 export function ReviewSession({ initial }: { initial: ClientSession }) {
   const router = useRouter();
+  const t = useT();
   const [confirm, confirmNode] = useConfirm();
   const [s, setS] = React.useState(initial);
   const furthest = () => {
@@ -55,7 +40,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
   const isLast = idx === s.total - 1;
   const answered = s.questions.filter((x) => x.answered).length;
   const pct = Math.max(4, Math.round(((idx + 1) / s.total) * 100));
-  const source = s.config.label || (s.config.tags.length ? s.config.tags.join(", ") : "Tất cả từ vựng");
+  const source = s.config.label || (s.config.tags.length ? s.config.tags.join(", ") : t("review.session.allVocab"));
 
   React.useEffect(() => {
     if (q.answered) nextRef.current?.focus();
@@ -68,7 +53,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
     setBusy(true);
     const r = await checkAnswerAction({ sessionId: s.id, index: idx, answer });
     setBusy(false);
-    if (!r.ok) return void toast.error(r.message || "Không kiểm tra được đáp án. Vui lòng thử lại.");
+    if (!r.ok) return void toast.error(r.message || t("review.session.checkFailed"));
     setS(r.data);
     setAnswer("");
   }
@@ -88,7 +73,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
     const r = await completeAction(s.id);
     if (!r.ok) {
       setBusy(false);
-      return void toast.error(r.message || "Không lưu được kết quả. Vui lòng thử lại.");
+      return void toast.error(r.message || t("errors.saveResultFailed"));
     }
     router.push("/review/result");
   }
@@ -101,14 +86,14 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
 
   async function quit() {
     const ok = await confirm({
-      title: "Kết thúc bài ôn tập?",
-      message: `Bạn đã làm ${answered}/${s.total} câu. Nếu kết thúc bây giờ, tiến độ bài này sẽ không được lưu.`,
-      confirmLabel: "Kết thúc",
+      title: t("review.session.endTitle"),
+      message: t("review.session.endMessage", { done: answered, total: s.total }),
+      confirmLabel: t("review.session.endConfirm"),
       danger: true,
     });
     if (!ok) return;
     await abandonAction();
-    toast.info("Đã kết thúc bài ôn tập.");
+    toast.info(t("review.session.ended"));
     router.push("/review/setup");
   }
 
@@ -116,8 +101,8 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Enter" || !q.answered) return;
-      const t = e.target as HTMLElement;
-      if (t.closest("form, textarea, [role=dialog], button")) return;
+      const el = e.target as HTMLElement;
+      if (el.closest("form, textarea, [role=dialog], button")) return;
       e.preventDefault();
       nextRef.current?.click();
     };
@@ -135,17 +120,19 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 id="qs-title" className="text-2xl font-extrabold text-navy md:text-[28px]">
-                {s.kind === "due" ? "Ôn thẻ đến hạn" : "Ôn tập từ vựng"}
+                {s.kind === "due" ? t("review.session.dueHeading") : t("review.session.customHeading")}
               </h1>
-              <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{INSTR[q.promptType]}</p>
+              <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">
+                {t(`review.session.prompt.${q.promptType}`)}
+              </p>
             </div>
             <div className="flex w-full flex-col gap-1.5 sm:w-[220px]">
               <div className="text-right text-[15px] text-text-2">
-                <strong className="text-navy">Câu {idx + 1}</strong> / {s.total}
+                <strong className="text-navy">{t("review.session.questionOf", { n: idx + 1 })}</strong> / {s.total}
               </div>
               <div
                 role="progressbar"
-                aria-label="Tiến độ bài ôn tập"
+                aria-label={t("review.session.progress")}
                 aria-valuemin={0}
                 aria-valuemax={s.total}
                 aria-valuenow={idx + 1}
@@ -161,7 +148,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
               <Prompt q={q} mixed={s.config.mode === "mixed"} />
               <form onSubmit={check} noValidate>
                 <label htmlFor="answer" className="sr-only">
-                  {PLACEHOLDER[q.promptType]}
+                  {t(`review.session.placeholder.${q.promptType}`)}
                 </label>
                 <input
                   ref={inputRef}
@@ -182,7 +169,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
                   autoComplete="off"
                   autoCapitalize="off"
                   spellCheck={false}
-                  placeholder={PLACEHOLDER[q.promptType]}
+                  placeholder={t(`review.session.placeholder.${q.promptType}`)}
                   readOnly={busy}
                   className={cn(
                     inputClass,
@@ -191,7 +178,9 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
                   )}
                 />
               </form>
-              <p className="-mt-2 text-center text-[13.5px] text-text-3 max-md:hidden">Nhấn Enter để kiểm tra đáp án</p>
+              <p className="-mt-2 text-center text-[13.5px] text-text-3 max-md:hidden">
+                {t("review.session.enterHint")}
+              </p>
             </>
           ) : (
             <Feedback q={q} />
@@ -199,8 +188,8 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
 
           {q.answered && s.kind === "due" && q.isCorrect ? (
             <div className="flex flex-col gap-2 rounded-[14px] bg-bg p-3.5">
-              <span className="text-sm font-semibold text-text-2">Bạn nhớ từ này thế nào? (đổi lịch ôn tiếp theo)</span>
-              <div role="radiogroup" aria-label="Tự đánh giá" className="grid grid-cols-3 gap-2">
+              <span className="text-sm font-semibold text-text-2">{t("review.session.rateQuestion")}</span>
+              <div role="radiogroup" aria-label={t("review.session.rateGroup")} className="grid grid-cols-3 gap-2">
                 {RATINGS.map((r) => {
                   const on = q.reveal?.rating === r.value;
                   return (
@@ -209,7 +198,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
                       type="button"
                       role="radio"
                       aria-checked={on}
-                      title={r.hint}
+                      title={t(r.hint)}
                       onClick={() => rate(r.value)}
                       className={cn(
                         "min-h-11 rounded-[10px] border-[1.5px] font-semibold transition-colors",
@@ -218,7 +207,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
                           : "border-border bg-white text-text-2 hover:border-border-strong",
                       )}
                     >
-                      {r.label}
+                      {t(r.label)}
                     </button>
                   );
                 })}
@@ -232,11 +221,11 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
               variant="muted"
               onClick={() => go(idx - 1)}
               disabled={idx === 0 || busy}
-              aria-label="Câu trước"
+              aria-label={t("review.session.prev")}
               className="max-md:px-3.5"
             >
               <ArrowLeft />
-              <span className="max-md:sr-only">Câu trước</span>
+              <span className="max-md:sr-only">{t("review.session.prev")}</span>
             </Button>
             {!q.answered ? (
               <Button
@@ -246,7 +235,7 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
                 className="md:min-w-[220px]"
               >
                 {busy ? <Loader2 className="animate-spin" /> : null}
-                {busy ? "Đang kiểm tra..." : "Kiểm tra đáp án"}
+                {busy ? t("review.session.checking") : t("review.session.check")}
               </Button>
             ) : (
               <Button
@@ -257,55 +246,54 @@ export function ReviewSession({ initial }: { initial: ClientSession }) {
                 className="md:min-w-[220px]"
               >
                 {busy ? <Loader2 className="animate-spin" /> : null}
-                {isLast ? "Xem kết quả" : "Câu tiếp"}
+                {isLast ? t("review.session.seeResult") : t("review.session.next")}
                 <ArrowRight />
               </Button>
             )}
           </div>
         </section>
 
-        <aside aria-label="Thông tin bài ôn tập" className="flex flex-col gap-5">
-          <RailCard icon={<BarChart3 />} title="Tiến độ">
+        <aside aria-label={t("review.session.info")} className="flex flex-col gap-5">
+          <RailCard icon={<BarChart3 />} title={t("review.session.progressTitle")}>
             <div className="text-lg">
-              <strong className="text-navy">Câu {idx + 1}</strong> / {s.total}
+              <strong className="text-navy">{t("review.session.questionOf", { n: idx + 1 })}</strong> / {s.total}
             </div>
             <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#E4EEF8]">
               <div className="h-full rounded-full bg-grad-primary" style={{ width: `${pct}%` }} />
             </div>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[15px] text-text-2">
               <span className="text-green-700">
-                <Check className="inline size-4 -translate-y-px" /> Đúng <b>{s.correctCount}</b>
+                <Check className="inline size-4 -translate-y-px" /> {t("sentences.result.correct")}{" "}
+                <b>{s.correctCount}</b>
               </span>
               <span className="text-red">
-                <X className="inline size-4 -translate-y-px" /> Sai <b>{s.wrongCount}</b>
+                <X className="inline size-4 -translate-y-px" /> {t("sentences.result.wrong")} <b>{s.wrongCount}</b>
               </span>
-              <span>
-                Đã làm <b>{answered}</b>/{s.total}
-              </span>
+              <span>{t.rich("review.session.answered", { done: <b>{answered}</b>, total: s.total })}</span>
             </div>
           </RailCard>
-          <RailCard icon={<ListChecks />} title="Chế độ ôn tập" className="max-lg:hidden">
+          <RailCard icon={<ListChecks />} title={t("review.session.modeTitle")} className="max-lg:hidden">
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[15px]">
-              <dt className="text-text-3">Nguồn từ vựng</dt>
+              <dt className="text-text-3">{t("review.session.source")}</dt>
               <dd className="font-semibold">{source}</dd>
-              <dt className="text-text-3">Số lượng từ</dt>
-              <dd className="font-semibold">{s.total} từ</dd>
-              <dt className="text-text-3">Hình thức</dt>
-              <dd className="font-semibold">{MODE_LABEL[s.config.mode]}</dd>
+              <dt className="text-text-3">{t("review.session.count")}</dt>
+              <dd className="font-semibold">{t("review.session.countValue", { count: s.total })}</dd>
+              <dt className="text-text-3">{t("review.session.mode")}</dt>
+              <dd className="font-semibold">{t(MODE_LABEL[s.config.mode])}</dd>
             </dl>
             {!q.answered ? (
               <div className="mt-4 flex gap-3 rounded-md bg-blue-50 p-3 text-sm text-text-2">
                 <Lightbulb className="mt-0.5 size-5 shrink-0 text-amber" aria-hidden="true" />
                 <div>
-                  <strong className="text-navy">Mẹo nhỏ: </strong>
-                  {TIP[q.promptType]}
+                  <strong className="text-navy">{t("review.session.tipTitle")}</strong>
+                  {t(`review.session.tip.${q.promptType}`)}
                 </div>
               </div>
             ) : null}
           </RailCard>
           <Button variant="secondary" size="sm" onClick={quit} className="self-stretch">
             <X />
-            Kết thúc bài
+            {t("review.session.end")}
           </Button>
         </aside>
       </div>
@@ -344,6 +332,7 @@ function RailCard({
 }
 
 function Prompt({ q, mixed }: { q: ClientQuestion; mixed: boolean }) {
+  const t = useT();
   const p = q.prompt;
   const src = img(p.imageId);
   return (
@@ -351,12 +340,12 @@ function Prompt({ q, mixed }: { q: ClientQuestion; mixed: boolean }) {
       {mixed ? (
         <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-blue-600">
           <Shuffle className="size-3.5" />
-          {TYPE_LABEL[q.promptType]}
+          {t(`review.session.type.${q.promptType}`)}
         </span>
       ) : null}
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="Hình minh họa" className="mb-2 max-h-[180px] rounded-xl object-contain" />
+        <img src={src} alt={t("review.session.image")} className="mb-2 max-h-[180px] rounded-xl object-contain" />
       ) : null}
       {q.promptType === "hanzi" ? (
         <>
@@ -411,12 +400,13 @@ function WordCard({
 }
 
 function Feedback({ q }: { q: ClientQuestion }) {
+  const t = useT();
   const w = q.reveal!;
   const note = w.note ? (
     <div className="flex gap-3 rounded-[14px] bg-[#FFF9E8] p-4 text-[15px]">
       <Lightbulb className="mt-0.5 size-5 shrink-0 text-amber" aria-hidden="true" />
       <div>
-        <strong className="text-navy">Ghi chú</strong>
+        <strong className="text-navy">{t("review.session.note")}</strong>
         <p className="mt-0.5 break-words whitespace-pre-wrap text-text-2">{w.note}</p>
       </div>
     </div>
@@ -429,11 +419,13 @@ function Feedback({ q }: { q: ClientQuestion }) {
             <Check className="size-5" strokeWidth={3} />
           </span>
           <div>
-            <div className="text-lg font-bold text-green-700">Chính xác!</div>
-            <div className="text-sm text-text-2">Bạn đã trả lời đúng: “{q.userAnswer}”.</div>
+            <div className="text-lg font-bold text-green-700">{t("review.session.correct")}</div>
+            <div className="text-sm text-text-2">
+              {t("review.session.correctAnswer", { answer: q.userAnswer ?? "" })}
+            </div>
           </div>
         </div>
-        <WordCard w={w} label="Đáp án đúng" />
+        <WordCard w={w} label={t("review.session.rightAnswer")} />
         {note}
       </div>
     );
@@ -444,17 +436,17 @@ function Feedback({ q }: { q: ClientQuestion }) {
           <X className="size-5" strokeWidth={3} />
         </span>
         <div>
-          <div className="text-lg font-bold text-red">Chưa đúng!</div>
-          <div className="text-sm text-text-2">Hãy xem lại đáp án bên dưới nhé.</div>
+          <div className="text-lg font-bold text-red">{t("review.session.wrong")}</div>
+          <div className="text-sm text-text-2">{t("review.session.wrongHint")}</div>
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <WordCard w={w} label="Đáp án đúng" />
+        <WordCard w={w} label={t("review.session.rightAnswer")} />
         {w.matched ? (
-          <WordCard w={w.matched} label="Bạn đã trả lời" mine />
+          <WordCard w={w.matched} label={t("review.session.yourAnswer")} mine />
         ) : (
           <div className="flex flex-col items-center justify-center gap-1 rounded-[16px] border border-red-100 bg-red-50/60 p-4 text-center">
-            <span className="text-xs font-bold tracking-wide text-red uppercase">Bạn đã trả lời</span>
+            <span className="text-xs font-bold tracking-wide text-red uppercase">{t("review.session.yourAnswer")}</span>
             <div
               lang={q.promptType === "hanzi" ? "zh" : undefined}
               className={cn(
@@ -463,7 +455,7 @@ function Feedback({ q }: { q: ClientQuestion }) {
                 !q.userAnswer && "text-text-3",
               )}
             >
-              {q.userAnswer || "(bỏ trống)"}
+              {q.userAnswer || t("review.session.blank")}
             </div>
           </div>
         )}

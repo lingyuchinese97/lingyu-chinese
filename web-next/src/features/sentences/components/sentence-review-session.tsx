@@ -18,9 +18,11 @@ import {
   rememberSentenceAction,
   skipSentenceAction,
 } from "../actions";
+import { useT } from "@/i18n/client";
 
 export function SentenceReviewSession({ initial }: { initial: ClientSentenceSession }) {
   const router = useRouter();
+  const t = useT();
   const [s, setS] = React.useState(initial);
   const [index, setIndex] = React.useState(initial.currentIndex);
   const [answer, setAnswer] = React.useState("");
@@ -61,14 +63,14 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
     const r = await call("mark", overrideSentenceAction(s.id, index));
     if (r.ok) {
       setS(r.data);
-      toast.success("Đã tính câu này là đúng.");
+      toast.success(t("sentences.session.overrideDone"));
     }
   }
   async function remember(v: boolean) {
     const r = await call("mark", rememberSentenceAction(s.id, index, v));
     if (r.ok) {
       setS(r.data);
-      toast.success(v ? "Đã đánh dấu câu này là Đã thuộc." : "Đã đánh dấu câu này cần ôn thêm.");
+      toast.success(v ? t("sentences.session.rememberDone") : t("sentences.session.forgetDone"));
     }
   }
   async function next() {
@@ -104,13 +106,13 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
               type="button"
               onClick={back}
               disabled={index === 0}
-              aria-label="Câu trước"
+              aria-label={t("sentences.session.back")}
               className="-ml-2 flex size-10 items-center justify-center rounded-full text-text-2 hover:bg-blue-50 disabled:opacity-30"
             >
               <ArrowLeft className="size-6" />
             </button>
             <h1 id="sr-title" className="text-xl font-extrabold text-navy md:text-2xl">
-              {q.answered ? "Đáp án" : "Ôn dịch câu"}{" "}
+              {q.answered ? t("sentences.session.answer") : t("sentences.title")}{" "}
               <span className="font-semibold text-text-2" aria-live="polite">
                 ({index + 1}/{s.total})
               </span>
@@ -119,7 +121,7 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
           <div className="flex items-center gap-3">
             <div
               role="progressbar"
-              aria-label="Tiến độ bài ôn"
+              aria-label={t("sentences.session.progress")}
               aria-valuemin={0}
               aria-valuemax={s.total}
               aria-valuenow={done}
@@ -138,7 +140,7 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
           <>
             <div className="flex flex-col gap-3 rounded-2xl bg-[#F4F9FF] p-4 md:p-5">
               <span className="w-fit rounded-lg bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
-                {viZh ? "Việt → Trung" : "Trung → Việt"}
+                {viZh ? t("sentences.setup.viZh") : t("sentences.setup.zhVi")}
               </span>
               <p
                 className={cn("text-[22px] font-bold text-text md:text-[26px]", !viZh && "hanzi text-navy")}
@@ -150,14 +152,17 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
               {q.prompt.pinyin ? <p className="-mt-1 pinyin">{q.prompt.pinyin}</p> : null}
               {viZh && q.hint ? (
                 <p className="text-[15px] text-text-2">
-                  Gợi ý: bắt đầu bằng chữ{" "}
-                  <span className="hanzi text-xl text-red" lang="zh">
-                    {q.hint}
-                  </span>
+                  {t.rich("sentences.session.hintStart", {
+                    char: (
+                      <span className="hanzi text-xl text-red" lang="zh">
+                        {q.hint}
+                      </span>
+                    ),
+                  })}
                 </p>
               ) : null}
               <label htmlFor="sr-answer" className="sr-only">
-                {viZh ? "Câu tiếng Trung của bạn" : "Câu tiếng Việt của bạn"}
+                {viZh ? t("sentences.session.yourChinese") : t("sentences.session.yourVietnamese")}
               </label>
               <textarea
                 id="sr-answer"
@@ -173,7 +178,7 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
                     void check();
                   }
                 }}
-                placeholder={viZh ? "Nhập câu tiếng Trung..." : "Nhập câu tiếng Việt..."}
+                placeholder={viZh ? t("sentences.session.typeChinese") : t("sentences.session.typeVietnamese")}
                 autoComplete="off"
                 className="min-h-14 w-full resize-none rounded-md border-[1.5px] border-border bg-white px-4 py-3 text-lg text-text outline-none focus:border-blue focus:[box-shadow:var(--focus-ring)]"
               />
@@ -185,7 +190,7 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
                   className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-blue-600 hover:underline"
                 >
                   <Lightbulb className="size-4" aria-hidden="true" />
-                  Xem gợi ý
+                  {t("sentences.session.showHint")}
                 </button>
               ) : null}
             </div>
@@ -214,26 +219,28 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
                 {correct ? <CheckCircle2 className="size-6" /> : <XCircle className="size-6" />}
                 {correct
                   ? q.overridden
-                    ? "Đã tính là đúng"
-                    : "Chính xác! 🎉"
+                    ? t("sentences.session.overriddenCorrect")
+                    : t("sentences.session.correct")
                   : skipped
-                    ? "Đã bỏ qua"
-                    : "Chưa chính xác"}
+                    ? t("sentences.session.skipped")
+                    : t("sentences.session.wrong")}
               </p>
             </div>
             <p className="text-[15px] text-text-2">
-              {viZh ? "Câu tiếng Việt:" : "Câu tiếng Trung:"}{" "}
+              {viZh ? t("sentences.session.vietnameseSentence") : t("sentences.session.chineseSentence")}{" "}
               <span className={cn("text-text", !viZh && "hanzi")} lang={viZh ? "vi" : "zh"}>
                 {viZh ? q.reveal!.vietnamese : q.reveal!.chinese}
               </span>
             </p>
             {q.userAnswer && !correct ? (
               <p className="text-[15px] text-text-2">
-                Bạn đã trả lời: <span className="text-text">{q.userAnswer}</span>
+                {t("sentences.session.youAnswered")} <span className="text-text">{q.userAnswer}</span>
               </p>
             ) : null}
             <div className="rounded-xl bg-white p-4">
-              <p className="mb-1 text-sm font-semibold text-text-2">Đáp án{correct ? "" : " đúng"}:</p>
+              <p className="mb-1 text-sm font-semibold text-text-2">
+                {correct ? t("sentences.session.answerLabel") : t("sentences.session.correctAnswerLabel")}
+              </p>
               {viZh ? (
                 <>
                   <p className="flex items-center gap-1 text-2xl font-bold text-text">
@@ -242,15 +249,21 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
                     </span>
                     <SpeakButton text={q.reveal!.chinese} />
                   </p>
-                  {q.reveal!.pinyin ? <p className="pinyin">Pinyin: {q.reveal!.pinyin}</p> : null}
+                  {q.reveal!.pinyin ? (
+                    <p className="pinyin">{t("sentences.session.pinyin", { pinyin: q.reveal!.pinyin })}</p>
+                  ) : null}
                 </>
               ) : (
                 <>
                   <p className="text-xl font-bold text-text">{q.reveal!.vietnamese}</p>
-                  {q.reveal!.pinyin ? <p className="pinyin">Pinyin: {q.reveal!.pinyin}</p> : null}
+                  {q.reveal!.pinyin ? (
+                    <p className="pinyin">{t("sentences.session.pinyin", { pinyin: q.reveal!.pinyin })}</p>
+                  ) : null}
                 </>
               )}
-              {q.reveal!.note ? <p className="mt-2 text-sm text-text-2">Ghi chú: {q.reveal!.note}</p> : null}
+              {q.reveal!.note ? (
+                <p className="mt-2 text-sm text-text-2">{t("sentences.session.note", { note: q.reveal!.note })}</p>
+              ) : null}
             </div>
             {q.result === "wrong" ? (
               <button
@@ -259,7 +272,7 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
                 disabled={!!busy}
                 className="self-start text-sm font-semibold text-blue-600 hover:underline"
               >
-                Tôi dịch đúng nghĩa (cách khác) — tính là đúng
+                {t("sentences.session.override")}
               </button>
             ) : null}
           </div>
@@ -270,11 +283,11 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
         {!q.answered ? (
           <>
             <Button variant="secondary" size="lg" onClick={skip} disabled={!!busy}>
-              Bỏ qua
+              {t("sentences.session.skip")}
             </Button>
             <Button variant="primary" size="lg" onClick={check} disabled={!!busy || !answer.trim()}>
               {busy === "check" ? <Loader2 className="animate-spin" /> : null}
-              Kiểm tra
+              {t("sentences.session.check")}
               <ArrowRight />
             </Button>
           </>
@@ -289,7 +302,7 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
                 disabled={!!busy}
               >
                 <Smile />
-                {q.remembered === true ? "Đã nhớ" : "Tôi nhớ"}
+                {q.remembered === true ? t("sentences.session.remembered") : t("sentences.session.remember")}
               </Button>
             ) : (
               <Button
@@ -300,12 +313,12 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
                 disabled={!!busy}
               >
                 <RotateCcw />
-                {q.remembered === false ? "Đã đánh dấu cần ôn" : "Tôi chưa nhớ"}
+                {q.remembered === false ? t("sentences.session.markedReview") : t("sentences.session.notRemember")}
               </Button>
             )}
             <Button variant="primary" size="lg" onClick={next} disabled={!!busy}>
               {busy === "next" ? <Loader2 className="animate-spin" /> : null}
-              {isLast ? "Xem kết quả" : "Câu tiếp theo"}
+              {isLast ? t("sentences.session.seeResult") : t("sentences.session.nextQuestion")}
               <ArrowRight />
             </Button>
           </>
@@ -313,7 +326,7 @@ export function SentenceReviewSession({ initial }: { initial: ClientSentenceSess
       </div>
       <p className="text-center text-sm text-text-3 max-md:hidden">
         <Link href="/sentences" className="hover:underline">
-          Thoát (bài ôn được lưu, làm tiếp sau)
+          {t("sentences.session.exit")}
         </Link>
       </p>
     </div>

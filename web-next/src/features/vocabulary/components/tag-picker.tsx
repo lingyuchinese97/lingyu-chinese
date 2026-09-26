@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tag, checkboxClass } from "@/components/ui/badges";
 import { VOCAB } from "@/lib/limits";
+import { useT } from "@/i18n/client";
 
 /** Chọn nhiều tag có sẵn + tạo tag mới ngay trong danh sách (như bản cũ). */
 export function TagPicker({
@@ -19,6 +20,7 @@ export function TagPicker({
   allTags: string[];
   labelId: string;
 }) {
+  const tr = useT();
   const [extra, setExtra] = React.useState<string[]>([]);
   const [draft, setDraft] = React.useState("");
   const names = [
@@ -48,7 +50,7 @@ export function TagPicker({
             aria-labelledby={labelId}
             className="ml-auto inline-flex min-h-9 flex-1 items-center justify-between gap-2 rounded-md px-2 text-left text-[15px] text-text-3 outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
-            <span>{value.length ? "Thêm tag" : "Chọn tag"}</span>
+            <span>{value.length ? tr("vocab.tags.addTag") : tr("vocab.tags.chooseTag")}</span>
             <ChevronDown className="size-5 text-text-2" />
           </button>
         </Popover.Trigger>
@@ -59,7 +61,7 @@ export function TagPicker({
           sideOffset={6}
           className="z-[60] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-24px)] min-w-[280px] rounded-lg border border-border bg-white p-2 shadow-card"
         >
-          <div role="group" aria-label="Danh sách tag" className="flex max-h-[240px] flex-col overflow-y-auto">
+          <div role="group" aria-label={tr("vocab.tags.list")} className="flex max-h-[240px] flex-col overflow-y-auto">
             {names.length ? (
               names.map((t) => (
                 <label
@@ -71,12 +73,12 @@ export function TagPicker({
                 </label>
               ))
             ) : (
-              <p className="p-2 text-sm text-text-3">Chưa có tag nào. Tạo tag mới bên dưới.</p>
+              <p className="p-2 text-sm text-text-3">{tr("vocab.tags.none")}</p>
             )}
           </div>
           <div className="mt-2 flex gap-2 border-t border-border pt-2">
             <label className="min-w-0 flex-1">
-              <span className="sr-only">Tên tag mới</span>
+              <span className="sr-only">{tr("vocab.tags.newName")}</span>
               <Input
                 value={draft}
                 maxLength={VOCAB.MAX_TAG}
@@ -87,13 +89,13 @@ export function TagPicker({
                     add();
                   }
                 }}
-                placeholder="Tạo tag mới (vd: Bài 3)"
+                placeholder={tr("vocab.tags.newPlaceholder")}
                 className="h-10"
               />
             </label>
             <Button type="button" size="sm" variant="ghost" onClick={add}>
               <Plus />
-              Thêm
+              {tr("vocab.tags.add")}
             </Button>
           </div>
         </Popover.Content>

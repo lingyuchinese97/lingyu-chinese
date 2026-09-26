@@ -43,6 +43,8 @@ test("ôn dịch câu: thêm câu (tạo pinyin), dữ liệu mẫu, tìm kiếm
   await page.getByRole("menuitem", { name: "Xóa câu" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Xóa" }).click();
   await expect(page.getByText("Đã xóa 1 câu.")).toBeVisible();
+  // Trên điện thoại chồng toast nằm ngay trên thanh tab, che nút của màn trống → chờ toast tự tắt rồi mới bấm.
+  await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 15_000 });
 
   await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
   await expect(page.getByText("12 câu", { exact: true })).toBeVisible();

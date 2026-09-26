@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/server/session";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
-import { radicalByNum, radicalExamples } from "@/lib/radicals";
+import { radicalByNum, radicalExamples, radicalName } from "@/lib/radicals";
+import { getLocale, getT } from "@/i18n/server";
 import { isKnown } from "@/features/radicals/service";
 import { listVocab } from "@/features/vocabulary/service";
 import { RadicalDetail } from "@/features/radicals/components/radical-detail";
@@ -12,11 +13,17 @@ const parse = (s: string) => (/^\d{1,3}$/.test(s) ? radicalByNum(Number(s)) : nu
 
 export async function generateMetadata({ params }: { params: P }): Promise<Metadata> {
   const r = parse((await params).num);
-  return { title: r ? `Bộ ${r.name} ${r.char}` : "Không tìm thấy bộ thủ" };
+  const t = await getT();
+  const locale = await getLocale();
+  return {
+    title: r ? t("radicals.metaTitle", { name: radicalName(r, locale), char: r.char }) : t("radicals.notFound"),
+  };
 }
 
 export default async function RadicalPage({ params }: { params: P }) {
   const user = await requireUser();
+  const t = await getT();
+  const locale = await getLocale();
   const r = parse((await params).num);
   if (!r) notFound();
   const [known, vocab] = await Promise.all([
@@ -26,11 +33,11 @@ export default async function RadicalPage({ params }: { params: P }) {
   const chars = radicalExamples(r.num);
   const near = (n: number) => {
     const x = radicalByNum(n);
-    return x ? { num: x.num, char: x.char, name: x.name } : null;
+    return x ? { num: x.num, char: x.char, name: radicalName(x, locale) } : null;
   };
   return (
     <>
-      <Breadcrumb back="/radicals" section="Bộ thủ" current={`${r.num}. ${r.name}`} />
+      <Breadcrumb back="/radicals" section={t("radicals.title")} current={`${r.num}. ${radicalName(r, locale)}`} />
       <RadicalDetail
         r={r}
         known={known}

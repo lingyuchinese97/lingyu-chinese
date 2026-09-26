@@ -1,16 +1,19 @@
+"use client";
 import Link from "next/link";
+import { useT } from "@/i18n/client";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 
 /** Quay lại + mục + › + trang hiện tại (như breadcrumb bản cũ). */
 export function Breadcrumb({ back, section, current }: { back: string; section: string; current: string }) {
+  const t = useT();
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label={t("shell.breadcrumb")}
       className="-mt-1.5 flex min-h-11 flex-wrap items-center gap-1.5 text-base md:gap-3.5 md:text-xl"
     >
       <Link
         href={back}
-        aria-label="Quay lại"
+        aria-label={t("common.back")}
         className="-ml-2 inline-flex size-10 items-center justify-center rounded-full text-text-2 hover:bg-blue-50 hover:text-blue-600"
       >
         <ArrowLeft className="size-6" />

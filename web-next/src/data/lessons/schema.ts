@@ -16,11 +16,13 @@ const base = {
   options: z.array(z.string().min(1)).length(4),
   answer: z.number().int().min(0).max(3),
   explanation: z.string().optional(),
+  /** Bản tiếng Anh (giao diện English); bỏ trống → dùng tiếng Việt. */
+  explanationEn: z.string().optional(),
 };
 
 export const questionSchema = z.discriminatedUnion("type", [
   /** Nghe rồi chọn âm vừa nghe. */
-  z.object({ type: z.literal("choice-audio"), ...base, prompt: z.string().min(1) }),
+  z.object({ type: z.literal("choice-audio"), ...base, prompt: z.string().min(1), promptEn: z.string().optional() }),
   /** Ghép âm: thấy "b + a", nghe cách đọc, chọn âm tiết đúng. */
   z.object({ type: z.literal("blend"), ...base, parts: z.string().min(1) }),
 ]);
@@ -31,6 +33,8 @@ export const sectionSchema = z.object({
   label: z.string().min(1),
   title: z.string().min(1),
   instruction: z.string().min(1),
+  /** Bản tiếng Anh của nhãn / tiêu đề / hướng dẫn (tuỳ chọn). */
+  en: z.object({ label: z.string(), title: z.string(), instruction: z.string() }).partial().optional(),
   questions: z.array(questionSchema).min(1),
 });
 
@@ -42,10 +46,18 @@ export const lessonSchema = z
     badge: z.string().min(1),
     title: z.string().min(1),
     subtitle: z.string().min(1),
+    /** Bản tiếng Anh của badge / tiêu đề / mô tả (tuỳ chọn). */
+    en: z.object({ badge: z.string(), title: z.string(), subtitle: z.string() }).partial().optional(),
     /** Ô thống kê "Nội dung ôn tập". */
     highlights: z
       .array(
-        z.object({ value: z.string(), label: z.string(), sample: z.string(), tone: z.enum(["red", "blue", "green"]) }),
+        z.object({
+          value: z.string(),
+          label: z.string(),
+          labelEn: z.string().optional(),
+          sample: z.string(),
+          tone: z.enum(["red", "blue", "green"]),
+        }),
       )
       .max(4)
       .default([]),

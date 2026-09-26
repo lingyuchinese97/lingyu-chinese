@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { SessionConfig } from "../service";
 import { startCustomAction, startDueAction } from "../actions";
+import { useT } from "@/i18n/client";
 
 /** Nút "Ôn tập lại" (cùng thiết lập) và gợi ý "Ôn lại các từ đã sai". */
 export function ResultActions({
@@ -21,6 +22,7 @@ export function ResultActions({
   children?: React.ReactNode;
 }) {
   const router = useRouter();
+  const t = useT();
   const [busy, setBusy] = React.useState<"again" | "wrong" | null>(null);
 
   async function start(which: "again" | "wrong") {
@@ -34,7 +36,7 @@ export function ResultActions({
             count: wrongIds.length,
             mode: config.mode,
             showImage: config.showImage,
-            label: "Các từ đã sai",
+            label: t("review.result.wrongLabel"),
           })
         : kind === "due"
           ? await startDueAction({ mode: config.mode, showImage: config.showImage })
@@ -45,7 +47,7 @@ export function ResultActions({
             );
     if (!r.ok) {
       setBusy(null);
-      return void toast.error(r.message || "Không thể tạo bài ôn tập.");
+      return void toast.error(r.message || t("review.setup.createFailed"));
     }
     router.push("/review/session");
   }
@@ -56,12 +58,12 @@ export function ResultActions({
         <Button asChild variant="secondary" size="lg">
           <Link href="/home">
             <House />
-            Về trang chủ
+            {t("review.result.home")}
           </Link>
         </Button>
         <Button variant="solid" size="lg" onClick={() => start("again")} disabled={!!busy}>
           {busy === "again" ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-          {kind === "due" ? "Ôn tiếp thẻ đến hạn" : "Ôn tập lại"}
+          {kind === "due" ? t("review.result.moreDue") : t("review.result.again")}
         </Button>
       </div>
       {children}
@@ -78,9 +80,11 @@ export function ResultActions({
             <BookOpen className="size-6 text-blue-600" />
           )}
           <span className="min-w-0 flex-1">
-            <strong className="block text-navy">Ôn lại các từ đã sai</strong>
+            <strong className="block text-navy">{t("review.result.retryWrong")}</strong>
             <span className="text-sm text-text-2">
-              {wrongIds.length ? `Xem lại ${wrongIds.length} từ bạn trả lời sai` : "Bạn không sai từ nào — tuyệt vời!"}
+              {wrongIds.length
+                ? t("review.result.retryWrongDesc", { count: wrongIds.length })
+                : t("review.result.noWrong")}
             </span>
           </span>
           <ChevronRight className="size-5 text-text-3" />
@@ -91,8 +95,8 @@ export function ResultActions({
         >
           <RefreshCw className="size-6 text-blue-600" />
           <span className="min-w-0 flex-1">
-            <strong className="block text-navy">Luyện tập tiếp</strong>
-            <span className="text-sm text-text-2">Chọn chủ đề khác để ôn tập</span>
+            <strong className="block text-navy">{t("review.result.practice")}</strong>
+            <span className="text-sm text-text-2">{t("review.result.practiceDesc")}</span>
           </span>
           <ChevronRight className="size-5 text-text-3" />
         </Link>

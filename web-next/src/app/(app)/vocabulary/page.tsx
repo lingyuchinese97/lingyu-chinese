@@ -4,8 +4,11 @@ import { listParamsSchema } from "@/features/vocabulary/schema";
 import { listVocab } from "@/features/vocabulary/service";
 import { listReceivedVocab } from "@/features/vocabulary/share-service";
 import { VocabListView } from "@/features/vocabulary/components/vocab-list";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Từ vựng" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("vocab.title") };
+}
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);

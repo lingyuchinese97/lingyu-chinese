@@ -3,8 +3,11 @@ import { requireUser } from "@/server/session";
 import { sentenceListSchema } from "@/features/sentences/schema";
 import { listSentences } from "@/features/sentences/service";
 import { SentenceListView } from "@/features/sentences/components/sentence-list";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Ôn dịch câu" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("sentences.title") };
+}
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);

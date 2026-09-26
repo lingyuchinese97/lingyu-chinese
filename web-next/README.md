@@ -78,6 +78,26 @@ drizzle/               # migration SQL
 Nguyên tắc bảo mật: mọi Server Action / route kiểm tra session (và role cho admin), Zod cho mọi input, không tin `userId` từ client;
 ghi chú cá nhân, ảnh và dữ liệu của người khác không bao giờ lộ (có test). Header bảo mật + CSP ở `next.config.ts`.
 
+## API
+
+Mọi chức năng mới phải có REST API dưới `/api/v1/...` (quy ước ở [`CLAUDE.md`](CLAUDE.md)). Hiện có:
+
+| Route                        | Việc                                                 |
+| ---------------------------- | ---------------------------------------------------- |
+| `GET /api/health`            | Kiểm tra server + database                           |
+| `GET\|PUT /api/v1/me/locale` | Xem / đổi ngôn ngữ giao diện (`vi` \| `en`) của mình |
+| `/api/auth/*`                | Better Auth (đăng ký, đăng nhập, đăng xuất, phiên)   |
+| `GET /api/account/export`    | Xuất dữ liệu của mình                                |
+| `POST /api/account/import`   | Nhập dữ liệu (gộp, bỏ qua trùng)                     |
+| `GET /api/hanzi/[char]`      | Dữ liệu nét viết của một chữ Hán                     |
+| `GET /api/images/[id]`       | Ảnh cũ (chỉ chủ ảnh xem được)                        |
+
+## Ngôn ngữ giao diện (Tiếng Việt / English)
+
+Chữ trên giao diện nằm trong `src/i18n/messages/vi/*.ts` (gốc) và `src/i18n/messages/en/*.ts` — TypeScript báo lỗi nếu bản tiếng Anh
+thiếu khoá. Dùng `useT()` trong client component, `await getT()` trong server component / route; `t.maybe(msg)` dịch thông báo
+tiếng Việt sẵn có từ server. Thêm chữ mới = thêm khoá vào cả hai file. Chi tiết: `PLAN.md` mục 39.
+
 ## Thêm bài học mới (ví dụ Bài 2)
 
 Chỉ cần thêm dữ liệu + audio, không phải sửa màn hình:

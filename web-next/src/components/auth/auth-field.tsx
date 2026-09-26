@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 import * as React from "react";
 import { Eye, EyeOff, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ export function AuthField({
   className,
   ...props
 }: Props) {
+  const t = useT();
   const [show, setShow] = React.useState(false);
   const errId = `${id}-err`;
   return (
@@ -51,7 +53,7 @@ export function AuthField({
           <button
             type="button"
             onClick={() => setShow((v) => !v)}
-            aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+            aria-label={show ? t("auth.hidePassword") : t("auth.showPassword")}
             aria-pressed={show}
             className="flex size-11 shrink-0 items-center justify-center rounded-sm text-blue-700 hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
           >
@@ -61,7 +63,7 @@ export function AuthField({
       </div>
       {error && (
         <p id={errId} role="alert" className="pl-1 text-sm text-red">
-          {error}
+          {t.maybe(error)}
         </p>
       )}
     </div>

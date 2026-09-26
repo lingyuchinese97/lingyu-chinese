@@ -2,6 +2,8 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { BookOpen, ChartColumn, Heart } from "lucide-react";
 import { getSession } from "@/server/session";
+import { getT } from "@/i18n/server";
+import { LanguageSwitch } from "@/components/language-switch";
 
 const BUBBLES: [number, number, number][] = [
   [4, 36, 90],
@@ -16,6 +18,7 @@ const BUBBLES: [number, number, number][] = [
 /** Khung trang đăng nhập / đăng ký: thương hiệu + mascot bên trái (ẩn trên mobile), thẻ form bên phải. */
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   if (await getSession()) redirect("/home");
+  const t = await getT();
   return (
     <div className="relative grid min-h-dvh items-center overflow-hidden bg-[radial-gradient(900px_600px_at_25%_60%,#E6F3FF_0%,transparent_60%),linear-gradient(180deg,#F8FCFF_0%,#EEF7FF_100%)] px-4 pt-10 pb-8 md:px-6 lg:grid-cols-[1fr_minmax(0,560px)] lg:gap-7 lg:p-8 xl:grid-cols-[1fr_minmax(0,620px)] xl:gap-10 xl:py-10 xl:pr-14 xl:pl-10">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[260px]">
@@ -25,11 +28,12 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         </svg>
       </div>
 
+      <LanguageSwitch className="absolute top-3 right-3 z-[3] md:top-5 md:right-6" />
       <section aria-label="LingYu Chinese" className="relative flex min-w-0 flex-col items-center text-center lg:gap-2">
         {/* Điện thoại/tablet: chỉ logo chữ, cỡ vừa. */}
         <Image
           src="/brand/lingyu-wordmark.png"
-          alt="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày"
+          alt={t("shell.logoAlt")}
           width={1579}
           height={550}
           priority
@@ -39,7 +43,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         {/* Desktop: đã có mascot lớn bên dưới → chỉ dùng chữ. */}
         <Image
           src="/brand/lingyu-wordmark.png"
-          alt="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày"
+          alt={t("shell.logoAlt")}
           width={1579}
           height={550}
           priority
@@ -50,11 +54,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           aria-hidden="true"
           className="my-1 -mb-2.5 hidden -rotate-[5deg] hand text-[28px] leading-tight lg:block xl:text-[34px]"
         >
-          Cùng LingYu
-          <br />
-          khám phá thế giới tiếng Trung
-          <br />
-          thật thú vị nhé!
+          <span className="whitespace-pre-line">{t("auth.heroQuote")}</span>
           <Heart className="ml-2.5 inline size-9 -translate-y-1 fill-rose text-rose" />
         </p>
         <div aria-hidden="true" className="relative hidden aspect-[1536/1024] w-[min(560px,100%)] lg:block">
@@ -70,17 +70,17 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         <div className="mt-3 hidden flex-wrap items-center justify-center gap-5 text-[17px] text-navy lg:flex">
           <span className="inline-flex items-center gap-2.5">
             <BookOpen className="size-7 text-blue-600" aria-hidden="true" />
-            Học nhẹ nhàng
+            {t("auth.featureEasy")}
           </span>
           <i className="h-6 w-px bg-[#BFD6EE]" />
           <span className="inline-flex items-center gap-2.5">
             <ChartColumn className="size-7 text-blue-600" aria-hidden="true" />
-            Tiến bộ mỗi ngày
+            {t("auth.featureProgress")}
           </span>
           <i className="h-6 w-px bg-[#BFD6EE]" />
           <span className="inline-flex items-center gap-2.5">
             <Heart className="size-7 text-blue-600" aria-hidden="true" />
-            Cùng bạn thật xa
+            {t("auth.featureTogether")}
           </span>
         </div>
       </section>

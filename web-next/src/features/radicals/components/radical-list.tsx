@@ -8,7 +8,8 @@ import { inputClass } from "@/components/ui/input";
 import { toast } from "@/components/ui/toaster";
 import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
-import type { Radical } from "@/lib/radicals";
+import { radicalMeaning, radicalName, type Radical } from "@/lib/radicals";
+import { useLocale, useT } from "@/i18n/client";
 import { setRadicalKnownAction } from "../actions";
 
 export type RadicalFilter = { q: string; strokes: number; known: "" | "known" | "unknown" };
@@ -29,6 +30,8 @@ export function RadicalList({
   foundChar: string;
 }) {
   const router = useRouter();
+  const t = useT();
+  const locale = useLocale();
   const pathname = usePathname();
   const [q, setQ] = React.useState(filter.q);
   const [known, setKnown] = React.useState<Record<number, boolean>>({});
@@ -50,8 +53,8 @@ export function RadicalList({
   // Tìm kiếm khi ngừng gõ 250ms.
   React.useEffect(() => {
     if (q.trim() === filter.q) return;
-    const t = setTimeout(() => go({ q: q.trim() }), 250);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => go({ q: q.trim() }), 250);
+    return () => clearTimeout(timer);
   }, [q, filter.q, go]);
 
   const isKnown = (r: Row) => known[r.num] ?? r.known;
@@ -68,11 +71,11 @@ export function RadicalList({
     setKnown((k) => ({ ...k, [r.num]: on }));
     try {
       await setRadicalKnownAction(r.num, on);
-      toast.success(on ? `Đã đánh dấu thuộc bộ ${r.name}.` : "Đã bỏ đánh dấu.");
+      toast.success(on ? t("radicals.markedToast", { name: radicalName(r, locale) }) : t("radicals.unmarkedToast"));
       start(() => router.refresh());
     } catch {
       setKnown((k) => ({ ...k, [r.num]: !on }));
-      toast.error("Không lưu được. Vui lòng thử lại.");
+      toast.error(t("radicals.saveFailed"));
     }
   }
 
@@ -92,12 +95,10 @@ export function RadicalList({
             id="rl-title"
             className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]"
           >
-            Bộ thủ
+            {t("radicals.title")}
             <LeafDecor className="w-10" />
           </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">
-            214 bộ thủ Khang Hy — nắm bộ thủ để đoán nghĩa và nhớ mặt chữ Hán nhanh hơn.
-          </p>
+          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("radicals.subtitle")}</p>
         </div>
         <div
           aria-live="polite"
@@ -106,13 +107,13 @@ export function RadicalList({
           <div className="text-[15px] text-text-2">
             <strong className="text-[26px] text-navy">{count}</strong>/214
           </div>
-          <div className="text-sm text-text-2">bộ đã thuộc</div>
+          <div className="text-sm text-text-2">{t("radicals.knownCount")}</div>
           <div
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={214}
             aria-valuenow={count}
-            aria-label="Tiến độ học bộ thủ"
+            aria-label={t("radicals.progress")}
             className="col-span-2 mt-1.5 h-2 overflow-hidden rounded-full bg-blue-50"
           >
             <span
@@ -124,48 +125,48 @@ export function RadicalList({
       </section>
 
       <section
-        aria-label="Danh sách bộ thủ"
+        aria-label={t("radicals.list")}
         className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
           <label className="relative block">
-            <span className="sr-only">Tìm bộ thủ</span>
+            <span className="sr-only">{t("radicals.search")}</span>
             <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
             <input
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Tìm theo tên (Thủy), nghĩa (nước), pinyin, số hoặc gõ 1 chữ Hán (河)..."
+              placeholder={t("radicals.searchPlaceholder")}
               autoComplete="off"
               className={cn(inputClass, "pl-11")}
             />
           </label>
           <label>
-            <span className="sr-only">Trạng thái</span>
+            <span className="sr-only">{t("radicals.status")}</span>
             <select
               value={filter.known}
               onChange={(e) => go({ known: e.target.value as RadicalFilter["known"] })}
               className={cn(inputClass, "cursor-pointer")}
             >
-              <option value="">Tất cả bộ thủ</option>
-              <option value="known">Đã thuộc</option>
-              <option value="unknown">Chưa thuộc</option>
+              <option value="">{t("radicals.all")}</option>
+              <option value="known">{t("radicals.known")}</option>
+              <option value="unknown">{t("radicals.unknown")}</option>
             </select>
           </label>
         </div>
         <div className="flex items-center gap-3">
-          <span className="shrink-0 text-sm font-semibold text-text-2 max-md:hidden">Số nét</span>
+          <span className="shrink-0 text-sm font-semibold text-text-2 max-md:hidden">{t("radicals.strokes")}</span>
           <div
             role="group"
-            aria-label="Lọc theo số nét"
+            aria-label={t("radicals.filterStrokes")}
             className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
           >
             <Chip on={!filter.strokes} onClick={() => go({ strokes: 0 })}>
-              Tất cả
+              {t("radicals.allShort")}
             </Chip>
             {strokeGroups.map((n) => (
               <Chip key={n} on={n === filter.strokes} onClick={() => go({ strokes: n })}>
-                {n} nét
+                {t("radicals.strokeCount", { count: n })}
               </Chip>
             ))}
           </div>
@@ -176,14 +177,16 @@ export function RadicalList({
             <>
               {foundChar && items.length === 1 ? (
                 <p className="mb-2.5 font-semibold text-navy">
-                  Chữ{" "}
-                  <span className="mx-1 hanzi text-[22px] text-red" lang="zh">
-                    {foundChar}
-                  </span>{" "}
-                  thuộc bộ:
+                  {t.rich("radicals.charBelongs", {
+                    char: (
+                      <span className="mx-1 hanzi text-[22px] text-red" lang="zh">
+                        {foundChar}
+                      </span>
+                    ),
+                  })}
                 </p>
               ) : (
-                <p className="mb-2.5 text-sm text-text-2">{items.length} bộ thủ</p>
+                <p className="mb-2.5 text-sm text-text-2">{t("radicals.total", { count: items.length })}</p>
               )}
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(150px,1fr))]">
                 {items.map((r) => (
@@ -196,13 +199,11 @@ export function RadicalList({
               <span className="flex size-14 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                 <Search className="size-7" />
               </span>
-              <h2 className="text-lg font-bold text-navy">Không tìm thấy bộ thủ phù hợp</h2>
-              <p className="max-w-md text-text-2">
-                Thử tên Hán Việt (vd: Thủy), nghĩa (vd: nước) hoặc gõ một chữ Hán để xem bộ của chữ đó.
-              </p>
+              <h2 className="text-lg font-bold text-navy">{t("radicals.noMatch")}</h2>
+              <p className="max-w-md text-text-2">{t("radicals.noMatchHint")}</p>
               <Button variant="secondary" onClick={clear} className="mt-2">
                 <X />
-                Xóa bộ lọc
+                {t("radicals.clearFilters")}
               </Button>
             </div>
           )}
@@ -213,6 +214,10 @@ export function RadicalList({
 }
 
 function RadicalCard({ r, known, onToggle }: { r: Row; known: boolean; onToggle: () => void }) {
+  const t = useT();
+  const locale = useLocale();
+  const name = radicalName(r, locale);
+  const meaning = radicalMeaning(r, locale);
   const vs = r.variants.filter((v) => !v.includes("("));
   return (
     <li
@@ -223,7 +228,7 @@ function RadicalCard({ r, known, onToggle }: { r: Row; known: boolean; onToggle:
     >
       <Link
         href={`/radicals/${r.num}`}
-        aria-label={`Bộ ${r.name} (${r.meaning}), số ${r.num}`}
+        aria-label={t("radicals.cardLabel", { name, meaning, num: r.num })}
         className="flex flex-col items-center gap-0.5 rounded-[inherit] px-2.5 pt-4 pb-3.5 text-center outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <span className="absolute top-2 left-2.5 text-xs font-bold text-text-3">{r.num}</span>
@@ -233,18 +238,18 @@ function RadicalCard({ r, known, onToggle }: { r: Row; known: boolean; onToggle:
         <span className="min-h-5 hanzi text-[15px] text-blue-600" lang="zh">
           {vs.join(" ")}
         </span>
-        <span className="mt-1 font-bold text-text">{r.name}</span>
-        <span className="text-[13.5px] leading-snug text-text-2">{r.meaning}</span>
+        <span className="mt-1 font-bold text-text">{locale === "en" ? meaning : name}</span>
+        {locale === "en" ? null : <span className="text-[13.5px] leading-snug text-text-2">{meaning}</span>}
         <span className="mt-0.5 text-[12.5px] text-text-3">
-          <span className="text-pinyin">{r.pinyin}</span> · {r.strokes} nét
+          <span className="text-pinyin">{r.pinyin}</span> · {t("radicals.strokeCount", { count: r.strokes })}
         </span>
       </Link>
       <button
         type="button"
         onClick={onToggle}
         aria-pressed={known}
-        aria-label={`${known ? "Bỏ đánh dấu đã thuộc" : "Đánh dấu đã thuộc"} bộ ${r.name}`}
-        title={known ? "Đã thuộc" : "Đánh dấu đã thuộc"}
+        aria-label={known ? t("radicals.unmarkKnownFor", { name }) : t("radicals.markKnownFor", { name })}
+        title={known ? t("radicals.known") : t("radicals.markKnown")}
         className={cn(
           "absolute top-1 right-1 flex size-9 items-center justify-center rounded-full outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)]",
           known ? "text-green-700" : "text-text-3",

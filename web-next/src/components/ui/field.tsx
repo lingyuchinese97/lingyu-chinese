@@ -1,4 +1,6 @@
+"use client";
 import * as React from "react";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { Label } from "./label";
 
@@ -45,10 +47,11 @@ export function Field({
 }
 
 export function FieldError({ id, message }: { id: string; message?: string }) {
+  const t = useT();
   if (!message) return null;
   return (
     <span id={id} role="alert" className="text-[13.5px] text-red">
-      {message}
+      {t.maybe(message)}
     </span>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -27,6 +28,7 @@ export function OwnerActions({
   sent: SentItem[];
 }) {
   const router = useRouter();
+  const t = useT();
   const [confirm, confirmNode] = useConfirm();
   const [saved, setSaved] = React.useState(g.isSaved);
   const [share, setShare] = React.useState(false);
@@ -36,25 +38,25 @@ export function OwnerActions({
     const r = await setBookmarkAction(g.id, !saved);
     if (!r.ok) return void toast.error(r.message);
     setSaved(r.data);
-    toast.success(r.data ? "Đã lưu vào mục Đã lưu." : "Đã bỏ lưu.");
+    toast.success(r.data ? t("grammar.savedToast") : t("grammar.unsavedToast"));
   }
   async function remove() {
     const ok = await confirm({
-      title: "Xóa ngữ pháp?",
+      title: t("grammar.deleteTitle"),
       message: (
         <>
-          Bạn có chắc muốn xóa ngữ pháp này?
+          {t("grammar.deleteConfirm")}
           <br />
           <strong>{g.title}</strong>
         </>
       ),
-      confirmLabel: "Xóa",
+      confirmLabel: t("common.delete"),
       danger: true,
     });
     if (!ok) return;
     const r = await deleteGrammarAction(g.id);
-    if (!r.ok) return void toast.error(r.message || "Không xóa được. Vui lòng thử lại.");
-    toast.success("Đã xóa ngữ pháp.");
+    if (!r.ok) return void toast.error(r.message || t("grammar.deleteFailed"));
+    toast.success(t("grammar.deleted"));
     router.push("/grammar");
   }
 
@@ -69,21 +71,21 @@ export function OwnerActions({
           className={cn(saved && "text-amber")}
         >
           <Bookmark className={cn(saved && "fill-amber")} />
-          {saved ? "Đã lưu" : "Lưu"}
+          {saved ? t("grammar.detail.saved") : t("grammar.save")}
         </Button>
         <Button variant="secondary" size="sm" onClick={() => setShare(true)}>
           <Share2 />
-          Chia sẻ
+          {t("grammar.share")}
         </Button>
         <Button asChild variant="secondary" size="sm">
           <Link href={`/grammar/${g.id}/edit`}>
             <Pencil />
-            Chỉnh sửa
+            {t("grammar.editAction")}
           </Link>
         </Button>
         <Button variant="danger-outline" size="sm" onClick={remove}>
           <Trash2 />
-          Xóa
+          {t("grammar.delete")}
         </Button>
       </div>
       <ShareGrammarDialog grammar={share ? g : null} sent={sent} onClose={() => setShare(false)} onSent={setSent} />
@@ -106,6 +108,7 @@ function SentPortal({ sent }: { sent: SentItem[] }) {
 /** Thanh lời mời cho người nhận đang xem bản preview. */
 export function PreviewBar({ share, myTags }: { share: PendingShare; myTags: string[] }) {
   const router = useRouter();
+  const t = useT();
   const [confirm, confirmNode] = useConfirm();
   const [open, setOpen] = React.useState(false);
   return (
@@ -118,8 +121,8 @@ export function PreviewBar({ share, myTags }: { share: PendingShare; myTags: str
           <Share2 className="size-5" />
         </span>
         <div className="min-w-0 flex-1 text-[15px] text-text-2">
-          <strong className="block text-navy">{share.senderName} đã chia sẻ ngữ pháp này với bạn</strong>
-          Đây là bản xem trước. Chấp nhận để thêm một bản riêng vào thư viện của bạn.
+          <strong className="block text-navy">{t("grammar.detail.sharedWithYou", { name: share.senderName })}</strong>
+          {t("grammar.detail.previewNote")}
         </div>
         <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
           <Button
@@ -130,11 +133,11 @@ export function PreviewBar({ share, myTags }: { share: PendingShare; myTags: str
             }}
           >
             <X />
-            Từ chối
+            {t("common.reject")}
           </Button>
           <Button size="sm" variant="solid" onClick={() => setOpen(true)}>
             <Check />
-            Chấp nhận
+            {t("common.accept")}
           </Button>
         </div>
       </div>

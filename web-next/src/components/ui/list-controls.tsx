@@ -3,6 +3,7 @@ import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
 
 /** Nút của thanh thao tác hàng loạt: luôn hiện, tắt khi chưa chọn gì (bấm lúc tắt chỉ báo gợi ý). */
 export function BulkButton({
@@ -47,6 +48,7 @@ export function BulkButton({
 
 /** Phân trang: đầu, cuối, quanh trang hiện tại, "…" ở khoảng trống. */
 export function Pager({ page, count, onGo }: { page: number; count: number; onGo: (p: number) => void }) {
+  const t = useT();
   if (count <= 1) return null;
   const nums = new Set([1, count, page - 1, page, page + 1]);
   if (page <= 3) [2, 3, 4].forEach((x) => nums.add(x));
@@ -68,7 +70,7 @@ export function Pager({ page, count, onGo }: { page: number; count: number; onGo
         type="button"
         onClick={() => onGo(x)}
         aria-current={x === page ? "page" : undefined}
-        aria-label={`Trang ${x}`}
+        aria-label={t("ui.page", { n: x })}
         className={cn(btn, x === page ? "bg-blue text-white" : "text-text hover:bg-blue-50")}
       >
         {x}
@@ -77,12 +79,12 @@ export function Pager({ page, count, onGo }: { page: number; count: number; onGo
     prev = x;
   }
   return (
-    <nav aria-label="Phân trang" className="flex flex-wrap items-center justify-center gap-1.5">
+    <nav aria-label={t("ui.pagination")} className="flex flex-wrap items-center justify-center gap-1.5">
       <button
         type="button"
         disabled={page <= 1}
         onClick={() => onGo(page - 1)}
-        aria-label="Trang trước"
+        aria-label={t("ui.prevPage")}
         className={cn(btn, "border border-border bg-white text-blue-600 disabled:opacity-40")}
       >
         <ChevronLeft className="size-5" />
@@ -92,7 +94,7 @@ export function Pager({ page, count, onGo }: { page: number; count: number; onGo
         type="button"
         disabled={page >= count}
         onClick={() => onGo(page + 1)}
-        aria-label="Trang sau"
+        aria-label={t("ui.nextPage")}
         className={cn(btn, "border border-border bg-white text-blue-600 disabled:opacity-40")}
       >
         <ChevronRight className="size-5" />

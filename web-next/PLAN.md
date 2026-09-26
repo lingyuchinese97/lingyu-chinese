@@ -132,6 +132,16 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     Nút loa dùng giọng đọc có sẵn của trình duyệt (Web Speech API, không gọi dịch vụ ngoài); máy không có giọng tiếng Trung → ẩn nút.
     Câu được xuất / nhập cùng dữ liệu khác.
 
+39. **Giao diện song ngữ Việt / English** (theo yêu cầu người dùng, người dùng đổi tuỳ ý): tự viết lớp i18n nhỏ ở `src/i18n/`
+    thay vì thêm thư viện. Từ điển gốc tiếng Việt (`messages/vi/*.ts`), bản tiếng Anh (`messages/en/*.ts`) được TypeScript bắt
+    đủ khoá; `t("khoá", { biến })` có số nhiều kiểu ICU rút gọn cho tiếng Anh. Ngôn ngữ của request: đã lưu trong tài khoản
+    (`user.locale`, migration `0004`) → cookie `lingyu-locale` (khi chưa đăng nhập) → tiếng Việt. Không tự đoán theo trình duyệt
+    (người dùng chủ yếu là người Việt; e2e chạy trình duyệt tiếng Anh vẫn ra tiếng Việt). Đổi ngôn ngữ: menu tài khoản, Cài đặt,
+    trang đăng nhập / giới thiệu; API `GET|PUT /api/v1/me/locale`. Thông báo lỗi của server / Zod / Better Auth vẫn viết tiếng Việt
+    trong code và được dịch lúc hiển thị (`t.maybe` tra ngược câu tiếng Việt → khoá, kể cả mẫu có biến như "Tối đa {max} tag") —
+    toast, `Alert`, `FieldError` tự làm việc này nên service và test cũ không phải sửa. Dữ liệu của người dùng và dữ liệu mẫu (nghĩa
+    tiếng Việt, câu ví dụ) không dịch; bộ thủ có thêm nghĩa tiếng Anh (`data/radicals-en.ts`), bài học có trường `en` tuỳ chọn.
+
 ## Chỗ mơ hồ & cách xử lý
 
 - "Gợi ý pinyin bằng pinyin-pro": khi nhập Hán tự mà ô Pinyin còn trống → hiện nút gợi ý (bấm để điền), không tự ghi đè.

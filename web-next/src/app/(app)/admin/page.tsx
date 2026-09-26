@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/server/session";
 import { listUsers } from "@/features/admin/service";
 import { AdminUsers } from "@/features/admin/components/admin-users";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Quản trị" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("admin.title") };
+}
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";

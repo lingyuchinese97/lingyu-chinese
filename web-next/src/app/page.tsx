@@ -5,6 +5,8 @@ import { ArrowRight, BookOpen, FileText, GraduationCap, RefreshCw, UserRound } f
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSession } from "@/server/session";
+import { getT } from "@/i18n/server";
+import { LanguageSwitch } from "@/components/language-switch";
 
 export const dynamic = "force-dynamic";
 
@@ -34,11 +36,11 @@ function RadicalGlyph({ className }: { className?: string }) {
 }
 
 const TILES = [
-  { label: "Từ vựng", icon: BookOpen, ring: "bg-[#FFF1D6] text-[#F29A17]", wave: "#FFF3DC" },
-  { label: "Ôn tập", icon: RefreshCw, ring: "bg-[#E1F0FE] text-[#1595F5]", wave: "#E3F1FE" },
-  { label: "Ngữ pháp", icon: FileText, ring: "bg-[#FFE4E8] text-[#EE3B55]", wave: "#FFE9EC" },
-  { label: "Bộ thủ", icon: RadicalGlyph, ring: "bg-[#EEE6FE] text-[#8B5CF6]", wave: "#EFE8FE" },
-  { label: "Luyện tập", icon: GraduationCap, ring: "bg-[#DDF6EA] text-[#16A36F]", wave: "#E0F6EB" },
+  { label: "shell.nav.vocabulary", icon: BookOpen, ring: "bg-[#FFF1D6] text-[#F29A17]", wave: "#FFF3DC" },
+  { label: "shell.nav.review", icon: RefreshCw, ring: "bg-[#E1F0FE] text-[#1595F5]", wave: "#E3F1FE" },
+  { label: "shell.nav.grammar", icon: FileText, ring: "bg-[#FFE4E8] text-[#EE3B55]", wave: "#FFE9EC" },
+  { label: "shell.nav.radicals", icon: RadicalGlyph, ring: "bg-[#EEE6FE] text-[#8B5CF6]", wave: "#EFE8FE" },
+  { label: "landing.practice", icon: GraduationCap, ring: "bg-[#DDF6EA] text-[#16A36F]", wave: "#E0F6EB" },
 ] as const;
 
 const bubble =
@@ -46,6 +48,7 @@ const bubble =
 
 export default async function LandingPage() {
   if (await getSession()) redirect("/home");
+  const t = await getT();
   return (
     <div className="relative min-h-dvh overflow-hidden bg-[radial-gradient(900px_600px_at_75%_30%,#E3F2FF_0%,transparent_60%),linear-gradient(180deg,#F8FCFF_0%,#EEF7FF_100%)]">
       <svg width="0" height="0" className="absolute" aria-hidden="true">
@@ -68,23 +71,26 @@ export default async function LandingPage() {
       <header className="relative z-[1] mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-2 md:px-6 md:pt-6">
         <Image
           src="/brand/lingyu-wordmark.png"
-          alt="LingYu Chinese — Tiếng Trung gần hơn mỗi ngày"
+          alt={t("shell.logoAlt")}
           width={1579}
           height={550}
           priority
           sizes="180px"
           className="h-auto w-[140px] md:w-[180px]"
         />
-        <Button asChild variant="secondary" className="h-11 rounded-[14px] px-5 md:h-12 md:px-7 md:text-[17px]">
-          <Link href="/login">Đăng nhập</Link>
-        </Button>
+        <div className="flex items-center gap-2 md:gap-3">
+          <LanguageSwitch className="max-sm:[&_svg]:hidden" />
+          <Button asChild variant="secondary" className="h-11 rounded-[14px] px-5 md:h-12 md:px-7 md:text-[17px]">
+            <Link href="/login">{t("auth.signIn")}</Link>
+          </Button>
+        </div>
       </header>
 
       <main className="relative z-[1] mx-auto max-w-6xl px-4 pb-12 md:px-6">
         <section className="grid items-center gap-6 pt-4 lg:grid-cols-[1.15fr_1fr] lg:gap-4 lg:pt-6">
           <div className="flex flex-col items-center gap-7 text-center lg:items-start lg:text-left">
             <div className="relative">
-              <p className="hand text-[28px] text-blue-600 md:text-[38px]">Tiếng Trung gần hơn mỗi ngày</p>
+              <p className="hand text-[28px] text-blue-600 md:text-[38px]">{t("common.tagline")}</p>
               <svg
                 aria-hidden="true"
                 viewBox="0 0 600 24"
@@ -96,9 +102,7 @@ export default async function LandingPage() {
               <Leaf className="-top-5 -right-12 w-11 -rotate-12 md:-right-16 md:w-14" />
             </div>
             <h1 className="text-[31px] leading-[1.15] font-extrabold tracking-tight text-navy min-[400px]:text-[34px] md:text-[58px]">
-              Học tiếng Trung
-              <br />
-              cùng LingYu Chinese
+              <span className="whitespace-pre-line">{t("landing.title")}</span>
             </h1>
             <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row lg:max-w-none">
               <Button asChild variant="primary" className="h-14 rounded-[14px] px-7 text-[17px] md:h-[60px] md:text-lg">
@@ -107,7 +111,7 @@ export default async function LandingPage() {
                     <path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16Z" fill="currentColor" />
                     <path d="M5 19C9 15 12 12 16 8" stroke="#1595F5" strokeWidth="1.6" strokeLinecap="round" />
                   </svg>
-                  Đăng ký miễn phí
+                  {t("landing.registerFree")}
                   <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
@@ -118,7 +122,7 @@ export default async function LandingPage() {
               >
                 <Link href="/login">
                   <UserRound aria-hidden="true" className="fill-current" />
-                  Tôi đã có tài khoản
+                  {t("landing.haveAccount")}
                 </Link>
               </Button>
             </div>
@@ -145,22 +149,22 @@ export default async function LandingPage() {
         </section>
 
         <ul className="relative mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:mt-10 lg:grid-cols-5">
-          {TILES.map((t) => (
+          {TILES.map((tile) => (
             <li
-              key={t.label}
+              key={tile.label}
               className="relative flex flex-col items-center gap-3 overflow-hidden rounded-[20px] border border-white bg-white/90 px-3 pt-4 pb-10 shadow-[0_10px_30px_rgba(34,93,150,.08)] last:max-sm:col-span-2 md:pt-6 md:pb-16"
             >
-              <span className={cn("flex size-14 items-center justify-center rounded-full md:size-[84px]", t.ring)}>
-                <t.icon className="size-7 text-[28px] md:size-10 md:text-[40px]" />
+              <span className={cn("flex size-14 items-center justify-center rounded-full md:size-[84px]", tile.ring)}>
+                <tile.icon className="size-7 text-[28px] md:size-10 md:text-[40px]" />
               </span>
-              <span className="relative z-[1] text-base font-bold text-navy md:text-[22px]">{t.label}</span>
+              <span className="relative z-[1] text-base font-bold text-navy md:text-[22px]">{t(tile.label)}</span>
               <svg
                 aria-hidden="true"
                 viewBox="0 0 200 60"
                 preserveAspectRatio="none"
                 className="absolute inset-x-0 bottom-0 h-10 w-full md:h-16"
               >
-                <path d="M0 30C50 5 110 50 200 18V60H0Z" fill={t.wave} />
+                <path d="M0 30C50 5 110 50 200 18V60H0Z" fill={tile.wave} />
               </svg>
               <Leaf className="right-3 bottom-2 w-7 -rotate-[55deg] md:right-4 md:bottom-3 md:w-11" />
             </li>

@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { Pwa } from "@/components/pwa";
+import { I18nProvider } from "@/i18n/client";
+import { getLocale, getT } from "@/i18n/server";
 import "./globals.css";
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { ...baseMetadata, description: t("meta.description") };
+}
+
+const baseMetadata: Metadata = {
   title: { default: "LingYu Chinese", template: "%s · LingYu Chinese" },
-  description: "LingYu Chinese — Tiếng Trung gần hơn mỗi ngày. Lưu từ vựng, ngữ pháp, bộ thủ và ôn tập mỗi ngày.",
   applicationName: "LingYu Chinese",
   appleWebApp: { capable: true, title: "LingYu", statusBarStyle: "default" },
   formatDetection: { telephone: false },
@@ -26,12 +32,15 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
-    <html lang="vi">
+    <html lang={locale}>
       <body>
-        <Pwa>{children}</Pwa>
-        <Toaster />
+        <I18nProvider locale={locale}>
+          <Pwa>{children}</Pwa>
+          <Toaster />
+        </I18nProvider>
       </body>
     </html>
   );

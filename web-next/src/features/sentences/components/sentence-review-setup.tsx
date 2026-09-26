@@ -10,11 +10,13 @@ import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { SENTENCE_COUNTS, type DirectionMode } from "../schema";
 import { countSentencePoolAction, startSentenceReviewAction } from "../actions";
+import { useT } from "@/i18n/client";
+import type { MessageKey } from "@/i18n/translate";
 
-const DIRS: { value: DirectionMode; title: string; sub: string; icon: React.ReactNode }[] = [
-  { value: "vi-zh", title: "VI → 中", sub: "Việt → Trung", icon: <Languages /> },
-  { value: "zh-vi", title: "中 → VI", sub: "Trung → Việt", icon: <ArrowLeftRight /> },
-  { value: "mixed", title: "Trộn", sub: "Trộn ngẫu nhiên", icon: <Shuffle /> },
+const DIRS: { value: DirectionMode; title: string; sub: MessageKey; icon: React.ReactNode }[] = [
+  { value: "vi-zh", title: "VI → 中", sub: "sentences.setup.viZh", icon: <Languages /> },
+  { value: "zh-vi", title: "中 → VI", sub: "sentences.setup.zhVi", icon: <ArrowLeftRight /> },
+  { value: "mixed", title: "Mix", sub: "sentences.setup.mixed", icon: <Shuffle /> },
 ];
 
 export function SentenceReviewSetup({
@@ -29,6 +31,7 @@ export function SentenceReviewSetup({
   active: { done: number; total: number } | null;
 }) {
   const router = useRouter();
+  const t = useT();
   const [direction, setDirection] = React.useState<DirectionMode>(last?.direction ?? "vi-zh");
   const [count, setCount] = React.useState<number>(
     last?.count && SENTENCE_COUNTS.includes(last.count as 5) ? last.count : 10,
@@ -60,10 +63,10 @@ export function SentenceReviewSetup({
   if (!total)
     return (
       <section className="flex flex-col items-center gap-3 rounded-[var(--radius-xl)] border border-border bg-white p-8 text-center shadow-card">
-        <h1 className="text-2xl font-extrabold text-navy">Bắt đầu ôn dịch câu</h1>
-        <p className="text-text-2">Bạn chưa có câu nào. Thêm câu (hoặc dùng dữ liệu mẫu) để bắt đầu ôn.</p>
+        <h1 className="text-2xl font-extrabold text-navy">{t("sentences.setupTitle")}</h1>
+        <p className="text-text-2">{t("sentences.setup.none")}</p>
         <Button asChild variant="solid">
-          <Link href="/sentences">Đến danh sách câu</Link>
+          <Link href="/sentences">{t("sentences.setup.toList")}</Link>
         </Button>
       </section>
     );
@@ -75,19 +78,19 @@ export function SentenceReviewSetup({
       className="relative flex flex-col gap-5 overflow-hidden rounded-[var(--radius-xl)] border border-border bg-white/94 p-4 shadow-card md:p-7"
     >
       <h1 id="ss-title" className="flex items-center gap-3 text-[24px] font-extrabold text-navy md:text-[28px]">
-        Bắt đầu ôn dịch câu
+        {t("sentences.setupTitle")}
         <LeafDecor className="w-9" />
       </h1>
 
       {active ? (
         <div className="flex flex-col gap-2.5 rounded-[14px] border border-[#A9D3F8] bg-blue-50 px-4 py-3 md:flex-row md:items-center">
           <p className="flex-1 text-[15px] text-text-2">
-            Bạn đang có bài ôn dở ({active.done}/{active.total} câu).
+            {t("sentences.setup.unfinished", { done: active.done, total: active.total })}
           </p>
           <Button asChild size="sm" variant="solid">
             <Link href="/sentences/review/session">
               <RotateCcw />
-              Làm tiếp
+              {t("sentences.setup.resume")}
             </Link>
           </Button>
         </div>
@@ -96,8 +99,8 @@ export function SentenceReviewSetup({
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-4 rounded-2xl bg-[#F4F9FF] p-4">
           <fieldset>
-            <legend className="mb-2.5 font-bold text-text">Chiều dịch</legend>
-            <div role="radiogroup" aria-label="Chiều dịch" className="grid grid-cols-3 gap-2">
+            <legend className="mb-2.5 font-bold text-text">{t("sentences.setup.direction")}</legend>
+            <div role="radiogroup" aria-label={t("sentences.setup.direction")} className="grid grid-cols-3 gap-2">
               {DIRS.map((d) => {
                 const on = direction === d.value;
                 return (
@@ -117,7 +120,7 @@ export function SentenceReviewSetup({
                     <span className="flex items-center gap-1.5 text-lg font-bold">
                       {d.value === "mixed" ? d.icon : d.title}
                     </span>
-                    <span className={cn("text-[13px]", on ? "text-white" : "text-text-2")}>{d.sub}</span>
+                    <span className={cn("text-[13px]", on ? "text-white" : "text-text-2")}>{t(d.sub)}</span>
                   </button>
                 );
               })}
@@ -125,22 +128,17 @@ export function SentenceReviewSetup({
           </fieldset>
           <Toggle
             id="ss-pinyin"
-            label="Hiển thị Pinyin (khi dịch Trung → Việt)"
+            label={t("sentences.setup.showPinyin")}
             checked={showPinyin}
             onChange={setShowPinyin}
           />
-          <Toggle
-            id="ss-hint"
-            label="Hiển thị gợi ý chữ Hán đầu tiên (khi dịch Việt → Trung)"
-            checked={showHint}
-            onChange={setShowHint}
-          />
+          <Toggle id="ss-hint" label={t("sentences.setup.showHint")} checked={showHint} onChange={setShowHint} />
         </div>
 
         <div className="flex flex-col gap-4 rounded-2xl bg-[#F4F9FF] p-4">
           <fieldset>
-            <legend className="mb-2.5 font-bold text-text">Số lượng câu</legend>
-            <div role="radiogroup" aria-label="Số lượng câu" className="grid grid-cols-4 gap-2">
+            <legend className="mb-2.5 font-bold text-text">{t("sentences.setup.count")}</legend>
+            <div role="radiogroup" aria-label={t("sentences.setup.count")} className="grid grid-cols-4 gap-2">
               {SENTENCE_COUNTS.map((c) => (
                 <button
                   key={c}
@@ -161,18 +159,18 @@ export function SentenceReviewSetup({
             </div>
           </fieldset>
           <label className="flex flex-col gap-2">
-            <span className="font-bold text-text">Chọn tag</span>
+            <span className="font-bold text-text">{t("sentences.setup.chooseTag")}</span>
             <select value={tag} onChange={(e) => setTag(e.target.value)} className={cn(inputClass, "cursor-pointer")}>
-              <option value="">Tất cả tag ({total} câu)</option>
-              {tags.map((t) => (
-                <option key={t.name} value={t.name}>
-                  {t.name} ({t.count})
+              <option value="">{t("sentences.setup.allTags", { count: total })}</option>
+              {tags.map((tg) => (
+                <option key={tg.name} value={tg.name}>
+                  {tg.name} ({tg.count})
                 </option>
               ))}
             </select>
           </label>
           <p className="text-sm text-text-2" aria-live="polite">
-            {pool ? `Sẽ ôn ${n} câu.` : "Không có câu nào với tag này."}
+            {pool ? t("sentences.setup.willReview", { count: n }) : t("sentences.setup.noneWithTag")}
           </p>
         </div>
       </div>
@@ -185,7 +183,7 @@ export function SentenceReviewSetup({
         onClick={start}
       >
         {busy ? <Loader2 className="animate-spin" /> : <Play />}
-        {busy ? "Đang tạo bài..." : "Bắt đầu ôn tập"}
+        {busy ? t("sentences.setup.creating") : t("sentences.setup.start")}
       </Button>
     </section>
   );

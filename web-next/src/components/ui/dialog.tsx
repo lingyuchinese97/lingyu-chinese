@@ -3,6 +3,7 @@ import * as React from "react";
 import { Dialog as D } from "radix-ui";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
 
 /**
  * Hộp thoại theo mẫu shadcn: giữa màn hình trên desktop, dạng "bottom sheet" trượt từ đáy trên điện thoại
@@ -26,6 +27,7 @@ export function DialogContent({
   icon?: React.ReactNode;
   wide?: boolean;
 }) {
+  const t = useT();
   return (
     <D.Portal>
       <D.Overlay className="fixed inset-0 z-[80] bg-[rgba(9,35,80,.38)]" />
@@ -56,7 +58,7 @@ export function DialogContent({
         </div>
         {children}
         <D.Close
-          aria-label="Đóng"
+          aria-label={t("common.close")}
           className="absolute top-3 right-3 flex size-10 items-center justify-center rounded-full text-text-2 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] md:top-5 md:right-5"
         >
           <X className="size-5" />

@@ -28,7 +28,8 @@ import { useConfirm } from "@/components/ui/confirm";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { radicalByNum, radicalLabel } from "@/lib/radicals";
-import { SORTS, STATUS_LABEL, type ListParams } from "../schema";
+import { SORTS, type ListParams } from "../schema";
+import { useLocale, useT } from "@/i18n/client";
 import type { VocabItem, VocabList } from "../service";
 import { deleteVocabAction, importSampleAction, setStatusAction, toggleFavoriteAction } from "../actions";
 import { startCustomAction } from "@/features/review/actions";
@@ -61,6 +62,8 @@ export function VocabListView({
   received: ReceivedVocabShare[];
 }) {
   const router = useRouter();
+  const t = useT();
+  const locale = useLocale();
   const pathname = usePathname();
   const [pending, startTransition] = React.useTransition();
   const [confirm, confirmNode] = useConfirm();
@@ -123,16 +126,16 @@ export function VocabListView({
 
   async function doDelete(delIds: string[], label: string) {
     const ok = await confirm({
-      title: "Xóa từ vựng?",
-      message: `Bạn sắp xóa ${label}. Thao tác này không thể hoàn tác.`,
-      confirmLabel: "Xóa",
+      title: t("vocab.deleteTitle"),
+      message: t("vocab.deleteMessage", { what: label }),
+      confirmLabel: t("common.delete"),
       danger: true,
     });
     if (!ok) return;
     const r = await deleteVocabAction(delIds);
-    if (!r.ok) return void toast.error(r.message || "Không xóa được. Vui lòng thử lại.");
+    if (!r.ok) return void toast.error(r.message || t("vocab.deleteFailed"));
     setSelected((s) => new Set([...s].filter((id) => !delIds.includes(id))));
-    toast.success(`Đã xóa ${r.data.removed} từ vựng.`);
+    toast.success(t("vocab.deleted", { count: r.data.removed }));
     refresh();
   }
 
@@ -140,7 +143,7 @@ export function VocabListView({
     const next = v.status === "learned" ? "review" : "learned";
     const r = await setStatusAction([v.id], next);
     if (!r.ok) return void toast.error(r.message);
-    toast.success(`Đã chuyển “${v.hanzi}” sang ${STATUS_LABEL[next]}.`);
+    toast.success(t("vocab.statusChanged", { word: v.hanzi, status: t(`ui.${next}`) }));
     refresh();
   }
 
@@ -152,9 +155,9 @@ export function VocabListView({
       count: ids.length,
       mode: "meaning",
       showImage: false,
-      label: `${ids.length} từ đã chọn`,
+      label: t("vocab.selectedWords", { count: ids.length }),
     });
-    if (!r.ok) return void toast.error(r.message || "Không thể tạo bài ôn tập.");
+    if (!r.ok) return void toast.error(r.message || t("vocab.reviewFailed"));
     router.push("/review/session");
   }
 
@@ -182,7 +185,7 @@ export function VocabListView({
   async function doBulkStatus(status: "learned" | "review") {
     const r = await setStatusAction([...selected], status);
     if (!r.ok) return void toast.error(r.message);
-    toast.success(`Đã chuyển ${r.data.updated} từ sang ${STATUS_LABEL[status]}.`);
+    toast.success(t("vocab.statusChangedMany", { count: r.data.updated, status: t(`ui.${status}`) }));
     refresh();
   }
 
@@ -200,31 +203,31 @@ export function VocabListView({
   const rowMenu = (v: VocabItem) => (
     <Menu>
       <MenuTrigger asChild>
-        <button type="button" className={iconBtn} aria-label={`Thao tác khác cho ${v.hanzi}`}>
+        <button type="button" className={iconBtn} aria-label={t("vocab.moreActions", { word: v.hanzi })}>
           <MoreHorizontal />
         </button>
       </MenuTrigger>
       <MenuContent className="w-[230px]">
         <MenuItem onSelect={() => doStatus(v)}>
           {v.status === "learned" ? <RefreshCw /> : <CheckCircle2 />}
-          {v.status === "learned" ? "Đánh dấu cần ôn" : "Đánh dấu đã thuộc"}
+          {v.status === "learned" ? t("vocab.toReview") : t("vocab.toLearned")}
         </MenuItem>
         <MenuItem onSelect={() => router.push(`/vocabulary/${v.id}/edit`)}>
           <Pencil />
-          Sửa từ vựng
+          {t("vocab.edit")}
         </MenuItem>
         <MenuItem onSelect={() => setTagFor([v.id])}>
           <TagIcon />
-          Thêm tag
+          {t("vocab.addTag")}
         </MenuItem>
         <MenuItem onSelect={() => openShare([v.id])}>
           <Share2 />
-          Chia sẻ
+          {t("vocab.shareAction")}
         </MenuItem>
         <MenuSeparator />
         <MenuItem danger onSelect={() => doDelete([v.id], `“${v.hanzi}”`)}>
           <Trash2 />
-          Xóa từ vựng
+          {t("vocab.deleteWord")}
         </MenuItem>
       </MenuContent>
     </Menu>
@@ -237,7 +240,7 @@ export function VocabListView({
         className={iconBtn}
         onClick={() => doFav(v)}
         aria-pressed={on}
-        aria-label={`${on ? "Bỏ yêu thích" : "Yêu thích"} ${v.hanzi}`}
+        aria-label={on ? t("vocab.unfavorite", { word: v.hanzi }) : t("vocab.favorite", { word: v.hanzi })}
       >
         <Star className={cn(on ? "fill-amber text-amber" : "text-text-3")} />
       </button>
@@ -252,8 +255,8 @@ export function VocabListView({
             type="button"
             className={cn(iconBtn, "size-8 [&_svg]:size-[18px]")}
             onClick={() => setNoteOf(v)}
-            aria-label={`Xem đầy đủ ghi chú của ${v.hanzi}`}
-            title="Xem thêm"
+            aria-label={t("vocab.fullNote", { word: v.hanzi })}
+            title={t("vocab.seeMore")}
           >
             <Eye />
           </button>
@@ -271,11 +274,9 @@ export function VocabListView({
       >
         <div className="relative z-[1] min-w-0 flex-1">
           <h1 id="vl-title" className="text-[26px] font-extrabold tracking-tight text-text md:text-[34px]">
-            Danh sách từ vựng
+            {t("vocab.listTitle")}
           </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">
-            Lưu lại những từ vựng để học hiệu quả hơn mỗi ngày.
-          </p>
+          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("vocab.listSub")}</p>
         </div>
         <div aria-hidden="true" className="relative hidden h-[110px] w-[280px] shrink-0 lg:block">
           <div className="absolute top-1 left-2 flex h-[96px] w-[136px] -rotate-6 flex-col items-center justify-center rounded-2xl border border-[#E1ECF7] bg-white shadow-[0_10px_24px_rgba(34,93,150,.12)]">
@@ -283,48 +284,44 @@ export function VocabListView({
             <span className="text-sm font-semibold text-navy">jiā yóu</span>
           </div>
           <div className="absolute top-0 right-0 w-[128px] -rotate-[4deg] rounded bg-[#FFF9E8] px-3 py-3.5 text-center hand text-[15px] leading-tight text-[#3B5A86] shadow-[0_8px_18px_rgba(80,60,20,.12)]">
-            Tích lũy
-            <br />
-            từng từ nhỏ
-            <br />
-            Tạo nên hành trình lớn
+            <span className="whitespace-pre-line">{t("vocab.note")}</span>
           </div>
         </div>
         <Button asChild variant="solid" className="shrink-0 max-md:w-full">
           <Link href="/vocabulary/new">
             <Plus />
-            Thêm từ vựng
+            {t("vocab.add")}
           </Link>
         </Button>
       </section>
 
       <section
-        aria-label="Từ vựng"
+        aria-label={t("vocab.title")}
         ref={listTop}
         className="flex scroll-mt-4 flex-col gap-[18px] rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
         <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_200px_190px]">
           <label className="relative block">
-            <span className="sr-only">Tìm kiếm từ vựng</span>
+            <span className="sr-only">{t("vocab.searchLabel")}</span>
             <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
             <input
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Tìm kiếm từ vựng (Hán tự, pinyin, nghĩa tiếng Việt, tag...)"
+              placeholder={t("vocab.searchPlaceholder")}
               autoComplete="off"
               className={cn(inputClass, "pl-11")}
             />
           </label>
           <label>
-            <span className="sr-only">Lọc theo tag</span>
+            <span className="sr-only">{t("vocab.filterTag")}</span>
             <select
               value={params.tag}
               onChange={(e) => go({ tag: e.target.value, page: 1 })}
               className={cn(inputClass, "cursor-pointer")}
             >
-              <option value="">Tất cả tag</option>
+              <option value="">{t("vocab.allTags")}</option>
               {data.tagCounts.map((t) => (
                 <option key={t.id} value={t.name}>
                   {t.name} ({t.count})
@@ -333,7 +330,7 @@ export function VocabListView({
             </select>
           </label>
           <label>
-            <span className="sr-only">Sắp xếp</span>
+            <span className="sr-only">{t("vocab.sort")}</span>
             <select
               value={params.sort}
               onChange={(e) => go({ sort: e.target.value as ListParams["sort"], page: 1 }, { keepSelection: true })}
@@ -341,7 +338,7 @@ export function VocabListView({
             >
               {SORTS.map((s) => (
                 <option key={s.value} value={s.value}>
-                  {s.label}
+                  {t(s.label)}
                 </option>
               ))}
             </select>
@@ -351,11 +348,11 @@ export function VocabListView({
         {data.totalAll > 0 ? (
           <div
             role="group"
-            aria-label="Lọc nhanh theo tag"
+            aria-label={t("vocab.quickFilter")}
             className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
           >
             <Chip on={!params.tag} onClick={() => go({ tag: "", page: 1 })}>
-              Tất cả ({data.totalAll})
+              {t("vocab.allCount", { count: data.totalAll })}
             </Chip>
             {data.tagCounts.map((t) => (
               <Chip
@@ -371,7 +368,7 @@ export function VocabListView({
 
         {radical ? (
           <div className="flex flex-wrap items-center gap-2 text-[15px] text-text-2">
-            <span>Lọc theo bộ thủ:</span>
+            <span>{t("vocab.byRadical")}</span>
             <Link
               href={`/radicals/${radical.num}`}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 font-semibold text-blue-600"
@@ -379,11 +376,11 @@ export function VocabListView({
               <span className="hanzi text-lg" lang="zh">
                 {radical.char}
               </span>
-              {radicalLabel(radical)}
+              {radicalLabel(radical, locale)}
             </Link>
             <Button variant="link" size="sm" onClick={() => go({ radical: 0, page: 1 })}>
               <X />
-              Bỏ lọc
+              {t("vocab.clearFilter")}
             </Button>
           </div>
         ) : null}
@@ -396,9 +393,9 @@ export function VocabListView({
               <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                 <Search className="size-7" />
               </span>
-              <h3 className="text-xl font-bold text-navy">Không tìm thấy từ vựng phù hợp</h3>
+              <h3 className="text-xl font-bold text-navy">{t("vocab.noMatch")}</h3>
               <p className="max-w-[420px] text-text-2">
-                Thử từ khoá khác hoặc bỏ bộ lọc{params.q ? ` cho “${params.q}”` : ""}.
+                {params.q ? t("vocab.noMatchHintQ", { q: params.q }) : t("vocab.noMatchHint")}
               </p>
               <Button
                 variant="secondary"
@@ -408,7 +405,7 @@ export function VocabListView({
                 }}
               >
                 <X />
-                Xóa bộ lọc
+                {t("vocab.clearFilters")}
               </Button>
             </div>
           ) : (
@@ -416,7 +413,7 @@ export function VocabListView({
               {/* Thanh thao tác hàng loạt: luôn hiện đủ nút, chỉ đổi bật/tắt theo số từ đã chọn. */}
               <div
                 role="toolbar"
-                aria-label="Thao tác với từ đã chọn"
+                aria-label={t("vocab.bulkToolbar")}
                 className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-border bg-bg px-3 py-2.5"
               >
                 <label className="inline-flex min-w-[150px] cursor-pointer items-center gap-2.5 font-semibold text-text">
@@ -428,60 +425,62 @@ export function VocabListView({
                       if (el) el.indeterminate = onPage > 0 && !allOnPage;
                     }}
                     onChange={(e) => toggleAll(e.target.checked)}
-                    aria-label="Chọn tất cả trên trang"
+                    aria-label={t("vocab.selectAllOnPage")}
                   />
-                  <span aria-live="polite">{selected.size ? `Đã chọn ${selected.size} từ` : "Chưa chọn từ nào"}</span>
+                  <span aria-live="polite">
+                    {selected.size ? t("vocab.selectedCount", { count: selected.size }) : t("vocab.noneSelected")}
+                  </span>
                 </label>
                 {selected.size ? (
                   <Button variant="link" size="sm" onClick={() => setSelected(new Set())}>
-                    Bỏ chọn
+                    {t("vocab.unselect")}
                   </Button>
                 ) : null}
                 <div className="grid w-full grid-cols-2 gap-2 md:ml-auto md:flex md:w-auto">
-                  <BulkButton disabled={!selected.size} hint="Chọn ít nhất 1 từ vựng để ôn tập" onClick={doBulkReview}>
+                  <BulkButton disabled={!selected.size} hint={t("vocab.hintReview")} onClick={doBulkReview}>
                     <PlayCircle />
-                    Ôn tập
+                    {t("vocab.review")}
                   </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 từ vựng để chia sẻ"
+                    hint={t("vocab.hintShare")}
                     onClick={() => openShare([...selected])}
                   >
                     <Share2 />
-                    Chia sẻ
+                    {t("vocab.shareAction")}
                   </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 từ vựng để thêm tag"
+                    hint={t("vocab.hintTag")}
                     onClick={() => setTagFor([...selected])}
                   >
                     <TagIcon />
-                    Thêm tag
+                    {t("vocab.addTag")}
                   </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 từ vựng để đánh dấu"
+                    hint={t("vocab.hintMark")}
                     onClick={() => doBulkStatus("learned")}
                   >
                     <CheckCircle2 />
-                    Đã thuộc
+                    {t("vocab.markLearned")}
                   </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 từ vựng để đánh dấu"
+                    hint={t("vocab.hintMark")}
                     onClick={() => doBulkStatus("review")}
                   >
                     <RefreshCw />
-                    Cần ôn
+                    {t("vocab.markReview")}
                   </BulkButton>
                   <BulkButton
                     danger
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 từ vựng để xóa"
-                    onClick={() => doDelete([...selected], `${selected.size} từ đã chọn`)}
+                    hint={t("vocab.hintDelete")}
+                    onClick={() => doDelete([...selected], t("vocab.selectedWords", { count: selected.size }))}
                   >
                     <Trash2 />
-                    Xóa
+                    {t("vocab.delete")}
                   </BulkButton>
                 </div>
               </div>
@@ -490,21 +489,21 @@ export function VocabListView({
               <div className="hidden overflow-x-auto rounded-md border border-border md:block">
                 <table className="w-full min-w-[900px] border-collapse text-[15.5px]">
                   <caption className="sr-only">
-                    Danh sách từ vựng, trang {data.page}/{data.pageCount}
+                    {t("vocab.caption", { page: data.page, count: data.pageCount })}
                   </caption>
                   <thead>
                     <tr className="bg-[#F3F8FE] text-left [&>th]:px-3 [&>th]:py-3.5 [&>th]:font-semibold [&>th]:whitespace-nowrap">
                       <th className="w-[52px] text-center">
-                        <span className="sr-only">Chọn</span>
+                        <span className="sr-only">{t("vocab.colSelect")}</span>
                       </th>
                       <th className="w-11">#</th>
-                      <th>Từ vựng</th>
-                      <th>Pinyin</th>
-                      <th>Nghĩa tiếng Việt</th>
-                      <th>Ghi chú</th>
-                      <th>Tag</th>
-                      <th>Trạng thái</th>
-                      <th className="w-[1%]">Thao tác</th>
+                      <th>{t("vocab.colWord")}</th>
+                      <th>{t("vocab.colPinyin")}</th>
+                      <th>{t("vocab.colMeaning")}</th>
+                      <th>{t("vocab.colNote")}</th>
+                      <th>{t("vocab.colTag")}</th>
+                      <th>{t("vocab.colStatus")}</th>
+                      <th className="w-[1%]">{t("vocab.colActions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -522,7 +521,7 @@ export function VocabListView({
                             className={checkboxClass}
                             checked={selected.has(v.id)}
                             onChange={(e) => toggle(v.id, e.target.checked)}
-                            aria-label={`Chọn ${v.hanzi}`}
+                            aria-label={t("vocab.selectWord", { word: v.hanzi })}
                           />
                         </td>
                         <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
@@ -548,7 +547,11 @@ export function VocabListView({
                         </td>
                         <td className="whitespace-nowrap">
                           {star(v)}
-                          <Link href={`/vocabulary/${v.id}/edit`} className={iconBtn} aria-label={`Sửa ${v.hanzi}`}>
+                          <Link
+                            href={`/vocabulary/${v.id}/edit`}
+                            className={iconBtn}
+                            aria-label={t("vocab.editWord", { word: v.hanzi })}
+                          >
                             <Pencil />
                           </Link>
                           {rowMenu(v)}
@@ -562,7 +565,7 @@ export function VocabListView({
               {/* Điện thoại: thẻ */}
               <ul
                 className="grid gap-2.5 md:hidden"
-                aria-label={`Danh sách từ vựng, trang ${data.page}/${data.pageCount}`}
+                aria-label={t("vocab.caption", { page: data.page, count: data.pageCount })}
               >
                 {data.items.map((v) => (
                   <li
@@ -578,7 +581,7 @@ export function VocabListView({
                         className={checkboxClass}
                         checked={selected.has(v.id)}
                         onChange={(e) => toggle(v.id, e.target.checked)}
-                        aria-label={`Chọn ${v.hanzi}`}
+                        aria-label={t("vocab.selectWord", { word: v.hanzi })}
                       />
                     </div>
                     <div
@@ -609,7 +612,7 @@ export function VocabListView({
               </ul>
 
               <div className="mt-4 flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
-                <span className="text-[13.5px] text-text-3">{data.total} từ vựng</span>
+                <span className="text-[13.5px] text-text-3">{t("vocab.total", { count: data.total })}</span>
                 <Pager
                   page={data.page}
                   count={data.pageCount}
@@ -626,7 +629,7 @@ export function VocabListView({
 
       <Dialog open={!!noteOf} onOpenChange={(o) => !o && setNoteOf(null)}>
         {noteOf ? (
-          <DialogContent title="Ghi chú" icon={<Eye />} wide>
+          <DialogContent title={t("vocab.noteTitle")} icon={<Eye />} wide>
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-md bg-bg px-4 py-3">
               <span className="hanzi text-2xl" lang="zh">
                 {noteOf.hanzi}
@@ -637,10 +640,10 @@ export function VocabListView({
             <p className="leading-relaxed break-words whitespace-pre-wrap text-text">{noteOf.note}</p>
             <DialogActions>
               <Button variant="secondary" onClick={() => router.push(`/vocabulary/${noteOf.id}/edit`)}>
-                Sửa ghi chú
+                {t("vocab.editNote")}
               </Button>
               <DialogClose asChild>
-                <Button variant="solid">Đóng</Button>
+                <Button variant="solid">{t("common.close")}</Button>
               </DialogClose>
             </DialogActions>
           </DialogContent>
@@ -691,17 +694,18 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 }
 
 function EmptyAll({ onSampled }: { onSampled: () => void }) {
+  const t = useT();
   const [busy, setBusy] = React.useState(false);
   return (
     <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
       <Image src="/brand/lingyu-mascot.png" alt="" width={180} height={120} className="h-auto w-[180px]" />
-      <h3 className="text-xl font-bold text-navy">Chưa có từ vựng nào</h3>
-      <p className="max-w-[420px] text-text-2">Thêm từ vựng đầu tiên để bắt đầu xây dựng kho từ của riêng bạn.</p>
+      <h3 className="text-xl font-bold text-navy">{t("vocab.emptyTitle")}</h3>
+      <p className="max-w-[420px] text-text-2">{t("vocab.emptyDesc")}</p>
       <div className="flex w-full max-w-md flex-col gap-2.5 sm:w-auto sm:flex-row">
         <Button asChild variant="solid">
           <Link href="/vocabulary/new">
             <Plus />
-            Thêm từ vựng
+            {t("vocab.add")}
           </Link>
         </Button>
         <Button
@@ -712,12 +716,12 @@ function EmptyAll({ onSampled }: { onSampled: () => void }) {
             const r = await importSampleAction();
             setBusy(false);
             if (!r.ok) return void toast.error(r.message);
-            toast.success(`Đã thêm ${r.data.added} từ vựng mẫu.`);
+            toast.success(t("vocab.sampleAdded", { count: r.data.added }));
             onSampled();
           }}
         >
           <Database />
-          {busy ? "Đang thêm..." : "Dùng dữ liệu mẫu"}
+          {busy ? t("vocab.sampleAdding") : t("vocab.useSample")}
         </Button>
       </div>
     </div>

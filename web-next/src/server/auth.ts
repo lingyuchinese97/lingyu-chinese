@@ -33,6 +33,7 @@ export const auth = betterAuth({
       role: { type: "string", required: false, defaultValue: "user", input: false },
       disabledAt: { type: "date", required: false, input: false },
       lastLoginAt: { type: "date", required: false, input: false },
+      locale: { type: "string", required: false, input: false },
     },
   },
   session: {

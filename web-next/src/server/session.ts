@@ -3,22 +3,31 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/server/auth";
+import { isLocale, type Locale } from "@/i18n/config";
 
 export type SessionUser = {
   id: string;
   name: string;
   email: string;
   role: "user" | "admin";
+  /** Ngôn ngữ giao diện đã lưu trong tài khoản (null = chưa chọn). */
+  locale: Locale | null;
 };
 
 /** Phiên hiện tại (cache trong 1 request). Null nếu chưa đăng nhập hoặc tài khoản bị khoá. */
 export const getSession = cache(async (): Promise<{ user: SessionUser; sessionId: string } | null> => {
   const s = await auth.api.getSession({ headers: await headers() });
   if (!s) return null;
-  const u = s.user as typeof s.user & { role?: string; disabledAt?: Date | null };
+  const u = s.user as typeof s.user & { role?: string; disabledAt?: Date | null; locale?: string | null };
   if (u.disabledAt) return null;
   return {
-    user: { id: u.id, name: u.name, email: u.email, role: u.role === "admin" ? "admin" : "user" },
+    user: {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role === "admin" ? "admin" : "user",
+      locale: isLocale(u.locale) ? u.locale : null,
+    },
     sessionId: s.session.id,
   };
 });

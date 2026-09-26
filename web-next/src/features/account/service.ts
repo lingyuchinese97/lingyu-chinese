@@ -3,6 +3,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db/client";
 import { account, session, user } from "@/server/db/schema";
+import type { Locale } from "@/i18n/config";
 
 export class AccountError extends Error {
   constructor(
@@ -51,4 +52,9 @@ export async function changePassword(userId: string, keepSessionId: string, curr
 /** Xoá tài khoản (gọi SAU khi đã kiểm tra mật khẩu). Mọi dữ liệu (từ vựng, ảnh, ngữ pháp, tiến độ, phiên...) xoá theo cascade. */
 export async function removeUser(userId: string) {
   await db.delete(user).where(eq(user.id, userId));
+}
+
+/** Lưu ngôn ngữ giao diện của người dùng (đổi máy vẫn giữ). */
+export async function setUserLocale(userId: string, locale: Locale) {
+  await db.update(user).set({ locale }).where(eq(user.id, userId));
 }

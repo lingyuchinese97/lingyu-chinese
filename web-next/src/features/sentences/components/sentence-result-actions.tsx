@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { SentenceConfig } from "../schema";
 import { startSentenceReviewAction } from "../actions";
+import { useT } from "@/i18n/client";
 
 export function SentenceResultActions({ wrongIds, config }: { wrongIds: string[]; config: SentenceConfig }) {
   const router = useRouter();
+  const t = useT();
   const [busy, setBusy] = React.useState(false);
   async function again() {
     setBusy(true);
@@ -20,7 +22,7 @@ export function SentenceResultActions({ wrongIds, config }: { wrongIds: string[]
       showPinyin: config.showPinyin,
       showHint: config.showHint,
       sentenceIds: wrongIds,
-      label: "Ôn lại câu sai",
+      label: t("sentences.resultActions.retryLabel"),
     });
     if (!r.ok) {
       setBusy(false);
@@ -32,10 +34,12 @@ export function SentenceResultActions({ wrongIds, config }: { wrongIds: string[]
     <div className="grid w-full gap-2.5 sm:grid-cols-2">
       <Button variant="secondary" size="lg" onClick={again} disabled={busy || !wrongIds.length}>
         {busy ? <Loader2 className="animate-spin" /> : <RotateCcw />}
-        Ôn lại câu sai{wrongIds.length ? ` (${wrongIds.length})` : ""}
+        {wrongIds.length
+          ? t("sentences.resultActions.retryCount", { count: wrongIds.length })
+          : t("sentences.resultActions.retry")}
       </Button>
       <Button asChild variant="primary" size="lg">
-        <Link href="/sentences">Hoàn thành</Link>
+        <Link href="/sentences">{t("sentences.resultActions.done")}</Link>
       </Button>
     </div>
   );

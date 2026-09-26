@@ -16,11 +16,13 @@ import type { VocabItem } from "../service";
 import { createVocabAction, updateVocabAction } from "../actions";
 import { RadicalPicker } from "./radical-picker";
 import { TagPicker } from "./tag-picker";
+import { useT } from "@/i18n/client";
 
 type Errors = Partial<Record<"hanzi" | "pinyin" | "meaningVi" | "note" | "tags" | "radicals", string>>;
 
 export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: string[] }) {
   const router = useRouter();
+  const t = useT();
   const editing = !!word;
   const [m, setM] = React.useState({
     hanzi: word?.hanzi ?? "",
@@ -46,13 +48,13 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
   React.useEffect(() => {
     if (!hanOnly || m.pinyin.trim()) return;
     let alive = true;
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       const { pinyin } = await import("pinyin-pro");
       if (alive) setSuggest(pinyin(hanOnly, { toneType: "symbol" }));
     }, 250);
     return () => {
       alive = false;
-      clearTimeout(t);
+      clearTimeout(timer);
     };
   }, [hanOnly, m.pinyin]);
   const showSuggest = !!hanOnly && !m.pinyin.trim() && !!suggest;
@@ -84,7 +86,9 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
       requestAnimationFrame(() => alertRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return;
     }
-    toast.success(editing ? `Đã cập nhật “${r.data.hanzi}”.` : `Đã thêm “${r.data.hanzi}” vào danh sách.`);
+    toast.success(
+      editing ? t("vocab.form.updated", { word: r.data.hanzi }) : t("vocab.form.added", { word: r.data.hanzi }),
+    );
     router.push("/vocabulary");
     router.refresh();
   }
@@ -98,26 +102,29 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
       <div className="flex min-w-0 flex-col gap-5">
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight text-navy md:text-[32px]">
-            {editing ? "Sửa từ vựng" : "Thêm từ vựng mới"}
+            {editing ? t("vocab.edit") : t("vocab.addNew")}
           </h1>
           <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">
-            {editing
-              ? "Cập nhật thông tin cho từ vựng của bạn."
-              : "Điền thông tin để thêm từ vựng vào danh sách của bạn."}
+            {editing ? t("vocab.form.editSub") : t("vocab.form.newSub")}
           </p>
         </div>
 
         {formError ? (
           <div ref={alertRef}>
             <Alert tone="error">
-              <strong>Chưa lưu được.</strong> {formError} Dữ liệu bạn nhập vẫn được giữ — hãy bấm “Lưu từ vựng” để thử
-              lại.
+              <strong>{t("vocab.form.notSaved")}</strong> {t.maybe(formError)} {t("vocab.form.keptHint")}
             </Alert>
           </div>
         ) : null}
 
         <div className="grid gap-5 md:grid-cols-2">
-          <FieldBox id="hanzi" label="Hán tự" required hint="Ví dụ: 你" error={errors.hanzi}>
+          <FieldBox
+            id="hanzi"
+            label={t("vocab.form.hanzi")}
+            required
+            hint={t("vocab.form.hanziHint")}
+            error={errors.hanzi}
+          >
             <Input
               id="hanzi"
               lang="zh"
@@ -125,7 +132,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
               value={m.hanzi}
               maxLength={VOCAB.MAX_HANZI}
               onChange={(e) => set("hanzi", e.target.value)}
-              placeholder="Nhập chữ Hán"
+              placeholder={t("vocab.form.hanziPlaceholder")}
               aria-invalid={!!errors.hanzi || undefined}
               aria-required
               aria-describedby="hanzi-hint hanzi-err"
@@ -134,9 +141,9 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
           </FieldBox>
           <FieldBox
             id="pinyin"
-            label="Pinyin"
+            label={t("vocab.form.pinyin")}
             required
-            hint="Gõ số 1–4 sau âm tiết để thêm dấu: ni3 → nǐ, hao3 → hǎo, lv4 → lǜ"
+            hint={t("vocab.form.pinyinHint")}
             error={errors.pinyin}
           >
             <Input
@@ -149,7 +156,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
                   applyToneInput(e.currentTarget, e.nativeEvent instanceof InputEvent && e.nativeEvent.isComposing),
                 )
               }
-              placeholder="Nhập pinyin, vd: ni3 hao3"
+              placeholder={t("vocab.form.pinyinPlaceholder")}
               autoComplete="off"
               autoCapitalize="off"
               spellCheck={false}
@@ -164,7 +171,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
                 className="inline-flex min-h-9 items-center gap-1.5 self-start rounded-lg border border-dashed border-[#A9D3F8] bg-blue-50 px-3 text-sm text-blue-700 hover:bg-blue-100"
               >
                 <Sparkles className="size-4" />
-                Gợi ý: <span className="font-semibold">{suggest}</span> — bấm để điền
+                {t.rich("vocab.form.suggest", { value: <span className="font-semibold">{suggest}</span> })}
               </button>
             ) : null}
           </FieldBox>
@@ -172,7 +179,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="radical-input">
-            Bộ thủ <span className="font-medium text-text-2">(không bắt buộc)</span>
+            {t("vocab.form.radicals")} <span className="font-medium text-text-2">{t("vocab.form.optional")}</span>
           </Label>
           <RadicalPicker
             value={m.radicals}
@@ -181,15 +188,15 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
             describedBy="radical-hint"
           />
           <span id="radical-hint" className="text-[13.5px] text-text-3">
-            Gõ tiếng Việt rồi chọn bộ thủ trong danh sách. Có thể chọn nhiều bộ, hoặc bấm gợi ý từ chữ Hán.
+            {t("vocab.form.radicalHint")}
           </span>
         </div>
 
         <FieldBox
           id="meaningVi"
-          label="Nghĩa tiếng Việt"
+          label={t("vocab.form.meaning")}
           required
-          hint="Ví dụ: bạn, cậu — nhiều nghĩa cách nhau bằng dấu phẩy"
+          hint={t("vocab.form.meaningHint")}
           error={errors.meaningVi}
         >
           <Input
@@ -197,7 +204,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
             value={m.meaningVi}
             maxLength={VOCAB.MAX_MEANING}
             onChange={(e) => set("meaningVi", e.target.value)}
-            placeholder="Nhập nghĩa tiếng Việt"
+            placeholder={t("vocab.form.meaningPlaceholder")}
             autoComplete="off"
             aria-invalid={!!errors.meaningVi || undefined}
             aria-required
@@ -207,7 +214,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="note">
-            Note <span className="font-medium text-text-2">(ghi chú, cách dùng, ví dụ...)</span>
+            {t("vocab.form.note")} <span className="font-medium text-text-2">{t("vocab.form.noteExtra")}</span>
           </Label>
           <Textarea
             id="note"
@@ -219,14 +226,14 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
                 applyToneInput(e.currentTarget, e.nativeEvent instanceof InputEvent && e.nativeEvent.isComposing, true),
               )
             }
-            placeholder="Nhập ghi chú, cách dùng, ví dụ... (gõ ni3 hao3 → nǐ hǎo)"
+            placeholder={t("vocab.form.notePlaceholder")}
             aria-invalid={!!errors.note || undefined}
             aria-describedby="note-hint note-count"
           />
           <div className="flex flex-wrap items-start gap-x-3 gap-y-1 text-[13.5px]">
-            {errors.note ? <span className="text-red">{errors.note}</span> : null}
+            {errors.note ? <span className="text-red">{t.maybe(errors.note)}</span> : null}
             <span id="note-hint" className="text-text-3">
-              Pinyin trong ghi chú cũng tự thêm dấu khi gõ số 1–4 (ni3 → nǐ). “HSK1”, “Bài 2”… giữ nguyên.
+              {t("vocab.form.noteHint")}
             </span>
             <span id="note-count" className="ml-auto text-text-3 tabular-nums">
               {m.note.length}/{VOCAB.MAX_NOTE}
@@ -236,7 +243,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
 
         <div className="flex flex-col gap-1.5">
           <span id="tag-label" className="text-[15px] font-semibold text-text">
-            Tag
+            {t("vocab.form.tag")}
           </span>
           <TagPicker value={m.tags} onChange={(v) => set("tags", v)} allTags={allTags} labelId="tag-label" />
         </div>
@@ -246,11 +253,11 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
         {/* Điện thoại: nút Lưu/Hủy dính ở đáy (màn tập trung không có tab bar). */}
         <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1fr_1.6fr] gap-2.5 border-t border-border bg-white px-4 pt-2.5 pb-[calc(10px+var(--safe-b))] shadow-[0_-6px_20px_rgba(20,60,110,.08)] lg:static lg:mt-auto lg:grid-cols-2 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
           <Button asChild variant="secondary" className="min-h-[50px] lg:min-h-12">
-            <Link href="/vocabulary">Hủy</Link>
+            <Link href="/vocabulary">{t("common.cancel")}</Link>
           </Button>
           <Button type="submit" variant="primary" disabled={saving} className="min-h-[50px] lg:min-h-12">
             {saving ? <Loader2 className="animate-spin" /> : <Save />}
-            {saving ? "Đang lưu..." : "Lưu từ vựng"}
+            {saving ? t("common.saving") : t("vocab.form.save")}
           </Button>
         </div>
       </div>
@@ -273,6 +280,7 @@ function FieldBox({
   error?: string;
   children: React.ReactNode;
 }) {
+  const t = useT();
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <Label htmlFor={id}>
@@ -290,7 +298,7 @@ function FieldBox({
         </span>
       ) : null}
       <span id={`${id}-err`} role="alert" className={cn("text-sm text-red", !error && "hidden")}>
-        {error}
+        {error ? t.maybe(error) : null}
       </span>
     </div>
   );

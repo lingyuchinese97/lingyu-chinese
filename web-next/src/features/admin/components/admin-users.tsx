@@ -11,10 +11,11 @@ import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import type { AdminUser } from "../service";
 import { resetPasswordAction, setDisabledAction } from "../actions";
+import { useIntlTag, useT } from "@/i18n/client";
 
-const fmt = (d: Date | string | null) =>
+const fmt = (d: Date | string | null, tag: string) =>
   d
-    ? new Date(d).toLocaleString("vi-VN", {
+    ? new Date(d).toLocaleString(tag, {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -33,6 +34,8 @@ export function AdminUsers({
   meId: string;
 }) {
   const router = useRouter();
+  const t = useT();
+  const tag = useIntlTag();
   const pathname = usePathname();
   const [confirm, confirmNode] = useConfirm();
   const [q, setQ] = React.useState(initialQ);
@@ -51,15 +54,15 @@ export function AdminUsers({
   );
   React.useEffect(() => {
     if (q.trim() === initialQ) return;
-    const t = setTimeout(() => go({ q: q.trim(), page: 1 }), 300);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => go({ q: q.trim(), page: 1 }), 300);
+    return () => clearTimeout(timer);
   }, [q, initialQ, go]);
 
   async function reset(u: AdminUser) {
     const ok = await confirm({
-      title: "Đặt lại mật khẩu?",
-      message: `Tạo mật khẩu tạm mới cho ${u.email}. Mật khẩu cũ không dùng được nữa và người này bị đăng xuất khỏi mọi thiết bị.`,
-      confirmLabel: "Đặt lại",
+      title: t("admin.resetTitle"),
+      message: t("admin.resetMessage", { email: u.email }),
+      confirmLabel: t("admin.resetConfirm"),
     });
     if (!ok) return;
     const r = await resetPasswordAction(u.id);
@@ -69,37 +72,40 @@ export function AdminUsers({
   async function toggleLock(u: AdminUser) {
     const lock = !u.disabledAt;
     const ok = await confirm({
-      title: lock ? "Khoá tài khoản?" : "Mở khoá tài khoản?",
-      message: lock
-        ? `${u.email} sẽ bị đăng xuất và không đăng nhập được cho tới khi mở khoá.`
-        : `${u.email} sẽ đăng nhập lại được.`,
-      confirmLabel: lock ? "Khoá" : "Mở khoá",
+      title: lock ? t("admin.lockTitle") : t("admin.unlockTitle"),
+      message: lock ? t("admin.lockMessage", { email: u.email }) : t("admin.unlockMessage", { email: u.email }),
+      confirmLabel: lock ? t("admin.lock") : t("admin.unlock"),
       danger: lock,
     });
     if (!ok) return;
     const r = await setDisabledAction(u.id, lock);
     if (!r.ok) return void toast.error(r.message);
-    toast.success(lock ? `Đã khoá ${u.email}.` : `Đã mở khoá ${u.email}.`);
+    toast.success(lock ? t("admin.lockedToast", { email: u.email }) : t("admin.unlockedToast", { email: u.email }));
     start(() => router.refresh());
   }
 
   const actions = (u: AdminUser) =>
     u.id === meId ? (
-      <span className="text-sm text-text-3">Tài khoản của bạn</span>
+      <span className="text-sm text-text-3">{t("admin.yours")}</span>
     ) : (
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="secondary" onClick={() => reset(u)} aria-label={`Đặt lại mật khẩu cho ${u.email}`}>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => reset(u)}
+          aria-label={t("admin.resetFor", { email: u.email })}
+        >
           <KeyRound />
-          Đặt lại mật khẩu
+          {t("admin.reset")}
         </Button>
         <Button
           size="sm"
           variant={u.disabledAt ? "ghost" : "danger-outline"}
           onClick={() => toggleLock(u)}
-          aria-label={`${u.disabledAt ? "Mở khoá" : "Khoá"} ${u.email}`}
+          aria-label={u.disabledAt ? t("admin.unlockFor", { email: u.email }) : t("admin.lockFor", { email: u.email })}
         >
           {u.disabledAt ? <LockOpen /> : <Lock />}
-          {u.disabledAt ? "Mở khoá" : "Khoá"}
+          {u.disabledAt ? t("admin.unlock") : t("admin.lock")}
         </Button>
       </div>
     );
@@ -108,7 +114,7 @@ export function AdminUsers({
       {u.role === "admin" ? (
         <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-0.5 text-[13px] font-semibold text-blue-600">
           <ShieldCheck className="size-3.5" />
-          Quản trị
+          {t("admin.roleAdmin")}
         </span>
       ) : null}
       <span
@@ -117,7 +123,7 @@ export function AdminUsers({
           u.disabledAt ? "bg-red-50 text-red" : "bg-green-50 text-green-700",
         )}
       >
-        {u.disabledAt ? "Đã khoá" : "Hoạt động"}
+        {u.disabledAt ? t("admin.locked") : t("admin.active")}
       </span>
     </span>
   );
@@ -126,43 +132,41 @@ export function AdminUsers({
     <>
       <div>
         <h1 className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]">
-          Quản trị
+          {t("admin.title")}
           <LeafDecor className="w-10" />
         </h1>
-        <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">
-          Quản lý tài khoản người dùng: đặt lại mật khẩu, khoá / mở khoá.
-        </p>
+        <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("admin.subtitle")}</p>
       </div>
       <section
-        aria-label="Người dùng"
+        aria-label={t("admin.users")}
         className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
         <label className="relative block">
-          <span className="sr-only">Tìm theo email hoặc tên</span>
+          <span className="sr-only">{t("admin.search")}</span>
           <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
           <input
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Tìm theo email hoặc tên..."
+            placeholder={t("admin.searchPlaceholder")}
             autoComplete="off"
             className={cn(inputClass, "pl-11")}
           />
         </label>
         <p className="text-sm text-text-2" aria-live="polite">
-          {data.total} người dùng
+          {t("admin.total", { count: data.total })}
         </p>
         <div className={cn("transition-opacity", pending && "opacity-60")}>
           <div className="hidden overflow-x-auto rounded-md border border-border md:block">
             <table className="w-full min-w-[900px] border-collapse text-[15px]">
               <thead>
                 <tr className="bg-[#F3F8FE] text-left [&>th]:px-3 [&>th]:py-3 [&>th]:font-semibold">
-                  <th>Người dùng</th>
-                  <th>Từ vựng</th>
-                  <th>Ngày tạo</th>
-                  <th>Đăng nhập gần nhất</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
+                  <th>{t("admin.colUser")}</th>
+                  <th>{t("admin.colVocab")}</th>
+                  <th>{t("admin.colCreated")}</th>
+                  <th>{t("admin.colLastLogin")}</th>
+                  <th>{t("admin.colStatus")}</th>
+                  <th>{t("admin.colActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -173,8 +177,8 @@ export function AdminUsers({
                       <span className="text-text-2">{u.email}</span>
                     </td>
                     <td className="tabular-nums">{u.vocabCount}</td>
-                    <td className="whitespace-nowrap">{fmt(u.createdAt)}</td>
-                    <td className="whitespace-nowrap">{fmt(u.lastLoginAt)}</td>
+                    <td className="whitespace-nowrap">{fmt(u.createdAt, tag)}</td>
+                    <td className="whitespace-nowrap">{fmt(u.lastLoginAt, tag)}</td>
                     <td>{status(u)}</td>
                     <td>{actions(u)}</td>
                   </tr>
@@ -182,7 +186,7 @@ export function AdminUsers({
               </tbody>
             </table>
           </div>
-          <ul className="flex flex-col gap-3 md:hidden" aria-label="Danh sách người dùng">
+          <ul className="flex flex-col gap-3 md:hidden" aria-label={t("admin.list")}>
             {data.items.map((u) => (
               <li key={u.id} className="flex flex-col gap-2 rounded-xl border border-border bg-white p-3.5">
                 <div className="flex items-start justify-between gap-2">
@@ -193,12 +197,12 @@ export function AdminUsers({
                   {status(u)}
                 </div>
                 <dl className="grid grid-cols-2 gap-1 text-[13.5px] text-text-2">
-                  <dt>Từ vựng</dt>
+                  <dt>{t("admin.colVocab")}</dt>
                   <dd className="text-right text-text">{u.vocabCount}</dd>
-                  <dt>Ngày tạo</dt>
-                  <dd className="text-right text-text">{fmt(u.createdAt)}</dd>
-                  <dt>Đăng nhập</dt>
-                  <dd className="text-right text-text">{fmt(u.lastLoginAt)}</dd>
+                  <dt>{t("admin.colCreated")}</dt>
+                  <dd className="text-right text-text">{fmt(u.createdAt, tag)}</dd>
+                  <dt>{t("admin.lastLogin")}</dt>
+                  <dd className="text-right text-text">{fmt(u.lastLoginAt, tag)}</dd>
                 </dl>
                 {actions(u)}
               </li>
@@ -206,25 +210,23 @@ export function AdminUsers({
           </ul>
         </div>
         {data.pageCount > 1 ? (
-          <nav aria-label="Phân trang" className="flex items-center justify-center gap-3">
+          <nav aria-label={t("ui.pagination")} className="flex items-center justify-center gap-3">
             <Button
               size="icon"
               variant="secondary"
               disabled={data.page <= 1}
               onClick={() => go({ page: data.page - 1 })}
-              aria-label="Trang trước"
+              aria-label={t("ui.prevPage")}
             >
               <ChevronLeft />
             </Button>
-            <span className="text-sm text-text-2">
-              Trang {data.page}/{data.pageCount}
-            </span>
+            <span className="text-sm text-text-2">{t("admin.pageOf", { page: data.page, count: data.pageCount })}</span>
             <Button
               size="icon"
               variant="secondary"
               disabled={data.page >= data.pageCount}
               onClick={() => go({ page: data.page + 1 })}
-              aria-label="Trang sau"
+              aria-label={t("ui.nextPage")}
             >
               <ChevronRight />
             </Button>
@@ -234,14 +236,15 @@ export function AdminUsers({
 
       <Dialog open={!!temp} onOpenChange={(o) => !o && setTemp(null)}>
         {temp ? (
-          <DialogContent title="Mật khẩu tạm" icon={<KeyRound />}>
+          <DialogContent title={t("admin.tempTitle")} icon={<KeyRound />}>
             <p className="text-[15px] text-text-2">
-              Mật khẩu tạm của <strong className="text-text">{temp.email}</strong>. Chỉ hiển thị{" "}
-              <strong className="text-text">một lần</strong> — hãy gửi qua kênh an toàn và nhắc người dùng đổi trong Cài
-              đặt.
+              {t.rich("admin.tempDesc", {
+                email: <strong className="text-text">{temp.email}</strong>,
+                once: <strong className="text-text">{t("admin.once")}</strong>,
+              })}
             </p>
             <div className="flex items-center gap-2 rounded-md bg-bg px-3 py-2.5">
-              <code className="flex-1 font-mono text-lg tracking-wider text-navy" aria-label="Mật khẩu tạm">
+              <code className="flex-1 font-mono text-lg tracking-wider text-navy" aria-label={t("admin.tempLabel")}>
                 {temp.password}
               </code>
               <Button
@@ -250,19 +253,19 @@ export function AdminUsers({
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(temp.password);
-                    toast.success("Đã sao chép mật khẩu tạm.");
+                    toast.success(t("admin.copied"));
                   } catch {
-                    toast.error("Không sao chép được, hãy chép thủ công.");
+                    toast.error(t("admin.copyFailed"));
                   }
                 }}
               >
                 <Copy />
-                Sao chép
+                {t("admin.copy")}
               </Button>
             </div>
             <DialogActions>
               <DialogClose asChild>
-                <Button variant="solid">Đã lưu, đóng</Button>
+                <Button variant="solid">{t("admin.savedClose")}</Button>
               </DialogClose>
             </DialogActions>
           </DialogContent>
