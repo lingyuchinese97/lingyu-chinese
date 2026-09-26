@@ -78,6 +78,19 @@ drizzle/               # migration SQL
 Nguyên tắc bảo mật: mọi Server Action / route kiểm tra session (và role cho admin), Zod cho mọi input, không tin `userId` từ client;
 ghi chú cá nhân, ảnh và dữ liệu của người khác không bao giờ lộ (có test). Header bảo mật + CSP ở `next.config.ts`.
 
+## API
+
+Mọi chức năng mới phải có REST API dưới `/api/v1/...` (quy ước ở [`CLAUDE.md`](CLAUDE.md)). Hiện có:
+
+| Route                      | Việc                                               |
+| -------------------------- | -------------------------------------------------- |
+| `GET /api/health`          | Kiểm tra server + database                         |
+| `/api/auth/*`              | Better Auth (đăng ký, đăng nhập, đăng xuất, phiên) |
+| `GET /api/account/export`  | Xuất dữ liệu của mình                              |
+| `POST /api/account/import` | Nhập dữ liệu (gộp, bỏ qua trùng)                   |
+| `GET /api/hanzi/[char]`    | Dữ liệu nét viết của một chữ Hán                   |
+| `GET /api/images/[id]`     | Ảnh cũ (chỉ chủ ảnh xem được)                      |
+
 ## Thêm bài học mới (ví dụ Bài 2)
 
 Chỉ cần thêm dữ liệu + audio, không phải sửa màn hình:

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- `CLAUDE.md`: quy ước mọi chức năng mới phải có REST API (`/api/v1/...`) dùng chung service với giao diện; mục **API** trong
+  `README.md` liệt kê các route hiện có.
+
 ### Fixed
 
 - Kết quả Ôn dịch câu: mascot không còn đè lên vòng tròn điểm (dùng ảnh nền trong suốt, đặt cạnh vòng tròn).
