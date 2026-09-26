@@ -1,7 +1,9 @@
 import type { Messages } from "@/i18n/messages/vi";
 import {
   AudioLines,
+  BarChart3,
   BookOpen,
+  BookOpenText,
   GraduationCap,
   Headphones,
   House,
@@ -19,29 +21,38 @@ export type NavKey =
   | "radicals"
   | "listening"
   | "pronunciation"
+  | "reading"
+  | "progress"
   | "lessons"
   | "review"
   | "settings"
   | "admin";
-/** Nhãn lấy từ từ điển: `t(\`shell.nav.${key}\`)`. */
-export type NavItem = { key: NavKey; href: string; icon: React.ComponentType<{ className?: string }> };
+/** Nhãn lấy từ từ điển: `t(\`shell.nav.${key}\`)`. `group`: nhóm trên sidebar (có đường kẻ giữa các nhóm). */
+export type NavItem = {
+  key: NavKey;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  group: 1 | 2 | 3;
+};
 
 export const NAV: NavItem[] = [
-  { key: "home", href: "/home", icon: House },
-  { key: "vocabulary", href: "/vocabulary", icon: BookOpen },
-  { key: "sentences", href: "/sentences", icon: MessagesSquare },
-  { key: "grammar", href: "/grammar", icon: GrammarIcon },
-  { key: "radicals", href: "/radicals", icon: RadicalIcon },
-  { key: "listening", href: "/listening", icon: Headphones },
-  { key: "pronunciation", href: "/pronunciation", icon: AudioLines },
-  { key: "lessons", href: "/lessons", icon: GraduationCap },
-  { key: "review", href: "/review/setup", icon: ReviewIcon },
-  { key: "settings", href: "/settings", icon: Settings },
+  { key: "home", href: "/home", icon: House, group: 1 },
+  { key: "vocabulary", href: "/vocabulary", icon: BookOpen, group: 1 },
+  { key: "grammar", href: "/grammar", icon: GrammarIcon, group: 1 },
+  { key: "sentences", href: "/sentences", icon: MessagesSquare, group: 1 },
+  { key: "reading", href: "/reading", icon: BookOpenText, group: 1 },
+  { key: "review", href: "/review/setup", icon: ReviewIcon, group: 1 },
+  { key: "progress", href: "/progress", icon: BarChart3, group: 1 },
+  { key: "lessons", href: "/lessons", icon: GraduationCap, group: 2 },
+  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, group: 2 },
+  { key: "radicals", href: "/radicals", icon: RadicalIcon, group: 2 },
+  { key: "listening", href: "/listening", icon: Headphones, group: 2 },
+  { key: "settings", href: "/settings", icon: Settings, group: 3 },
 ];
-export const ADMIN_NAV: NavItem = { key: "admin", href: "/admin", icon: ShieldCheck };
+export const ADMIN_NAV: NavItem = { key: "admin", href: "/admin", icon: ShieldCheck, group: 3 };
 
-/** Thanh tab dưới đáy (điện thoại): 5 mục; Ôn dịch câu, Bộ thủ, Cài đặt, Quản trị nằm trong menu ☰. */
-export const TAB_KEYS: NavKey[] = ["home", "vocabulary", "grammar", "lessons", "review"];
+/** Thanh tab dưới đáy (điện thoại): 5 mục; các mục khác nằm trong menu ☰. */
+export const TAB_KEYS: NavKey[] = ["home", "vocabulary", "grammar", "review", "progress"];
 
 type QuoteKey = `shell.quote.${keyof Messages["shell"]["quote"]}`;
 const QUOTES: Partial<Record<NavKey, QuoteKey>> = {
@@ -51,6 +62,8 @@ const QUOTES: Partial<Record<NavKey, QuoteKey>> = {
   grammar: "shell.quote.grammar",
   radicals: "shell.quote.radicals",
   listening: "shell.quote.listening",
+  reading: "shell.quote.reading",
+  progress: "shell.quote.progress",
   pronunciation: "shell.quote.pronunciation",
   lessons: "shell.quote.lessons",
   review: "shell.quote.review",

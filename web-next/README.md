@@ -113,6 +113,11 @@ xoá tài khoản, xuất / nhập dữ liệu, số liệu Trang chủ.
 tạo bài tự luyện theo chế độ (câu hỏi kèm đáp án, không lưu điểm), ghi chú phát âm của tôi (thêm / sửa / xoá; ghi chú gắn mục qua
 `topic`; người khác → 404).
 
+**Tiến độ học tập, Tìm kiếm** (`/api/v1/progress*`, `/api/v1/search`): tổng quan (thời gian học, bài học, từ vựng, ngữ pháp,
+kỹ năng, chuỗi ngày, mục tiêu), số liệu hôm nay, thời gian học theo ngày (7 / 30 / 90 ngày), tiến độ từ vựng theo HSK / tag, ngữ
+pháp theo HSK / tag, lịch sử học tập (lọc loại + khoảng thời gian), xem / đổi mục tiêu, nhịp đếm thời gian học, ghi hoạt động luyện
+phát âm; tìm chung trong từ vựng, ngữ pháp, câu của mình + bài học, bộ thủ. Chỉ thấy dữ liệu của chính mình.
+
 **Swagger**: [`/api-docs`](https://lingyuchinese.com/api-docs) liệt kê mọi route, bấm _Try it out_ để gọi thử. File OpenAPI 3.1:
 `/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client. Hai trang này khoá bằng **tài khoản riêng**
 (trình duyệt hỏi tên + mật khẩu), đặt ở biến môi trường `API_DOCS_USER` và `API_DOCS_PASSWORD` (≥ 12 ký tự; Vercel → Settings →

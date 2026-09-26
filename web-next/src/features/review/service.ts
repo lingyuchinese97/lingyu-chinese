@@ -6,6 +6,7 @@
  *  - Ôn đến hạn ("due"): các thẻ FSRS có due ≤ bây giờ. Sai → Again, đúng → Good (có thể đổi Khó/Dễ) → cập nhật lịch.
  */
 import { and, asc, desc, eq, inArray, lte, sql } from "drizzle-orm";
+import { recordActivity } from "@/features/progress/service";
 import { db } from "@/server/db/client";
 import { reviewSession, srsCard, srsReviewLog, vocab, vocabTag, vocabToTag } from "@/server/db/schema";
 import { findMatchingWord, grade, type PromptType } from "@/lib/grading";
@@ -447,10 +448,17 @@ export async function completeSession(userId: string, sessionId: string) {
   if (!row) throw new ReviewError("not-found", "Bài ôn tập không còn tồn tại.");
   const qs = row.questions as StoredQuestion[];
   if (qs.some((q) => q.isCorrect === null)) throw new ReviewError("invalid", "Bạn chưa làm hết các câu.");
-  await db
-    .update(reviewSession)
-    .set({ status: "completed", completedAt: new Date() })
-    .where(eq(reviewSession.id, row.id));
+  const now = new Date();
+  await db.update(reviewSession).set({ status: "completed", completedAt: now }).where(eq(reviewSession.id, row.id));
+  const cfg = row.config as { label?: string };
+  await recordActivity(db, userId, {
+    kind: "vocab_review",
+    title: cfg.label ?? "",
+    refId: row.id,
+    correct: qs.filter((q) => q.isCorrect).length,
+    total: qs.length,
+    durationSec: (now.getTime() - row.startedAt.getTime()) / 1000,
+  });
 }
 
 export async function abandonSession(userId: string) {

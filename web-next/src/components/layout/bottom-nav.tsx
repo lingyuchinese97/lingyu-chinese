@@ -27,7 +27,7 @@ export function BottomNav({ items, active }: { items: NavItem[]; active: NavKey 
             )}
           >
             <Icon className="size-6" />
-            <span>{t(`shell.nav.${it.key}`)}</span>
+            <span>{it.key === "progress" ? t("shell.navShort.progress") : t(`shell.nav.${it.key}`)}</span>
           </Link>
         );
       })}

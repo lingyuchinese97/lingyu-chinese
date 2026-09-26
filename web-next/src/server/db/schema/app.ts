@@ -488,3 +488,70 @@ export const pronunciationNote = pgTable(
     index("pronunciation_note_user_updated_idx").on(t.userId, t.updatedAt),
   ],
 );
+
+// ---------- Tiến độ học tập ----------
+/**
+ * Nhật ký hoạt động học (Lịch sử học tập, Bài học gần đây, số liệu hôm nay). Ghi từ service khi người dùng hoàn thành
+ * một việc (nộp bài ôn, nộp phần bài học, lưu bài nghe...). Hoạt động "thêm từ / thêm ngữ pháp" được gộp theo ngày
+ * (`refId` = ngày) để lịch sử không bị dài.
+ */
+export const studyActivity = pgTable(
+  "study_activity",
+  {
+    id: id(),
+    userId: userRef(),
+    kind: text("kind").notNull(),
+    title: text("title").notNull().default(""),
+    detail: text("detail").notNull().default(""),
+    refId: text("ref_id"),
+    correct: integer("correct"),
+    total: integer("total"),
+    durationSec: integer("duration_sec").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("study_activity_user_created_idx").on(t.userId, t.createdAt),
+    uniqueIndex("study_activity_user_kind_ref_uq")
+      .on(t.userId, t.kind, t.refId)
+      .where(sql`${t.refId} is not null`),
+  ],
+);
+
+/** Thời gian học theo ngày (giờ Việt Nam), cộng dồn từ nhịp "đang học" của trình duyệt / app mỗi phút. */
+export const studyDay = pgTable(
+  "study_day",
+  {
+    userId: userRef(),
+    day: text("day").notNull(),
+    seconds: integer("seconds").notNull().default(0),
+    lastPingAt: timestamp("last_ping_at", { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.day] })],
+);
+
+/** Mục tiêu học tập của người dùng (mỗi loại một mục tiêu). */
+export const studyGoal = pgTable(
+  "study_goal",
+  {
+    userId: userRef(),
+    kind: text("kind").notNull(),
+    target: integer("target").notNull(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.kind] })],
+);
+
+/** Mức nắm ngữ pháp (từ bài Ôn tập ngữ pháp): số lần làm đúng / đã làm của từng ngữ pháp. */
+export const grammarMastery = pgTable(
+  "grammar_mastery",
+  {
+    userId: userRef(),
+    grammarId: uuid("grammar_id")
+      .notNull()
+      .references(() => grammar.id, { onDelete: "cascade" }),
+    correct: integer("correct").notNull().default(0),
+    attempts: integer("attempts").notNull().default(0),
+    lastAt: timestamp("last_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.grammarId] })],
+);

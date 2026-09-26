@@ -1,5 +1,6 @@
 /** Bài làm Luyện nghe – Chép chính tả. Mọi hàm nhận userId của SESSION và lọc theo đó. */
 import { and, asc, count, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { recordActivity } from "@/features/progress/service";
 import { db } from "@/server/db/client";
 import { listeningExercise, listeningTag, listeningToTag } from "@/server/db/schema";
 import { fold } from "@/lib/fold";
@@ -224,6 +225,14 @@ export async function createExercise(userId: string, input: ExerciseInput) {
       .values({ userId, ...exerciseValues(input) })
       .returning({ id: listeningExercise.id });
     await setListeningTags(tx, userId, row!.id, input.tags);
+    const c = compareDictation(input.referenceAnswer, input.userAnswer);
+    await recordActivity(tx, userId, {
+      kind: "listening",
+      title: input.title,
+      refId: row!.id,
+      correct: c.correct,
+      total: c.total,
+    });
     return row!.id;
   });
 }

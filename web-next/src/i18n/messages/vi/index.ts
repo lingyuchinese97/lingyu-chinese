@@ -11,9 +11,12 @@ import { listening } from "./listening";
 import { meta } from "./meta";
 import { notifications } from "./notifications";
 import { pages } from "./pages";
+import { progress } from "./progress";
 import { pronunciation } from "./pronunciation";
 import { radicals } from "./radicals";
+import { reading } from "./reading";
 import { review } from "./review";
+import { search } from "./search";
 import { sentences } from "./sentences";
 import { settings } from "./settings";
 import { shell } from "./shell";
@@ -38,9 +41,12 @@ export const vi = {
   grammar,
   lessons,
   listening,
+  progress,
   pronunciation,
   radicals,
+  reading,
   review,
+  search,
   sentences,
   vocab,
 };
