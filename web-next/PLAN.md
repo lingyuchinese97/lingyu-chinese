@@ -152,6 +152,9 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     năng (không lệch với kiểm tra thật); unit test so danh sách route/method trong `src/app/api/v1` với tài liệu. Swagger UI dùng
     `swagger-ui-dist` tự host (không CDN, hợp CSP `script-src 'self'`), chỉ tải ở trang `/api-docs`. Trang công khai (chỉ là tài
     liệu, không có dữ liệu người dùng, `noindex`); gọi thử vẫn cần đăng nhập vì dùng cookie phiên cùng domain.
+    Sau đó chủ dự án yêu cầu khoá tài liệu bằng mật khẩu riêng: HTTP Basic ở `proxy.ts` (`server/docs-auth.ts`, so sánh thời gian
+    không đổi) với `API_DOCS_USER` / `API_DOCS_PASSWORD` — chọn Basic vì trình duyệt tự hỏi, Postman/curl dùng được, không cần
+    bảng / trang đăng nhập mới. Không đặt biến (hoặc mật khẩu < 12 ký tự) → 404: quên cấu hình thì tài liệu không bao giờ lộ.
 
 ## Chỗ mơ hồ & cách xử lý
 

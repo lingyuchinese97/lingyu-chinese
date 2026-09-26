@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { e2eDbUrl } from "./tests/e2e/db";
+import { E2E_DOCS, e2eDbUrl } from "./tests/e2e/db";
 
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 const baseURL = `http://127.0.0.1:${PORT}`;
@@ -30,7 +30,14 @@ export default defineConfig({
   webServer: {
     // Chạy migration lên DB e2e rồi mới start (biến ở đây ưu tiên hơn .env).
     command: `pnpm db:migrate && pnpm start -p ${PORT}`,
-    env: { DATABASE_URL: e2eDb, BETTER_AUTH_URL: baseURL, NEXT_PUBLIC_APP_URL: baseURL },
+    env: {
+      DATABASE_URL: e2eDb,
+      BETTER_AUTH_URL: baseURL,
+      NEXT_PUBLIC_APP_URL: baseURL,
+      // Tài khoản riêng của trang tài liệu API (chỉ dùng cho test).
+      API_DOCS_USER: E2E_DOCS.username,
+      API_DOCS_PASSWORD: E2E_DOCS.password,
+    },
     url: `${baseURL}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

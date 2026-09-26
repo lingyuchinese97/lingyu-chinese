@@ -3,6 +3,7 @@
 API cho app điện thoại / app khác. Dùng chung logic (service) với giao diện web nên kết quả giống hệt.
 
 **Swagger**: https://lingyuchinese.com/api-docs (xem và gọi thử từng route) · OpenAPI 3.1: https://lingyuchinese.com/api/openapi.json
+— cả hai cần **tài khoản riêng của trang tài liệu** (`API_DOCS_USER` / `API_DOCS_PASSWORD`, hỏi người quản trị), khác tài khoản LingYu.
 
 ## Quy ước chung
 

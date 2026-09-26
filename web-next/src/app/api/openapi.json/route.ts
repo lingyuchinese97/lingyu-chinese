@@ -1,8 +1,9 @@
-/** Tài liệu OpenAPI (công khai, không chứa dữ liệu người dùng) — Swagger UI ở /api-docs đọc file này. */
+/** Tài liệu OpenAPI — Swagger UI ở /api-docs đọc file này. Khoá bằng tài khoản riêng ở proxy (server/docs-auth.ts). */
 import { openApiDocument } from "@/server/openapi";
 
-export const dynamic = "force-static";
+// Không cache tĩnh ở CDN: mỗi request phải qua kiểm tra mật khẩu ở proxy.
+export const dynamic = "force-dynamic";
 
 export function GET() {
-  return Response.json(openApiDocument());
+  return Response.json(openApiDocument(), { headers: { "Cache-Control": "private, no-store" } });
 }
