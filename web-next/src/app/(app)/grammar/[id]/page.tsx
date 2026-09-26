@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { StructureBox } from "@/features/grammar/components/structure-box";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -119,14 +120,7 @@ export default async function GrammarDetailPage({
           {g.meaning ? <p className="whitespace-pre-line text-text">{g.meaning}</p> : null}
         </Section>
         <Section title={t("grammar.detail.structure")} icon={<Layers />} empty={t("grammar.detail.empty")}>
-          {g.structure ? (
-            <div
-              lang="zh"
-              className="inline-block rounded-xl border border-dashed border-[#A9D3F8] bg-blue-50 px-4 py-2.5 font-cn text-lg font-semibold [overflow-wrap:anywhere] text-blue-700"
-            >
-              {g.structure}
-            </div>
-          ) : null}
+          {g.structure ? <StructureBox structure={g.structure} size="lg" /> : null}
         </Section>
         <Section
           title={

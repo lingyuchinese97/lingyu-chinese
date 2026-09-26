@@ -84,6 +84,7 @@ export const errors = {
   // Ngữ pháp
   grammarTitleRequired: "Vui lòng nhập tiêu đề ngữ pháp.",
   grammarTitleMax: "Tiêu đề tối đa {max} ký tự.",
+  grammarStructureLines: "Tối đa {max} dòng cấu trúc.",
   grammarFieldMax: "Tối đa {max} ký tự.",
   grammarExamplesMax: "Tối đa {max} ví dụ.",
   grammarExampleChinese: "Ví dụ {n}: vui lòng nhập câu tiếng Trung.",

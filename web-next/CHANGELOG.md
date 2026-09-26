@@ -6,6 +6,8 @@
 
 ### Added
 
+- **Ngữ pháp: nhiều dòng cấu trúc** — mỗi ngữ pháp có 1 dòng cấu trúc chính và thêm được 1–3 dòng (tối đa 4, mỗi dòng
+  300 ký tự; nút "Thêm dòng cấu trúc" / xoá từng dòng). Lưu chung ô `structure`, mỗi dòng một cấu trúc (dữ liệu cũ vẫn dùng được).
 - **Luyện nghe & Nói – Chép chính tả** (menu “Luyện nghe & Nói”, `/listening`): dán link YouTube (trình phát nhúng chính thức,
   không tải video / không lấy phụ đề) hoặc link file âm thanh / video; chọn đoạn (ô giờ + thanh kéo 2 đầu), tốc độ 0.5x–1.5x, lặp
   lại đoạn, tự chuyển đoạn tiếp theo; **người dùng tự nhập đáp án tham khảo** (ẩn trong lúc chép, có nút Tạo Pinyin); ô chép chính
@@ -39,6 +41,9 @@
 
 ### Changed
 
+- **Trang Ngữ pháp thiết kế lại theo mẫu**: tiêu đề có biểu tượng, số ngữ pháp / Đã lưu / Được chia sẻ dạng nút bấm, câu khẩu
+  hiệu viết tay, logo + mascot LingYu (màn hình rộng); khung cấu trúc nền vàng, biểu tượng cam, chữ đỏ đậm, mỗi dòng một cấu trúc
+  (thẻ danh sách và trang chi tiết); lưới 4 thẻ / hàng trên màn hình rộng.
 - **Tăng tốc**: máy chủ Vercel chạy ở Singapore (`sin1`), cùng vùng với database Neon. Trước đây chạy mặc định ở Mỹ nên mỗi
   truy vấn phải đi vòng qua Thái Bình Dương, làm màn hình phản hồi chậm vài giây.
 - Thanh tải mảnh ở đầu màn hình hiện ngay khi bấm chuyển trang.

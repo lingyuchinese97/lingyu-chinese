@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -8,7 +9,7 @@ import {
   Check,
   Database,
   Eye,
-  Layers,
+  FileText,
   Lightbulb,
   MoreHorizontal,
   Pencil,
@@ -38,6 +39,7 @@ import {
   renameTagAction,
   setBookmarkAction,
 } from "../actions";
+import { StructureBox } from "./structure-box";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
 
@@ -124,24 +126,103 @@ export function GrammarList({
     <>
       <section
         aria-labelledby="gl-title"
-        className="relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F4F9FF_0%,#E9F3FE_60%,#E1EFFD_100%)] px-[18px] py-[22px] md:flex-row md:items-center md:px-8 md:py-7"
+        className="relative overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F6FAFF_0%,#EDF5FE_55%,#E3F0FD_100%)] px-[18px] py-5 md:px-7 md:py-6"
       >
-        <div className="min-w-0 flex-1">
-          <h1
-            id="gl-title"
-            className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]"
-          >
-            {t("grammar.title")}
-            <LeafDecor className="w-10" />
-          </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("grammar.subtitle")}</p>
+        {/* Lá trang trí */}
+        <LeafDecor
+          aria-hidden
+          className="pointer-events-none absolute top-[58%] left-[47%] hidden w-9 -rotate-[25deg] opacity-70 2xl:block"
+        />
+        <LeafDecor
+          aria-hidden
+          className="pointer-events-none absolute bottom-3 left-[55%] hidden w-7 rotate-[35deg] opacity-60 2xl:block"
+        />
+        <LeafDecor
+          aria-hidden
+          className="pointer-events-none absolute top-5 right-[27%] hidden w-7 rotate-12 opacity-60 lg:block"
+        />
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="flex min-w-0 flex-1 items-start gap-4 md:gap-5">
+            <span className="hidden size-[72px] shrink-0 items-center justify-center rounded-[20px] bg-white text-blue-600 shadow-[0_8px_24px_rgba(21,149,245,.14)] sm:flex md:size-[84px]">
+              <FileText className="size-10 md:size-12" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <h1
+                id="gl-title"
+                className="flex items-center gap-3 text-[28px] font-extrabold tracking-tight whitespace-nowrap text-navy-900 md:text-[40px]"
+              >
+                {t("grammar.title")}
+                <LeafDecor className="w-10 md:w-11" />
+              </h1>
+              <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{t("grammar.subtitle")}</p>
+              <div className="mt-4 flex flex-wrap gap-2.5">
+                <HeaderChip
+                  tone="blue"
+                  icon={<BookOpen />}
+                  on={params.view === "all"}
+                  onClick={() => go({ view: "all" })}
+                >
+                  {t("grammar.total", { count: data.totalAll })}
+                </HeaderChip>
+                <HeaderChip
+                  tone="amber"
+                  icon={<Bookmark />}
+                  on={params.view === "saved"}
+                  onClick={() => go({ view: "saved" })}
+                  badge={data.savedCount}
+                >
+                  {t("grammar.viewSaved")}
+                </HeaderChip>
+                <HeaderChip
+                  tone="green"
+                  icon={<Share2 />}
+                  on={params.view === "shared"}
+                  onClick={() => go({ view: "shared" })}
+                  badge={received.length}
+                  alert
+                >
+                  {t("grammar.viewShared")}
+                </HeaderChip>
+              </div>
+            </div>
+          </div>
+
+          <div aria-hidden="true" className="hidden shrink-0 flex-col items-center 2xl:flex">
+            <p className="-rotate-[7deg] text-center font-hand text-[24px] leading-tight font-semibold text-blue-700">
+              {t("grammar.slogan1")}
+              <br />
+              {t("grammar.slogan2")}
+            </p>
+            <svg viewBox="0 0 170 24" className="mt-1 w-[170px] -rotate-[7deg] text-blue-600" fill="none">
+              <path d="M2 20 C 50 6, 110 4, 168 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className="flex shrink-0 flex-col items-stretch gap-3 lg:items-end">
+            <Button asChild variant="solid" size="lg" className="max-lg:w-full">
+              <Link href="/grammar/new">
+                <Plus />
+                {t("grammar.addNew")}
+              </Link>
+            </Button>
+            <div aria-hidden="true" className="hidden items-center gap-1 xl:flex">
+              <Image
+                src="/brand/lingyu-wordmark.png"
+                alt=""
+                width={1579}
+                height={550}
+                className="h-auto w-[200px] xl:w-[230px]"
+              />
+              <Image
+                src="/brand/lingyu-mascot.png"
+                alt=""
+                width={1536}
+                height={1024}
+                className="-my-4 h-auto w-[150px] xl:w-[170px]"
+              />
+            </div>
+          </div>
         </div>
-        <Button asChild variant="solid" className="shrink-0 max-md:w-full">
-          <Link href="/grammar/new">
-            <Plus />
-            {t("grammar.addNew")}
-          </Link>
-        </Button>
       </section>
 
       <section
@@ -280,7 +361,7 @@ export function GrammarList({
           ) : (
             <>
               <p className="mb-3 text-[13.5px] text-text-3">{t("grammar.total", { count: data.total })}</p>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,250px),1fr))] gap-4">
                 {data.items.map((g) => (
                   <GrammarCard
                     key={g.id}
@@ -311,6 +392,55 @@ export function GrammarList({
       <TagManager open={tagsOpen} tags={tags} onClose={() => setTagsOpen(false)} onChanged={refresh} />
       {confirmNode}
     </>
+  );
+}
+
+function HeaderChip({
+  tone,
+  icon,
+  on,
+  onClick,
+  badge,
+  alert,
+  children,
+}: {
+  tone: "blue" | "amber" | "green";
+  icon: React.ReactNode;
+  on: boolean;
+  onClick: () => void;
+  badge?: number;
+  alert?: boolean;
+  children: React.ReactNode;
+}) {
+  const tones = {
+    blue: "bg-[#E6F1FD] text-navy [&_svg]:text-blue-600",
+    amber: "bg-[#FFF3D6] text-navy [&_svg]:text-[#F29A17]",
+    green: "bg-[#E3F7EE] text-navy [&_svg]:text-green-700",
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={cn(
+        "inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] md:min-h-12 md:px-5 [&_svg]:size-5",
+        tones[tone],
+        on ? "ring-2 ring-blue/50" : "hover:brightness-[.98]",
+      )}
+    >
+      {icon}
+      {children}
+      {badge ? (
+        <span
+          className={cn(
+            "rounded-full px-2 text-xs leading-5",
+            alert ? "bg-rose text-white" : "bg-white/80 text-text-2",
+          )}
+        >
+          {badge}
+        </span>
+      ) : null}
+    </button>
   );
 }
 
@@ -406,19 +536,7 @@ function GrammarCard({
           </MenuContent>
         </Menu>
       </div>
-      {g.structure ? (
-        <div className="flex items-center gap-3.5 rounded-[14px] border-[1.5px] border-dashed border-[#F8B9C3] bg-[#FFF1F3] px-3.5 py-2.5">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#FFE3E8] text-rose">
-            <Layers className="size-[26px]" />
-          </span>
-          <span
-            lang="zh"
-            className="min-w-0 font-cn text-[19px] leading-snug font-bold [overflow-wrap:anywhere] text-rose"
-          >
-            {g.structure}
-          </span>
-        </div>
-      ) : null}
+      <StructureBox structure={g.structure} />
       {g.meaning ? (
         <div className="flex items-start gap-3 rounded-xl bg-[#EEF6FF] px-3.5 py-2.5 text-[15.5px]">
           <span className="inline-flex items-center gap-1.5 border-r-2 border-[#C9E1F8] pr-3 font-semibold whitespace-nowrap text-blue-600">

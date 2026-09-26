@@ -41,6 +41,17 @@ describe("ngữ pháp — CRUD", () => {
     expect(parseEmails("A@x.com, b@x.com;a@x.com\nc@x.com")).toEqual(["a@x.com", "b@x.com", "c@x.com"]);
   });
 
+  it("cấu trúc nhiều dòng: bỏ dòng trống, tối đa 4 dòng, mỗi dòng tối đa 300 ký tự", () => {
+    const one = (structure: string) => grammarInputSchema.safeParse({ title: "x", structure });
+    expect(one(" 很 + ADJ \n\n 不太 + ADJ \r\n").data?.structure).toBe("很 + ADJ\n不太 + ADJ");
+    expect(one("a\nb\nc\nd").success).toBe(true);
+    const five = one("a\nb\nc\nd\ne");
+    expect(five.success).toBe(false);
+    expect(five.error!.issues[0]!.message).toBe("Tối đa 4 dòng cấu trúc.");
+    expect(one("x".repeat(301)).success).toBe(false);
+    expect(one("x".repeat(300) + "\n" + "y".repeat(300)).success).toBe(true);
+  });
+
   it("tạo, sửa (giữ thứ tự ví dụ), tìm kiếm bỏ dấu, lọc thẻ, đã lưu", async () => {
     id = await g.createGrammar(
       A.id,
