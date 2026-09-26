@@ -4,11 +4,13 @@ import type HanziWriter from "hanzi-writer";
 import { PenLine, Play, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/client";
 
 type State = "loading" | "ready" | "missing" | "quiz" | "done";
 
 /** Khung chữ + animation nét viết (hanzi-writer, dữ liệu nét lấy từ /api/hanzi/[char] — tự host). */
 export function StrokeWriter({ char, size = 200, className }: { char: string; size?: number; className?: string }) {
+  const t = useT();
   const box = React.useRef<HTMLDivElement>(null);
   const writer = React.useRef<HanziWriter | null>(null);
   const [state, setState] = React.useState<State>("loading");
@@ -86,7 +88,7 @@ export function StrokeWriter({ char, size = 200, className }: { char: string; si
         <div
           ref={box}
           role="img"
-          aria-label={`Chữ ${char}${state === "quiz" ? " — vẽ từng nét vào khung" : ""}`}
+          aria-label={`${t("radicals.writer.char", { char })}${state === "quiz" ? t("radicals.writer.drawHint") : ""}`}
           className={cn("relative touch-none", state === "missing" && "hidden")}
         />
         {state === "missing" ? (
@@ -100,26 +102,28 @@ export function StrokeWriter({ char, size = 200, className }: { char: string; si
         ) : null}
       </div>
       <div aria-live="polite" className="min-h-5 text-center text-sm text-text-2">
-        {state === "loading" && "Đang tải nét viết..."}
-        {state === "missing" && "Chưa có dữ liệu nét viết cho chữ này."}
-        {state === "quiz" && `Vẽ từng nét theo đúng thứ tự.${mistakes ? ` Sai ${mistakes} lần.` : ""}`}
-        {state === "done" && `Hoàn thành! ${mistakes ? `Sai ${mistakes} lần.` : "Không sai nét nào."}`}
+        {state === "loading" && t("radicals.writer.loading")}
+        {state === "missing" && t("radicals.writer.missing")}
+        {state === "quiz" &&
+          `${t("radicals.writer.quiz")}${mistakes ? t("radicals.writer.mistakes", { count: mistakes }) : ""}`}
+        {state === "done" &&
+          `${t("radicals.writer.done")} ${mistakes ? t("radicals.writer.doneMistakes", { count: mistakes }) : t("radicals.writer.perfect")}`}
       </div>
       {state !== "missing" ? (
         <div className="flex flex-wrap justify-center gap-2">
           <Button size="sm" variant="solid" onClick={animate} disabled={state === "loading"}>
             <Play />
-            Xem nét viết
+            {t("radicals.writer.animate")}
           </Button>
           {state === "quiz" || state === "done" ? (
             <Button size="sm" variant="secondary" onClick={reset}>
               <RotateCcw />
-              Làm lại
+              {t("radicals.writer.again")}
             </Button>
           ) : (
             <Button size="sm" variant="secondary" onClick={quiz} disabled={state === "loading"}>
               <PenLine />
-              Luyện viết
+              {t("radicals.writer.practice")}
             </Button>
           )}
         </div>

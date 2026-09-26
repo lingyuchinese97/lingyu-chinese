@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ export function ExerciseRunner({
   nextHref: string;
 }) {
   const router = useRouter();
+  const t = useT();
   const key = `ly-lesson:${lessonId}:${section.id}`;
   const total = section.questions.length;
   const [answers, setAnswers] = React.useState<(number | null)[]>(() => Array(total).fill(null));
@@ -91,7 +93,7 @@ export function ExerciseRunner({
     } catch {
       /* bỏ qua */
     }
-    toast.success(`${section.title}: đúng ${r.data.score}/${r.data.total} câu.`);
+    toast.success(t("lessons.runner.savedToast", { title: section.title, score: r.data.score, total: r.data.total }));
     router.push(nextHref);
   }
 
@@ -107,23 +109,23 @@ export function ExerciseRunner({
               {section.label} • {section.title}
             </span>
             <span className="text-sm font-bold text-navy" aria-live="polite">
-              Câu {index + 1} / {total}
+              {t("lessons.runner.questionOf", { n: index + 1, total })}
             </span>
           </div>
-          <ProgressBar value={index + (answered ? 1 : 0)} max={total} label="Tiến độ phần này" />
+          <ProgressBar value={index + (answered ? 1 : 0)} max={total} label={t("lessons.runner.progress")} />
         </header>
 
         <div className="flex flex-col items-center gap-3 text-center">
           <p className="font-bold text-text-2">{section.instruction}</p>
           <AudioButton key={`${section.id}-${q.id}`} src={q.audio} />
           {q.type === "blend" ? (
-            <p className="text-[32px] font-extrabold tracking-wide text-navy" aria-label={`Ghép âm ${q.parts}`}>
+            <p className="text-[32px] font-extrabold tracking-wide text-navy" aria-label={t("lessons.runner.blend", { parts: q.parts })}>
               {q.parts}
             </p>
           ) : null}
         </div>
 
-        <div role="radiogroup" aria-label="Chọn đáp án" className="grid grid-cols-2 gap-3">
+        <div role="radiogroup" aria-label={t("lessons.runner.choose")} className="grid grid-cols-2 gap-3">
           {q.options.map((opt, i) => {
             const state = !answered ? "idle" : i === q.answer ? "correct" : i === picked ? "wrong" : "disabled";
             return (
@@ -156,9 +158,9 @@ export function ExerciseRunner({
                   </span>
                   <span className="flex-1 text-2xl font-bold text-navy">{opt}</span>
                   {state === "correct" ? (
-                    <CheckCircle2 className="size-6 text-green-700" aria-label="Đáp án đúng" />
+                    <CheckCircle2 className="size-6 text-green-700" aria-label={t("lessons.runner.correctAnswer")} />
                   ) : null}
-                  {state === "wrong" ? <XCircle className="size-6 text-rose" aria-label="Sai" /> : null}
+                  {state === "wrong" ? <XCircle className="size-6 text-rose" aria-label={t("lessons.runner.wrong")} /> : null}
                 </button>
               </div>
             );
@@ -180,18 +182,17 @@ export function ExerciseRunner({
               height={54}
             />
             <div>
-              <p className="font-extrabold">{correct ? "Chính xác! 🎉" : "Chưa đúng!"}</p>
+              <p className="font-extrabold">{correct ? t("lessons.runner.correct") : t("lessons.runner.notCorrect")}</p>
               <p className="text-sm text-text-2">
-                {correct ? (
-                  "Bạn đã chọn đúng đáp án."
-                ) : (
-                  <>
-                    Đáp án đúng là{" "}
-                    <strong className="text-text">
-                      {LABELS[q.answer]}. {q.options[q.answer]}
-                    </strong>
-                  </>
-                )}
+                {correct
+                  ? t("lessons.runner.pickedRight")
+                  : t.rich("lessons.runner.rightIs", {
+                      answer: (
+                        <strong className="text-text">
+                          {LABELS[q.answer]}. {q.options[q.answer]}
+                        </strong>
+                      ),
+                    })}
               </p>
               {q.explanation ? <p className="mt-1 text-sm text-text-2">{q.explanation}</p> : null}
             </div>
@@ -203,12 +204,12 @@ export function ExerciseRunner({
         <Button variant="primary" size="lg" className="w-full md:w-auto" disabled={!answered || saving} onClick={next}>
           {saving ? <Loader2 className="animate-spin" /> : null}
           {saving
-            ? "Đang lưu..."
+            ? t("lessons.runner.saving")
             : isLast
               ? nextHref.endsWith("/result")
-                ? "Xem kết quả"
-                : "Tiếp tục"
-              : "Câu tiếp theo"}
+                ? t("lessons.runner.seeResult")
+                : t("lessons.runner.continue")
+              : t("lessons.runner.next")}
           {saving ? null : <ArrowRight />}
         </Button>
       </div>
@@ -218,6 +219,7 @@ export function ExerciseRunner({
 
 /** Nút nghe lớn. Không có audio → vô hiệu kèm ghi chú (không crash). */
 function AudioButton({ src }: { src?: string }) {
+  const t = useT();
   const audio = React.useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
@@ -252,7 +254,7 @@ function AudioButton({ src }: { src?: string }) {
           type="button"
           onClick={play}
           disabled={missing}
-          aria-label={missing ? "Chưa có audio cho câu này" : playing ? "Đang phát" : "Nghe âm thanh"}
+          aria-label={missing ? t("lessons.runner.noAudio") : playing ? t("lessons.runner.playing") : t("lessons.runner.listen")}
           className="flex size-[66px] items-center justify-center rounded-full bg-[linear-gradient(180deg,#3D9BFF,var(--color-blue))] text-white shadow-[0_6px_14px_rgba(11,95,238,.3)] outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:bg-[#C4D3E3] disabled:bg-none disabled:shadow-none"
         >
           {missing ? (
@@ -265,9 +267,9 @@ function AudioButton({ src }: { src?: string }) {
         </button>
       </span>
       {missing ? (
-        <span className="text-[13px] text-text-3">Câu này chưa có audio — hãy chọn theo hiểu biết của bạn.</span>
+        <span className="text-[13px] text-text-3">{t("lessons.runner.noAudioHint")}</span>
       ) : (
-        <span className="text-[13px] text-text-3">Nhấn để nghe (nghe lại bao nhiêu lần cũng được)</span>
+        <span className="text-[13px] text-text-3">{t("lessons.runner.listenHint")}</span>
       )}
     </div>
   );

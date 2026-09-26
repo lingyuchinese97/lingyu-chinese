@@ -1,4 +1,6 @@
 "use client";
+import { useLocale, useT } from "@/i18n/client";
+import { radicalMeaning, radicalName } from "@/lib/radicals";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,6 +36,9 @@ export function RadicalDetail({
   wordTotal: number;
 }) {
   const router = useRouter();
+  const t = useT();
+  const locale = useLocale();
+  const name = radicalName(r, locale);
   const [known, setKnown] = React.useState(initialKnown);
   const [busy, setBusy] = React.useState(false);
   // Chữ đang hiện trong khung nét viết: mặc định là bộ thủ, bấm chữ ví dụ để xem chữ đó.
@@ -45,11 +50,11 @@ export function RadicalDetail({
     setKnown(on);
     try {
       await setRadicalKnownAction(r.num, on);
-      toast.success(on ? `Đã đánh dấu thuộc bộ ${r.name}.` : "Đã bỏ đánh dấu.");
+      toast.success(on ? t("radicals.markedToast", { name }) : t("radicals.unmarkedToast"));
       router.refresh();
     } catch {
       setKnown(!on);
-      toast.error("Không lưu được. Vui lòng thử lại.");
+      toast.error(t("radicals.saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -65,37 +70,37 @@ export function RadicalDetail({
       <header className="flex flex-wrap items-center gap-4 border-b border-border pb-5 md:gap-7">
         <StrokeWriter key={char} char={char} size={180} />
         <div className="grid min-w-0 flex-[1_1_280px] justify-items-start gap-1.5">
-          <p className="text-[13.5px] font-bold text-text-3">Bộ số {r.num} / 214</p>
+          <p className="text-[13.5px] font-bold text-text-3">{t("radicals.numberOf", { num: r.num })}</p>
           <h1 id="rd-title" className="text-[26px] font-extrabold tracking-tight text-text md:text-[32px]">
-            Bộ {r.name}{" "}
+            {t("radicals.heading", { name })}{" "}
             <span className="hanzi text-navy" lang="zh">
               {r.char}
             </span>
           </h1>
-          <p className="text-lg text-text-2">{r.meaning}</p>
+          <p className="text-lg text-text-2">{radicalMeaning(r, locale)}</p>
           <dl className="my-2 flex flex-wrap gap-x-7 gap-y-2.5">
-            <Fact label="Pinyin">
+            <Fact label={t("radicals.pinyin")}>
               <span className="pinyin">{r.pinyin}</span>
             </Fact>
-            <Fact label="Số nét">{r.strokes}</Fact>
-            <Fact label="Biến thể">
+            <Fact label={t("radicals.strokes")}>{r.strokes}</Fact>
+            <Fact label={t("radicals.variants")}>
               <span className="hanzi text-xl text-navy" lang="zh">
                 {variants.length ? variants.join("　") : "—"}
               </span>
             </Fact>
-            <Fact label="Số chữ trong dữ liệu">{r.charCount}</Fact>
+            <Fact label={t("radicals.charCount")}>{r.charCount}</Fact>
           </dl>
           <Button variant={known ? "secondary" : "solid"} aria-pressed={known} onClick={toggle} disabled={busy}>
             {known ? <CheckCircle2 /> : <Check />}
-            {known ? "Đã thuộc" : "Đánh dấu đã thuộc"}
+            {known ? t("radicals.known") : t("radicals.markKnown")}
           </Button>
         </div>
       </header>
 
-      <Section icon={<FileText />} title={`Chữ thường gặp có bộ ${r.name}`}>
+      <Section icon={<FileText />} title={t("radicals.commonChars", { name })}>
         {examples.length ? (
           <>
-            <p className="mb-2.5 text-sm text-text-3">Bấm vào một chữ để xem cách viết.</p>
+            <p className="mb-2.5 text-sm text-text-3">{t("radicals.tapChar")}</p>
             <ul className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2.5">
               {[{ char: r.char, pinyin: r.pinyin }, ...examples.filter((e) => e.char !== r.char)].map((e) => (
                 <li key={e.char}>
@@ -103,7 +108,7 @@ export function RadicalDetail({
                     type="button"
                     onClick={() => setChar(e.char)}
                     aria-pressed={char === e.char}
-                    aria-label={`Xem cách viết chữ ${e.char}`}
+                    aria-label={t("radicals.showStrokes", { char: e.char })}
                     className={cn(
                       "flex w-full flex-col items-center rounded-xl border bg-white px-1.5 py-2.5 outline-none hover:border-[#A9D3F8] focus-visible:[box-shadow:var(--focus-ring)]",
                       char === e.char ? "border-blue bg-blue-50" : "border-border",
@@ -119,11 +124,11 @@ export function RadicalDetail({
             </ul>
           </>
         ) : (
-          <p className="text-sm text-text-3">Chưa có chữ ví dụ.</p>
+          <p className="text-sm text-text-3">{t("radicals.noExamples")}</p>
         )}
         {moreChars.length ? (
           <p className="mt-3 leading-[1.9]">
-            <span className="text-sm text-text-3">Chữ khác:</span>{" "}
+            <span className="text-sm text-text-3">{t("radicals.otherChars")}</span>{" "}
             <span className="hanzi text-lg tracking-[2px] break-all text-text" lang="zh">
               {moreChars.join(" ")}
             </span>
@@ -131,7 +136,7 @@ export function RadicalDetail({
         ) : null}
       </Section>
 
-      <Section icon={<BookOpen />} title="Từ vựng của bạn có bộ này">
+      <Section icon={<BookOpen />} title={t("radicals.yourWords")}>
         {wordTotal ? (
           <>
             <ul className="mb-3 grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
@@ -151,21 +156,21 @@ export function RadicalDetail({
               ))}
             </ul>
             {wordTotal > words.length ? (
-              <p className="mb-2 text-sm text-text-3">và {wordTotal - words.length} từ khác.</p>
+              <p className="mb-2 text-sm text-text-3">{t("radicals.moreWords", { count: wordTotal - words.length })}</p>
             ) : null}
             <Button asChild size="sm" variant="secondary">
               <Link href={`/vocabulary?radical=${r.num}`}>
                 <List />
-                Xem {wordTotal} từ trong danh sách Từ vựng
+                {t("radicals.seeWords", { count: wordTotal })}
               </Link>
             </Button>
           </>
         ) : (
-          <p className="text-sm text-text-3">Bạn chưa lưu từ vựng nào có bộ {r.name}.</p>
+          <p className="text-sm text-text-3">{t("radicals.noWords", { name })}</p>
         )}
       </Section>
 
-      <nav aria-label="Bộ thủ trước / sau" className="flex flex-wrap justify-between gap-3 pt-3.5">
+      <nav aria-label={t("radicals.prevNext")} className="flex flex-wrap justify-between gap-3 pt-3.5">
         {prev ? (
           <Button asChild variant="secondary">
             <Link href={`/radicals/${prev.num}`}>

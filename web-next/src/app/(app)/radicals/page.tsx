@@ -3,8 +3,11 @@ import { requireUser } from "@/server/session";
 import { RADICALS, searchRadicals } from "@/lib/radicals";
 import { knownRadicals } from "@/features/radicals/service";
 import { RadicalList, type RadicalFilter } from "@/features/radicals/components/radical-list";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Bộ thủ" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("radicals.title") };
+}
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";

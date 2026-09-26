@@ -7,14 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
-import { getLesson } from "@/data/lessons";
+import { getLesson, localizeLesson } from "@/data/lessons";
+import { getLocale, getT } from "@/i18n/server";
 import { progressOf } from "@/features/lessons/service";
 
 type P = Promise<{ lessonId: string }>;
 
 export async function generateMetadata({ params }: { params: P }): Promise<Metadata> {
-  const l = getLesson((await params).lessonId);
-  return { title: l ? `Bài ${l.number}: ${l.title}` : "Không tìm thấy bài học" };
+  const raw = getLesson((await params).lessonId);
+  const t = await getT();
+  const l = raw ? localizeLesson(raw, await getLocale()) : null;
+  return { title: l ? t("lessons.metaTitle", { n: l.number, title: l.title }) : t("lessons.notFound") };
 }
 
 const TONE = {
@@ -25,14 +28,16 @@ const TONE = {
 
 export default async function LessonPage({ params }: { params: P }) {
   const user = await requireUser();
-  const lesson = getLesson((await params).lessonId);
-  if (!lesson) notFound();
+  const raw = getLesson((await params).lessonId);
+  if (!raw) notFound();
+  const t = await getT();
+  const lesson = localizeLesson(raw, await getLocale());
   const progress = (await progressOf(user.id))[lesson.id] ?? {};
   const first = lesson.sections[0]!;
 
   return (
     <>
-      <Breadcrumb back="/lessons" section="Bài học" current={`Bài ${lesson.number}`} />
+      <Breadcrumb back="/lessons" section={t("lessons.title")} current={t("lessons.lessonN", { n: lesson.number })} />
       <section
         aria-labelledby="lh-title"
         className="relative flex min-h-[190px] items-start overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F4F9FF_0%,#E9F3FE_60%,#E1EFFD_100%)] px-5 py-6 md:px-8"
@@ -64,21 +69,21 @@ export default async function LessonPage({ params }: { params: P }) {
             id="lh-content"
             className="inline-block rounded-full bg-[#DFF6E8] px-3.5 py-1.5 text-[13px] font-extrabold text-[#1F6E47]"
           >
-            Nội dung ôn tập
+            {t("lessons.content")}
           </h2>
           <ul className="mt-3 grid grid-cols-3 gap-2 md:gap-4">
             {lesson.highlights.map((h) => {
-              const t = TONE[h.tone];
-              const Icon = t.icon;
+              const tone = TONE[h.tone];
+              const Icon = tone.icon;
               return (
                 <li
                   key={h.label}
                   className="flex flex-col items-center gap-1 rounded-2xl bg-[#EFF7FD] px-1 py-3 text-center"
                 >
-                  <Icon className={cn("size-6", t.text)} aria-hidden="true" />
-                  <span className={cn("text-2xl font-extrabold", t.text)}>{h.value}</span>
+                  <Icon className={cn("size-6", tone.text)} aria-hidden="true" />
+                  <span className={cn("text-2xl font-extrabold", tone.text)}>{h.value}</span>
                   <span className="text-[13px] font-semibold text-text-2">{h.label}</span>
-                  <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", t.tag)}>{h.sample}</span>
+                  <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", tone.tag)}>{h.sample}</span>
                 </li>
               );
             })}
@@ -88,13 +93,18 @@ export default async function LessonPage({ params }: { params: P }) {
 
       <section aria-labelledby="lh-guide" className="rounded-[20px] bg-[#EFF8FD] p-4 md:p-5">
         <h2 id="lh-guide" className="text-[15px] font-extrabold text-navy">
-          Hướng dẫn làm bài
+          {t("lessons.guide")}
         </h2>
         <ol className="mt-3.5 grid grid-cols-3 gap-2 text-center">
           {[
-            { icon: Headphones, color: "bg-[#3A88EE]", title: "Nghe âm thanh", sub: "Nhấn để nghe" },
-            { icon: MousePointerClick, color: "bg-[#16CE8A]", title: "Chọn đáp án", sub: "A, B, C hoặc D" },
-            { icon: Check, color: "bg-[#FEB23A]", title: "Kiểm tra kết quả", sub: "Chuyển câu tiếp theo" },
+            { icon: Headphones, color: "bg-[#3A88EE]", title: t("lessons.guideListen"), sub: t("lessons.guideListenSub") },
+            {
+              icon: MousePointerClick,
+              color: "bg-[#16CE8A]",
+              title: t("lessons.guideChoose"),
+              sub: t("lessons.guideChooseSub"),
+            },
+            { icon: Check, color: "bg-[#FEB23A]", title: t("lessons.guideCheck"), sub: t("lessons.guideCheckSub") },
           ].map((s, i) => (
             <li key={s.title} className="flex flex-col items-center gap-1">
               <span className={cn("flex size-11 items-center justify-center rounded-full text-white", s.color)}>
@@ -111,7 +121,7 @@ export default async function LessonPage({ params }: { params: P }) {
 
       <section aria-labelledby="lh-sections" className="rounded-[20px] bg-white p-4 shadow-card md:p-5">
         <h2 id="lh-sections" className="text-[15px] font-extrabold text-navy">
-          Các phần của bài
+          {t("lessons.parts")}
         </h2>
         <ul className="mt-3 flex flex-col gap-2">
           {lesson.sections.map((s) => {
@@ -125,20 +135,20 @@ export default async function LessonPage({ params }: { params: P }) {
                   <span className="flex-1">
                     <span className="block text-sm font-semibold text-text-3">{s.label}</span>
                     <span className="block font-bold text-text">{s.title}</span>
-                    <span className="block text-sm text-text-2">{s.questions.length} câu</span>
+                    <span className="block text-sm text-text-2">{t("lessons.questions", { count: s.questions.length })}</span>
                   </span>
                   {p ? (
                     <span className="flex flex-col items-end text-sm">
                       <span className="inline-flex items-center gap-1 font-bold text-green-700">
                         <CheckCircle2 className="size-4" />
-                        Cao nhất {p.bestScore}/{p.total}
+                        {t("lessons.best", { score: p.bestScore, total: p.total })}
                       </span>
                       <span className="text-text-3">
-                        Lần gần nhất {p.lastScore}/{p.total}
+                        {t("lessons.last", { score: p.lastScore, total: p.total })}
                       </span>
                     </span>
                   ) : (
-                    <span className="text-sm text-text-3">Chưa làm</span>
+                    <span className="text-sm text-text-3">{t("lessons.notDone")}</span>
                   )}
                   <ArrowRight className="size-5 text-blue-600" aria-hidden="true" />
                 </Link>
@@ -150,7 +160,7 @@ export default async function LessonPage({ params }: { params: P }) {
 
       <Button asChild variant="primary" size="lg" className="w-full md:w-auto md:self-start">
         <Link href={`/lessons/${lesson.id}/${first.id}`}>
-          Bắt đầu ôn tập
+          {t("lessons.startReview")}
           <ArrowRight />
         </Link>
       </Button>

@@ -53,10 +53,11 @@ export const bai1: LessonInput = {
   badge: "ÔN TẬP • BÀI 1",
   title: "Nghe ghép âm",
   subtitle: "Nghe và chọn đáp án đúng nhé!",
+  en: { badge: "REVIEW • LESSON 1", title: "Listen & blend sounds", subtitle: "Listen and choose the right answer!" },
   highlights: [
-    { value: "11", label: "thanh mẫu", sample: "b·p·m·f...", tone: "red" },
-    { value: "10", label: "vận mẫu", sample: "a·o·e·i·u...", tone: "blue" },
-    { value: "4", label: "thanh điệu", sample: "ā á ǎ à", tone: "green" },
+    { value: "11", label: "thanh mẫu", labelEn: "initials", sample: "b·p·m·f...", tone: "red" },
+    { value: "10", label: "vận mẫu", labelEn: "finals", sample: "a·o·e·i·u...", tone: "blue" },
+    { value: "4", label: "thanh điệu", labelEn: "tones", sample: "ā á ǎ à", tone: "green" },
   ],
   sections: [
     {
@@ -64,10 +65,12 @@ export const bai1: LessonInput = {
       label: "Phần 1",
       title: "Nghe & nhận diện",
       instruction: "Nghe và chọn đúng âm bạn vừa nghe được",
+      en: { label: "Part 1", title: "Listen & recognise", instruction: "Listen and choose the sound you heard" },
       questions: listening.map(([, options, answer], i) => ({
         type: "choice-audio",
         id: `q${pad(i + 1)}`,
         prompt: "Nghe và chọn đúng âm bạn vừa nghe được",
+        promptEn: "Listen and choose the sound you heard",
         options,
         answer,
       })),
@@ -77,6 +80,7 @@ export const bai1: LessonInput = {
       label: "Phần 2",
       title: "Ghép âm",
       instruction: "Nghe và chọn cách đọc đúng của âm ghép",
+      en: { label: "Part 2", title: "Blending", instruction: "Listen and choose the correct reading of the blend" },
       questions: blending.map(([parts, options, answer], i) => ({
         type: "blend",
         id: `q${pad(i + 1)}`,

@@ -4,9 +4,11 @@ import { errors } from "./errors";
 import { grammar } from "./grammar";
 import { home } from "./home";
 import { landing } from "./landing";
+import { lessons } from "./lessons";
 import { meta } from "./meta";
 import { notifications } from "./notifications";
 import { pages } from "./pages";
+import { radicals } from "./radicals";
 import { review } from "./review";
 import { sentences } from "./sentences";
 import { settings } from "./settings";
@@ -28,6 +30,8 @@ export const vi = {
   settings,
   pages,
   grammar,
+  lessons,
+  radicals,
   review,
   sentences,
   vocab,

@@ -6,24 +6,33 @@ import { ArrowRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { requireUser } from "@/server/session";
-import { getLesson, nextLesson } from "@/data/lessons";
+import { getLesson, localizeLesson, nextLesson } from "@/data/lessons";
+import { getLocale, getT } from "@/i18n/server";
 import { progressOf } from "@/features/lessons/service";
 import { ProgressBar } from "@/features/lessons/components/progress-bar";
 
 type P = Promise<{ lessonId: string }>;
-export const metadata: Metadata = { title: "Kết quả bài học" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("lessons.result.title") };
+}
 
 export default async function LessonResultPage({ params }: { params: P }) {
   const user = await requireUser();
-  const lesson = getLesson((await params).lessonId);
-  if (!lesson) notFound();
+  const raw = getLesson((await params).lessonId);
+  if (!raw) notFound();
+  const t = await getT();
+  const lesson = localizeLesson(raw, await getLocale());
   const progress = (await progressOf(user.id))[lesson.id] ?? {};
   const next = nextLesson(lesson.id);
   const all = lesson.sections.every((s) => progress[s.id]);
 
   return (
     <>
-      <Breadcrumb back={`/lessons/${lesson.id}`} section={`Bài ${lesson.number}`} current="Kết quả" />
+      <Breadcrumb
+        back={`/lessons/${lesson.id}`}
+        section={t("lessons.lessonN", { n: lesson.number })}
+        current={t("lessons.result.crumb")}
+      />
       <section
         aria-labelledby="lr-title"
         className="flex flex-col items-center gap-2 rounded-[var(--radius-xl)] border border-border bg-white px-4 py-7 text-center shadow-card"
@@ -37,10 +46,12 @@ export default async function LessonResultPage({ params }: { params: P }) {
           </>
         ) : null}
         <h1 id="lr-title" className="text-2xl font-extrabold text-navy">
-          {all ? "Chúc mừng bạn!" : "Kết quả bài học"}
+          {all ? t("lessons.result.congrats") : t("lessons.result.title")}
         </h1>
         <p className="text-text-2">
-          {all ? `Bạn đã hoàn thành Bài ${lesson.number}` : `Làm đủ các phần để hoàn thành Bài ${lesson.number}.`}
+          {all
+            ? t("lessons.result.completed", { n: lesson.number })
+            : t("lessons.result.doAll", { n: lesson.number })}
         </p>
         <Image
           src={all ? "/brand/lesson/mascot_celebrate.png" : "/brand/lingyu-mascot.png"}
@@ -50,7 +61,7 @@ export default async function LessonResultPage({ params }: { params: P }) {
           className="my-2 w-[180px] md:w-[220px]"
         />
         <div className="w-full max-w-[520px] rounded-2xl bg-[#EFF8FD] p-4 text-left">
-          <h2 className="mb-3 text-[15px] font-extrabold text-navy">Kết quả của bạn</h2>
+          <h2 className="mb-3 text-[15px] font-extrabold text-navy">{t("lessons.result.yours")}</h2>
           <ul className="flex flex-col gap-3">
             {lesson.sections.map((s) => {
               const p = progress[s.id];
@@ -61,13 +72,13 @@ export default async function LessonResultPage({ params }: { params: P }) {
                       {s.label}: {s.title}
                     </span>
                     <span className="text-xl font-extrabold text-navy">
-                      {p ? `${p.lastScore} / ${p.total}` : "Chưa làm"}
+                      {p ? `${p.lastScore} / ${p.total}` : t("lessons.notDone")}
                     </span>
                   </span>
-                  <ProgressBar value={p?.lastScore ?? 0} max={s.questions.length} label={`Kết quả ${s.title}`} />
+                  <ProgressBar value={p?.lastScore ?? 0} max={s.questions.length} label={t("lessons.result.sectionResult", { title: s.title })} />
                   {p ? (
                     <span className="text-xs text-text-3">
-                      Cao nhất {p.bestScore}/{p.total} · đã làm {p.attempts} lần
+                      {t("lessons.result.bestAttempts", { score: p.bestScore, total: p.total, attempts: p.attempts })}
                     </span>
                   ) : null}
                 </li>
@@ -79,19 +90,19 @@ export default async function LessonResultPage({ params }: { params: P }) {
           <Button asChild variant="secondary" size="lg">
             <Link href={`/lessons/${lesson.id}/${lesson.sections[0]!.id}`}>
               <RotateCcw />
-              Làm lại bài
+              {t("lessons.result.redo")}
             </Link>
           </Button>
           {next ? (
             <Button asChild variant="primary" size="lg">
               <Link href={`/lessons/${next.id}`}>
-                Tiếp tục Bài {next.number}
+                {t("lessons.result.nextLesson", { n: next.number })}
                 <ArrowRight />
               </Link>
             </Button>
           ) : (
-            <Button variant="primary" size="lg" disabled title="Bài tiếp theo đang được biên soạn">
-              Bài {lesson.number + 1} sắp ra mắt
+            <Button variant="primary" size="lg" disabled title={t("lessons.result.comingTitle")}>
+              {t("lessons.result.coming", { n: lesson.number + 1 })}
             </Button>
           )}
         </div>
