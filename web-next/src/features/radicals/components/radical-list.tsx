@@ -71,9 +71,7 @@ export function RadicalList({
     setKnown((k) => ({ ...k, [r.num]: on }));
     try {
       await setRadicalKnownAction(r.num, on);
-      toast.success(
-        on ? t("radicals.markedToast", { name: radicalName(r, locale) }) : t("radicals.unmarkedToast"),
-      );
+      toast.success(on ? t("radicals.markedToast", { name: radicalName(r, locale) }) : t("radicals.unmarkedToast"));
       start(() => router.refresh());
     } catch {
       setKnown((k) => ({ ...k, [r.num]: !on }));
@@ -100,9 +98,7 @@ export function RadicalList({
             {t("radicals.title")}
             <LeafDecor className="w-10" />
           </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">
-            {t("radicals.subtitle")}
-          </p>
+          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("radicals.subtitle")}</p>
         </div>
         <div
           aria-live="polite"
@@ -204,9 +200,7 @@ export function RadicalList({
                 <Search className="size-7" />
               </span>
               <h2 className="text-lg font-bold text-navy">{t("radicals.noMatch")}</h2>
-              <p className="max-w-md text-text-2">
-                {t("radicals.noMatchHint")}
-              </p>
+              <p className="max-w-md text-text-2">{t("radicals.noMatchHint")}</p>
               <Button variant="secondary" onClick={clear} className="mt-2">
                 <X />
                 {t("radicals.clearFilters")}

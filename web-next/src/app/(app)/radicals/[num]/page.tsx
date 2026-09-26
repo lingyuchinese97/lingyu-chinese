@@ -15,7 +15,9 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const r = parse((await params).num);
   const t = await getT();
   const locale = await getLocale();
-  return { title: r ? t("radicals.metaTitle", { name: radicalName(r, locale), char: r.char }) : t("radicals.notFound") };
+  return {
+    title: r ? t("radicals.metaTitle", { name: radicalName(r, locale), char: r.char }) : t("radicals.notFound"),
+  };
 }
 
 export default async function RadicalPage({ params }: { params: P }) {

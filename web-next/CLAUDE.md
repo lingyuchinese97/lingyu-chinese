@@ -14,6 +14,12 @@ Từ nay, mỗi chức năng mới (hoặc chức năng sửa lớn) ngoài giao
 - Có test (unit cho service, e2e hoặc test gọi route cho quyền truy cập: người lạ → 401, người khác → 404).
 - Ghi route mới vào mục API trong `README.md` và vào `CHANGELOG.md`.
 
+## Song ngữ
+
+Không viết cứng chữ hiển thị: thêm khoá vào `src/i18n/messages/vi/<vùng>.ts` và bản dịch vào `en/<vùng>.ts`, rồi dùng
+`t("vùng.khoá")` (`useT()` ở client, `getT()` ở server). Thông báo lỗi mới của service: viết tiếng Việt như cũ và thêm đúng câu đó
+vào `messages/*/errors.ts` để được dịch.
+
 ## Quy trình mỗi thay đổi
 
 1. `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm e2e` đều phải qua.

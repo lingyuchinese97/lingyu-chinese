@@ -97,7 +97,12 @@ export default async function LessonPage({ params }: { params: P }) {
         </h2>
         <ol className="mt-3.5 grid grid-cols-3 gap-2 text-center">
           {[
-            { icon: Headphones, color: "bg-[#3A88EE]", title: t("lessons.guideListen"), sub: t("lessons.guideListenSub") },
+            {
+              icon: Headphones,
+              color: "bg-[#3A88EE]",
+              title: t("lessons.guideListen"),
+              sub: t("lessons.guideListenSub"),
+            },
             {
               icon: MousePointerClick,
               color: "bg-[#16CE8A]",
@@ -135,7 +140,9 @@ export default async function LessonPage({ params }: { params: P }) {
                   <span className="flex-1">
                     <span className="block text-sm font-semibold text-text-3">{s.label}</span>
                     <span className="block font-bold text-text">{s.title}</span>
-                    <span className="block text-sm text-text-2">{t("lessons.questions", { count: s.questions.length })}</span>
+                    <span className="block text-sm text-text-2">
+                      {t("lessons.questions", { count: s.questions.length })}
+                    </span>
                   </span>
                   {p ? (
                     <span className="flex flex-col items-end text-sm">
@@ -143,9 +150,7 @@ export default async function LessonPage({ params }: { params: P }) {
                         <CheckCircle2 className="size-4" />
                         {t("lessons.best", { score: p.bestScore, total: p.total })}
                       </span>
-                      <span className="text-text-3">
-                        {t("lessons.last", { score: p.lastScore, total: p.total })}
-                      </span>
+                      <span className="text-text-3">{t("lessons.last", { score: p.lastScore, total: p.total })}</span>
                     </span>
                   ) : (
                     <span className="text-sm text-text-3">{t("lessons.notDone")}</span>

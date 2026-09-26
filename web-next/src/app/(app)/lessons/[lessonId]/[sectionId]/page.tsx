@@ -32,7 +32,11 @@ export default async function SectionPage({ params }: { params: P }) {
   const t = await getT();
   return (
     <>
-      <Breadcrumb back={`/lessons/${lesson.id}`} section={t("lessons.lessonN", { n: lesson.number })} current={section.title} />
+      <Breadcrumb
+        back={`/lessons/${lesson.id}`}
+        section={t("lessons.lessonN", { n: lesson.number })}
+        current={section.title}
+      />
       <ExerciseRunner
         key={section.id}
         lessonId={lesson.id}

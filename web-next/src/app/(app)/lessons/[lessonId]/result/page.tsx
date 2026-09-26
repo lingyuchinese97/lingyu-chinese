@@ -49,9 +49,7 @@ export default async function LessonResultPage({ params }: { params: P }) {
           {all ? t("lessons.result.congrats") : t("lessons.result.title")}
         </h1>
         <p className="text-text-2">
-          {all
-            ? t("lessons.result.completed", { n: lesson.number })
-            : t("lessons.result.doAll", { n: lesson.number })}
+          {all ? t("lessons.result.completed", { n: lesson.number }) : t("lessons.result.doAll", { n: lesson.number })}
         </p>
         <Image
           src={all ? "/brand/lesson/mascot_celebrate.png" : "/brand/lingyu-mascot.png"}
@@ -75,7 +73,11 @@ export default async function LessonResultPage({ params }: { params: P }) {
                       {p ? `${p.lastScore} / ${p.total}` : t("lessons.notDone")}
                     </span>
                   </span>
-                  <ProgressBar value={p?.lastScore ?? 0} max={s.questions.length} label={t("lessons.result.sectionResult", { title: s.title })} />
+                  <ProgressBar
+                    value={p?.lastScore ?? 0}
+                    max={s.questions.length}
+                    label={t("lessons.result.sectionResult", { title: s.title })}
+                  />
                   {p ? (
                     <span className="text-xs text-text-3">
                       {t("lessons.result.bestAttempts", { score: p.bestScore, total: p.total, attempts: p.attempts })}

@@ -119,7 +119,10 @@ export function ExerciseRunner({
           <p className="font-bold text-text-2">{section.instruction}</p>
           <AudioButton key={`${section.id}-${q.id}`} src={q.audio} />
           {q.type === "blend" ? (
-            <p className="text-[32px] font-extrabold tracking-wide text-navy" aria-label={t("lessons.runner.blend", { parts: q.parts })}>
+            <p
+              className="text-[32px] font-extrabold tracking-wide text-navy"
+              aria-label={t("lessons.runner.blend", { parts: q.parts })}
+            >
               {q.parts}
             </p>
           ) : null}
@@ -160,7 +163,9 @@ export function ExerciseRunner({
                   {state === "correct" ? (
                     <CheckCircle2 className="size-6 text-green-700" aria-label={t("lessons.runner.correctAnswer")} />
                   ) : null}
-                  {state === "wrong" ? <XCircle className="size-6 text-rose" aria-label={t("lessons.runner.wrong")} /> : null}
+                  {state === "wrong" ? (
+                    <XCircle className="size-6 text-rose" aria-label={t("lessons.runner.wrong")} />
+                  ) : null}
                 </button>
               </div>
             );
@@ -254,7 +259,9 @@ function AudioButton({ src }: { src?: string }) {
           type="button"
           onClick={play}
           disabled={missing}
-          aria-label={missing ? t("lessons.runner.noAudio") : playing ? t("lessons.runner.playing") : t("lessons.runner.listen")}
+          aria-label={
+            missing ? t("lessons.runner.noAudio") : playing ? t("lessons.runner.playing") : t("lessons.runner.listen")
+          }
           className="flex size-[66px] items-center justify-center rounded-full bg-[linear-gradient(180deg,#3D9BFF,var(--color-blue))] text-white shadow-[0_6px_14px_rgba(11,95,238,.3)] outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:bg-[#C4D3E3] disabled:bg-none disabled:shadow-none"
         >
           {missing ? (

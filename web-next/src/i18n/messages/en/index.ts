@@ -1,4 +1,5 @@
 import type { Messages } from "../vi";
+import { admin } from "./admin";
 import { auth } from "./auth";
 import { common } from "./common";
 import { errors } from "./errors";
@@ -29,6 +30,7 @@ export const en: Messages = {
   home,
   settings,
   pages,
+  admin,
   grammar,
   lessons,
   radicals,

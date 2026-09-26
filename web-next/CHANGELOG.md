@@ -6,6 +6,10 @@
 
 ### Added
 
+- **Giao diện tiếng Anh**: đổi Tiếng Việt / English bất cứ lúc nào (menu tài khoản, Cài đặt → Ngôn ngữ, trang đăng nhập và trang
+  giới thiệu). Lựa chọn lưu vào tài khoản (đăng nhập máy khác vẫn giữ) và cookie khi chưa đăng nhập. Toàn bộ màn hình, thông báo
+  lỗi, ngày giờ, số nhiều đều theo ngôn ngữ đã chọn; bộ thủ có nghĩa tiếng Anh và tìm được bằng tiếng Anh ("water"), Bài 1 có
+  bản tiếng Anh. API `GET|PUT /api/v1/me/locale`. Dữ liệu của người dùng (nghĩa tiếng Việt, ghi chú...) giữ nguyên.
 - `CLAUDE.md`: quy ước mọi chức năng mới phải có REST API (`/api/v1/...`) dùng chung service với giao diện; mục **API** trong
   `README.md` liệt kê các route hiện có.
 

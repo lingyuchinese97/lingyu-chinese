@@ -30,9 +30,7 @@ export default async function LessonsPage() {
           {t("lessons.title")}
           <LeafDecor className="w-10" />
         </h1>
-        <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">
-          {t("lessons.subtitle")}
-        </p>
+        <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("lessons.subtitle")}</p>
       </section>
       <ul className="grid gap-4 md:grid-cols-2">
         {LESSONS.map((raw) => {
@@ -51,7 +49,11 @@ export default async function LessonsPage() {
                 <span className="text-[15px] text-text-2">
                   {l.sections.map((s) => `${s.label}: ${s.title}`).join(" · ")}
                 </span>
-                <ProgressBar value={done} max={l.sections.length} label={t("lessons.lessonProgress", { n: l.number })} />
+                <ProgressBar
+                  value={done}
+                  max={l.sections.length}
+                  label={t("lessons.lessonProgress", { n: l.number })}
+                />
                 <span className="flex items-center justify-between text-sm text-text-2">
                   <span className="inline-flex items-center gap-1.5">
                     {done === l.sections.length ? <CheckCircle2 className="size-4 text-green-700" /> : null}
