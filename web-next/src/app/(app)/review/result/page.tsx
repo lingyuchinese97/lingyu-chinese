@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { T } from "@/i18n/translate";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Heart, Star } from "lucide-react";
@@ -6,8 +7,11 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { requireUser } from "@/server/session";
 import { getLastResult } from "@/features/review/service";
 import { ResultActions } from "@/features/review/components/review-result-actions";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Hoàn thành ôn tập" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("review.result.title") };
+}
 export const dynamic = "force-dynamic";
 
 const CONFETTI: [number, number, string, number][] = [
@@ -21,26 +25,26 @@ const CONFETTI: [number, number, string, number][] = [
   [4, 76, "#A6E3FF", -40],
 ];
 
-function message(acc: number): [string, string] {
-  if (acc >= 80)
-    return ["Làm tốt lắm!", "Bạn đã nắm khá vững các từ vựng này. Hãy ôn tập thêm để ngày càng tiến bộ hơn nhé!"];
-  if (acc >= 50) return ["Khá lắm!", "Bạn đã nhớ được hơn một nửa. Ôn lại các từ sai để ghi nhớ chắc hơn nhé!"];
-  return ["Đừng nản lòng!", "Mỗi lần sai là một lần nhớ lâu hơn. Hãy ôn lại các từ chưa đúng ngay nhé!"];
+function message(acc: number, t: T): [string, string] {
+  if (acc >= 80) return [t("review.result.great"), t("review.result.greatDesc")];
+  if (acc >= 50) return [t("review.result.good"), t("review.result.goodDesc")];
+  return [t("review.result.keep"), t("review.result.keepDesc")];
 }
 
 export default async function ReviewResultPage() {
   const user = await requireUser();
+  const t = await getT();
   const s = await getLastResult(user.id);
   if (!s) redirect("/review/setup");
   const total = s.total;
   const ok = s.questions.filter((q) => q.isCorrect).length;
   const wrong = total - ok;
   const acc = total ? Math.round((ok / total) * 100) : 0;
-  const [mTitle, mText] = message(acc);
+  const [mTitle, mText] = message(acc, t);
 
   return (
     <>
-      <Breadcrumb back="/review/setup" section="Ôn tập" current="Hoàn thành ôn tập" />
+      <Breadcrumb back="/review/setup" section={t("review.title")} current={t("review.result.title")} />
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section
           aria-labelledby="rr-title"
@@ -58,14 +62,14 @@ export default async function ReviewResultPage() {
             <span className="absolute right-0 bottom-2 -rotate-6 hand text-2xl text-blue-600">Well Done!</span>
           </div>
           <h1 id="rr-title" className="text-[26px] font-extrabold text-navy md:text-[32px]">
-            Hoàn thành bài ôn tập!
+            {t("review.result.heading")}
           </h1>
-          <p className="-mt-3 text-text-2">Bạn đã hoàn thành {total} câu. Cùng xem kết quả nhé!</p>
+          <p className="-mt-3 text-text-2">{t("review.result.done", { count: total })}</p>
           <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-4">
-            <StatBox value={total} label="Tổng số câu" className="bg-blue-50 text-navy" />
-            <StatBox value={ok} label="Câu đúng" className="bg-green-50 text-green-700" />
-            <StatBox value={wrong} label="Câu sai" className="bg-red-50 text-red" />
-            <StatBox value={`${acc}%`} label="Độ chính xác" className="bg-[#F1EAFF] text-[#6B3FD0]" />
+            <StatBox value={total} label={t("review.result.total")} className="bg-blue-50 text-navy" />
+            <StatBox value={ok} label={t("review.result.correct")} className="bg-green-50 text-green-700" />
+            <StatBox value={wrong} label={t("review.result.wrong")} className="bg-red-50 text-red" />
+            <StatBox value={`${acc}%`} label={t("review.result.accuracy")} className="bg-[#F1EAFF] text-[#6B3FD0]" />
           </div>
           <div className="flex w-full items-start gap-3 rounded-[16px] bg-[#FFF9E8] p-4 text-left">
             <Star className="mt-0.5 size-6 shrink-0 fill-[#F7B500] text-[#F7B500]" aria-hidden="true" />
@@ -75,14 +79,10 @@ export default async function ReviewResultPage() {
             </div>
           </div>
         </section>
-        <aside aria-label="Gợi ý tiếp theo" className="flex flex-col gap-4">
+        <aside aria-label={t("review.result.next")} className="flex flex-col gap-4">
           <ResultActions kind={s.kind} config={s.config} wrongIds={s.wrongVocabIds} />
           <p className="-rotate-2 rounded bg-[#FFF9E8] px-5 py-4 text-center hand text-xl leading-snug shadow-[0_8px_18px_rgba(80,60,20,.1)] max-lg:hidden">
-            “Mỗi nỗ lực nhỏ
-            <br />
-            đều tạo nên
-            <br />
-            sự tiến bộ lớn!”
+            <span className="whitespace-pre-line">{t("review.result.quote")}</span>
             <Heart className="ml-1 inline size-5 text-rose" />
           </p>
         </aside>

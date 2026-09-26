@@ -23,6 +23,7 @@ import { Flashcard } from "@/components/flashcard";
 import { cn } from "@/lib/utils";
 import { COUNTS, MODES, MODE_LABEL, type ReviewMode } from "../schema";
 import { abandonAction, countPoolAction, startCustomAction } from "../actions";
+import { useT } from "@/i18n/client";
 
 type Props = {
   tags: { name: string; count: number }[];
@@ -44,8 +45,9 @@ const MODE_ICON: Record<ReviewMode, React.ReactNode> = {
 
 export function ReviewSetup({ tags, total, last, active }: Props) {
   const router = useRouter();
+  const t = useT();
   const [confirm, confirmNode] = useConfirm();
-  const [sel, setSel] = React.useState<string[]>((last?.tags ?? []).filter((t) => tags.some((x) => x.name === t)));
+  const [sel, setSel] = React.useState<string[]>((last?.tags ?? []).filter((x) => tags.some((y) => y.name === x)));
   const [count, setCount] = React.useState(last?.count ?? 10);
   const [mode, setMode] = React.useState<ReviewMode>(last?.mode ?? "meaning");
   const [avail, setAvail] = React.useState(total);
@@ -64,9 +66,13 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
     };
   }, [sel, total]);
 
-  const opts = COUNTS.map((c) => ({ value: c as number, label: `${c} từ`, disabled: c > avail }));
+  const opts = COUNTS.map((c) => ({
+    value: c as number,
+    label: t("review.setup.countWords", { count: c }),
+    disabled: c > avail,
+  }));
   if (avail > 0 && avail < 50 && !COUNTS.includes(avail as (typeof COUNTS)[number]))
-    opts.push({ value: avail, label: `Tất cả (${avail})`, disabled: false });
+    opts.push({ value: avail, label: t("review.setup.all", { count: avail }), disabled: false });
   const okOpts = opts.filter((o) => !o.disabled);
   const effCount = okOpts.some((o) => o.value === count)
     ? count
@@ -77,9 +83,9 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
     if (busy || !valid) return;
     if (active) {
       const ok = await confirm({
-        title: "Bắt đầu bài mới?",
-        message: "Bài ôn tập đang làm dở sẽ bị bỏ để tạo bài mới.",
-        confirmLabel: "Bắt đầu bài mới",
+        title: t("review.setup.newTitle"),
+        message: t("review.setup.newMessage"),
+        confirmLabel: t("review.setup.newConfirm"),
         icon: <RefreshCw />,
       });
       if (!ok) return;
@@ -88,25 +94,25 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
     const r = await startCustomAction({ tags: sel, count: effCount, mode, showImage: false });
     if (!r.ok) {
       setBusy(false);
-      return void toast.error(r.message || "Không thể tạo bài ôn tập.");
+      return void toast.error(r.message || t("review.setup.createFailed"));
     }
     router.push("/review/session");
   }
 
   async function abandon() {
     const ok = await confirm({
-      title: "Bỏ bài ôn tập đang làm?",
-      message: "Tiến độ của bài đang làm sẽ không được lưu.",
-      confirmLabel: "Bỏ bài",
+      title: t("review.setup.abandonTitle"),
+      message: t("review.setup.abandonMessage"),
+      confirmLabel: t("review.setup.abandonConfirm"),
       danger: true,
     });
     if (!ok) return;
     await abandonAction();
-    toast.info("Đã bỏ bài ôn tập cũ.");
+    toast.info(t("review.setup.abandoned"));
     router.refresh();
   }
 
-  const toggleTag = (t: string) => setSel((s) => (s.includes(t) ? s.filter((x) => x !== t) : [...s, t]));
+  const toggleTag = (name: string) => setSel((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
 
   return (
     <>
@@ -119,15 +125,15 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
             <RefreshCw className="size-5" />
           </span>
           <div className="min-w-0 flex-1 text-[15px] text-text-2">
-            <strong className="block text-navy">Bạn còn một bài ôn tập chưa hoàn thành</strong>
-            Đã làm {active.answered}/{active.total} câu — tiếp tục hoặc bỏ bài để tạo bài mới.
+            <strong className="block text-navy">{t("review.setup.unfinished")}</strong>
+            {t("review.setup.unfinishedDesc", { done: active.answered, total: active.total })}
           </div>
           <div className="flex w-full gap-2 sm:w-auto">
             <Button size="sm" variant="secondary" onClick={abandon} className="flex-1 sm:flex-none">
-              Bỏ bài
+              {t("review.setup.abandonConfirm")}
             </Button>
             <Button size="sm" variant="solid" asChild className="flex-1 sm:flex-none">
-              <Link href="/review/session">Tiếp tục làm bài</Link>
+              <Link href="/review/session">{t("review.setup.resume")}</Link>
             </Button>
           </div>
         </div>
@@ -144,40 +150,34 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
             </span>
             <div>
               <h1 id="rs-title" className="text-[26px] font-extrabold tracking-tight text-navy md:text-[32px]">
-                Thiết lập bài ôn tập
+                {t("review.setup.heading")}
               </h1>
-              <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">
-                Chọn nội dung và hình thức ôn tập phù hợp với mục tiêu của bạn.
-              </p>
+              <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{t("review.setup.sub")}</p>
             </div>
           </div>
 
-          <Step n={1} title="Chọn nguồn từ vựng" desc="Chọn các tag hoặc nhóm từ vựng để ôn tập.">
+          <Step n={1} title={t("review.setup.step1")} desc={t("review.setup.step1Desc")}>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(116px,1fr))] gap-3">
               <CheckChip on={!sel.length} onClick={() => setSel([])}>
-                Tất cả từ vựng
+                {t("review.setup.allVocab")}
               </CheckChip>
-              {tags.map((t) => (
+              {tags.map((tg) => (
                 <CheckChip
-                  key={t.name}
-                  on={sel.includes(t.name)}
-                  onClick={() => toggleTag(t.name)}
-                  title={`${t.count} từ`}
+                  key={tg.name}
+                  on={sel.includes(tg.name)}
+                  onClick={() => toggleTag(tg.name)}
+                  title={t("review.setup.countWords", { count: tg.count })}
                 >
-                  {t.name}
+                  {tg.name}
                 </CheckChip>
               ))}
             </div>
           </Step>
 
-          <Step
-            n={2}
-            title="Số lượng từ cần ôn tập"
-            desc={`Chọn số lượng từ vựng cho mỗi lần ôn tập (hiện có ${avail} từ phù hợp).`}
-          >
+          <Step n={2} title={t("review.setup.step2")} desc={t("review.setup.step2Desc", { count: avail })}>
             <div
               role="radiogroup"
-              aria-label="Số lượng từ"
+              aria-label={t("review.setup.countLabel")}
               className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3"
             >
               {opts.map((o) => (
@@ -186,7 +186,7 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
                   role="radio"
                   on={o.value === effCount}
                   disabled={o.disabled}
-                  title={o.disabled ? `Chỉ có ${avail} từ phù hợp` : undefined}
+                  title={o.disabled ? t("review.setup.onlyAvail", { count: avail }) : undefined}
                   onClick={() => setCount(o.value)}
                 >
                   {o.label}
@@ -195,8 +195,12 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
             </div>
           </Step>
 
-          <Step n={3} title="Hình thức ôn tập" desc="Chọn dạng câu hỏi bạn muốn luyện tập.">
-            <div role="radiogroup" aria-label="Hình thức ôn tập" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Step n={3} title={t("review.setup.step3")} desc={t("review.setup.step3Desc")}>
+            <div
+              role="radiogroup"
+              aria-label={t("review.setup.step3")}
+              className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+            >
               {MODES.map((m) => {
                 const on = m.value === mode;
                 return (
@@ -222,7 +226,7 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
                     >
                       {MODE_ICON[m.value]}
                     </span>
-                    <span className="text-[15px]">{m.label}</span>
+                    <span className="text-[15px]">{t(m.label)}</span>
                     {on ? <Check className="absolute top-2 right-2 size-4 text-blue" aria-hidden="true" /> : null}
                   </button>
                 );
@@ -231,52 +235,46 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
           </Step>
         </section>
 
-        <aside aria-label="Tóm tắt thiết lập" className="flex flex-col gap-5 lg:sticky lg:top-4">
+        <aside aria-label={t("review.setup.summary")} className="flex flex-col gap-5 lg:sticky lg:top-4">
           <div className="overflow-hidden rounded-[var(--radius-xl)] border border-border bg-white/75 shadow-card">
             <div className="flex items-center gap-3.5 bg-[linear-gradient(90deg,#EEF6FF,#F6FAFF)] px-5 py-4 text-xl font-semibold text-text">
               <span className="flex size-11 items-center justify-center rounded-full bg-[#E1EFFD] text-blue-600">
                 <ListChecks className="size-6" />
               </span>
-              Tóm tắt thiết lập
+              {t("review.setup.summary")}
             </div>
             <div aria-live="polite" className="flex flex-col gap-4 bg-white px-5 py-5">
-              <SumRow icon={<TagIcon />} label="Tag từ vựng">
+              <SumRow icon={<TagIcon />} label={t("review.setup.sumTags")}>
                 {sel.length ? (
                   <span className="flex flex-wrap gap-1.5">
-                    {sel.map((t) => (
-                      <Tag key={t} name={t} />
+                    {sel.map((x) => (
+                      <Tag key={x} name={x} />
                     ))}
                   </span>
                 ) : (
-                  "Tất cả từ vựng"
+                  t("review.setup.allVocab")
                 )}
               </SumRow>
-              <SumRow icon={<FileText />} label="Số lượng từ">
-                {effCount ? `${effCount} từ` : "—"}
+              <SumRow icon={<FileText />} label={t("review.setup.sumCount")}>
+                {effCount ? t("review.setup.countWords", { count: effCount }) : "—"}
               </SumRow>
-              <SumRow icon={<BookOpen />} label="Hình thức ôn tập">
-                {MODE_LABEL[mode]}
+              <SumRow icon={<BookOpen />} label={t("review.setup.sumMode")}>
+                {t(MODE_LABEL[mode])}
               </SumRow>
-              <p className="text-center hand text-lg leading-snug">
-                “Ôn tập hôm nay
-                <br />
-                là tiến bộ lớn của ngày mai.”
-              </p>
+              <p className="text-center hand text-lg leading-snug whitespace-pre-line">{t("review.setup.quote")}</p>
             </div>
           </div>
           <div aria-hidden="true" className="hidden justify-center py-2 lg:flex">
-            <Flashcard hanzi="学习" pinyin="xué xí" meaning="học tập" />
+            <Flashcard hanzi="学习" pinyin="xué xí" meaning={t("review.setup.flashMeaning")} />
           </div>
           <div className="max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(var(--tabbar-h)+var(--safe-b))] max-lg:z-30 max-lg:border-t max-lg:border-border max-lg:bg-white max-lg:px-4 max-lg:py-2.5 md:max-lg:bottom-0">
             <Button variant="solid" size="lg" block disabled={!valid || busy} onClick={start}>
               {busy ? <Loader2 className="animate-spin" /> : <Play />}
-              {busy ? "Đang chuẩn bị..." : "Bắt đầu ôn tập"}
+              {busy ? t("review.setup.preparing") : t("review.setup.start")}
               {!busy ? <ArrowRight /> : null}
             </Button>
             {!valid ? (
-              <p className="mt-1.5 text-center text-[13.5px] text-text-3">
-                Không có từ vựng nào trong các tag đã chọn.
-              </p>
+              <p className="mt-1.5 text-center text-[13.5px] text-text-3">{t("review.setup.noneInTags")}</p>
             ) : null}
           </div>
         </aside>

@@ -8,6 +8,7 @@ import { landing } from "./landing";
 import { meta } from "./meta";
 import { notifications } from "./notifications";
 import { pages } from "./pages";
+import { review } from "./review";
 import { sentences } from "./sentences";
 import { settings } from "./settings";
 import { shell } from "./shell";
@@ -27,6 +28,7 @@ export const en: Messages = {
   settings,
   pages,
   grammar,
+  review,
   sentences,
   vocab,
 };
