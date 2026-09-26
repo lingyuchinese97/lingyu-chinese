@@ -59,7 +59,7 @@ export function TagPicker({
         <Popover.Content
           align="start"
           sideOffset={6}
-          className="z-[60] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-24px)] min-w-[280px] rounded-lg border border-border bg-white p-2 shadow-card"
+          className="z-[90] w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-24px)] min-w-[280px] rounded-lg border border-border bg-white p-2 shadow-card"
         >
           <div role="group" aria-label={tr("vocab.tags.list")} className="flex max-h-[240px] flex-col overflow-y-auto">
             {names.length ? (

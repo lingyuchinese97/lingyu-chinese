@@ -20,15 +20,33 @@ import { useT } from "@/i18n/client";
 
 type Errors = Partial<Record<"hanzi" | "pinyin" | "meaningVi" | "note" | "tags" | "radicals", string>>;
 
-export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: string[] }) {
+/**
+ * Form thêm / sửa từ vựng. Dùng ở trang Từ vựng, và nhúng trong hộp thoại ở nơi khác (vd "Lưu vào Từ vựng" từ bài chép
+ * chính tả) với `embedded` + `initial` + `onDone` / `onCancel` — vẫn lưu vào kho Từ vựng chung, cùng kiểm tra dữ liệu.
+ */
+export function VocabForm({
+  word,
+  allTags,
+  initial,
+  embedded,
+  onDone,
+  onCancel,
+}: {
+  word: VocabItem | null;
+  allTags: string[];
+  initial?: Partial<Record<"hanzi" | "pinyin" | "meaningVi" | "note", string>>;
+  embedded?: boolean;
+  onDone?: (saved: { hanzi: string }) => void;
+  onCancel?: () => void;
+}) {
   const router = useRouter();
   const t = useT();
   const editing = !!word;
   const [m, setM] = React.useState({
-    hanzi: word?.hanzi ?? "",
-    pinyin: word?.pinyin ?? "",
-    meaningVi: word?.meaningVi ?? "",
-    note: word?.note ?? "",
+    hanzi: word?.hanzi ?? initial?.hanzi ?? "",
+    pinyin: word?.pinyin ?? initial?.pinyin ?? "",
+    meaningVi: word?.meaningVi ?? initial?.meaningVi ?? "",
+    note: word?.note ?? initial?.note ?? "",
     tags: word?.tags ?? [],
     radicals: word?.radicals ?? [],
   });
@@ -89,6 +107,7 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
     toast.success(
       editing ? t("vocab.form.updated", { word: r.data.hanzi }) : t("vocab.form.added", { word: r.data.hanzi }),
     );
+    if (onDone) return onDone({ hanzi: r.data.hanzi });
     router.push("/vocabulary");
     router.refresh();
   }
@@ -97,10 +116,13 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
     <form
       onSubmit={onSubmit}
       noValidate
-      className="relative grid gap-6 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-7 lg:gap-6"
+      className={cn(
+        "relative grid gap-6 lg:gap-6",
+        !embedded && "rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-7",
+      )}
     >
       <div className="flex min-w-0 flex-col gap-5">
-        <div>
+        <div className={cn(embedded && "hidden")}>
           <h1 className="text-[26px] font-extrabold tracking-tight text-navy md:text-[32px]">
             {editing ? t("vocab.edit") : t("vocab.addNew")}
           </h1>
@@ -251,10 +273,23 @@ export function VocabForm({ word, allTags }: { word: VocabItem | null; allTags: 
 
       <div className="flex flex-col gap-4">
         {/* Điện thoại: nút Lưu/Hủy dính ở đáy (màn tập trung không có tab bar). */}
-        <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1fr_1.6fr] gap-2.5 border-t border-border bg-white px-4 pt-2.5 pb-[calc(10px+var(--safe-b))] shadow-[0_-6px_20px_rgba(20,60,110,.08)] lg:static lg:mt-auto lg:grid-cols-2 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
-          <Button asChild variant="secondary" className="min-h-[50px] lg:min-h-12">
-            <Link href="/vocabulary">{t("common.cancel")}</Link>
-          </Button>
+        <div
+          className={cn(
+            "grid gap-2.5",
+            embedded
+              ? "grid-cols-[1fr_1.6fr] sm:grid-cols-2"
+              : "fixed inset-x-0 bottom-0 z-40 grid-cols-[1fr_1.6fr] border-t border-border bg-white px-4 pt-2.5 pb-[calc(10px+var(--safe-b))] shadow-[0_-6px_20px_rgba(20,60,110,.08)] lg:static lg:mt-auto lg:grid-cols-2 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none",
+          )}
+        >
+          {onCancel ? (
+            <Button type="button" variant="secondary" className="min-h-[50px] lg:min-h-12" onClick={onCancel}>
+              {t("common.cancel")}
+            </Button>
+          ) : (
+            <Button asChild variant="secondary" className="min-h-[50px] lg:min-h-12">
+              <Link href="/vocabulary">{t("common.cancel")}</Link>
+            </Button>
+          )}
           <Button type="submit" variant="primary" disabled={saving} className="min-h-[50px] lg:min-h-12">
             {saving ? <Loader2 className="animate-spin" /> : <Save />}
             {saving ? t("common.saving") : t("vocab.form.save")}

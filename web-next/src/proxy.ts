@@ -33,6 +33,7 @@ export const config = {
     "/sentences/:path*",
     "/grammar/:path*",
     "/radicals/:path*",
+    "/listening/:path*",
     "/review/:path*",
     "/lessons/:path*",
     "/settings/:path*",

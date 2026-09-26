@@ -28,7 +28,7 @@ export const settings = {
   imported: "Đã nhập {vocab} từ vựng và {grammar} ngữ pháp.",
   importDone: "Đã nhập xong:",
   importReport:
-    "Từ vựng: thêm {va}, bỏ qua {vs} · Ngữ pháp: thêm {ga}, bỏ qua {gs} · Câu: thêm {sa}, bỏ qua {ss} · Ảnh: {img} · Bộ thủ đã thuộc: {rad} · Tiến độ bài học: {les}",
+    "Từ vựng: thêm {va}, bỏ qua {vs} · Ngữ pháp: thêm {ga}, bỏ qua {gs} · Câu: thêm {sa}, bỏ qua {ss} · Bài luyện nghe: thêm {la}, bỏ qua {ls} · Ảnh: {img} · Bộ thủ đã thuộc: {rad} · Tiến độ bài học: {les}",
   sample: "Dữ liệu mẫu",
   sampleDesc: "Thêm các từ vựng HSK mẫu để thử tính năng ôn tập.",
   sampleAdd: "Thêm dữ liệu mẫu",

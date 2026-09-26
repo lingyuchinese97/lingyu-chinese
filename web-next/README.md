@@ -1,7 +1,7 @@
 # LingYu Chinese — bản Next.js (`web-next/`)
 
 Ứng dụng học tiếng Trung: từ vựng, ôn tập tự chọn + ôn đến hạn (FSRS), ôn dịch câu, ngữ pháp, bộ thủ (nét viết),
-bài học, chia sẻ giữa người dùng, thông báo, cài đặt (xuất / nhập dữ liệu), quản trị. Giao diện tiếng Việt, ưu tiên điện thoại,
+luyện nghe – chép chính tả, bài học, chia sẻ giữa người dùng, thông báo, cài đặt (xuất / nhập dữ liệu), quản trị. Giao diện tiếng Việt, ưu tiên điện thoại,
 cài được như app (PWA).
 
 - Đang chạy: **https://www.lingyuchinese.com** (Vercel + Neon; bản cũ ở https://old.lingyuchinese.com). Triển khai / chuyển VPS / sao lưu: [`docs/DEPLOY.md`](../docs/DEPLOY.md).
@@ -14,6 +14,8 @@ mẫu shadcn/ui (Radix), Postgres + Drizzle ORM, Better Auth (email + mật kh�
 tự host), Serwist (PWA), pino. Test: Vitest (Postgres thật) + Playwright (iPhone / Android / desktop) + axe.
 
 Không phụ thuộc dịch vụ bên thứ ba ngoài Postgres: font, audio, dữ liệu nét chữ đều tự host; ảnh lưu trong DB (storage adapter).
+Ngoại lệ duy nhất: màn Luyện nghe phát video YouTube bằng **trình phát nhúng chính thức** (youtube-nocookie) khi người dùng dán link —
+không tải video / âm thanh về, không tách MP3, không cache, không lấy phụ đề.
 
 ## Chạy trên máy
 
@@ -95,6 +97,11 @@ Mọi chức năng mới phải có REST API dưới `/api/v1/...` (quy ước �
 **Từ vựng và Ôn tập** (`/api/v1/vocab/*`, `/api/v1/review/*`): thêm / sửa / xoá / tìm từ, tag, thống kê, thao tác hàng loạt,
 chia sẻ; tạo bài ôn tự chọn hoặc đến hạn, trả lời, đánh giá Khó/Được/Dễ, nộp bài. Danh sách route, dạng request/response và cách
 đăng nhập từ app khác: [`docs/API.md`](docs/API.md).
+
+**Luyện nghe** (`/api/v1/listening/*`): bài làm của tôi (tìm, lọc thẻ, sắp xếp), lưu / xem / sửa / xoá bài làm (server tự so sánh và
+chấm điểm), thẻ, so sánh bài chép với đáp án. **Quản trị** (`/api/v1/admin/*`, chỉ admin — người thường nhận 403): số liệu tổng
+(tổng số người dùng, admin, bị khoá, mới / hoạt động 7 ngày, tổng nội dung), danh sách người dùng, thông tin một người dùng (hồ sơ +
+số lượng nội dung, không có nội dung học).
 
 **Swagger**: [`/api-docs`](https://lingyuchinese.com/api-docs) liệt kê mọi route, bấm _Try it out_ để gọi thử. File OpenAPI 3.1:
 `/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client. Hai trang này khoá bằng **tài khoản riêng**

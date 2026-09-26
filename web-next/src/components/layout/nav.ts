@@ -1,9 +1,18 @@
 import type { Messages } from "@/i18n/messages/vi";
-import { BookOpen, GraduationCap, House, MessagesSquare, Settings, ShieldCheck } from "lucide-react";
+import { BookOpen, GraduationCap, Headphones, House, MessagesSquare, Settings, ShieldCheck } from "lucide-react";
 import { GrammarIcon, RadicalIcon, ReviewIcon } from "./icons";
 
 export type NavKey =
-  "home" | "vocabulary" | "sentences" | "grammar" | "radicals" | "lessons" | "review" | "settings" | "admin";
+  | "home"
+  | "vocabulary"
+  | "sentences"
+  | "grammar"
+  | "radicals"
+  | "listening"
+  | "lessons"
+  | "review"
+  | "settings"
+  | "admin";
 /** Nhãn lấy từ từ điển: `t(\`shell.nav.${key}\`)`. */
 export type NavItem = { key: NavKey; href: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -13,6 +22,7 @@ export const NAV: NavItem[] = [
   { key: "sentences", href: "/sentences", icon: MessagesSquare },
   { key: "grammar", href: "/grammar", icon: GrammarIcon },
   { key: "radicals", href: "/radicals", icon: RadicalIcon },
+  { key: "listening", href: "/listening", icon: Headphones },
   { key: "lessons", href: "/lessons", icon: GraduationCap },
   { key: "review", href: "/review/setup", icon: ReviewIcon },
   { key: "settings", href: "/settings", icon: Settings },
@@ -29,6 +39,7 @@ const QUOTES: Partial<Record<NavKey, QuoteKey>> = {
   sentences: "shell.quote.sentences",
   grammar: "shell.quote.grammar",
   radicals: "shell.quote.radicals",
+  listening: "shell.quote.listening",
   lessons: "shell.quote.lessons",
   review: "shell.quote.review",
   settings: "shell.quote.default",

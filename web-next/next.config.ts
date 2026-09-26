@@ -5,17 +5,20 @@ const isDev = process.env.NODE_ENV !== "production";
 const isHttps = (process.env.BETTER_AUTH_URL ?? "").startsWith("https://");
 
 /**
- * CSP: chỉ tải tài nguyên từ chính app (font, audio, dữ liệu nét chữ đều tự host).
+ * CSP: chỉ tải tài nguyên từ chính app (font, audio, dữ liệu nét chữ đều tự host). Ngoại lệ cho Luyện nghe:
+ * trình phát nhúng chính thức của YouTube (script iframe_api + khung youtube-nocookie) và file âm thanh / video
+ * người dùng dán link (media-src https:) — phát trực tiếp, không tải về, không cache.
  * `'unsafe-inline'` cho script vì Next nhúng dữ liệu RSC bằng script inline (không dùng nonce để trang vẫn cache tĩnh được);
  * `'unsafe-eval'` chỉ bật khi dev (React Refresh).
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  "media-src 'self' blob:",
+  "media-src 'self' blob: https:",
+  "frame-src https://www.youtube-nocookie.com https://www.youtube.com",
   "connect-src 'self'",
   "worker-src 'self'",
   "manifest-src 'self'",

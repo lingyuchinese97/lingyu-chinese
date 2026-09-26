@@ -411,3 +411,55 @@ export const sentenceSession = pgTable(
   },
   (t) => [index("sentence_session_user_status_idx").on(t.userId, t.status)],
 );
+
+// ---------- Luyện nghe – Chép chính tả ----------
+/**
+ * Bài làm luyện nghe. Đáp án tham khảo do NGƯỜI DÙNG nhập (không lấy phụ đề). Kết quả so sánh + điểm luôn do server tính
+ * lại từ `referenceAnswer` + `userAnswer` bằng `lib/dictation-compare` (không tin điểm client gửi).
+ * `formattedUserAnswer` = định dạng người dùng tự tô (bút đỏ / bôi vàng), tách khỏi `comparisonResult`.
+ */
+export const listeningExercise = pgTable(
+  "listening_exercise",
+  {
+    id: id(),
+    userId: userRef(),
+    title: text("title").notNull(),
+    contentUrl: text("content_url").notNull().default(""),
+    segmentStart: doublePrecision("segment_start"),
+    segmentEnd: doublePrecision("segment_end"),
+    playbackSpeed: doublePrecision("playback_speed").notNull().default(1),
+    referenceAnswer: text("reference_answer").notNull(),
+    referencePinyin: text("reference_pinyin").notNull().default(""),
+    userAnswer: text("user_answer").notNull().default(""),
+    formattedUserAnswer: jsonb("formatted_user_answer").notNull().default([]),
+    comparisonResult: jsonb("comparison_result").notNull(),
+    scoreCorrect: integer("score_correct").notNull().default(0),
+    scoreTotal: integer("score_total").notNull().default(0),
+    scorePercent: smallint("score_percent").notNull().default(0),
+    notes: text("notes").notNull().default(""),
+    /** Tiêu đề + ghi chú bỏ dấu để tìm không dấu, tính lại mỗi lần ghi. */
+    searchFold: text("search_fold").notNull().default(""),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("listening_exercise_user_created_idx").on(t.userId, t.createdAt)],
+);
+
+export const listeningTag = pgTable(
+  "listening_tag",
+  { id: id(), userId: userRef(), name: text("name").notNull(), createdAt: createdAt() },
+  (t) => [uniqueIndex("listening_tag_user_name_uq").on(t.userId, sql`lower(${t.name})`)],
+);
+
+export const listeningToTag = pgTable(
+  "listening_to_tag",
+  {
+    exerciseId: uuid("exercise_id")
+      .notNull()
+      .references(() => listeningExercise.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => listeningTag.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.exerciseId, t.tagId] }), index("listening_to_tag_tag_idx").on(t.tagId)],
+);

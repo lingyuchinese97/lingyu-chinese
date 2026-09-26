@@ -112,4 +112,15 @@ export const errors: Messages["errors"] = {
   lessonIncomplete: "The answers are incomplete.",
   saveResultFailed: "Couldn't save the result. Please try again.",
   radicalNotFound: "Radical not found.",
+  // Luyện nghe
+  listeningNotFound: "Exercise not found. It may have been deleted.",
+  referenceRequired: "Please enter the reference answer.",
+  referenceMax: "The answer can be at most {max} characters.",
+  listeningTitleRequired: "Please enter an exercise title.",
+  listeningTagsMax: "At most {max} tags per exercise.",
+  urlTooLong: "The link is too long.",
+  urlUnsupported: "This link isn't supported yet. Paste a YouTube link or a link to an audio / video file.",
+  speedInvalid: "Invalid playback speed.",
+  dictationMax: "Dictation can be at most {max} characters.",
+  segmentOrder: "The end time must be after the start time.",
 };

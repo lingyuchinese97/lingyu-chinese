@@ -156,6 +156,26 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     không đổi) với `API_DOCS_USER` / `API_DOCS_PASSWORD` — chọn Basic vì trình duyệt tự hỏi, Postman/curl dùng được, không cần
     bảng / trang đăng nhập mới. Không đặt biến (hoặc mật khẩu < 12 ký tự) → 404: quên cấu hình thì tài liệu không bao giờ lộ.
 
+41. **Luyện nghe – Chép chính tả** (theo tài liệu + 3 ảnh thiết kế người dùng gửi). Luồng cố định: link → đoạn → người dùng TỰ nhập
+    đáp án → nghe → chép → so sánh → tô đỏ → sửa → so sánh lại → ghi chú → lưu + thẻ → Bài làm của tôi. Không bao giờ lấy phụ đề.
+    - **So sánh** (`lib/dictation-compare.ts`, dùng chung cho nút Kiểm tra, popup Lưu, màn Bài làm và server): đơn vị là từng chữ
+      Hán / từng từ Latin, bỏ dấu câu + khoảng trắng (không bắt lỗi ，/ ,), NFKC + không phân biệt hoa thường; căn bằng LCS (cắt
+      đầu / cuối giống nhau trước để chạy lại mỗi lần gõ); trong mỗi khoảng lệch ghép cặp → Sai, dư đáp án → Thiếu, dư bài làm →
+      Thừa; điểm = Đúng / số chữ đáp án. Server luôn tính lại khi lưu / sửa (không nhận điểm client).
+    - **Định dạng người dùng** (`FormattedSpan`: `color: red`, `highlight`) tách khỏi kết quả so sánh. Ô chép là contentEditable do
+      mô hình span điều khiển (gõ / IME để trình duyệt xử lý rồi đọc lại DOM; xuống dòng, dán, tô màu, hoàn tác đi qua mô hình).
+      Màu so sánh vẽ bằng CSS Custom Highlight API nên không đụng dữ liệu; trình duyệt chưa hỗ trợ vẫn thấy kết quả ở khung bên
+      phải. Sửa chữ ở popup / màn Bài làm → `reformat` giữ định dạng các chữ còn nguyên (LCS theo ký tự).
+    - **Nguồn**: YouTube qua IFrame Player API chính thức, host youtube-nocookie (CSP thêm script `www.youtube.com`, `s.ytimg.com`,
+      frame youtube / youtube-nocookie); link trực tiếp file âm thanh / video phát bằng `<audio>/<video>` (CSP `media-src https:`).
+      TikTok / trang web thường chưa hỗ trợ (không có API điều khiển thời gian) → báo "chưa hỗ trợ". Không chọn "Nguồn".
+    - Lưu vào Từ vựng dùng lại `VocabForm` (thêm chế độ `embedded`), lưu vào kho Từ vựng chung. Thẻ luyện nghe là bảng riêng
+      (`listening_tag`, như Ôn dịch câu). URL tuỳ chọn khi lưu (có thể luyện từ nguồn ngoài). Nháp đang làm lưu ở localStorage
+      theo từng tài khoản (ghi ngay khi rời trang). Màn luyện tải phía client (`ssr: false`) vì toàn bộ là trạng thái trình duyệt.
+    - Migration `0005` (`listening_exercise`, `listening_tag`, `listening_to_tag`), xuất / nhập dữ liệu có bài làm.
+
+42. **API quản trị** (`/api/v1/admin/*`): chỉ admin (403), chỉ trả hồ sơ + số lượng, không trả nội dung học của người dùng.
+
 ## Chỗ mơ hồ & cách xử lý
 
 - "Gợi ý pinyin bằng pinyin-pro": khi nhập Hán tự mà ô Pinyin còn trống → hiện nút gợi ý (bấm để điền), không tự ghi đè.
