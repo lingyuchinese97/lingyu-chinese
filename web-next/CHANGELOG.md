@@ -41,6 +41,11 @@
 
 ### Changed
 
+- **Trang chi tiết Ngữ pháp thiết kế lại theo mẫu**: tiêu đề có biểu tượng tròn, thẻ + ngày tạo / cập nhật, nút Lưu / Chia sẻ
+  / Chỉnh sửa / Xóa; mỗi phần là một khung màu riêng có biểu tượng (Ý nghĩa xanh, Cấu trúc vàng, Ví dụ trắng, Lưu ý xanh, Ghi chú
+  cá nhân xanh lá, Đã chia sẻ với). Cấu trúc dạng “Nhãn: công thức” (vd “Câu phủ định: A + 不是 + B”) hiện nhãn tách riêng. Mỗi
+  ví dụ có số thứ tự, nút Nghe (giọng đọc của máy), Sao chép và menu (chép câu / pinyin, sửa). Ghi chú cá nhân thêm / sửa ngay
+  trên trang; “Chia sẻ ngay” ở khung Đã chia sẻ với.
 - **Trang Ngữ pháp thiết kế lại theo mẫu**: tiêu đề có biểu tượng, số ngữ pháp / Đã lưu / Được chia sẻ dạng nút bấm, câu khẩu
   hiệu viết tay, logo + mascot LingYu (màn hình rộng); khung cấu trúc nền vàng, biểu tượng cam, chữ đỏ đậm, mỗi dòng một cấu trúc
   (thẻ danh sách và trang chi tiết); lưới 4 thẻ / hàng trên màn hình rộng.

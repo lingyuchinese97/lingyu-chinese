@@ -90,19 +90,36 @@ export function OwnerActions({
       </div>
       <ShareGrammarDialog grammar={share ? g : null} sent={sent} onClose={() => setShare(false)} onSent={setSent} />
       {confirmNode}
-      <SentPortal sent={sent} />
+      <SentPortal sent={sent} onShare={() => setShare(true)} />
     </>
   );
 }
 
-/** Danh sách "Đã chia sẻ với" ở cuối trang (khung do server render, id="gd-sent") — cập nhật ngay sau khi gửi. */
-function SentPortal({ sent }: { sent: SentItem[] }) {
-  const [el, setEl] = React.useState<HTMLElement | null>(null);
+/**
+ * Danh sách "Đã chia sẻ với" + nút "Chia sẻ ngay" ở cuối trang (khung do server render: id="gd-sent", "gd-share-now") —
+ * cập nhật ngay sau khi gửi.
+ */
+function SentPortal({ sent, onShare }: { sent: SentItem[]; onShare: () => void }) {
+  const t = useT();
+  const [el, setEl] = React.useState<{ list: HTMLElement | null; btn: HTMLElement | null } | null>(null);
   React.useEffect(() => {
-    const target = document.getElementById("gd-sent");
-    Promise.resolve().then(() => setEl(target));
+    const targets = { list: document.getElementById("gd-sent"), btn: document.getElementById("gd-share-now") };
+    Promise.resolve().then(() => setEl(targets));
   }, []);
-  return el ? createPortal(<SentList sent={sent} />, el) : null;
+  return (
+    <>
+      {el?.list ? createPortal(<SentList sent={sent} />, el.list) : null}
+      {el?.btn
+        ? createPortal(
+            <Button variant="secondary" size="sm" onClick={onShare}>
+              <Share2 />
+              {t("grammar.detail.shareNow")}
+            </Button>,
+            el.btn,
+          )
+        : null}
+    </>
+  );
 }
 
 /** Thanh lời mời cho người nhận đang xem bản preview. */

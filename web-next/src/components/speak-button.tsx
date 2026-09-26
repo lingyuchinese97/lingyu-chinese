@@ -8,7 +8,18 @@ import { cn } from "@/lib/utils";
  * Đọc câu tiếng Trung bằng giọng đọc có sẵn của trình duyệt / hệ điều hành (Web Speech API — không gọi dịch vụ ngoài).
  * Máy không có giọng tiếng Trung → nút bị ẩn.
  */
-export function SpeakButton({ text, label, className }: { text: string; label?: string; className?: string }) {
+export function SpeakButton({
+  text,
+  label,
+  className,
+  children,
+}: {
+  text: string;
+  label?: string;
+  className?: string;
+  /** Chữ hiển thị cạnh biểu tượng (vd "Nghe"); không có thì chỉ hiện biểu tượng. */
+  children?: React.ReactNode;
+}) {
   const t = useT();
   const [ok, setOk] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
@@ -38,7 +49,8 @@ export function SpeakButton({ text, label, className }: { text: string; label?: 
     <button
       type="button"
       onClick={speak}
-      aria-label={label ?? t("ui.listen", { text })}
+      aria-label={children ? undefined : (label ?? t("ui.listen", { text }))}
+      title={children ? (label ?? t("ui.listen", { text })) : undefined}
       className={cn(
         "inline-flex size-9 shrink-0 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)]",
         speaking && "bg-blue-50",
@@ -46,6 +58,7 @@ export function SpeakButton({ text, label, className }: { text: string; label?: 
       )}
     >
       <Volume2 className="size-5" aria-hidden="true" />
+      {children}
     </button>
   );
 }

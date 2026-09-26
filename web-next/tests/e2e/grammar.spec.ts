@@ -72,7 +72,7 @@ test("chia sẻ ngữ pháp: người nhận xem trước (không thấy ghi ch�
   await a.getByRole("link", { name: "Chỉnh sửa" }).click();
   await a.getByLabel(/Ghi chú cá nhân/).fill("GHI CHÚ RIÊNG CỦA A");
   await a.getByRole("button", { name: "Lưu thay đổi" }).click();
-  await a.getByRole("button", { name: "Chia sẻ" }).click();
+  await a.getByRole("button", { name: "Chia sẻ", exact: true }).click();
   await a.getByLabel("Email người nhận").fill(`${emailB}, khongco@e2e.lingyu`);
   await a.getByRole("button", { name: "Gửi chia sẻ" }).click();
   await expect(a.getByText("— Đã gửi lời mời.")).toBeVisible();

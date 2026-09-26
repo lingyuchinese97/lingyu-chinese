@@ -43,3 +43,37 @@ export function StructureBox({ structure, size = "md" }: { structure: string; si
     </div>
   );
 }
+
+/** "Câu phủ định: A + 不是 + B" → nhãn + công thức (nhãn không chứa chữ Hán, tối đa 30 ký tự). */
+export function splitStructure(line: string): { label: string; formula: string } {
+  const m = /^([^:：]{1,30})[:：]\s*(.+)$/.exec(line);
+  if (m && !/\p{Script=Han}/u.test(m[1]!)) return { label: m[1]!.trim(), formula: m[2]!.trim() };
+  return { label: "", formula: line };
+}
+
+/** Cấu trúc ở trang chi tiết: mỗi dòng một khung (nhãn + công thức), chữ xanh đậm theo thiết kế. */
+export function StructureDetail({ structure }: { structure: string }) {
+  const lines = structureLines(structure);
+  if (!lines.length) return null;
+  return (
+    <ul className="flex flex-col gap-2.5">
+      {lines.map((l, i) => {
+        const { label, formula } = splitStructure(l);
+        return (
+          <li
+            key={i}
+            className="flex w-fit max-w-full flex-wrap items-baseline gap-x-5 gap-y-1 rounded-[14px] border border-dashed border-[#F2C96B] bg-[#FFF8E6] px-5 py-3"
+          >
+            {label ? <span className="text-[17px] font-semibold text-navy">{label}:</span> : null}
+            <span
+              lang="zh"
+              className="font-cn text-[22px] leading-snug font-bold [overflow-wrap:anywhere] text-navy md:text-[26px]"
+            >
+              {formula}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
