@@ -142,6 +142,13 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     toast, `Alert`, `FieldError` tự làm việc này nên service và test cũ không phải sửa. Dữ liệu của người dùng và dữ liệu mẫu (nghĩa
     tiếng Việt, câu ví dụ) không dịch; bộ thủ có thêm nghĩa tiếng Anh (`data/radicals-en.ts`), bài học có trường `en` tuỳ chọn.
 
+40. **REST API `/api/v1`** (theo yêu cầu người dùng, bắt đầu với Từ vựng + Ôn tập): mỗi route là một lớp mỏng qua
+    `api()` ở `src/server/api.ts` — lấy user từ phiên (không nhận `userId`), bắt thân JSON (415 nếu không — cùng cookie SameSite=Lax
+    điều này chặn form giả mạo từ trang khác), Zod dùng lại schema của tính năng, đổi lỗi service → mã HTTP (`not-found` → 404,
+    ôn tập `empty` → 409, còn lại 400; Zod → 400 + `fieldErrors`), thông báo dịch theo ngôn ngữ người dùng. id sai định dạng cũng
+    trả 404. App khác đăng nhập qua `POST /api/auth/sign-in/email` rồi gửi cookie phiên. Server Action của giao diện giữ nguyên.
+    Tài liệu `docs/API.md`, e2e `tests/e2e/api.spec.ts`.
+
 ## Chỗ mơ hồ & cách xử lý
 
 - "Gợi ý pinyin bằng pinyin-pro": khi nhập Hán tự mà ô Pinyin còn trống → hiện nút gợi ý (bấm để điền), không tự ghi đè.
