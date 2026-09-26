@@ -3,7 +3,17 @@ import * as React from "react";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VOCAB } from "@/lib/limits";
-import { radicalByNum, radicalGlyph, radicalLabel, radicalsOfText, searchRadicals, type Radical } from "@/lib/radicals";
+import {
+  radicalByNum,
+  radicalGlyph,
+  radicalLabel,
+  radicalMeaning,
+  radicalName,
+  radicalsOfText,
+  searchRadicals,
+  type Radical,
+} from "@/lib/radicals";
+import { useLocale, useT } from "@/i18n/client";
 
 /**
  * Ô chọn bộ thủ: gõ tiếng Việt (thủy, nước, người...) → chọn trong danh sách gợi ý.
@@ -23,6 +33,8 @@ export function RadicalPicker({
   id?: string;
   describedBy?: string;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const [q, setQ] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [active, setActive] = React.useState(0);
@@ -57,7 +69,7 @@ export function RadicalPicker({
           className="flex min-h-12 flex-wrap items-center gap-1.5 rounded-md border-[1.5px] border-border bg-white px-2 py-1.5 transition-[border-color,box-shadow] focus-within:border-blue focus-within:shadow-[var(--focus-ring)] hover:border-border-strong"
           onClick={() => inputRef.current?.focus()}
         >
-          <div role="list" aria-label="Bộ thủ đã chọn" className="contents">
+          <div role="list" aria-label={t("vocab.radicalPicker.selected")} className="contents">
             {value.map((n) => {
               const r = radicalByNum(n);
               if (!r) return null;
@@ -70,7 +82,7 @@ export function RadicalPicker({
                   <span className="hanzi text-base" lang="zh">
                     {radicalGlyph(r)}
                   </span>
-                  {radicalLabel(r)}
+                  {radicalLabel(r, locale)}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -78,7 +90,7 @@ export function RadicalPicker({
                       remove(n);
                       inputRef.current?.focus();
                     }}
-                    aria-label={`Bỏ bộ ${r.name}`}
+                    aria-label={t("vocab.radicalPicker.remove", { name: radicalName(r, locale) })}
                     className="inline-flex size-6 items-center justify-center rounded-full hover:bg-blue-100"
                   >
                     <X className="size-3.5" />
@@ -124,7 +136,7 @@ export function RadicalPicker({
                 onChange(value.slice(0, -1));
               }
             }}
-            placeholder={value.length ? "Thêm bộ thủ khác..." : "Gõ tên hoặc nghĩa tiếng Việt: thủy, nước, người..."}
+            placeholder={value.length ? t("vocab.radicalPicker.addMore") : t("vocab.radicalPicker.placeholder")}
             className="min-h-9 min-w-[160px] flex-1 border-0 bg-transparent px-1.5 text-[15.5px] outline-none placeholder:text-[#9AAAC0] focus-visible:shadow-none max-md:text-base"
           />
         </div>
@@ -132,7 +144,7 @@ export function RadicalPicker({
           <ul
             id={listId}
             role="listbox"
-            aria-label="Bộ thủ phù hợp"
+            aria-label={t("vocab.radicalPicker.matches")}
             className="absolute inset-x-0 top-[calc(100%+6px)] z-30 max-h-[320px] overflow-y-auto rounded-lg border border-border bg-white p-1.5 shadow-card"
           >
             {matches.length ? (
@@ -157,30 +169,29 @@ export function RadicalPicker({
                     {radicalGlyph(r)}
                   </span>
                   <span className="min-w-0">
-                    <strong className="text-text">{r.name}</strong> <span className="text-text-2">{r.meaning}</span>
+                    <strong className="text-text">{radicalName(r, locale)}</strong>{" "}
+                    <span className="text-text-2">{radicalMeaning(r, locale)}</span>
                   </span>
                   <span className="text-[13px] text-text-3 max-md:hidden">
-                    #{r.num} · {r.strokes} nét
+                    {t("vocab.radicalPicker.meta", { num: r.num, strokes: r.strokes })}
                   </span>
                 </li>
               ))
             ) : (
-              <li className="px-3 py-3 text-sm text-text-2">
-                Không tìm thấy bộ thủ “{q.trim()}”. Thử tên Hán Việt (Thủy) hoặc nghĩa (nước).
-              </li>
+              <li className="px-3 py-3 text-sm text-text-2">{t("vocab.radicalPicker.notFound", { q: q.trim() })}</li>
             )}
           </ul>
         ) : null}
       </div>
       {suggestions.length || unknown.length ? (
         <div className="flex flex-wrap items-center gap-1.5 text-[13.5px]">
-          {suggestions.length ? <span className="text-text-2">Gợi ý từ chữ Hán:</span> : null}
+          {suggestions.length ? <span className="text-text-2">{t("vocab.radicalPicker.suggestFrom")}</span> : null}
           {suggestions.map(({ char, radical: r }) => (
             <button
               type="button"
               key={r.num}
               onClick={() => add(r.num)}
-              title={`Thêm bộ ${r.name}`}
+              title={t("vocab.radicalPicker.add", { name: radicalName(r, locale) })}
               className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-dashed border-[#A9D3F8] bg-white px-2.5 text-blue-700 hover:bg-blue-50"
             >
               <span className="hanzi" lang="zh">
@@ -190,13 +201,13 @@ export function RadicalPicker({
               <span className="hanzi font-semibold" lang="zh">
                 {radicalGlyph(r)}
               </span>
-              {radicalLabel(r)}
+              {radicalLabel(r, locale)}
               <Plus className="size-3.5" />
             </button>
           ))}
           {unknown.length ? (
             <span className="text-text-3">
-              {unknown.map((x) => x.char).join(" ")}: chưa có dữ liệu bộ thủ, bạn có thể tự chọn.
+              {t("vocab.radicalPicker.unknown", { chars: unknown.map((x) => x.char).join(" ") })}
             </span>
           ) : null}
         </div>

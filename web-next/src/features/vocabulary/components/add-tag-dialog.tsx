@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 import * as React from "react";
 import { Plus, Tag as TagIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ function Body({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const tr = useT();
   const [picked, setPicked] = React.useState<string[]>([]);
   const [extra, setExtra] = React.useState<string[]>([]);
   const [draft, setDraft] = React.useState("");
@@ -57,20 +59,20 @@ function Body({
   };
 
   async function save() {
-    if (!picked.length) return void toast.error("Vui lòng chọn ít nhất 1 tag.");
+    if (!picked.length) return void toast.error(tr("vocab.tags.chooseOne"));
     setBusy(true);
     const r = await addTagsAction(ids, picked);
     setBusy(false);
     if (!r.ok) return void toast.error(r.message);
-    toast.success(`Đã thêm tag cho ${r.data.updated} từ.`);
+    toast.success(tr("vocab.tags.added", { count: r.data.updated }));
     onClose();
     onDone();
   }
 
   return (
     <DialogContent
-      title="Thêm tag"
-      description={`Tag được thêm vào ${ids.length} từ đã chọn, tag cũ vẫn giữ nguyên.`}
+      title={tr("vocab.tags.dialogTitle")}
+      description={tr("vocab.tags.dialogDesc", { count: ids.length })}
       icon={<TagIcon />}
     >
       <div className="flex max-h-[40dvh] flex-wrap gap-2 overflow-y-auto">
@@ -92,12 +94,12 @@ function Body({
             </button>
           ))
         ) : (
-          <p className="text-sm text-text-3">Chưa có tag nào. Tạo tag mới bên dưới.</p>
+          <p className="text-sm text-text-3">{tr("vocab.tags.none")}</p>
         )}
       </div>
       <div className="flex gap-2">
         <label className="min-w-0 flex-1">
-          <span className="sr-only">Tên tag mới</span>
+          <span className="sr-only">{tr("vocab.tags.newName")}</span>
           <Input
             value={draft}
             maxLength={VOCAB.MAX_TAG}
@@ -108,20 +110,24 @@ function Body({
                 addDraft();
               }
             }}
-            placeholder="Tạo tag mới (vd: Bài 3)"
+            placeholder={tr("vocab.tags.newPlaceholder")}
           />
         </label>
         <Button type="button" variant="ghost" onClick={addDraft}>
           <Plus />
-          Thêm
+          {tr("vocab.tags.add")}
         </Button>
       </div>
       <DialogActions>
         <DialogClose asChild>
-          <Button variant="secondary">Hủy</Button>
+          <Button variant="secondary">{tr("common.cancel")}</Button>
         </DialogClose>
         <Button variant="solid" disabled={busy || !picked.length} onClick={save}>
-          {busy ? "Đang lưu..." : `Gắn ${picked.length || ""} tag`.replace("  ", " ")}
+          {busy
+            ? tr("common.saving")
+            : picked.length
+              ? tr("vocab.tags.apply", { count: picked.length })
+              : tr("vocab.tags.applyNone")}
         </Button>
       </DialogActions>
     </DialogContent>

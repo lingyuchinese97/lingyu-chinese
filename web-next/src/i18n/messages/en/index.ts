@@ -7,7 +7,24 @@ import { landing } from "./landing";
 import { meta } from "./meta";
 import { notifications } from "./notifications";
 import { pages } from "./pages";
+import { sentences } from "./sentences";
 import { settings } from "./settings";
 import { shell } from "./shell";
+import { ui } from "./ui";
+import { vocab } from "./vocab";
 
-export const en: Messages = { meta, common, errors, shell, notifications, auth, landing, home, settings, pages };
+export const en: Messages = {
+  meta,
+  common,
+  errors,
+  shell,
+  notifications,
+  auth,
+  landing,
+  home,
+  settings,
+  pages,
+  ui,
+  vocab,
+  sentences,
+};

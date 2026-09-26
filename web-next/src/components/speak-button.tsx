@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 import * as React from "react";
 import { Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils";
  * Máy không có giọng tiếng Trung → nút bị ẩn.
  */
 export function SpeakButton({ text, label, className }: { text: string; label?: string; className?: string }) {
+  const t = useT();
   const [ok, setOk] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
   React.useEffect(() => {
@@ -36,7 +38,7 @@ export function SpeakButton({ text, label, className }: { text: string; label?: 
     <button
       type="button"
       onClick={speak}
-      aria-label={label ?? `Nghe: ${text}`}
+      aria-label={label ?? t("ui.listen", { text })}
       className={cn(
         "inline-flex size-9 shrink-0 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)]",
         speaking && "bg-blue-50",

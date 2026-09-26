@@ -6,10 +6,10 @@ export type VocabStatus = (typeof STATUS)[number];
 export const STATUS_LABEL: Record<VocabStatus, string> = { learned: "Đã thuộc", review: "Cần ôn" };
 
 export const SORTS = [
-  { value: "newest", label: "Mới nhất" },
-  { value: "oldest", label: "Cũ nhất" },
-  { value: "pinyin", label: "Pinyin A → Z" },
-  { value: "favorite", label: "Yêu thích trước" },
+  { value: "newest", label: "vocab.sortNewest" },
+  { value: "oldest", label: "vocab.sortOldest" },
+  { value: "pinyin", label: "vocab.sortPinyin" },
+  { value: "favorite", label: "vocab.sortFavorite" },
 ] as const;
 export type VocabSort = (typeof SORTS)[number]["value"];
 

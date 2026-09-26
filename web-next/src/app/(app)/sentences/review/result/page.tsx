@@ -8,25 +8,29 @@ import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { getLastSentenceResult } from "@/features/sentences/review-service";
 import { SentenceResultActions } from "@/features/sentences/components/sentence-result-actions";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Kết quả ôn dịch câu" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("sentences.result.title") };
+}
 
 export default async function SentenceResultPage() {
   const user = await requireUser();
   const r = await getLastSentenceResult(user.id);
+  const t = await getT();
   if (!r) redirect("/sentences/review/setup");
   const pct = r.total ? r.correctCount / r.total : 0;
   const R = 54;
   const C = 2 * Math.PI * R;
   return (
     <>
-      <Breadcrumb back="/sentences" section="Ôn dịch câu" current="Kết quả" />
+      <Breadcrumb back="/sentences" section={t("sentences.title")} current={t("sentences.result.crumb")} />
       <section
         aria-labelledby="rs-title"
         className="flex flex-col gap-5 rounded-[var(--radius-xl)] border border-border bg-white/94 p-4 shadow-card md:p-7"
       >
         <h1 id="rs-title" className="flex items-center gap-3 text-[24px] font-extrabold text-navy md:text-[28px]">
-          Kết quả ôn tập
+          {t("sentences.result.heading")}
           <LeafDecor className="w-9" />
         </h1>
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-center md:gap-12">
@@ -44,7 +48,7 @@ export default async function SentenceResultPage() {
               height="150"
               viewBox="0 0 130 130"
               role="img"
-              aria-label={`Đúng ${r.correctCount}/${r.total}`}
+              aria-label={t("sentences.result.ringLabel", { correct: r.correctCount, total: r.total })}
             >
               <circle cx="65" cy="65" r={R} fill="none" stroke="#E6F1FC" strokeWidth="12" />
               <circle
@@ -68,15 +72,23 @@ export default async function SentenceResultPage() {
                 {r.correctCount}/{r.total}
               </text>
               <text x="65" y="88" textAnchor="middle" className="fill-green-700 text-[13px] font-semibold">
-                Đúng
+                {t("sentences.result.correct")}
               </text>
             </svg>
           </div>
           <ul className="flex w-full max-w-[280px] flex-col gap-2">
             {[
-              { label: "Đúng", n: r.correctCount, icon: <CheckCircle2 className="size-5 text-green-700" /> },
-              { label: "Sai", n: r.wrongCount, icon: <XCircle className="size-5 text-red" /> },
-              { label: "Bỏ qua", n: r.skippedCount, icon: <CircleMinus className="size-5 text-text-3" /> },
+              {
+                label: t("sentences.result.correct"),
+                n: r.correctCount,
+                icon: <CheckCircle2 className="size-5 text-green-700" />,
+              },
+              { label: t("sentences.result.wrong"), n: r.wrongCount, icon: <XCircle className="size-5 text-red" /> },
+              {
+                label: t("sentences.result.skipped"),
+                n: r.skippedCount,
+                icon: <CircleMinus className="size-5 text-text-3" />,
+              },
             ].map((x) => (
               <li key={x.label} className="flex items-center gap-2.5 rounded-lg bg-[#F4F9FF] px-3.5 py-2.5">
                 {x.icon}
@@ -87,7 +99,7 @@ export default async function SentenceResultPage() {
           </ul>
         </div>
 
-        <ol className="flex flex-col gap-2" aria-label="Chi tiết từng câu">
+        <ol className="flex flex-col gap-2" aria-label={t("sentences.result.details")}>
           {r.questions.map((q, i) => (
             <li
               key={i}
@@ -107,11 +119,15 @@ export default async function SentenceResultPage() {
                 </p>
                 <p className="text-[14.5px] text-text-2">{q.reveal?.vietnamese}</p>
                 {q.result === "wrong" && q.userAnswer ? (
-                  <p className="text-sm text-red">Bạn trả lời: {q.userAnswer}</p>
+                  <p className="text-sm text-red">{t("sentences.result.yourAnswer", { answer: q.userAnswer })}</p>
                 ) : null}
               </div>
               <span className="text-sm font-semibold">
-                {q.result === "correct" ? "Đúng" : q.result === "wrong" ? "Sai" : "Bỏ qua"}
+                {q.result === "correct"
+                  ? t("sentences.result.correct")
+                  : q.result === "wrong"
+                    ? t("sentences.result.wrong")
+                    : t("sentences.result.skipped")}
               </span>
             </li>
           ))}

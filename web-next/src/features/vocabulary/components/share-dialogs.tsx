@@ -11,6 +11,8 @@ import { parseEmails } from "@/features/grammar/schema";
 import { StatusPill, TagInput } from "@/features/grammar/components/grammar-dialogs";
 import type { ReceivedVocabShare, SentVocabShare } from "../share-service";
 import { acceptVocabShareAction, listSentVocabAction, rejectVocabShareAction, shareVocabAction } from "../actions";
+import { useT } from "@/i18n/client";
+import { currentT } from "@/i18n/current";
 
 export type ShareWord = { id: string; hanzi: string; pinyin: string; meaningVi: string; note: string; tags: string[] };
 
@@ -40,7 +42,10 @@ function WordList({ words, label }: { words: Omit<ShareWord, "id">[]; label: str
 
 const toText = (words: ShareWord[]) =>
   words
-    .map((v, i) => `${i + 1}. ${v.hanzi} (${v.pinyin}) — ${v.meaningVi}${v.note ? `\n   Ghi chú: ${v.note}` : ""}`)
+    .map(
+      (v, i) =>
+        `${i + 1}. ${v.hanzi} (${v.pinyin}) — ${v.meaningVi}${v.note ? `\n   ${currentT()("vocab.share.textNote", { note: v.note })}` : ""}`,
+    )
     .join("\n");
 const toCsv = (words: ShareWord[]) => {
   const cell = (s: string) => `"${String(s ?? "").replace(/"/g, '""')}"`;
@@ -61,6 +66,7 @@ export function ShareVocabDialog({ words, onClose }: { words: ShareWord[] | null
 }
 
 function ShareBody({ words }: { words: ShareWord[] }) {
+  const t = useT();
   const [text, setText] = React.useState("");
   const [err, setErr] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -79,7 +85,7 @@ function ShareBody({ words }: { words: ShareWord[] }) {
   async function submit() {
     if (busy) return;
     const emails = parseEmails(text);
-    if (!emails.length) return void setErr("Vui lòng nhập ít nhất 1 email người nhận.");
+    if (!emails.length) return void setErr(t("errors.recipientRequired"));
     setErr("");
     setBusy(true);
     const r = await shareVocabAction(
@@ -87,7 +93,7 @@ function ShareBody({ words }: { words: ShareWord[] }) {
       emails,
     );
     setBusy(false);
-    if (!r.ok) return void setErr(r.message || "Không gửi được. Vui lòng thử lại.");
+    if (!r.ok) return void setErr(r.message || t("vocab.share.sendFailed"));
     setResults(r.data.results);
     setText(
       r.data.results
@@ -96,7 +102,7 @@ function ShareBody({ words }: { words: ShareWord[] }) {
         .join(", "),
     );
     if (r.data.sent) {
-      toast.success(`Đã gửi ${r.data.count} từ cho ${r.data.sent} người.`);
+      toast.success(t("vocab.share.sentToast", { count: r.data.count, people: r.data.sent }));
       setSent(r.data.sentList);
     }
   }
@@ -105,9 +111,9 @@ function ShareBody({ words }: { words: ShareWord[] }) {
     const body = fmt === "csv" ? toCsv(words) : toText(words);
     try {
       await navigator.clipboard.writeText(body);
-      toast.success(`Đã sao chép ${words.length} từ vựng.`);
+      toast.success(t("vocab.share.copied", { count: words.length }));
     } catch {
-      toast.error("Không sao chép được. Hãy dùng Tải file.");
+      toast.error(t("vocab.share.copyFailed"));
     }
   }
   function download() {
@@ -122,19 +128,19 @@ function ShareBody({ words }: { words: ShareWord[] }) {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    toast.success(`Đã tải file ${words.length} từ vựng.`);
+    toast.success(t("vocab.share.downloaded", { count: words.length }));
   }
 
   return (
-    <DialogContent title={`Chia sẻ ${words.length} từ vựng`} icon={<Share2 />} wide>
-      <WordList words={words} label="Từ vựng sẽ chia sẻ" />
+    <DialogContent title={t("vocab.share.title", { count: words.length })} icon={<Share2 />} wide>
+      <WordList words={words} label={t("vocab.share.wordsToShare")} />
       <section aria-labelledby="vs-h" className="flex flex-col gap-2">
         <h3 id="vs-h" className="flex items-center gap-2 font-bold text-navy [&_svg]:size-5 [&_svg]:text-blue-600">
           <Mail />
-          Gửi cho người dùng LingYu
+          {t("vocab.share.sendHeading")}
         </h3>
         <label htmlFor="vs-emails" className="sr-only">
-          Email người nhận
+          {t("vocab.share.recipient")}
         </label>
         <Textarea
           id="vs-emails"
@@ -150,20 +156,19 @@ function ShareBody({ words }: { words: ShareWord[] }) {
               void submit();
             }
           }}
-          placeholder="Email người nhận, vd: ban@gmail.com, linh@gmail.com"
+          placeholder={t("vocab.share.recipientPlaceholder")}
           aria-invalid={!!err || undefined}
           aria-describedby="vs-hint vs-err"
         />
         <span id="vs-hint" className="text-[13.5px] text-text-3">
-          Nhiều email cách nhau bằng dấu phẩy. Người nhận bấm “Chấp nhận” thì các từ được chép vào kho của họ. Trạng
-          thái học và lịch ôn của bạn không được gửi đi.
+          {t("vocab.share.recipientHint")}
         </span>
         <span id="vs-err" role="alert" className={cn("text-sm text-red", !err && "hidden")}>
-          {err}
+          {err ? t.maybe(err) : null}
         </span>
         <Button variant="solid" disabled={busy} onClick={submit} className="w-full">
           {busy ? <Loader2 className="animate-spin" /> : <Share2 />}
-          {busy ? "Đang gửi..." : "Gửi chia sẻ"}
+          {busy ? t("vocab.share.sending") : t("vocab.share.send")}
         </Button>
         {results.length ? (
           <ul className="flex flex-col gap-1.5">
@@ -181,16 +186,16 @@ function ShareBody({ words }: { words: ShareWord[] }) {
                   <AlertCircle className="mt-px size-4 shrink-0" />
                 )}
                 <span>
-                  <strong>{x.email}</strong> — {x.message}
+                  <strong>{x.email}</strong> — {t.maybe(x.message)}
                 </span>
               </li>
             ))}
           </ul>
         ) : null}
         <div className="flex flex-col gap-1.5">
-          <strong className="text-navy">Đã gửi gần đây</strong>
+          <strong className="text-navy">{t("vocab.share.recent")}</strong>
           {sent === null ? (
-            <p className="text-sm text-text-3">Đang tải...</p>
+            <p className="text-sm text-text-3">{t("common.loading")}</p>
           ) : sent.length ? (
             <ul className="flex flex-col gap-1.5">
               {sent.map((s) => (
@@ -209,21 +214,25 @@ function ShareBody({ words }: { words: ShareWord[] }) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-text-3">Chưa gửi cho ai.</p>
+            <p className="text-sm text-text-3">{t("vocab.share.noneSent")}</p>
           )}
         </div>
       </section>
       <details className="rounded-md border border-border px-3 py-2.5">
         <summary className="flex cursor-pointer items-center gap-2 font-bold text-navy [&_svg]:size-5 [&_svg]:text-blue-600">
           <Copy />
-          Sao chép hoặc tải file
+          {t("vocab.share.copyOrDownload")}
         </summary>
-        <div role="radiogroup" aria-label="Định dạng" className="mt-3 flex flex-wrap items-center gap-4 text-[15px]">
-          <span className="text-text-2">Định dạng:</span>
+        <div
+          role="radiogroup"
+          aria-label={t("vocab.share.format")}
+          className="mt-3 flex flex-wrap items-center gap-4 text-[15px]"
+        >
+          <span className="text-text-2">{t("vocab.share.formatLabel")}</span>
           {(
             [
-              ["text", "Văn bản"],
-              ["csv", "CSV (Excel)"],
+              ["text", t("vocab.share.formatText")],
+              ["csv", t("vocab.share.formatCsv")],
             ] as const
           ).map(([k, label]) => (
             <label key={k} className="inline-flex cursor-pointer items-center gap-2">
@@ -235,17 +244,17 @@ function ShareBody({ words }: { words: ShareWord[] }) {
         <div className="mt-3 flex flex-wrap gap-2">
           <Button size="sm" variant="secondary" onClick={copy}>
             <Copy />
-            Sao chép
+            {t("vocab.share.copy")}
           </Button>
           <Button size="sm" variant="secondary" onClick={download}>
             <Download />
-            Tải file
+            {t("vocab.share.download")}
           </Button>
         </div>
       </details>
       <DialogActions>
         <DialogClose asChild>
-          <Button variant="secondary">Đóng</Button>
+          <Button variant="secondary">{t("common.close")}</Button>
         </DialogClose>
       </DialogActions>
     </DialogContent>
@@ -286,6 +295,7 @@ function AcceptBody({
   onDone: () => void;
   onReject: (s: ReceivedVocabShare) => void;
 }) {
+  const t = useT();
   const [keep, setKeep] = React.useState(true);
   const [extra, setExtra] = React.useState<string[]>([]);
   const [busy, setBusy] = React.useState(false);
@@ -296,58 +306,64 @@ function AcceptBody({
     const r = await acceptVocabShareAction(share.id, { keepTags: keep, extraTags: extra });
     if (!r.ok) {
       setBusy(false);
-      return void setErr(r.message || "Không chấp nhận được. Vui lòng thử lại.");
+      return void setErr(r.message || t("vocab.share.acceptFailed"));
     }
     const { added, skipped, total } = r.data;
     toast.success(
       skipped.length
-        ? `Đã thêm ${added}/${total} từ. ${skipped.length} từ đã có sẵn nên được bỏ qua (${skipped.slice(0, 3).join(", ")}${skipped.length > 3 ? "…" : ""}).`
-        : `Đã thêm ${added} từ vào danh sách Từ vựng của bạn.`,
+        ? t("vocab.share.addedSome", {
+            added,
+            total,
+            skipped: skipped.length,
+            list: `${skipped.slice(0, 3).join(", ")}${skipped.length > 3 ? "…" : ""}`,
+          })
+        : t("vocab.share.addedAll", { added }),
     );
     onDone();
   }
 
   return (
-    <DialogContent title={`${share.senderName} chia sẻ ${share.count} từ vựng`} icon={<Share2 />} wide>
-      <p className="text-[15px] text-text-2">
-        Chấp nhận để chép các từ này vào danh sách Từ vựng của bạn. Bạn sửa hay xóa bản của mình không ảnh hưởng người
-        gửi. Từ đã có (trùng Hán tự) sẽ được bỏ qua.
-      </p>
-      <WordList words={share.words} label="Từ vựng được chia sẻ" />
+    <DialogContent
+      title={t("vocab.share.receivedTitle", { name: share.senderName, count: share.count })}
+      icon={<Share2 />}
+      wide
+    >
+      <p className="text-[15px] text-text-2">{t("vocab.share.receivedDesc")}</p>
+      <WordList words={share.words} label={t("vocab.share.sharedWords")} />
       {share.senderTags.length ? (
         <label className="flex cursor-pointer flex-wrap items-center gap-2.5 rounded-md bg-bg px-3 py-2.5">
           <input type="checkbox" className={checkboxClass} checked={keep} onChange={(e) => setKeep(e.target.checked)} />
-          <span className="text-[15px]">Giữ tag hiện tại:</span>
-          {share.senderTags.map((t) => (
-            <Tag key={t} name={t} />
+          <span className="text-[15px]">{t("vocab.share.keepTags")}</span>
+          {share.senderTags.map((tag) => (
+            <Tag key={tag} name={tag} />
           ))}
         </label>
       ) : null}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="va-tags" className="text-[15px] font-semibold text-text">
-          Thêm tag của tôi <span className="font-medium text-text-2">(không bắt buộc)</span>
+          {t("vocab.share.myTags")} <span className="font-medium text-text-2">{t("vocab.form.optional")}</span>
         </label>
         <TagInput
           id="va-tags"
           value={extra}
           onChange={setExtra}
           existing={myTags}
-          placeholder="vd: Bài 3 — nhấn Enter để thêm"
+          placeholder={t("vocab.share.myTagsPlaceholder")}
         />
       </div>
       {err ? (
         <p role="alert" className="text-sm text-red">
-          {err}
+          {t.maybe(err)}
         </p>
       ) : null}
       <DialogActions>
         <Button variant="muted" disabled={busy} onClick={() => onReject(share)}>
           <X />
-          Từ chối
+          {t("common.reject")}
         </Button>
         <Button variant="solid" disabled={busy} onClick={accept}>
           {busy ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-          {busy ? "Đang thêm..." : "Chấp nhận"}
+          {busy ? t("vocab.share.adding") : t("common.accept")}
         </Button>
       </DialogActions>
     </DialogContent>
@@ -366,10 +382,11 @@ export async function rejectVocabWithConfirm(
   confirm: Confirm,
   share: { id: string; count: number; senderName: string },
 ) {
+  const t = currentT();
   const ok = await confirm({
-    title: "Từ chối chia sẻ?",
-    message: `Từ chối ${share.count} từ vựng từ ${share.senderName}?`,
-    confirmLabel: "Từ chối",
+    title: t("vocab.share.rejectTitle"),
+    message: t("vocab.share.rejectMessage", { count: share.count, name: share.senderName }),
+    confirmLabel: t("common.reject"),
     icon: <X />,
   });
   if (!ok) return false;
@@ -378,7 +395,7 @@ export async function rejectVocabWithConfirm(
     toast.error(r.message);
     return false;
   }
-  toast.info("Đã từ chối lời mời chia sẻ.");
+  toast.info(t("vocab.share.rejected"));
   return true;
 }
 
@@ -392,9 +409,10 @@ export function VocabInvites({
   onOpen: (s: ReceivedVocabShare) => void;
   onReject: (s: ReceivedVocabShare) => void;
 }) {
+  const t = useT();
   if (!received.length) return null;
   return (
-    <div role="region" aria-label="Lời mời chia sẻ từ vựng" className="flex flex-col gap-2">
+    <div role="region" aria-label={t("vocab.share.invites")} className="flex flex-col gap-2">
       {received.map((s) => (
         <div
           key={s.id}
@@ -404,17 +422,20 @@ export function VocabInvites({
             <Share2 className="size-5" />
           </span>
           <div className="min-w-0 flex-1 text-[15px] text-text-2">
-            <strong className="text-text">{s.senderName}</strong> đã chia sẻ {s.count} từ vựng với bạn:{" "}
+            {t.rich("vocab.share.inviteText", {
+              name: <strong className="text-text">{s.senderName}</strong>,
+              count: s.count,
+            })}{" "}
             <span className="hanzi text-text" lang="zh">
               {s.title}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2 md:flex">
             <Button size="sm" variant="solid" onClick={() => onOpen(s)}>
-              Xem & chấp nhận
+              {t("notifications.viewAndAccept")}
             </Button>
             <Button size="sm" variant="muted" onClick={() => onReject(s)}>
-              Từ chối
+              {t("common.reject")}
             </Button>
           </div>
         </div>

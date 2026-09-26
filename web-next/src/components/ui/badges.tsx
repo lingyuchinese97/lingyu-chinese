@@ -1,8 +1,11 @@
+"use client";
 import { X } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { tagColors } from "@/lib/tag-style";
 
 export function Tag({ name, onRemove, className }: { name: string; onRemove?: () => void; className?: string }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -19,7 +22,7 @@ export function Tag({ name, onRemove, className }: { name: string; onRemove?: ()
             e.stopPropagation();
             onRemove();
           }}
-          aria-label={`Bỏ tag ${name}`}
+          aria-label={t("ui.removeTag", { name })}
           className="-mr-1 ml-1 inline-flex size-5 items-center justify-center rounded-full hover:bg-black/5"
         >
           <X className="size-3.5" />
@@ -30,6 +33,7 @@ export function Tag({ name, onRemove, className }: { name: string; onRemove?: ()
 }
 
 export function StatusBadge({ status }: { status: "learned" | "review" }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -37,7 +41,7 @@ export function StatusBadge({ status }: { status: "learned" | "review" }) {
         status === "learned" ? "bg-green-50 text-green-700" : "bg-amber-50 text-[#9A5C03]",
       )}
     >
-      {status === "learned" ? "Đã thuộc" : "Cần ôn"}
+      {t(`ui.${status}`)}
     </span>
   );
 }

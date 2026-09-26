@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -41,6 +42,7 @@ const iconBtn =
 
 export function SentenceListView({ data, params }: { data: SentenceList; params: SentenceListParams }) {
   const router = useRouter();
+  const t = useT();
   const pathname = usePathname();
   const [pending, startTransition] = React.useTransition();
   const [confirm, confirmNode] = useConfirm();
@@ -89,22 +91,22 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
 
   async function doDelete(list: string[], label: string) {
     const ok = await confirm({
-      title: "Xóa câu?",
-      message: `Bạn sắp xóa ${label}. Thao tác này không thể hoàn tác.`,
-      confirmLabel: "Xóa",
+      title: t("sentences.deleteTitle"),
+      message: t("sentences.deleteMessage", { what: label }),
+      confirmLabel: t("common.delete"),
       danger: true,
     });
     if (!ok) return;
     const r = await deleteSentencesAction(list);
     if (!r.ok) return void toast.error(r.message);
-    toast.success(`Đã xóa ${r.data} câu.`);
+    toast.success(t("sentences.deleted", { count: r.data }));
     setSelected((s) => new Set([...s].filter((id) => !list.includes(id))));
     refresh();
   }
   async function doStatus(list: string[], status: "learned" | "review") {
     const r = await setSentenceStatusAction(list, status);
     if (!r.ok) return void toast.error(r.message);
-    toast.success(`Đã chuyển ${r.data} câu sang ${status === "learned" ? "Đã thuộc" : "Cần ôn"}.`);
+    toast.success(t("sentences.statusChanged", { count: r.data, status: t(`ui.${status}`) }));
     refresh();
   }
   async function doReview(list: string[]) {
@@ -115,7 +117,7 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
       showPinyin: false,
       showHint: false,
       sentenceIds: list,
-      label: `${list.length} câu đã chọn`,
+      label: t("sentences.selectedSentences", { count: list.length }),
     });
     if (!r.ok) return void toast.error(r.message);
     router.push("/sentences/review/session");
@@ -133,38 +135,38 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
   const rowMenu = (s: SentenceItem) => (
     <Menu>
       <MenuTrigger asChild>
-        <button type="button" className={iconBtn} aria-label={`Thao tác khác cho ${s.chinese}`}>
+        <button type="button" className={iconBtn} aria-label={t("sentences.moreActions", { text: s.chinese })}>
           <MoreHorizontal />
         </button>
       </MenuTrigger>
       <MenuContent className="w-[220px]">
         <MenuItem onSelect={() => doReview([s.id])}>
           <PlayCircle />
-          Ôn câu này
+          {t("sentences.reviewThis")}
         </MenuItem>
         <MenuItem onSelect={() => router.push(`/sentences/${s.id}/edit`)}>
           <Pencil />
-          Sửa câu
+          {t("sentences.edit")}
         </MenuItem>
         <MenuItem onSelect={() => doFav(s)}>
           <Star />
-          {(favs[s.id] ?? s.isFavorite) ? "Bỏ yêu thích" : "Yêu thích"}
+          {(favs[s.id] ?? s.isFavorite) ? t("sentences.unfavorite") : t("sentences.favorite")}
         </MenuItem>
         <MenuItem onSelect={() => doStatus([s.id], s.status === "learned" ? "review" : "learned")}>
           {s.status === "learned" ? <RefreshCw /> : <CheckCircle2 />}
-          {s.status === "learned" ? "Đánh dấu cần ôn" : "Đánh dấu đã thuộc"}
+          {s.status === "learned" ? t("sentences.toReview") : t("sentences.toLearned")}
         </MenuItem>
         <MenuSeparator />
         <MenuItem danger onSelect={() => doDelete([s.id], `“${s.chinese}”`)}>
           <Trash2 />
-          Xóa câu
+          {t("sentences.deleteSentence")}
         </MenuItem>
       </MenuContent>
     </Menu>
   );
   const star = (s: SentenceItem) => {
     const on = favs[s.id] ?? s.isFavorite;
-    return on ? <Star className="size-4 shrink-0 fill-amber text-amber" aria-label="Yêu thích" /> : null;
+    return on ? <Star className="size-4 shrink-0 fill-amber text-amber" aria-label={t("sentences.favorite")} /> : null;
   };
 
   return (
@@ -178,41 +180,39 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
             id="sl-title"
             className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]"
           >
-            Ôn dịch câu
+            {t("sentences.title")}
             <LeafDecor className="w-10" />
           </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">
-            Lưu câu hay, luyện dịch Việt ⇄ Trung để nói tự nhiên hơn.
-          </p>
+          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("sentences.subtitle")}</p>
         </div>
         <div className="grid shrink-0 grid-cols-2 gap-2.5 max-md:w-full md:flex">
           <Button asChild variant="secondary">
             <Link href="/sentences/review/setup">
               <PlayCircle />
-              Bắt đầu ôn
+              {t("sentences.startReview")}
             </Link>
           </Button>
           <Button asChild variant="solid">
             <Link href="/sentences/new">
               <Plus />
-              Thêm câu
+              {t("sentences.add")}
             </Link>
           </Button>
         </div>
       </section>
 
       <section
-        aria-label="Danh sách câu"
+        aria-label={t("sentences.list")}
         className="flex flex-col gap-[18px] rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
         <label className="relative block">
-          <span className="sr-only">Tìm kiếm câu</span>
+          <span className="sr-only">{t("sentences.searchLabel")}</span>
           <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
           <input
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Tìm kiếm câu (tiếng Trung, tiếng Việt hoặc tag...)"
+            placeholder={t("sentences.searchPlaceholder")}
             autoComplete="off"
             className={cn(inputClass, "pl-11")}
           />
@@ -221,11 +221,11 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
         {data.totalAll > 0 ? (
           <div
             role="group"
-            aria-label="Lọc theo tag"
+            aria-label={t("sentences.filterTag")}
             className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
           >
             <Chip on={!params.tag} onClick={() => go({ tag: "", page: 1 })}>
-              Tất cả ({data.totalAll})
+              {t("sentences.allCount", { count: data.totalAll })}
             </Chip>
             {data.tags.map((t) => (
               <Chip
@@ -238,7 +238,7 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
             ))}
             <Chip on={params.tag === FAV_TAG} onClick={() => go({ tag: FAV_TAG, page: 1 })}>
               <Star className="size-4" aria-hidden="true" />
-              Yêu thích ({data.favCount})
+              {t("sentences.favCount", { count: data.favCount })}
             </Chip>
           </div>
         ) : null}
@@ -251,7 +251,7 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
               <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                 <Search className="size-7" />
               </span>
-              <h3 className="text-xl font-bold text-navy">Không tìm thấy câu phù hợp</h3>
+              <h3 className="text-xl font-bold text-navy">{t("sentences.noMatch")}</h3>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -260,15 +260,15 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
                 }}
               >
                 <X />
-                Xóa bộ lọc
+                {t("sentences.clearFilters")}
               </Button>
             </div>
           ) : (
             <>
-              <p className="mb-2 text-sm text-text-2">{data.total} câu</p>
+              <p className="mb-2 text-sm text-text-2">{t("sentences.total", { count: data.total })}</p>
               <div
                 role="toolbar"
-                aria-label="Thao tác với câu đã chọn"
+                aria-label={t("sentences.bulkToolbar")}
                 className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-border bg-bg px-3 py-2.5"
               >
                 <label className="inline-flex min-w-[150px] cursor-pointer items-center gap-2.5 font-semibold text-text">
@@ -280,43 +280,47 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
                       if (el) el.indeterminate = onPage > 0 && !allOnPage;
                     }}
                     onChange={(e) => toggleAll(e.target.checked)}
-                    aria-label="Chọn tất cả trên trang"
+                    aria-label={t("sentences.selectAllOnPage")}
                   />
-                  <span aria-live="polite">{selected.size ? `Đã chọn ${selected.size} câu` : "Chưa chọn câu nào"}</span>
+                  <span aria-live="polite">
+                    {selected.size
+                      ? t("sentences.selectedCount", { count: selected.size })
+                      : t("sentences.noneSelected")}
+                  </span>
                 </label>
                 <div className="grid w-full grid-cols-2 gap-2 md:ml-auto md:flex md:w-auto">
                   <BulkButton
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 câu để ôn"
+                    hint={t("sentences.hintReview")}
                     onClick={() => doReview([...selected])}
                   >
                     <PlayCircle />
-                    Ôn tập
+                    {t("sentences.review")}
                   </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 câu để đánh dấu"
+                    hint={t("sentences.hintMark")}
                     onClick={() => doStatus([...selected], "learned")}
                   >
                     <CheckCircle2 />
-                    Đã thuộc
+                    {t("ui.learned")}
                   </BulkButton>
                   <BulkButton
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 câu để đánh dấu"
+                    hint={t("sentences.hintMark")}
                     onClick={() => doStatus([...selected], "review")}
                   >
                     <RefreshCw />
-                    Cần ôn
+                    {t("ui.review")}
                   </BulkButton>
                   <BulkButton
                     danger
                     disabled={!selected.size}
-                    hint="Chọn ít nhất 1 câu để xóa"
-                    onClick={() => doDelete([...selected], `${selected.size} câu đã chọn`)}
+                    hint={t("sentences.hintDelete")}
+                    onClick={() => doDelete([...selected], t("sentences.selectedSentences", { count: selected.size }))}
                   >
                     <Trash2 />
-                    Xóa
+                    {t("sentences.delete")}
                   </BulkButton>
                 </div>
               </div>
@@ -325,20 +329,20 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
               <div className="hidden overflow-x-auto rounded-md border border-border md:block">
                 <table className="w-full min-w-[820px] border-collapse text-[15.5px]">
                   <caption className="sr-only">
-                    Danh sách câu, trang {data.page}/{data.pageCount}
+                    {t("sentences.caption", { page: data.page, count: data.pageCount })}
                   </caption>
                   <thead>
                     <tr className="bg-[#F3F8FE] text-left [&>th]:px-3 [&>th]:py-3.5 [&>th]:font-semibold">
                       <th className="w-[52px] text-center">
-                        <span className="sr-only">Chọn</span>
+                        <span className="sr-only">{t("sentences.colSelect")}</span>
                       </th>
                       <th className="w-11">#</th>
-                      <th>Câu tiếng Trung</th>
-                      <th>Câu tiếng Việt</th>
-                      <th>Tag</th>
-                      <th>Trạng thái</th>
+                      <th>{t("sentences.colChinese")}</th>
+                      <th>{t("sentences.colVietnamese")}</th>
+                      <th>{t("sentences.colTag")}</th>
+                      <th>{t("sentences.colStatus")}</th>
                       <th className="w-[1%]">
-                        <span className="sr-only">Thao tác</span>
+                        <span className="sr-only">{t("sentences.colActions")}</span>
                       </th>
                     </tr>
                   </thead>
@@ -357,7 +361,7 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
                             className={checkboxClass}
                             checked={selected.has(s.id)}
                             onChange={(e) => toggle(s.id, e.target.checked)}
-                            aria-label={`Chọn ${s.chinese}`}
+                            aria-label={t("sentences.selectSentence", { text: s.chinese })}
                           />
                         </td>
                         <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
@@ -390,7 +394,7 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
               </div>
 
               {/* Điện thoại: thẻ */}
-              <ul aria-label="Danh sách câu" className="flex flex-col gap-3 md:hidden">
+              <ul aria-label={t("sentences.list")} className="flex flex-col gap-3 md:hidden">
                 {data.items.map((s) => (
                   <li
                     key={s.id}
@@ -404,7 +408,7 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
                       className={cn(checkboxClass, "mt-1.5")}
                       checked={selected.has(s.id)}
                       onChange={(e) => toggle(s.id, e.target.checked)}
-                      aria-label={`Chọn ${s.chinese}`}
+                      aria-label={t("sentences.selectSentence", { text: s.chinese })}
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
@@ -459,17 +463,18 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 }
 
 function EmptyAll({ onSampled }: { onSampled: () => void }) {
+  const t = useT();
   const [busy, setBusy] = React.useState(false);
   return (
     <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
       <Image src="/brand/lingyu-mascot.png" alt="" width={180} height={120} className="h-auto w-[180px]" />
-      <h3 className="text-xl font-bold text-navy">Chưa có câu nào</h3>
-      <p className="max-w-[420px] text-text-2">Thêm câu tiếng Trung và nghĩa tiếng Việt để luyện dịch mỗi ngày.</p>
+      <h3 className="text-xl font-bold text-navy">{t("sentences.emptyTitle")}</h3>
+      <p className="max-w-[420px] text-text-2">{t("sentences.emptyDesc")}</p>
       <div className="flex w-full max-w-md flex-col gap-2.5 sm:w-auto sm:flex-row">
         <Button asChild variant="solid">
           <Link href="/sentences/new">
             <Plus />
-            Thêm câu
+            {t("sentences.add")}
           </Link>
         </Button>
         <Button
@@ -480,12 +485,12 @@ function EmptyAll({ onSampled }: { onSampled: () => void }) {
             const r = await importSampleSentencesAction();
             setBusy(false);
             if (!r.ok) return void toast.error(r.message);
-            toast.success(`Đã thêm ${r.data} câu mẫu.`);
+            toast.success(t("sentences.sampleAdded", { count: r.data }));
             onSampled();
           }}
         >
           <Database />
-          {busy ? "Đang thêm..." : "Dùng dữ liệu mẫu"}
+          {busy ? t("vocab.sampleAdding") : t("vocab.useSample")}
         </Button>
       </div>
     </div>

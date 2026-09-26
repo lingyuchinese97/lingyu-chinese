@@ -74,7 +74,8 @@ function buildIndex() {
       }
       if (!exact.has(v)) exact.set(v, key);
       const names: string[] = [];
-      if (/\{\w+\}/.test(v) && !/plural,/.test(v)) {
+      // Chỉ khớp theo mẫu cho thông báo lỗi/hệ thống (tránh khớp nhầm các nhãn ngắn như "{count} từ vựng").
+      if (key.startsWith("errors.") && /\{\w+\}/.test(v) && !/plural,/.test(v)) {
         const src = v
           .split(/(\{\w+\})/g)
           .map((part) => {

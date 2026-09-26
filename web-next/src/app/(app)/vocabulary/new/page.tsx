@@ -3,16 +3,20 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { requireUser } from "@/server/session";
 import { listTags } from "@/features/vocabulary/service";
 import { VocabForm } from "@/features/vocabulary/components/vocab-form";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Thêm từ vựng" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("vocab.add") };
+}
 
 export default async function NewVocabPage() {
   const user = await requireUser();
   const tags = await listTags(user.id);
+  const t = await getT();
   return (
     <>
-      <Breadcrumb back="/vocabulary" section="Từ vựng" current="Thêm từ vựng mới" />
-      <VocabForm word={null} allTags={tags.map((t) => t.name)} />
+      <Breadcrumb back="/vocabulary" section={t("vocab.title")} current={t("vocab.addNew")} />
+      <VocabForm word={null} allTags={tags.map((x) => x.name)} />
     </>
   );
 }

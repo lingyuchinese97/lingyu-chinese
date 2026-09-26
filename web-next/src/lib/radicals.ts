@@ -2,6 +2,8 @@
 import { RADICAL_TABLE, strokesOf } from "@/data/radicals";
 import { EXAMPLE_PINYIN, RADICAL_CHARS, SIMPLIFIED_FORM } from "@/data/radicalMap";
 import { fold } from "@/lib/fold";
+import { RADICAL_MEANING_EN } from "@/data/radicals-en";
+import type { Locale } from "@/i18n/config";
 
 export type Radical = {
   num: number;
@@ -11,6 +13,8 @@ export type Radical = {
   pinyin: string;
   name: string;
   meaning: string;
+  /** Nghĩa tiếng Anh (giao diện English). */
+  meaningEn: string;
   strokes: number;
   charCount: number;
 };
@@ -27,6 +31,7 @@ export const RADICALS: Radical[] = RADICAL_TABLE.map(([num, char, variants, piny
     pinyin,
     name,
     meaning,
+    meaningEn: RADICAL_MEANING_EN[num - 1] ?? "",
     strokes: strokesOf(num),
     charCount: (RADICAL_CHARS[num] || "").length,
   };
@@ -36,8 +41,13 @@ const BY_NUM = new Map(RADICALS.map((r) => [r.num, r]));
 export const isRadicalNum = (n: unknown): n is number => Number.isInteger(n) && BY_NUM.has(n as number);
 export const radicalByNum = (n: number) => BY_NUM.get(n) ?? null;
 
-/** Hiển thị ngắn: "Thủy (nước)". */
-export const radicalLabel = (r: Radical) => `${r.name} (${r.meaning})`;
+/** Tên bộ theo ngôn ngữ: tiếng Việt dùng tên Hán Việt ("Thủy"), tiếng Anh dùng pinyin ("shuǐ"). */
+export const radicalName = (r: Radical, locale: Locale = "vi") => (locale === "en" ? r.pinyin : r.name);
+/** Nghĩa của bộ theo ngôn ngữ. */
+export const radicalMeaning = (r: Radical, locale: Locale = "vi") => (locale === "en" ? r.meaningEn : r.meaning);
+/** Hiển thị ngắn: "Thủy (nước)" / "shuǐ (water)". */
+export const radicalLabel = (r: Radical, locale: Locale = "vi") =>
+  `${radicalName(r, locale)} (${radicalMeaning(r, locale)})`;
 /** Chữ bộ + biến thể thường gặp: "水 氵". */
 export const radicalGlyph = (r: Radical) => {
   const v = r.variants.find((x) => !x.includes("("));
@@ -87,6 +97,8 @@ export function searchRadicals(q: string): Radical[] {
     if (name === f || name.split(/[\s/()]+/).includes(f) || fold(r.pinyin) === f.replace(/\s+/g, "")) return 1;
     if (meaningParts(r.meaning).includes(raw)) return 1; // đúng cả dấu: "cây" → Mộc, "cay" → Tân
     if (meaningParts(r.meaning).map(fold).includes(f)) return 2;
+    if (r.meaningEn.toLowerCase() === raw) return 2; // tiếng Anh: "water" → Thủy
+    if (r.meaningEn.toLowerCase().split(/\s+/).includes(raw)) return 4;
     if (name.startsWith(f)) return 3;
     if (meaning.split(/[\s,;()]+/).includes(f)) return 4;
     if (name.includes(f) || meaning.includes(f)) return 5;
