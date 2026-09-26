@@ -35,7 +35,10 @@ export const pronunciation = {
     countIn: "{count} âm",
     pick: "Xem âm {symbol}",
     listen: "Nghe",
-    listenSound: "Nghe âm {symbol}",
+    listenSound: "Nghe âm {symbol}: máy đọc {hanzi} ({pinyin})",
+    speakHintInitial:
+      "Phụ âm không đọc riêng được, nên máy đọc {hanzi} ({pinyin}) — nghe phần đầu “{symbol}” của âm tiết này.",
+    speakHintFinal: "Máy đọc {hanzi} ({pinyin}) — nghe phần vần “{symbol}” của âm tiết này.",
     like: "Gần giống",
     how: "Cách phát âm",
     examples: "Ví dụ",

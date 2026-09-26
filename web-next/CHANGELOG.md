@@ -67,6 +67,10 @@
 
 ### Changed
 
+- **Phát âm – âm máy đọc khớp chữ hiển thị**: cạnh nút Nghe của mỗi thanh mẫu / vận mẫu hiện rõ chữ và pinyin máy đọc (vd
+  “Nghe 波 bō” cho b) kèm giải thích, vì phụ âm không đọc riêng được. Vận mẫu đọc bằng âm tiết không phụ âm khi có (ai 哀 āi, a 阿 ā);
+  c đổi 雌 → 词; cặp âm d/t đổi 肚 (đa âm) → 度. Test đối chiếu mọi chữ đọc với pinyin-pro.
+
 - **Giọng đọc chậm hơn nữa**: nút Nghe 0,55 (trước 0,7), "Nghe chậm" 0,35 (trước 0,45), nghe từng chữ trước biến điệu 0,45
   (trước 0,55). Cấu hình chung ở `src/lib/speech-rate.ts` cho mọi nút Nghe (Phát âm, Ngữ pháp, Ôn dịch câu, câu nói mỗi ngày ở Trang chủ).
 

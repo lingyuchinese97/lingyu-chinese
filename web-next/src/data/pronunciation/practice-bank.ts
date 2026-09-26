@@ -80,7 +80,7 @@ export const PAIRS: [BankItem, BankItem][] = (
       ["趴", "pā", "nằm sấp", "to lie prone"],
     ],
     [
-      ["肚", "dù", "bụng", "belly"],
+      ["度", "dù", "độ", "degree"],
       ["兔", "tù", "con thỏ", "rabbit"],
     ],
     [

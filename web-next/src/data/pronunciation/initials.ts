@@ -36,7 +36,7 @@ export const INITIAL_GROUPS: SoundGroup[] = [
 
 const i = (
   symbol: string,
-  speak: string,
+  speak: [char: string, pinyin: string],
   group: string,
   like: [string, string],
   how: [string[], string[]],
@@ -44,7 +44,8 @@ const i = (
   tip: [string, string],
 ): SoundItem => ({
   symbol,
-  speak,
+  speak: speak[0],
+  speakPinyin: speak[1],
   group,
   like: { vi: like[0], en: like[1] },
   how: { vi: how[0], en: how[1] },
@@ -61,7 +62,7 @@ const ASP = { vi: "Bật hơi mạnh: đặt tay trước miệng thấy luồng
 export const INITIALS: SoundItem[] = [
   i(
     "b",
-    "波",
+    ["波", "bō"],
     "labial",
     ["Gần “p” trong “pin” (không bật hơi)", "Like “b” in “boy”, voiceless"],
     [
@@ -76,7 +77,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "p",
-    "坡",
+    ["坡", "pō"],
     "labial",
     ["“p” bật hơi mạnh (không phải “ph”)", "Like “p” in “pie”"],
     [
@@ -91,7 +92,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "m",
-    "摸",
+    ["摸", "mō"],
     "labial",
     ["Như “m” tiếng Việt", "Like “m” in “mom”"],
     [
@@ -106,7 +107,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "f",
-    "佛",
+    ["佛", "fó"],
     "labial",
     ["Như “ph” tiếng Việt", "Like “f” in “fun”"],
     [
@@ -121,7 +122,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "d",
-    "德",
+    ["德", "dé"],
     "alveolar",
     ["Gần “t” tiếng Việt (không bật hơi)", "Like “d” in “day”, voiceless"],
     [
@@ -139,7 +140,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "t",
-    "特",
+    ["特", "tè"],
     "alveolar",
     ["Như “th” tiếng Việt", "Like “t” in “top”"],
     [
@@ -154,7 +155,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "n",
-    "讷",
+    ["讷", "nè"],
     "alveolar",
     ["Như “n” tiếng Việt", "Like “n” in “no”"],
     [
@@ -172,7 +173,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "l",
-    "勒",
+    ["勒", "lè"],
     "alveolar",
     ["Như “l” tiếng Việt", "Like “l” in “let”"],
     [
@@ -187,7 +188,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "g",
-    "哥",
+    ["哥", "gē"],
     "velar",
     ["Gần “c / k” tiếng Việt (không bật hơi)", "Like “g” in “go”, voiceless"],
     [
@@ -202,7 +203,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "k",
-    "科",
+    ["科", "kē"],
     "velar",
     ["“k” bật hơi (không phải “kh”)", "Like “k” in “kite”"],
     [
@@ -217,7 +218,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "h",
-    "喝",
+    ["喝", "hē"],
     "velar",
     ["Giữa “h” và “kh” tiếng Việt", "Like a rough “h”"],
     [
@@ -232,7 +233,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "j",
-    "基",
+    ["基", "jī"],
     "palatal",
     ["Gần “ch” tiếng Việt (không bật hơi)", "Like “j” in “jeep”, softer"],
     [
@@ -247,7 +248,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "q",
-    "七",
+    ["七", "qī"],
     "palatal",
     ["Như “ch” tiếng Việt nhưng bật hơi", "Like “ch” in “cheese”"],
     [
@@ -262,7 +263,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "x",
-    "西",
+    ["西", "xī"],
     "palatal",
     ["Gần “x” tiếng Việt, cười nhẹ khi đọc", "Like “sh” with a smile"],
     [
@@ -277,7 +278,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "zh",
-    "知",
+    ["知", "zhī"],
     "retroflex",
     ["Như “tr” tiếng Việt (không bật hơi)", "Like “j” in “jungle”, tongue curled"],
     [
@@ -295,7 +296,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "ch",
-    "吃",
+    ["吃", "chī"],
     "retroflex",
     ["“tr” tiếng Việt nhưng bật hơi", "Like “ch” in “church”, tongue curled"],
     [
@@ -310,7 +311,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "sh",
-    "诗",
+    ["诗", "shī"],
     "retroflex",
     ["Như “s” (uốn lưỡi) tiếng Việt", "Like “sh” in “shirt”, tongue curled"],
     [
@@ -325,7 +326,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "r",
-    "日",
+    ["日", "rì"],
     "retroflex",
     ["Giữa “r” và “gi” tiếng Việt, lưỡi cong", "Like “r” in “run” with a buzz"],
     [
@@ -340,7 +341,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "z",
-    "资",
+    ["资", "zī"],
     "dental",
     ["Gần “ch” đầu lưỡi / “ts” (không bật hơi)", "Like “ds” in “kids”"],
     [
@@ -355,7 +356,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "c",
-    "雌",
+    ["词", "cí"],
     "dental",
     ["“ts” bật hơi", "Like “ts” in “cats”, with air"],
     [
@@ -370,7 +371,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "s",
-    "思",
+    ["思", "sī"],
     "dental",
     ["Như “x” tiếng Việt", "Like “s” in “sun”"],
     [

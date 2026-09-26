@@ -164,8 +164,19 @@ export function SoundBrowser({
                 {l(item.like)}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <SpeakBtn text={item.speak} label={t("pronunciation.sound.listenSound", { symbol: item.symbol })}>
-                  {t("pronunciation.sound.listen")}
+                <SpeakBtn
+                  text={item.speak}
+                  label={t("pronunciation.sound.listenSound", {
+                    symbol: item.symbol,
+                    hanzi: item.speak,
+                    pinyin: item.speakPinyin,
+                  })}
+                >
+                  {t("pronunciation.sound.listen")}{" "}
+                  <span className="hanzi" lang="zh">
+                    {item.speak}
+                  </span>
+                  <span className="font-semibold pinyin">{item.speakPinyin}</span>
                 </SpeakBtn>
                 <TopicNoteButton
                   topic={topic}
@@ -174,6 +185,13 @@ export function SoundBrowser({
                   onChange={(v) => setNotes((n) => ({ ...n, [topic]: v }))}
                 />
               </div>
+              <p className="mt-1.5 text-[13px] text-text-2">
+                {t(kind === "initial" ? "pronunciation.sound.speakHintInitial" : "pronunciation.sound.speakHintFinal", {
+                  symbol: item.symbol,
+                  hanzi: item.speak,
+                  pinyin: item.speakPinyin,
+                })}
+              </p>
             </div>
           </div>
 

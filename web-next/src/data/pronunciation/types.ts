@@ -7,6 +7,8 @@ export type SoundItem = {
   symbol: string;
   /** Chữ Hán đại diện để máy đọc âm này (giọng đọc không đọc được ký hiệu pinyin đứng một mình). */
   speak: string;
+  /** Cách máy đọc chữ `speak` (hiện cạnh nút Nghe để người học biết đang nghe âm tiết nào). */
+  speakPinyin: string;
   /** Nhóm (id trong danh sách nhóm). */
   group: string;
   /** Gần giống âm nào của tiếng Việt / tiếng Anh. */

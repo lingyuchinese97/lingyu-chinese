@@ -38,7 +38,10 @@ export const pronunciation: Messages["pronunciation"] = {
     countIn: "{count} sounds",
     pick: "Show sound {symbol}",
     listen: "Listen",
-    listenSound: "Listen to {symbol}",
+    listenSound: "Listen to {symbol}: the voice reads {hanzi} ({pinyin})",
+    speakHintInitial:
+      "A consonant can't be said alone, so the voice reads {hanzi} ({pinyin}) — listen to the “{symbol}” at its start.",
+    speakHintFinal: "The voice reads {hanzi} ({pinyin}) — listen to its “{symbol}” part.",
     like: "Sounds like",
     how: "How to say it",
     examples: "Examples",
