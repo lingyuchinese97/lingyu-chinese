@@ -9,7 +9,15 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await page.goto("/grammar/new");
   await page.getByLabel(/Tiêu đề/).fill("Câu hỏi với 吗");
   await page.getByLabel("Ý nghĩa").fill("Tạo câu hỏi có/không");
-  await page.getByLabel("Cấu trúc").fill("Chủ ngữ + động từ + 吗？");
+  await page.getByLabel("Cấu trúc dòng 1", { exact: true }).fill("Chủ ngữ + động từ + 吗？");
+  // Thêm 1–3 dòng cấu trúc (tối đa 4 dòng), xoá được.
+  await page.getByRole("button", { name: /Thêm dòng cấu trúc/ }).click();
+  await page.getByLabel("Cấu trúc dòng 2", { exact: true }).fill("Chủ ngữ + 不 + động từ + 吗？");
+  await page.getByRole("button", { name: /Thêm dòng cấu trúc/ }).click();
+  await page.getByRole("button", { name: /Thêm dòng cấu trúc/ }).click();
+  await expect(page.getByRole("button", { name: /Thêm dòng cấu trúc/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Xoá cấu trúc dòng 4" }).click();
+  await page.getByRole("button", { name: "Xoá cấu trúc dòng 3" }).click();
   await page.getByPlaceholder("你是学生吗？").fill("你好吗？");
   await page.getByPlaceholder("Ni3 shi4 xue2sheng5 ma5?").pressSequentially("ni3 hao3 ma5?");
   await expect(page.getByPlaceholder("Ni3 shi4 xue2sheng5 ma5?")).toHaveValue("nǐ hǎo ma?");
@@ -23,6 +31,7 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
 
   await expect(page.getByRole("heading", { level: 1, name: "Câu hỏi với 吗" })).toBeVisible();
   await expect(page.getByText("mẹo riêng của tôi")).toBeVisible();
+  await expect(page.getByText("Chủ ngữ + 不 + động từ + 吗？")).toBeVisible();
   const ex = page.locator("ol li .hanzi");
   await expect(ex.first()).toHaveText("你是学生吗？");
   await page.getByRole("button", { name: "Lưu", exact: true }).click();
@@ -33,7 +42,9 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await page.goto("/grammar");
   await page.getByPlaceholder("Tìm kiếm ngữ pháp...").fill("cau hoi");
   await expect(page).toHaveURL(/q=cau/);
-  await expect(page.getByText("1 ngữ pháp", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Danh sách ngữ pháp" }).getByText("1 ngữ pháp", { exact: true }),
+  ).toBeVisible();
 
   await page.getByRole("link", { name: "Câu hỏi với 吗" }).click();
   await page.getByRole("link", { name: "Chỉnh sửa" }).click();

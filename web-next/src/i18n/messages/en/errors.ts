@@ -77,6 +77,7 @@ export const errors: Messages["errors"] = {
   shareSourceDeleted: "The sender has deleted the original grammar point.",
   grammarTitleRequired: "Please enter a grammar title.",
   grammarTitleMax: "Title can be at most {max} characters.",
+  grammarStructureLines: "At most {max} structure lines.",
   grammarFieldMax: "At most {max} characters.",
   grammarExamplesMax: "At most {max} examples.",
   grammarExampleChinese: "Example {n}: please enter the Chinese sentence.",

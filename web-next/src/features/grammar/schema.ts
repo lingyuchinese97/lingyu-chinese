@@ -3,7 +3,9 @@ import { z } from "zod";
 export const G_LIMITS = {
   title: 120,
   meaning: 2000,
+  /** Mỗi dòng cấu trúc tối đa 300 ký tự; tối đa 4 dòng (1 dòng chính + thêm 1–3 dòng). */
   structure: 300,
+  structureLines: 4,
   notes: 2000,
   personalNote: 2000,
   tag: 24,
@@ -28,6 +30,25 @@ export const grammarTagName = z
   .transform(cleanName)
   .pipe(z.string().min(1, "Tên thẻ không được để trống.").max(G_LIMITS.tag, `Tên thẻ tối đa ${G_LIMITS.tag} ký tự.`));
 
+/** Cấu trúc lưu một chuỗi, mỗi dòng là một cấu trúc (bỏ dòng trống). */
+export const structureLines = (s: string | null | undefined) =>
+  String(s ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+const structureSchema = z
+  .string()
+  .default("")
+  .transform(structureLines)
+  .superRefine((lines, ctx) => {
+    if (lines.length > G_LIMITS.structureLines)
+      ctx.addIssue({ code: "custom", message: `Tối đa ${G_LIMITS.structureLines} dòng cấu trúc.` });
+    if (lines.some((l) => l.length > G_LIMITS.structure))
+      ctx.addIssue({ code: "custom", message: `Tối đa ${G_LIMITS.structure} ký tự.` });
+  })
+  .transform((lines) => lines.join("\n"));
+
 const ex = z.object({
   chinese: z.string().trim().max(G_LIMITS.example),
   pinyin: z.string().trim().max(G_LIMITS.example).default(""),
@@ -46,7 +67,7 @@ export const grammarInputSchema = z
           .max(G_LIMITS.title, `Tiêu đề tối đa ${G_LIMITS.title} ký tự.`),
       ),
     meaning: z.string().trim().max(G_LIMITS.meaning, `Tối đa ${G_LIMITS.meaning} ký tự.`).default(""),
-    structure: z.string().trim().max(G_LIMITS.structure, `Tối đa ${G_LIMITS.structure} ký tự.`).default(""),
+    structure: structureSchema,
     notes: z.string().trim().max(G_LIMITS.notes, `Tối đa ${G_LIMITS.notes} ký tự.`).default(""),
     personalNote: z.string().trim().max(G_LIMITS.personalNote, `Tối đa ${G_LIMITS.personalNote} ký tự.`).default(""),
     // Ví dụ trống hoàn toàn thì bỏ; có pinyin/nghĩa mà thiếu câu tiếng Trung thì báo lỗi.

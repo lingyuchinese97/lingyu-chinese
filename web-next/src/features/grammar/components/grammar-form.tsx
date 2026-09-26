@@ -11,7 +11,7 @@ import { toast } from "@/components/ui/toaster";
 import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { applyToneInput } from "@/lib/pinyin";
-import { G_LIMITS, grammarInputSchema } from "../schema";
+import { G_LIMITS, grammarInputSchema, structureLines } from "../schema";
 import { createGrammarAction, updateGrammarAction } from "../actions";
 import { TagInput } from "./grammar-dialogs";
 import { useT } from "@/i18n/client";
@@ -37,7 +37,12 @@ export function GrammarForm({ initial, allTags }: { initial: Initial | null; all
   const editing = !!initial;
   const [title, setTitle] = React.useState(initial?.title ?? "");
   const [meaning, setMeaning] = React.useState(initial?.meaning ?? "");
-  const [structure, setStructure] = React.useState(initial?.structure ?? "");
+  // Cấu trúc: 1 dòng chính + thêm tối đa 3 dòng (lưu chung một chuỗi, mỗi dòng một cấu trúc).
+  const [structures, setStructures] = React.useState<string[]>(() => {
+    const l = structureLines(initial?.structure);
+    return l.length ? l : [""];
+  });
+  const [structErr, setStructErr] = React.useState("");
   const [notes, setNotes] = React.useState(initial?.notes ?? "");
   const [personalNote, setPersonalNote] = React.useState(initial?.personalNote ?? "");
   const [tags, setTags] = React.useState<string[]>(initial?.tags ?? []);
@@ -84,7 +89,7 @@ export function GrammarForm({ initial, allTags }: { initial: Initial | null; all
     const payload = {
       title,
       meaning,
-      structure,
+      structure: structures.join("\n"),
       notes,
       personalNote,
       tags,
@@ -94,6 +99,7 @@ export function GrammarForm({ initial, allTags }: { initial: Initial | null; all
     if (!parsed.success) {
       for (const i of parsed.error.issues) {
         if (i.path[0] === "title") setTitleErr(i.message);
+        else if (i.path[0] === "structure") setStructErr(i.message);
         else if (i.path[0] === "examples") setExErr(i.message);
         else setFormErr(i.message);
       }
@@ -172,18 +178,64 @@ export function GrammarForm({ initial, allTags }: { initial: Initial | null; all
           placeholder={t("grammar.form.meaningPlaceholder")}
         />
       </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="gf-structure">{t("grammar.form.structure")}</Label>
-        <Input
-          id="gf-structure"
-          lang="zh"
-          value={structure}
-          maxLength={G_LIMITS.structure}
-          onChange={(e) => setStructure(e.target.value)}
-          placeholder={t("grammar.form.structurePlaceholder")}
-          autoComplete="off"
-        />
-      </div>
+      <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+        <legend className="mb-1.5 text-[15px] font-semibold text-text">{t("grammar.form.structure")}</legend>
+        {structures.map((line, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <label htmlFor={i ? `gf-structure-${i}` : "gf-structure"} className="sr-only">
+              {t("grammar.form.structureLine", { n: i + 1 })}
+            </label>
+            <Input
+              id={i ? `gf-structure-${i}` : "gf-structure"}
+              lang="zh"
+              value={line}
+              maxLength={G_LIMITS.structure}
+              onChange={(e) => {
+                setDirty(true);
+                setStructErr("");
+                setStructures((l) => l.map((x, j) => (j === i ? e.target.value : x)));
+              }}
+              placeholder={i ? t("grammar.form.structureMorePlaceholder") : t("grammar.form.structurePlaceholder")}
+              autoComplete="off"
+              aria-invalid={!!structErr || undefined}
+              aria-describedby="gf-structure-err"
+              className="font-cn"
+            />
+            {i ? (
+              <IconBtn
+                danger
+                label={t("grammar.form.removeStructureLine", { n: i + 1 })}
+                onClick={() => {
+                  setDirty(true);
+                  setStructures((l) => l.filter((_, j) => j !== i));
+                }}
+              >
+                <Trash2 />
+              </IconBtn>
+            ) : null}
+          </div>
+        ))}
+        {structures.length < G_LIMITS.structureLines ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="self-start"
+            onClick={() => {
+              setStructures((l) => [...l, ""]);
+              requestAnimationFrame(() => document.getElementById(`gf-structure-${structures.length}`)?.focus());
+            }}
+          >
+            <Plus />
+            {t("grammar.form.addStructureLine", { left: G_LIMITS.structureLines - structures.length })}
+          </Button>
+        ) : null}
+        {structErr ? (
+          <span id="gf-structure-err" role="alert" className="text-[13.5px] text-red">
+            {t.maybe(structErr)}
+          </span>
+        ) : null}
+      </fieldset>
 
       <fieldset className="m-0 flex flex-col gap-3 border-0 p-0">
         <legend className="mb-1.5 text-[15px] font-semibold text-text">{t("grammar.form.examples")}</legend>
