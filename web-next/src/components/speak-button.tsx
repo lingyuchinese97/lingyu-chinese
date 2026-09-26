@@ -3,6 +3,7 @@ import { useT } from "@/i18n/client";
 import * as React from "react";
 import { Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SPEECH_RATE } from "@/lib/speech-rate";
 
 /**
  * Đọc câu tiếng Trung bằng giọng đọc có sẵn của trình duyệt / hệ điều hành (Web Speech API — không gọi dịch vụ ngoài).
@@ -36,7 +37,7 @@ export function SpeakButton({
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "zh-CN";
-    u.rate = 0.7; // đọc chậm cho người học
+    u.rate = SPEECH_RATE.normal;
     const voice =
       synth.getVoices().find((v) => /^zh[-_]CN|cmn/i.test(v.lang)) ??
       synth.getVoices().find((v) => /^zh/i.test(v.lang));

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { pinyin } from "pinyin-pro";
 import { pool } from "@/server/db/pool";
 import { isPinyinSyllable, normalizePinyin, samePinyin, splitSyllables, splitTone } from "@/lib/pinyin";
 import {
@@ -128,6 +129,20 @@ describe("nội dung", () => {
           splitSyllables(e.pinyin).map((s) => parts(s).f),
           `${x.symbol}: ${e.hanzi}`,
         ).toContain(x.symbol);
+  });
+
+  it("chữ máy đọc khớp pinyin hiển thị, và âm tiết đó chứa đúng thanh mẫu / vận mẫu đang dạy", () => {
+    for (const x of [...INITIALS, ...FINALS]) {
+      // Cách đọc mặc định (phổ biến nhất) của chữ = cách giọng đọc của máy sẽ đọc.
+      expect(pinyin(x.speak), `${x.symbol}: ${x.speak}`).toBe(x.speakPinyin);
+    }
+    for (const x of INITIALS) expect(splitTone(x.speakPinyin).plain.startsWith(x.symbol), x.symbol).toBe(true);
+    // Vận mẫu: đọc âm tiết không phụ âm (y / w) khi có; ei, eng, ong không có chữ đứng riêng thông dụng nên kèm phụ âm.
+    const WITH_INITIAL = ["ei", "eng", "ong"];
+    for (const x of FINALS)
+      if (!WITH_INITIAL.includes(x.symbol))
+        expect(/^[ywaoe]/.test(splitTone(x.speakPinyin).plain), `${x.symbol}: ${x.speakPinyin}`).toBe(true);
+      else expect(splitTone(x.speakPinyin).plain.endsWith(x.symbol), x.symbol).toBe(true);
   });
 
   it("mã mục ghi chú: hợp lệ / không hợp lệ", () => {

@@ -26,7 +26,7 @@ export const FINAL_GROUPS: SoundGroup[] = [
 
 const f = (
   symbol: string,
-  speak: string,
+  speak: [char: string, pinyin: string],
   group: string,
   like: [string, string],
   how: [string[], string[]],
@@ -34,7 +34,8 @@ const f = (
   tip: [string, string],
 ): SoundItem => ({
   symbol,
-  speak,
+  speak: speak[0],
+  speakPinyin: speak[1],
   group,
   like: { vi: like[0], en: like[1] },
   how: { vi: how[0], en: how[1] },
@@ -52,7 +53,7 @@ export const FINALS: SoundItem[] = [
   // ----- Đơn -----
   f(
     "a",
-    "啊",
+    ["阿", "ā"],
     "single",
     ["Như “a” tiếng Việt", "Like “a” in “father”"],
     [["Miệng mở to, lưỡi hạ thấp."], ["Open the mouth wide, tongue low."]],
@@ -64,7 +65,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "o",
-    "哦",
+    ["哦", "ò"],
     "single",
     ["Gần “ua / uô” tiếng Việt", "Like “aw” in “law” with rounded lips"],
     [
@@ -79,7 +80,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "e",
-    "鹅",
+    ["鹅", "é"],
     "single",
     ["Gần “ưa / ơ” tiếng Việt, phát từ cổ họng", "Like “uh” pushed from the throat"],
     [
@@ -94,7 +95,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "i",
-    "衣",
+    ["衣", "yī"],
     "single",
     ["Như “i” tiếng Việt", "Like “ee” in “see”"],
     [["Môi dẹt như cười, lưỡi nâng cao."], ["Spread the lips as if smiling."]],
@@ -109,7 +110,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "u",
-    "乌",
+    ["乌", "wū"],
     "single",
     ["Như “u” tiếng Việt", "Like “oo” in “food”"],
     [["Môi tròn, chúm nhỏ, lưỡi lùi sau."], ["Round and push the lips forward."]],
@@ -121,7 +122,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ü",
-    "鱼",
+    ["鱼", "yú"],
     "single",
     ["Gần “uy” tiếng Việt nhưng giữ môi tròn", "Like French “u” / German “ü”"],
     [
@@ -137,7 +138,7 @@ export const FINALS: SoundItem[] = [
   // ----- Kép -----
   f(
     "ai",
-    "爱",
+    ["哀", "āi"],
     "compound",
     ["Như “ai” tiếng Việt", "Like “eye”"],
     [["Từ a lướt sang i."], ["Glide from a to i."]],
@@ -149,7 +150,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ei",
-    "飞",
+    ["飞", "fēi"],
     "compound",
     ["Như “ây” tiếng Việt", "Like “ay” in “say”"],
     [["Từ e (gần “ê”) lướt sang i."], ["Glide from e to i."]],
@@ -161,7 +162,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ao",
-    "奥",
+    ["奥", "ào"],
     "compound",
     ["Như “ao” tiếng Việt", "Like “ow” in “how”"],
     [["Từ a lướt sang o (u), môi tròn dần."], ["Glide from a to o, rounding the lips."]],
@@ -173,7 +174,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ou",
-    "欧",
+    ["欧", "ōu"],
     "compound",
     ["Như “âu” tiếng Việt", "Like “o” in “go”"],
     [["Từ o lướt sang u, môi tròn."], ["Glide from o to u."]],
@@ -185,7 +186,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ia",
-    "压",
+    ["压", "yā"],
     "compound",
     ["“i-a” đọc liền (gần “da”)", "Like “ya” in “yard”"],
     [["i ngắn lướt nhanh sang a."], ["A short i gliding into a."]],
@@ -197,7 +198,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ie",
-    "耶",
+    ["耶", "yē"],
     "compound",
     ["Như “iê” tiếng Việt", "Like “ye” in “yes”"],
     [["i lướt sang ê (e ở đây đọc “ê”)."], ["i gliding into “eh”."]],
@@ -209,7 +210,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ua",
-    "蛙",
+    ["蛙", "wā"],
     "compound",
     ["Như “oa” tiếng Việt", "Like “wa” in “want”"],
     [["u ngắn lướt sang a."], ["A short u gliding into a."]],
@@ -221,7 +222,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "uo",
-    "窝",
+    ["窝", "wō"],
     "compound",
     ["Như “ua / uô” tiếng Việt", "Like “wo” in “wore”"],
     [["u lướt sang o, môi tròn."], ["u gliding into o."]],
@@ -233,7 +234,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "üe",
-    "月",
+    ["月", "yuè"],
     "compound",
     ["Như “uê” tiếng Việt, môi tròn", "Like “ü” + “eh”"],
     [["ü lướt sang ê."], ["ü gliding into “eh”."]],
@@ -245,7 +246,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "iao",
-    "腰",
+    ["腰", "yāo"],
     "compound",
     ["Như “i-ao” / “eo” tiếng Việt", "Like “yow”"],
     [["i → a → o lướt liền."], ["i → a → o in one glide."]],
@@ -257,7 +258,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "iou",
-    "优",
+    ["优", "yōu"],
     "compound",
     ["Như “iêu” tiếng Việt", "Like “yo” in “yoga”"],
     [
@@ -272,7 +273,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "uai",
-    "歪",
+    ["歪", "wāi"],
     "compound",
     ["Như “oai” tiếng Việt", "Like “why”"],
     [["u → a → i lướt liền."], ["u → a → i in one glide."]],
@@ -284,7 +285,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "uei",
-    "威",
+    ["威", "wēi"],
     "compound",
     ["Như “uây” tiếng Việt", "Like “way”"],
     [
@@ -300,7 +301,7 @@ export const FINALS: SoundItem[] = [
   // ----- Mũi -----
   f(
     "an",
-    "安",
+    ["安", "ān"],
     "nasal",
     ["Như “an” tiếng Việt", "Like “an” in “ban”"],
     [
@@ -315,7 +316,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "en",
-    "恩",
+    ["恩", "ēn"],
     "nasal",
     ["Như “ân” tiếng Việt", "Like “un” in “under”"],
     [
@@ -330,7 +331,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "in",
-    "因",
+    ["因", "yīn"],
     "nasal",
     ["Như “in” tiếng Việt", "Like “in”"],
     [
@@ -345,7 +346,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ün",
-    "晕",
+    ["晕", "yūn"],
     "nasal",
     ["Như “uyn” tiếng Việt, môi tròn", "ü + n"],
     [
@@ -360,7 +361,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ian",
-    "烟",
+    ["烟", "yān"],
     "nasal",
     ["Như “iên” tiếng Việt", "Like “yen”"],
     [
@@ -375,7 +376,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "uan",
-    "弯",
+    ["弯", "wān"],
     "nasal",
     ["Như “oan” tiếng Việt", "Like “wan”"],
     [
@@ -390,7 +391,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "üan",
-    "冤",
+    ["冤", "yuān"],
     "nasal",
     ["Như “uyên” tiếng Việt", "ü + an (a like “eh”)"],
     [
@@ -405,7 +406,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "uen",
-    "温",
+    ["温", "wēn"],
     "nasal",
     ["Như “uân” tiếng Việt", "Like “won”"],
     [
@@ -420,7 +421,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ang",
-    "昂",
+    ["昂", "áng"],
     "nasal",
     ["Như “ang” tiếng Việt", "Like “ahng”"],
     [
@@ -435,7 +436,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "eng",
-    "亨",
+    ["亨", "hēng"],
     "nasal",
     ["Như “âng” tiếng Việt", "Like “ung” in “lung”"],
     [
@@ -450,7 +451,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ing",
-    "英",
+    ["英", "yīng"],
     "nasal",
     ["Như “inh” tiếng Việt", "Like “ing” in “sing”"],
     [
@@ -465,7 +466,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ong",
-    "轰",
+    ["轰", "hōng"],
     "nasal",
     ["Như “ung” tiếng Việt", "Like “oong”"],
     [
@@ -480,7 +481,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "iang",
-    "央",
+    ["央", "yāng"],
     "nasal",
     ["Như “i-ang” đọc liền", "Like “yahng”"],
     [
@@ -495,7 +496,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "uang",
-    "汪",
+    ["汪", "wāng"],
     "nasal",
     ["Như “oang” tiếng Việt", "Like “wahng”"],
     [
@@ -510,7 +511,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ueng",
-    "翁",
+    ["翁", "wēng"],
     "nasal",
     ["Như “uâng” tiếng Việt", "Like “wung”"],
     [
@@ -522,7 +523,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "iong",
-    "拥",
+    ["拥", "yōng"],
     "nasal",
     ["Như “i-ung” đọc liền", "Like “yoong”"],
     [
@@ -538,7 +539,7 @@ export const FINALS: SoundItem[] = [
   // ----- Đặc biệt -----
   f(
     "er",
-    "儿",
+    ["儿", "ér"],
     "special",
     ["“ơ” rồi cuốn lưỡi lên", "Like American “er”"],
     [
