@@ -148,6 +148,10 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     ôn tập `empty` → 409, còn lại 400; Zod → 400 + `fieldErrors`), thông báo dịch theo ngôn ngữ người dùng. id sai định dạng cũng
     trả 404. App khác đăng nhập qua `POST /api/auth/sign-in/email` rồi gửi cookie phiên. Server Action của giao diện giữ nguyên.
     Tài liệu `docs/API.md`, e2e `tests/e2e/api.spec.ts`.
+    Swagger: OpenAPI 3.1 viết tay ở `src/server/openapi.ts` nhưng thân request sinh bằng `z.toJSONSchema` từ schema của tính
+    năng (không lệch với kiểm tra thật); unit test so danh sách route/method trong `src/app/api/v1` với tài liệu. Swagger UI dùng
+    `swagger-ui-dist` tự host (không CDN, hợp CSP `script-src 'self'`), chỉ tải ở trang `/api-docs`. Trang công khai (chỉ là tài
+    liệu, không có dữ liệu người dùng, `noindex`); gọi thử vẫn cần đăng nhập vì dùng cookie phiên cùng domain.
 
 ## Chỗ mơ hồ & cách xử lý
 

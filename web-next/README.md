@@ -96,6 +96,9 @@ Mọi chức năng mới phải có REST API dưới `/api/v1/...` (quy ước �
 chia sẻ; tạo bài ôn tự chọn hoặc đến hạn, trả lời, đánh giá Khó/Được/Dễ, nộp bài. Danh sách route, dạng request/response và cách
 đăng nhập từ app khác: [`docs/API.md`](docs/API.md).
 
+**Swagger**: mở [`/api-docs`](https://lingyuchinese.com/api-docs) để xem mọi route và bấm _Try it out_ gọi thử (đăng nhập LingYu
+trước). File OpenAPI 3.1: `/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client.
+
 ## Ngôn ngữ giao diện (Tiếng Việt / English)
 
 Chữ trên giao diện nằm trong `src/i18n/messages/vi/*.ts` (gốc) và `src/i18n/messages/en/*.ts` — TypeScript báo lỗi nếu bản tiếng Anh

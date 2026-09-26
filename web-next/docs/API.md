@@ -2,6 +2,8 @@
 
 API cho app điện thoại / app khác. Dùng chung logic (service) với giao diện web nên kết quả giống hệt.
 
+**Swagger**: https://lingyuchinese.com/api-docs (xem và gọi thử từng route) · OpenAPI 3.1: https://lingyuchinese.com/api/openapi.json
+
 ## Quy ước chung
 
 - **Đăng nhập**: dùng phiên Better Auth (cookie). App khác đăng nhập bằng
