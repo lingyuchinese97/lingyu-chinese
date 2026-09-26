@@ -29,3 +29,6 @@ export async function sql(text: string, params: unknown[] = []) {
     await client.end();
   }
 }
+
+/** Tài khoản riêng của trang tài liệu API trong e2e (giá trị test, không phải bí mật thật). */
+export const E2E_DOCS = { username: "docs-e2e", password: "e2e-docs-password-123" };

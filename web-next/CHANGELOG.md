@@ -8,7 +8,8 @@
 
 - **Swagger cho API**: trang `/api-docs` (Swagger UI) liệt kê mọi route `/api/v1`, có ví dụ và nút _Try it out_ gọi thử bằng phiên
   đăng nhập hiện tại; file OpenAPI 3.1 ở `/api/openapi.json` (thân request sinh từ schema Zod nên luôn khớp kiểm tra thật). Test
-  bắt buộc mọi route `/api/v1` phải có trong tài liệu.
+  bắt buộc mọi route `/api/v1` phải có trong tài liệu. Hai trang này khoá bằng **tài khoản riêng** (HTTP Basic, biến
+  `API_DOCS_USER` / `API_DOCS_PASSWORD`); chưa đặt thì trả 404.
 - **REST API cho Từ vựng và Ôn tập** (để app điện thoại / app khác dùng): `/api/v1/vocab` (danh sách, thêm, sửa, xoá, yêu thích,
   tag, thống kê, thêm từ mẫu, xoá / đổi trạng thái / gắn tag hàng loạt, chia sẻ, lời mời đã gửi / nhận, chấp nhận / từ chối) và
   `/api/v1/review` (số từ theo tag, số thẻ đến hạn, thiết lập gần nhất, tạo bài, bài đang làm, bỏ bài, trả lời, đánh giá, chuyển câu,

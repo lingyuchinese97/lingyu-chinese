@@ -96,8 +96,11 @@ Mọi chức năng mới phải có REST API dưới `/api/v1/...` (quy ước �
 chia sẻ; tạo bài ôn tự chọn hoặc đến hạn, trả lời, đánh giá Khó/Được/Dễ, nộp bài. Danh sách route, dạng request/response và cách
 đăng nhập từ app khác: [`docs/API.md`](docs/API.md).
 
-**Swagger**: mở [`/api-docs`](https://lingyuchinese.com/api-docs) để xem mọi route và bấm _Try it out_ gọi thử (đăng nhập LingYu
-trước). File OpenAPI 3.1: `/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client.
+**Swagger**: [`/api-docs`](https://lingyuchinese.com/api-docs) liệt kê mọi route, bấm _Try it out_ để gọi thử. File OpenAPI 3.1:
+`/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client. Hai trang này khoá bằng **tài khoản riêng**
+(trình duyệt hỏi tên + mật khẩu), đặt ở biến môi trường `API_DOCS_USER` và `API_DOCS_PASSWORD` (≥ 12 ký tự; Vercel → Settings →
+Environment Variables → Production, rồi Redeploy). Chưa đặt thì hai trang trả 404. Gọi thử vẫn cần đăng nhập LingYu vì API dùng
+phiên của người dùng.
 
 ## Ngôn ngữ giao diện (Tiếng Việt / English)
 
