@@ -67,6 +67,15 @@
 
 ### Changed
 
+- **Phát âm – âm thanh khớp chữ hiển thị**: chỉ dùng giọng đọc tiếng **Phổ thông** (ưu tiên zh-CN, rồi zh-TW); không bao giờ dùng
+  giọng **Quảng Đông** (zh-HK / yue) — trước đây máy chỉ có giọng Quảng Đông sẽ đọc chữ khác hẳn pinyin. Không có giọng Phổ thông
+  thì ẩn nút Nghe. Ô của mỗi thanh mẫu / vận mẫu hiện đúng âm tiết máy đọc (b → 波 bō, không còn “爸 bà”). Áp dụng cả nút Nghe ở
+  Ngữ pháp, Ôn dịch câu, Trang chủ.
+- **Phát âm – chậm hơn 50% và chỉnh được**: tốc độ mặc định ở Phát âm & Biến điệu 0,3 (trước 0,55); “Nghe chậm” và “nghe từng chữ”
+  chậm hơn nữa. Thêm ô **Tốc độ đọc** (0,2x – 1x) trên đầu trang, lưu trong trình duyệt.
+- Test e2e giả lập giọng đọc: với cả 21 thanh mẫu + 36 vận mẫu, thanh điệu, biến điệu, luyện tập — kiểm tra chữ máy đọc đúng chữ
+  hiển thị, đúng giọng Phổ thông, đúng tốc độ.
+
 - **Phát âm – âm máy đọc khớp chữ hiển thị**: cạnh nút Nghe của mỗi thanh mẫu / vận mẫu hiện rõ chữ và pinyin máy đọc (vd
   “Nghe 波 bō” cho b) kèm giải thích, vì phụ âm không đọc riêng được. Vận mẫu đọc bằng âm tiết không phụ âm khi có (ai 哀 āi, a 阿 ā);
   c đổi 雌 → 词; cặp âm d/t đổi 肚 (đa âm) → 度. Test đối chiếu mọi chữ đọc với pinyin-pro.

@@ -4,6 +4,7 @@ import * as React from "react";
 import { Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SPEECH_RATE } from "@/lib/speech-rate";
+import { pickMandarinVoice } from "@/lib/mandarin-voice";
 
 /**
  * Đọc câu tiếng Trung bằng giọng đọc có sẵn của trình duyệt / hệ điều hành (Web Speech API — không gọi dịch vụ ngoài).
@@ -26,7 +27,7 @@ export function SpeakButton({
   const [speaking, setSpeaking] = React.useState(false);
   React.useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    const check = () => setOk(window.speechSynthesis.getVoices().some((v) => /^zh|cmn/i.test(v.lang)));
+    const check = () => setOk(!!pickMandarinVoice(window.speechSynthesis.getVoices()));
     check();
     window.speechSynthesis.addEventListener?.("voiceschanged", check);
     return () => window.speechSynthesis.removeEventListener?.("voiceschanged", check);
@@ -34,14 +35,13 @@ export function SpeakButton({
   if (!ok) return null;
   function speak() {
     const synth = window.speechSynthesis;
+    const voice = pickMandarinVoice(synth.getVoices());
+    if (!voice) return;
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "zh-CN";
+    u.voice = voice;
+    u.lang = voice.lang;
     u.rate = SPEECH_RATE.normal;
-    const voice =
-      synth.getVoices().find((v) => /^zh[-_]CN|cmn/i.test(v.lang)) ??
-      synth.getVoices().find((v) => /^zh/i.test(v.lang));
-    if (voice) u.voice = voice;
     u.onend = u.onerror = () => setSpeaking(false);
     setSpeaking(true);
     synth.speak(u);

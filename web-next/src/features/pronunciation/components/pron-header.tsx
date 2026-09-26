@@ -2,10 +2,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AudioLines, BookOpen, Layers, LayoutGrid, Music, NotebookPen, Target, Waves } from "lucide-react";
+import { AudioLines, BookOpen, Gauge, Layers, LayoutGrid, Music, NotebookPen, Target, Waves } from "lucide-react";
 import { LeafDecor } from "@/components/layout/icons";
-import { useT } from "@/i18n/client";
+import { useLocale, useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
+import { PRON_DEFAULT_SPEED, PRON_SPEEDS, setPronSpeed, usePronSpeed } from "./speech";
 
 export const PRON_TABS = [
   { key: "overview", href: "/pronunciation", icon: LayoutGrid },
@@ -61,28 +62,57 @@ export function PronunciationHeader() {
           className="hidden h-auto w-[130px] shrink-0 lg:block"
         />
       </section>
-      <nav aria-label={t("pronunciation.tabs.label")} className="-mx-1 overflow-x-auto px-1 pb-1">
-        <ul className="flex min-w-max gap-2">
-          {PRON_TABS.map((x) => (
-            <li key={x.key}>
-              <Link
-                href={x.href}
-                aria-current={active === x.key ? "page" : undefined}
-                className={cn(
-                  "flex min-h-11 items-center gap-2 rounded-[12px] border px-3.5 text-[14.5px] font-semibold whitespace-nowrap outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px] [&_svg]:shrink-0",
-                  active === x.key
-                    ? "border-blue-600 bg-blue-600 text-white shadow-cta"
-                    : "border-[#DDEBF8] bg-white text-blue-700 hover:bg-blue-50",
-                )}
-              >
-                <x.icon aria-hidden="true" />
-                {t(`pronunciation.tabs.${x.key}`)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div className="flex flex-col gap-2">
+        <nav aria-label={t("pronunciation.tabs.label")} className="-mx-1 overflow-x-auto px-1 pb-1">
+          <ul className="flex min-w-max gap-2">
+            {PRON_TABS.map((x) => (
+              <li key={x.key}>
+                <Link
+                  href={x.href}
+                  aria-current={active === x.key ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-11 items-center gap-2 rounded-[12px] border px-3.5 text-[14.5px] font-semibold whitespace-nowrap outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px] [&_svg]:shrink-0",
+                    active === x.key
+                      ? "border-blue-600 bg-blue-600 text-white shadow-cta"
+                      : "border-[#DDEBF8] bg-white text-blue-700 hover:bg-blue-50",
+                  )}
+                >
+                  <x.icon aria-hidden="true" />
+                  {t(`pronunciation.tabs.${x.key}`)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <SpeedPicker />
+      </div>
     </div>
+  );
+}
+
+/** Chọn tốc độ giọng đọc cho cả module (lưu trong trình duyệt). */
+function SpeedPicker() {
+  const t = useT();
+  const locale = useLocale();
+  const speed = usePronSpeed();
+  return (
+    <label className="flex items-center gap-2 self-end text-[14px] font-semibold text-text-2">
+      <Gauge className="size-[18px] text-blue-600" aria-hidden="true" />
+      {t("pronunciation.speed.label")}
+      <select
+        value={speed}
+        onChange={(e) => setPronSpeed(Number(e.target.value))}
+        className="h-10 rounded-[10px] border border-border bg-white px-2 text-[14px] font-semibold text-navy-900 outline-none focus-visible:shadow-[var(--focus-ring)]"
+      >
+        {PRON_SPEEDS.map((v) => (
+          <option key={v} value={v}>
+            {t(v === PRON_DEFAULT_SPEED ? "pronunciation.speed.defaultOption" : "pronunciation.speed.option", {
+              v: locale === "vi" ? String(v).replace(".", ",") : String(v),
+            })}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 

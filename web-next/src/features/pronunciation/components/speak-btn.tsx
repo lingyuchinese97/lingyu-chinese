@@ -1,7 +1,7 @@
 "use client";
 import { Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { speakZh, useChineseVoice } from "./speech";
+import { speakZh, useChineseVoice, type SpeakMode } from "./speech";
 
 /**
  * Nút đọc bằng giọng tiếng Trung của máy. Máy không có giọng → ẩn (như SpeakButton).
@@ -11,14 +11,14 @@ export function SpeakBtn({
   text,
   label,
   children,
-  rate,
+  mode = "normal",
   className,
   size = "md",
 }: {
   text: string | string[];
   label: string;
   children?: React.ReactNode;
-  rate?: number;
+  mode?: SpeakMode;
   className?: string;
   size?: "sm" | "md" | "lg";
 }) {
@@ -27,7 +27,7 @@ export function SpeakBtn({
   return (
     <button
       type="button"
-      onClick={() => speakZh(text, rate)}
+      onClick={() => speakZh(text, mode)}
       aria-label={children ? undefined : label}
       title={label}
       className={cn(
