@@ -3,7 +3,6 @@ import * as React from "react";
 import { Lightbulb, ListChecks, NotebookPen } from "lucide-react";
 import { useLocale, useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
-import { splitSyllables } from "@/lib/pinyin";
 import type { SoundGroup, SoundItem } from "@/data/pronunciation";
 import { PCard, PTitle } from "./pron-header";
 import { SpeakBtn } from "./speak-btn";
@@ -131,10 +130,11 @@ export function SoundBrowser({
                     >
                       <span className="text-[26px] leading-none font-extrabold text-navy-900">{x.symbol}</span>
                       <span className="text-[14px] text-text-2">
-                        <span className="hanzi" lang="zh">
-                          {x.examples[0]!.hanzi.slice(0, 1)}
+                        {/* Đúng âm tiết mà nút Nghe sẽ đọc (vd b → 波 bō), để chữ hiển thị khớp âm thanh. */}
+                        <span className="hanzi text-text-2" lang="zh">
+                          {x.speak}
                         </span>{" "}
-                        <span className="pinyin">{splitSyllables(x.examples[0]!.pinyin)[0]}</span>
+                        <span className="pinyin">{x.speakPinyin}</span>
                       </span>
                       {notes[`${kind}:${x.symbol}`] ? (
                         <span

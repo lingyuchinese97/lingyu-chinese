@@ -5,6 +5,11 @@ export const pronunciation: Messages["pronunciation"] = {
   subtitle: "Initials · Finals · Tones · Tone sandhi · Daily practice",
   slogan1: "Clear pronunciation",
   slogan2: "Confident speaking!",
+  speed: {
+    label: "Voice speed",
+    option: "{v}x",
+    defaultOption: "{v}x (default)",
+  },
   tabs: {
     label: "Pronunciation sections",
     overview: "Overview",

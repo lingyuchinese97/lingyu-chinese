@@ -25,7 +25,7 @@ import { NoteDialog } from "./note-dialog";
 import { PCard, PTitle } from "./pron-header";
 import { Quiz } from "./quiz";
 import { SpeakBtn } from "./speak-btn";
-import { SPEECH_RATE, useL } from "./speech";
+import { useL } from "./speech";
 import { saveTopicNote, TopicNoteButton } from "./topic-note";
 
 /**
@@ -258,11 +258,7 @@ export function SandhiView({
               <div className="flex flex-col items-center gap-1 rounded-[14px] bg-[#F3F6FA] p-3">
                 <dt className="text-[13px] font-semibold text-text-2">{t("pronunciation.sandhi.before")}</dt>
                 <dd className="text-[18px] pinyin">{ex.pinyin}</dd>
-                <SpeakBtn
-                  text={[...ex.hanzi]}
-                  label={t("pronunciation.sandhi.playBefore")}
-                  rate={SPEECH_RATE.syllable}
-                />
+                <SpeakBtn text={[...ex.hanzi]} label={t("pronunciation.sandhi.playBefore")} mode="syllable" />
               </div>
               <div className="flex flex-col items-center gap-1 rounded-[14px] bg-red-50 p-3">
                 <dt className="text-[13px] font-semibold text-red">{t("pronunciation.sandhi.after")}</dt>

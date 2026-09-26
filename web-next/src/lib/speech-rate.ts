@@ -1,12 +1,8 @@
 /**
- * Tốc độ giọng đọc tiếng Trung (Web Speech API, 1 = tốc độ bình thường của giọng máy).
- * Đặt chậm để người học nghe rõ từng âm và thanh điệu. Dùng chung cho mọi nút "Nghe".
+ * Tốc độ giọng đọc tiếng Trung (Web Speech API, 1 = tốc độ bình thường của giọng máy) cho các nút Nghe chung
+ * (Ngữ pháp, Ôn dịch câu, Trang chủ). Module Phát âm & Biến điệu dùng tốc độ riêng, chậm hơn và chỉnh được
+ * (xem `features/pronunciation/components/speech.ts`).
  */
 export const SPEECH_RATE = {
-  /** Nút Nghe thông thường. */
   normal: 0.55,
-  /** Nút "Nghe chậm" trong Luyện tập. */
-  slow: 0.35,
-  /** Nghe từng chữ tách rời (trước biến điệu). */
-  syllable: 0.45,
 } as const;

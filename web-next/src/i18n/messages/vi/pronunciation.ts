@@ -3,6 +3,11 @@ export const pronunciation = {
   subtitle: "Thanh mẫu · Vận mẫu · Thanh điệu · Biến điệu · Luyện tập mỗi ngày",
   slogan1: "Phát âm chuẩn",
   slogan2: "Tự tin giao tiếp!",
+  speed: {
+    label: "Tốc độ đọc",
+    option: "{v}x",
+    defaultOption: "{v}x (mặc định)",
+  },
   tabs: {
     label: "Nội dung phát âm",
     overview: "Tổng quan",
