@@ -12,7 +12,8 @@ Từ nay, mỗi chức năng mới (hoặc chức năng sửa lớn) ngoài giao
   mọi truy vấn lọc theo user của phiên. Admin dùng `adminOrThrow()`.
 - Kiểm tra input bằng Zod (dùng lại `src/features/<tính năng>/schema.ts`).
 - Có test (unit cho service, e2e hoặc test gọi route cho quyền truy cập: người lạ → 401, người khác → 404).
-- Ghi route mới vào mục API trong `README.md` và vào `CHANGELOG.md`.
+- Mô tả route mới trong `src/server/openapi.ts` (Swagger ở `/api-docs`; test `tests/unit/openapi.test.ts` báo lỗi nếu thiếu),
+  ghi vào mục API trong `README.md` và vào `CHANGELOG.md`.
 
 ## Song ngữ
 

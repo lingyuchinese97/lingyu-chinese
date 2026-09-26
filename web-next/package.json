@@ -49,6 +49,7 @@
     "server-only": "^0.0.1",
     "serwist": "^9.5.12",
     "sonner": "^2.0.8",
+    "swagger-ui-dist": "^5.33.0",
     "tailwind-merge": "^3.7.0",
     "ts-fsrs": "^5.4.2",
     "vaul": "^1.1.2",
