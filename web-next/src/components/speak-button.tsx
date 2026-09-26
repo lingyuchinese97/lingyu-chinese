@@ -36,7 +36,7 @@ export function SpeakButton({
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "zh-CN";
-    u.rate = 0.85;
+    u.rate = 0.7; // đọc chậm cho người học
     const voice =
       synth.getVoices().find((v) => /^zh[-_]CN|cmn/i.test(v.lang)) ??
       synth.getVoices().find((v) => /^zh/i.test(v.lang));

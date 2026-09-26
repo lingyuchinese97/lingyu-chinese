@@ -7,6 +7,11 @@ import { VocabError } from "@/features/vocabulary/service";
 import { ReviewError } from "@/features/review/service";
 import { ListeningError } from "@/features/listening/service";
 import { PronunciationError } from "@/features/pronunciation/service";
+import { GrammarError } from "@/features/grammar/service";
+import { SentenceError } from "@/features/sentences/service";
+import { SentenceReviewError } from "@/features/sentences/review-service";
+import { LessonError } from "@/features/lessons/service";
+import { AccountError } from "@/features/account/service";
 
 /**
  * Khung chung cho REST API `/api/v1/...` (quy ước ở CLAUDE.md):
@@ -80,7 +85,28 @@ function errorResponse(e: unknown, t: Awaited<ReturnType<typeof getT>>) {
     return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
   if (e instanceof ListeningError || e instanceof PronunciationError)
     return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
-  if (e instanceof ReviewError)
+  if (e instanceof SentenceError || e instanceof LessonError)
+    return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
+  if (e instanceof GrammarError)
+    return json(
+      { ok: false, message: t.maybe(e.message) },
+      // Ngữ pháp của người khác (không có lời mời) → 404 như "không có", không lộ là có tồn tại.
+      e.code === "not-found" || e.code === "forbidden"
+        ? 404
+        : e.code === "duplicate" || e.code === "already-responded" || e.code === "source-deleted"
+          ? 409
+          : 400,
+    );
+  if (e instanceof AccountError)
+    return json(
+      {
+        ok: false,
+        message: t.maybe(e.message),
+        ...(e.field ? { fieldErrors: { [e.field]: t.maybe(e.message) } } : {}),
+      },
+      400,
+    );
+  if (e instanceof ReviewError || e instanceof SentenceReviewError)
     return json(
       { ok: false, message: t.maybe(e.message) },
       e.code === "not-found" ? 404 : e.code === "empty" ? 409 : 400,

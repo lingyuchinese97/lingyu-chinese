@@ -121,7 +121,7 @@ export const INITIALS: SoundItem[] = [
   ),
   i(
     "d",
-    "得",
+    "德",
     "alveolar",
     ["Gần “t” tiếng Việt (không bật hơi)", "Like “d” in “day”, voiceless"],
     [

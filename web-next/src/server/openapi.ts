@@ -3,6 +3,8 @@ import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "@/features/v
 import { customConfigSchema, dueConfigSchema } from "@/features/review/schema";
 import { compareInputSchema, exerciseInputSchema } from "@/features/listening/schema";
 import { noteInputSchema, noteUpdateSchema } from "@/features/pronunciation/schema";
+import { grammarInputSchema, grammarTagName } from "@/features/grammar/schema";
+import { sentenceConfigSchema, sentenceInputSchema } from "@/features/sentences/schema";
 import { PRACTICE_MODES } from "@/features/pronunciation/practice";
 
 /**
@@ -103,6 +105,12 @@ const V = "Từ vựng";
 const R = "Ôn tập";
 const L = "Luyện nghe";
 const P = "Phát âm";
+const G = "Ngữ pháp";
+const S = "Ôn dịch câu";
+const RD = "Bộ thủ";
+const LS = "Bài học";
+const N = "Thông báo";
+const H = "Trang chủ";
 const AD = "Quản trị";
 const A = "Tài khoản";
 
@@ -155,6 +163,12 @@ export function openApiDocument() {
         description:
           "Luyện nghe – Chép chính tả. Đáp án tham khảo do người dùng nhập; kết quả so sánh và điểm do server tính lại khi lưu.",
       },
+      { name: H, description: "Số liệu Trang chủ" },
+      { name: G, description: "Ngữ pháp của mình (ví dụ, cấu trúc, ghi chú cá nhân riêng tư), thẻ, lưu, chia sẻ" },
+      { name: S, description: "Kho câu và bài ôn dịch câu (Việt ↔ Trung)" },
+      { name: RD, description: "214 bộ thủ và đánh dấu đã thuộc" },
+      { name: LS, description: "Bài học (nội dung tĩnh) và tiến độ; server tự chấm" },
+      { name: N, description: "Thông báo (chuông) và lời mời chia sẻ đang chờ" },
       {
         name: P,
         description:
@@ -200,6 +214,23 @@ export function openApiDocument() {
           },
           ["id", "hanzi", "pinyin", "meaningVi"],
         ),
+        Grammar: {
+          type: "object",
+          description:
+            "Ngữ pháp: id, title, meaning, structure (mỗi dòng một cấu trúc), notes, examples, tags, isSaved, personalNote (chỉ chủ sở hữu)…",
+        },
+        Sentence: {
+          type: "object",
+          description: "Câu: id, chinese, pinyin, vietnamese, note, status, isFavorite, tags, createdAt…",
+        },
+        SentenceSession: {
+          type: ["object", "null"],
+          description: "Phiên ôn dịch câu (không chứa đáp án của câu chưa làm)",
+        },
+        Radical: {
+          type: "object",
+          description: "Bộ thủ: num, char, variants, pinyin, name, meaning, meaningEn, strokes, known, examples?",
+        },
         PronunciationNote: obj({
           id: { type: "string", format: "uuid" },
           topic: { type: ["string", "null"], description: "Mục gắn ghi chú; null = ghi chú tự do" },
@@ -670,6 +701,449 @@ export function openApiDocument() {
           errors: [403, 404],
         }),
       },
+      "/api/v1/me": {
+        get: op(A, {
+          summary: "Hồ sơ của tôi",
+          data: obj({
+            id: { type: "string", format: "uuid" },
+            name: { type: "string" },
+            email: { type: "string" },
+            role: { enum: ["user", "admin"] },
+            locale: { enum: ["vi", "en"] },
+          }),
+        }),
+        put: op(A, {
+          summary: "Đổi tên",
+          body: obj({ name: { type: "string", maxLength: 60 } }),
+          example: { name: "Nguyễn Văn An" },
+          data: obj({ name: { type: "string" } }),
+        }),
+        delete: op(A, {
+          summary: "Xoá tài khoản và toàn bộ dữ liệu (cần mật khẩu, không hoàn tác được)",
+          body: obj({ password: { type: "string" } }),
+          example: { password: "••••••••" },
+          data: obj({ deleted: { const: true } }),
+        }),
+      },
+      "/api/v1/me/password": {
+        post: op(A, {
+          summary: "Đổi mật khẩu (thiết bị khác bị đăng xuất)",
+          body: obj({ current: { type: "string" }, password: { type: "string", minLength: 8 } }),
+          example: { current: "mat-khau-cu", password: "mat-khau-moi-123" },
+          data: obj({ changed: { const: true } }),
+        }),
+      },
+      "/api/v1/me/export": {
+        get: op(A, { summary: "Xuất toàn bộ dữ liệu học tập (JSON, như file Xuất dữ liệu)", data: { type: "object" } }),
+      },
+      "/api/v1/me/import": {
+        post: op(A, {
+          summary: "Nhập dữ liệu đã xuất (gộp, không ghi đè; tối đa 30MB) → báo cáo thêm / bỏ qua",
+          body: { type: "object", description: 'Nội dung file đã xuất (`format: "lingyu-export"`)' },
+          data: { type: "object" },
+        }),
+      },
+      "/api/v1/home": {
+        get: op(H, {
+          summary: "Số liệu Trang chủ",
+          data: obj({
+            vocab: obj({ total: int, learned: int }),
+            sentences: obj({ total: int, learned: int }),
+            grammar: int,
+            newToday: int,
+            reviewsToday: int,
+            dueCount: int,
+            activeReview: { type: ["object", "null"] },
+            lessons: obj({ done: int, total: int, percent: int }),
+            unreadNotifications: int,
+          }),
+        }),
+      },
+
+      "/api/v1/grammar": {
+        get: op(G, {
+          summary: "Ngữ pháp của tôi (tìm, lọc thẻ, sắp xếp, chỉ đã lưu)",
+          params: [
+            q("q", { type: "string" }, "Tìm trong tiêu đề, nghĩa, cấu trúc, ghi chú, ví dụ, thẻ (không dấu được)"),
+            q("tag", { type: "string", format: "uuid" }, "id thẻ"),
+            q("sort", { enum: ["updated", "newest", "oldest", "az", "za"] }),
+            q("view", { enum: ["all", "saved"] }),
+          ],
+          data: obj({ items: { type: "array", items: ref("Grammar") }, total: int, totalAll: int, savedCount: int }),
+        }),
+        post: op(G, {
+          summary: "Thêm ngữ pháp",
+          body: js(grammarInputSchema),
+          example: {
+            title: "Câu hỏi với 吗",
+            meaning: "Thêm 吗 cuối câu trần thuật để thành câu hỏi có / không.",
+            structure: "Câu trần thuật + 吗？\nPhủ định: 不 + động từ + 吗？",
+            notes: "Không dùng 吗 với câu đã có từ để hỏi.",
+            personalNote: "",
+            examples: [{ chinese: "你好吗？", pinyin: "Nǐ hǎo ma?", vietnamese: "Bạn khỏe không?" }],
+            tags: ["HSK1"],
+          },
+          status: 201,
+          data: ref("Grammar"),
+        }),
+      },
+      "/api/v1/grammar/{id}": {
+        get: op(G, {
+          summary:
+            "Xem ngữ pháp: chủ sở hữu → đầy đủ; người nhận có lời mời đang chờ → bản xem trước; người khác → 404",
+          params: [pathId("id ngữ pháp"), q("share", { type: "string", format: "uuid" }, "id lời mời (xem trước)")],
+          data: obj({
+            mode: { enum: ["owner", "preview"] },
+            grammar: ref("Grammar"),
+            share: { type: ["object", "null"] },
+          }),
+          errors: [404],
+        }),
+        put: op(G, {
+          summary: "Sửa ngữ pháp (toàn bộ)",
+          params: [pathId("id ngữ pháp")],
+          body: js(grammarInputSchema),
+          data: ref("Grammar"),
+          errors: [404],
+        }),
+        delete: op(G, {
+          summary: "Xoá ngữ pháp",
+          params: [pathId("id ngữ pháp")],
+          data: obj({ deleted: { const: true } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/grammar/{id}/note": {
+        put: op(G, {
+          summary: "Ghi chú cá nhân (riêng tư, không chia sẻ; rỗng = xoá)",
+          params: [pathId("id ngữ pháp")],
+          body: obj({ content: { type: "string", maxLength: 2000 } }),
+          example: { content: "Nhớ: 吗 chỉ dùng cho câu hỏi có / không." },
+          data: obj({ personalNote: { type: "string" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/grammar/{id}/bookmark": {
+        put: op(G, {
+          summary: "Lưu / bỏ lưu",
+          params: [pathId("id ngữ pháp")],
+          body: obj({ saved: { type: "boolean" } }),
+          example: { saved: true },
+          data: obj({ saved: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/grammar/{id}/shares": {
+        get: op(G, {
+          summary: "Đã chia sẻ ngữ pháp này cho ai (trạng thái)",
+          params: [pathId("id ngữ pháp")],
+          data: { type: "array" },
+          errors: [404],
+        }),
+        post: op(G, {
+          summary: "Chia sẻ cho người khác qua email → kết quả từng email",
+          params: [pathId("id ngữ pháp")],
+          body: obj({ emails: { type: "array", items: { type: "string", format: "email" }, maxItems: 50 } }),
+          example: { emails: ["ban@example.com"] },
+          data: obj({ results: { type: "array" }, sent: int }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/grammar/tags": {
+        get: op(G, {
+          summary: "Thẻ ngữ pháp và số bài",
+          data: { type: "array", items: obj({ id: { type: "string" }, name: { type: "string" }, count: int }) },
+        }),
+        post: op(G, {
+          summary: "Tạo thẻ (trùng tên → 409)",
+          body: obj({ name: js(grammarTagName) }),
+          example: { name: "HSK2" },
+          status: 201,
+          data: obj({ id: { type: "string" }, name: { type: "string" } }),
+          errors: [409],
+        }),
+      },
+      "/api/v1/grammar/tags/{id}": {
+        put: op(G, {
+          summary: "Đổi tên thẻ",
+          params: [pathId("id thẻ")],
+          body: obj({ name: js(grammarTagName) }),
+          example: { name: "HSK 2" },
+          data: obj({ id: { type: "string" }, name: { type: "string" } }),
+          errors: [404, 409],
+        }),
+        delete: op(G, {
+          summary: "Xoá thẻ (ngữ pháp giữ nguyên)",
+          params: [pathId("id thẻ")],
+          data: obj({ deleted: { const: true } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/grammar/shares/received": {
+        get: op(G, { summary: "Lời mời chia sẻ ngữ pháp đang chờ tôi trả lời", data: { type: "array" } }),
+      },
+      "/api/v1/grammar/shares/{id}/tags": {
+        get: op(G, {
+          summary: "Thẻ của người gửi (để chọn giữ khi chấp nhận)",
+          params: [pathId("id lời mời")],
+          data: { type: "array", items: { type: "string" } },
+        }),
+      },
+      "/api/v1/grammar/shares/{id}/accept": {
+        post: op(G, {
+          summary: "Chấp nhận: tạo bản riêng trong thư viện của mình (không chép ghi chú cá nhân của người gửi)",
+          params: [pathId("id lời mời")],
+          body: obj(
+            { keepTags: { type: "boolean", default: true }, extraTags: { type: "array", items: js(grammarTagName) } },
+            [],
+          ),
+          example: { keepTags: true, extraTags: ["Được chia sẻ"] },
+          data: obj({ id: { type: "string", format: "uuid" }, title: { type: "string" } }),
+          errors: [404, 409],
+        }),
+      },
+      "/api/v1/grammar/shares/{id}/reject": {
+        post: op(G, {
+          summary: "Từ chối lời mời",
+          params: [pathId("id lời mời")],
+          data: obj({ rejected: { const: true } }),
+          errors: [404, 409],
+        }),
+      },
+      "/api/v1/grammar/sample": {
+        post: op(G, { summary: "Thêm bộ ngữ pháp mẫu", data: obj({ added: int }) }),
+      },
+
+      "/api/v1/sentences": {
+        get: op(S, {
+          summary: "Kho câu của tôi (tìm, lọc tag / Yêu thích, phân trang)",
+          params: [
+            q("q", { type: "string" }, "Tìm trong câu tiếng Trung, pinyin, nghĩa (không dấu được), tag"),
+            q("tag", { type: "string" }, "Tên tag, hoặc `__fav` = Yêu thích"),
+            q("page", { type: "integer", minimum: 1 }),
+            q("pageSize", { type: "integer", minimum: 1, maximum: 100, default: 20 }),
+          ],
+          data: obj({
+            items: { type: "array", items: ref("Sentence") },
+            total: int,
+            totalAll: int,
+            favCount: int,
+            page: int,
+            pageCount: int,
+            pageSize: int,
+            tags: { type: "array" },
+          }),
+        }),
+        post: op(S, {
+          summary: "Thêm câu",
+          body: js(sentenceInputSchema),
+          example: {
+            chinese: "我爱你。",
+            pinyin: "Wǒ ài nǐ.",
+            vietnamese: "Tôi yêu bạn.",
+            note: "",
+            tags: ["Tình cảm"],
+          },
+          status: 201,
+          data: ref("Sentence"),
+        }),
+      },
+      "/api/v1/sentences/{id}": {
+        get: op(S, { summary: "Một câu", params: [pathId("id câu")], data: ref("Sentence"), errors: [404] }),
+        put: op(S, {
+          summary: "Sửa câu",
+          params: [pathId("id câu")],
+          body: js(sentenceInputSchema),
+          data: ref("Sentence"),
+          errors: [404],
+        }),
+        delete: op(S, {
+          summary: "Xoá câu",
+          params: [pathId("id câu")],
+          data: obj({ deleted: { const: true } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/sentences/{id}/favorite": {
+        post: op(S, {
+          summary: "Bật / tắt Yêu thích",
+          params: [pathId("id câu")],
+          data: obj({ isFavorite: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/sentences/tags": {
+        get: op(S, {
+          summary: "Tag và số câu",
+          data: { type: "array", items: obj({ id: { type: "string" }, name: { type: "string" }, count: int }) },
+        }),
+      },
+      "/api/v1/sentences/delete": {
+        post: op(S, {
+          summary: "Xoá nhiều câu",
+          body: obj({ ids: { type: "array", items: { type: "string", format: "uuid" }, maxItems: 500 } }),
+          example: { ids: [EXAMPLE_ID] },
+          data: obj({ removed: int }),
+        }),
+      },
+      "/api/v1/sentences/status": {
+        post: op(S, {
+          summary: "Đổi trạng thái nhiều câu",
+          body: obj({
+            ids: { type: "array", items: { type: "string", format: "uuid" }, maxItems: 500 },
+            status: { enum: ["learned", "review"] },
+          }),
+          example: { ids: [EXAMPLE_ID], status: "learned" },
+          data: obj({ updated: int }),
+        }),
+      },
+      "/api/v1/sentences/sample": {
+        post: op(S, { summary: "Thêm bộ câu mẫu", data: obj({ added: int }) }),
+      },
+      "/api/v1/sentences/review/pool": {
+        get: op(S, {
+          summary: "Số câu có thể ôn theo tag",
+          params: [q("tags", { type: "string" }, "Tên tag, cách nhau bằng dấu phẩy; bỏ trống = mọi câu")],
+          data: obj({ count: int }),
+        }),
+      },
+      "/api/v1/sentences/review/last-config": {
+        get: op(S, { summary: "Thiết lập ôn gần nhất (hoặc null)", data: { type: ["object", "null"] } }),
+      },
+      "/api/v1/sentences/review/sessions": {
+        post: op(S, {
+          summary: "Tạo bài ôn dịch câu (bỏ bài đang dở). Không có câu phù hợp → 409",
+          body: js(sentenceConfigSchema),
+          example: { direction: "vi-zh", count: 10, tags: [], showPinyin: false, showHint: true },
+          status: 201,
+          data: ref("SentenceSession"),
+          errors: [409],
+        }),
+      },
+      "/api/v1/sentences/review/sessions/active": {
+        get: op(S, { summary: "Bài đang làm (hoặc null)", data: ref("SentenceSession") }),
+        delete: op(S, { summary: "Bỏ bài đang làm", data: obj({ abandoned: { const: true } }) }),
+      },
+      "/api/v1/sentences/review/sessions/last-result": {
+        get: op(S, { summary: "Kết quả bài đã nộp gần nhất (hoặc null), có `wrongIds`", data: ref("SentenceSession") }),
+      },
+      ...Object.fromEntries(
+        (
+          [
+            [
+              "answer",
+              "Trả lời một câu → phiên đã chấm",
+              { index: int, answer: { type: "string", maxLength: 400 } },
+              { index: 0, answer: "我爱你。" },
+            ],
+            ["skip", "Bỏ qua một câu", { index: int }, { index: 0 }],
+            ["override", "Máy chấm sai nhưng bạn dịch đúng → tính là đúng", { index: int }, { index: 0 }],
+            ["hint", "Xem gợi ý chữ Hán (chiều Việt → Trung)", { index: int }, { index: 0 }],
+            [
+              "remember",
+              "Sau khi trả lời: nhớ → “Đã thuộc”, chưa nhớ → “Cần ôn”",
+              { index: int, remembered: { type: "boolean" } },
+              { index: 0, remembered: true },
+            ],
+            ["move", "Chuyển tới câu (không vượt quá câu chưa làm đầu tiên) → { index }", { index: int }, { index: 1 }],
+          ] as const
+        ).map(([name, summary, props, example]) => [
+          `/api/v1/sentences/review/sessions/{id}/${name}`,
+          {
+            post: op(S, {
+              summary,
+              params: [pathId("id phiên")],
+              body: obj(props as Record<string, Schema>),
+              example,
+              data: name === "move" ? obj({ index: int }) : ref("SentenceSession"),
+              errors: [404],
+            }),
+          },
+        ]),
+      ),
+      "/api/v1/sentences/review/sessions/{id}/complete": {
+        post: op(S, {
+          summary: "Nộp bài (phải làm hết, nếu chưa → 400) → kết quả",
+          params: [pathId("id phiên")],
+          data: ref("SentenceSession"),
+          errors: [404],
+        }),
+      },
+
+      "/api/v1/radicals": {
+        get: op(RD, {
+          summary: "214 bộ thủ (tìm theo số, chữ, tên, pinyin, nghĩa) kèm `known`",
+          params: [q("q", { type: "string" })],
+          data: obj({ items: { type: "array", items: ref("Radical") }, total: int, knownCount: int }),
+        }),
+      },
+      "/api/v1/radicals/{num}": {
+        get: op(RD, {
+          summary: "Một bộ thủ + chữ ví dụ",
+          params: [{ name: "num", in: "path", required: true, schema: { type: "integer", minimum: 1, maximum: 214 } }],
+          data: ref("Radical"),
+          errors: [404],
+        }),
+      },
+      "/api/v1/radicals/{num}/known": {
+        put: op(RD, {
+          summary: "Đánh dấu đã thuộc / bỏ đánh dấu",
+          params: [{ name: "num", in: "path", required: true, schema: { type: "integer", minimum: 1, maximum: 214 } }],
+          body: obj({ known: { type: "boolean" } }),
+          example: { known: true },
+          data: obj({ known: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+
+      "/api/v1/lessons": {
+        get: op(LS, {
+          summary: "Danh sách bài học + tiến độ của tôi",
+          data: obj({ done: int, total: int, percent: int, lessons: { type: "array" } }),
+        }),
+      },
+      "/api/v1/lessons/{id}": {
+        get: op(LS, {
+          summary: "Nội dung một bài học (phần, câu hỏi, âm thanh) + tiến độ từng phần",
+          params: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "vd `bai1`" }],
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/lessons/{id}/sections/{section}": {
+        post: op(LS, {
+          summary: "Nộp một phần: chỉ số đáp án đã chọn cho từng câu; server tự chấm → { score, total }",
+          params: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+            { name: "section", in: "path", required: true, schema: { type: "string" } },
+          ],
+          body: obj({ answers: { type: "array", items: { type: ["integer", "null"], minimum: 0, maximum: 3 } } }),
+          example: { answers: [0, 2, 1, null] },
+          data: obj({ score: int, total: int }),
+          errors: [404],
+        }),
+      },
+
+      "/api/v1/notifications": {
+        get: op(N, {
+          summary: "20 thông báo mới nhất, số chưa đọc, id lời mời còn chờ",
+          data: obj({
+            items: { type: "array" },
+            unread: int,
+            pendingGrammar: { type: "array", items: { type: "string" } },
+            pendingVocab: { type: "array" },
+          }),
+        }),
+      },
+      "/api/v1/notifications/read": {
+        post: op(N, {
+          summary: "Đánh dấu đã đọc (bỏ trống `ids` = tất cả) → số còn chưa đọc",
+          body: obj({ ids: { type: "array", items: { type: "string", format: "uuid" }, maxItems: 100 } }, []),
+          example: {},
+          data: obj({ unread: int }),
+        }),
+      },
+
       "/api/v1/pronunciation": {
         get: op(P, {
           summary: "Nội dung bài học: thanh mẫu, vận mẫu, thanh điệu, quy tắc biến điệu (chữ có sẵn vi / en)",

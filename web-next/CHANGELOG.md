@@ -6,6 +6,15 @@
 
 ### Added
 
+- **API cho mọi chức năng còn thiếu** (để app điện thoại / app khác dùng được hết như web), có trong Swagger:
+  - Ngữ pháp `/api/v1/grammar/*`: danh sách, thêm / sửa / xoá, ghi chú cá nhân, lưu, thẻ, chia sẻ, lời mời nhận được, xem trước,
+    chấp nhận / từ chối, ngữ pháp mẫu.
+  - Ôn dịch câu `/api/v1/sentences/*`: kho câu, yêu thích, tag, thao tác hàng loạt, câu mẫu; bài ôn (tạo, trả lời, bỏ qua, tính là
+    đúng, gợi ý, nhớ / chưa nhớ, chuyển câu, nộp, kết quả gần nhất).
+  - Bộ thủ `/api/v1/radicals/*`, Bài học `/api/v1/lessons/*` (nộp bài — server tự chấm), Thông báo `/api/v1/notifications/*`,
+    Tài khoản `/api/v1/me/*` (hồ sơ, đổi tên, đổi mật khẩu, xoá tài khoản, xuất / nhập dữ liệu), Trang chủ `/api/v1/home`.
+  - Ngữ pháp của người khác (không có lời mời) → 404; ghi chú cá nhân không bao giờ có trong bản xem trước / bản được chia sẻ
+    (có test e2e).
 - **Phát âm & Biến điệu** (menu “Phát âm & Biến điệu”, `/pronunciation`), 7 tab:
   - **Tổng quan**: 4 thẻ (21 thanh mẫu, 36 vận mẫu, 4 thanh + thanh nhẹ, 4 quy tắc biến điệu) và lối vào Luyện tập / Ghi chú.
   - **Thanh mẫu** (6 nhóm theo vị trí phát âm) và **Vận mẫu** (lọc đơn 6 / kép 13 / mũi 16 / er): bấm một âm → cách phát âm,
@@ -57,6 +66,11 @@
 - Kết quả Ôn dịch câu: mascot không còn đè lên vòng tròn điểm (dùng ảnh nền trong suốt, đặt cạnh vòng tròn).
 
 ### Changed
+
+- **Phát âm**: giọng đọc chậm hơn (0,7; "Nghe chậm" 0,45; nghe từng chữ trước biến điệu 0,55) — áp dụng cả nút Nghe ở Ngữ pháp.
+- **Phát âm – sửa dữ liệu**: vận mẫu **o** dùng nhầm ví dụ 我 wǒ và chữ đọc 喔 wō (thực ra là vần uo) → đổi thành 波 bō, 摸 mō,
+  chữ đọc 哦; chữ đọc của d đổi 得 → 德 (tránh chữ đa âm), ia đổi 呀 → 压. Thêm test tự kiểm tra mỗi ví dụ chứa đúng thanh mẫu /
+  vận mẫu được dạy.
 
 - **Luyện nghe**: bấm “Lưu bài làm” xong, hoặc tải lại trang, thì link và trình phát (video YouTube) cũng bị xoá — trang trở về
   trống để làm bài mới (nháp bài chép / đáp án / ghi chú vẫn giữ khi tải lại).
