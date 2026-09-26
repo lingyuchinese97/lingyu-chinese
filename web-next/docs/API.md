@@ -95,6 +95,73 @@ Bài làm gửi lên:
   khoảng trắng không tính; không phân biệt hoa / thường. `parts` theo thứ tự bài chép: `{ kind: "text", status: "correct" | "wrong" |
 "extra" | "neutral", start, end, expected? }` hoặc `{ kind: "missing", text, at }`. Điểm = `correct / total` (số chữ của đáp án).
 
+## Tài khoản `/api/v1/me`
+
+| Route                 | Việc                                                                                            |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| `GET /me`             | Hồ sơ `{ id, name, email, role, locale }`                                                       |
+| `PUT /me`             | Đổi tên `{ name }`                                                                              |
+| `DELETE /me`          | Xoá tài khoản + toàn bộ dữ liệu `{ password }` (không hoàn tác được)                            |
+| `POST /me/password`   | Đổi mật khẩu `{ current, password }` — thiết bị khác bị đăng xuất                               |
+| `GET /me/export`      | Toàn bộ dữ liệu học tập (cùng dạng file "Xuất dữ liệu")                                         |
+| `POST /me/import`     | Thân = nội dung file đã xuất (≤ 30MB) → gộp, không ghi đè; trả báo cáo thêm / bỏ qua            |
+| `GET\|PUT /me/locale` | Ngôn ngữ `vi` \| `en`                                                                           |
+| `GET /home`           | Số liệu Trang chủ (từ, câu, ngữ pháp, hôm nay, thẻ đến hạn, bài ôn dở, tiến độ bài học, chuông) |
+
+## Ngữ pháp `/api/v1/grammar`
+
+| Route                              | Việc                                                                                                                                                                         |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /grammar`                     | Danh sách. Query: `q`, `tag` (id thẻ), `sort` (`updated`\|`newest`\|`oldest`\|`az`\|`za`), `view` (`all`\|`saved`)                                                           |
+| `POST /grammar`                    | Thêm → `201` ngữ pháp                                                                                                                                                        |
+| `GET /grammar/{id}`                | Chủ sở hữu → `{ mode: "owner", grammar }` (có `personalNote`); người nhận có lời mời đang chờ (`?share=`) → `mode: "preview"` (không có ghi chú cá nhân); người khác → `404` |
+| `PUT /grammar/{id}` · `DELETE`     | Sửa toàn bộ · xoá                                                                                                                                                            |
+| `PUT /grammar/{id}/note`           | Ghi chú cá nhân `{ content }` (riêng tư, không bao giờ chia sẻ; rỗng = xoá)                                                                                                  |
+| `PUT /grammar/{id}/bookmark`       | Lưu / bỏ lưu `{ saved }`                                                                                                                                                     |
+| `GET\|POST /grammar/{id}/shares`   | Đã gửi cho ai · chia sẻ `{ emails }`                                                                                                                                         |
+| `GET\|POST /grammar/tags`          | Thẻ + số bài · tạo `{ name }` (trùng → `409`)                                                                                                                                |
+| `PUT\|DELETE /grammar/tags/{id}`   | Đổi tên · xoá thẻ                                                                                                                                                            |
+| `GET /grammar/shares/received`     | Lời mời đang chờ tôi                                                                                                                                                         |
+| `GET /grammar/shares/{id}/tags`    | Thẻ của người gửi                                                                                                                                                            |
+| `POST /grammar/shares/{id}/accept` | `{ keepTags?, extraTags? }` → bản riêng `{ id, title }`; đã trả lời → `409`                                                                                                  |
+| `POST /grammar/shares/{id}/reject` | Từ chối                                                                                                                                                                      |
+| `POST /grammar/sample`             | Thêm ngữ pháp mẫu → `{ added }`                                                                                                                                              |
+
+Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu trúc, tối đa 4), notes?, personalNote?, examples?: [{ chinese, pinyin?, vietnamese? }], tags? }`.
+
+## Ôn dịch câu `/api/v1/sentences`
+
+| Route                                            | Việc                                                                                                                                 |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /sentences`                                 | Kho câu. Query: `q`, `tag` (tên tag hoặc `__fav`), `page`, `pageSize`                                                                |
+| `POST /sentences`                                | Thêm `{ chinese, pinyin?, vietnamese, note?, tags? }` → `201`                                                                        |
+| `GET\|PUT\|DELETE /sentences/{id}`               | Xem · sửa · xoá                                                                                                                      |
+| `POST /sentences/{id}/favorite`                  | Bật / tắt Yêu thích                                                                                                                  |
+| `GET /sentences/tags`                            | Tag + số câu                                                                                                                         |
+| `POST /sentences/delete` · `/status` · `/sample` | Xoá nhiều `{ ids }` · đổi trạng thái `{ ids, status }` · thêm câu mẫu                                                                |
+| `GET /sentences/review/pool?tags=a,b`            | Số câu có thể ôn                                                                                                                     |
+| `GET /sentences/review/last-config`              | Thiết lập gần nhất                                                                                                                   |
+| `POST /sentences/review/sessions`                | Tạo bài `{ direction: "vi-zh"\|"zh-vi"\|"mixed", count, tags?, showPinyin?, showHint?, sentenceIds? }` → `201`; không có câu → `409` |
+| `GET\|DELETE /sentences/review/sessions/active`  | Bài đang làm · bỏ bài                                                                                                                |
+| `GET /sentences/review/sessions/last-result`     | Kết quả gần nhất (+ `wrongIds`)                                                                                                      |
+| `POST /sentences/review/sessions/{id}/answer`    | `{ index, answer }`                                                                                                                  |
+| `POST …/skip` · `…/override` · `…/hint`          | `{ index }` — bỏ qua · tính là đúng (máy chấm sai) · gợi ý chữ Hán                                                                   |
+| `POST …/remember`                                | `{ index, remembered }` → câu thành Đã thuộc / Cần ôn                                                                                |
+| `POST …/move` · `…/complete`                     | Chuyển câu `{ index }` · nộp bài (chưa làm hết → `400`)                                                                              |
+
+## Bộ thủ, Bài học, Thông báo
+
+| Route                                   | Việc                                                                   |
+| --------------------------------------- | ---------------------------------------------------------------------- |
+| `GET /radicals?q=`                      | 214 bộ thủ kèm `known`                                                 |
+| `GET /radicals/{num}`                   | Một bộ (1–214) + chữ ví dụ                                             |
+| `PUT /radicals/{num}/known`             | `{ known }`                                                            |
+| `GET /lessons`                          | Danh sách bài + tiến độ                                                |
+| `GET /lessons/{id}`                     | Nội dung bài (theo ngôn ngữ người dùng) + tiến độ từng phần            |
+| `POST /lessons/{id}/sections/{section}` | `{ answers: (0–3 \| null)[] }` → **server tự chấm** `{ score, total }` |
+| `GET /notifications`                    | 20 thông báo mới nhất, `unread`, lời mời còn chờ                       |
+| `POST /notifications/read`              | `{ ids? }` (bỏ trống = tất cả) → `{ unread }`                          |
+
 ## Phát âm `/api/v1/pronunciation`
 
 | Route                              | Việc                                                                                                                                             |

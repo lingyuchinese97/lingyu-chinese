@@ -10,7 +10,7 @@ import { SANDHI_RULES, TONES } from "@/data/pronunciation";
 import { checkAnswer, type PracticeQuestion } from "../practice";
 import { PCard, PTitle } from "./pron-header";
 import { Recorder } from "./recorder";
-import { speakZh, useChineseVoice, useL } from "./speech";
+import { SPEECH_RATE, speakZh, useChineseVoice, useL } from "./speech";
 
 type Answer = { input: string; correct: boolean };
 
@@ -130,7 +130,7 @@ export function Quiz({
             >
               <Volume2 className="size-10" aria-hidden="true" />
             </button>
-            <Button variant="ghost" size="sm" onClick={() => speakZh(speakText, 0.55)}>
+            <Button variant="ghost" size="sm" onClick={() => speakZh(speakText, SPEECH_RATE.slow)}>
               <Snail />
               {t("pronunciation.practice.slow")}
             </Button>

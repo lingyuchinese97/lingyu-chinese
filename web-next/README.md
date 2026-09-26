@@ -103,6 +103,12 @@ chấm điểm), thẻ, so sánh bài chép với đáp án. **Quản trị** (`
 (tổng số người dùng, admin, bị khoá, mới / hoạt động 7 ngày, tổng nội dung), danh sách người dùng, thông tin một người dùng (hồ sơ +
 số lượng nội dung, không có nội dung học).
 
+**Ngữ pháp, Ôn dịch câu, Bộ thủ, Bài học, Thông báo, Tài khoản, Trang chủ** (`/api/v1/grammar/*`, `/api/v1/sentences/*`,
+`/api/v1/radicals/*`, `/api/v1/lessons/*`, `/api/v1/notifications/*`, `/api/v1/me/*`, `/api/v1/home`): mọi chức năng trên web đều
+gọi được qua API — thêm / sửa / xoá / tìm, thẻ, lưu, chia sẻ và nhận chia sẻ ngữ pháp (ghi chú cá nhân không bao giờ lộ), kho câu
+và bài ôn dịch câu, đánh dấu bộ thủ đã thuộc, nội dung bài học và nộp bài (server tự chấm), chuông thông báo, hồ sơ, đổi mật khẩu,
+xoá tài khoản, xuất / nhập dữ liệu, số liệu Trang chủ.
+
 **Phát âm** (`/api/v1/pronunciation*`): nội dung bài học (thanh mẫu, vận mẫu, thanh điệu, quy tắc biến điệu, chữ có sẵn vi / en),
 tạo bài tự luyện theo chế độ (câu hỏi kèm đáp án, không lưu điểm), ghi chú phát âm của tôi (thêm / sửa / xoá; ghi chú gắn mục qua
 `topic`; người khác → 404).

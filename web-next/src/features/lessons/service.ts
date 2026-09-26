@@ -4,7 +4,14 @@ import { db } from "@/server/db/client";
 import { lessonProgress } from "@/server/db/schema";
 import { getLesson, LESSONS } from "@/data/lessons";
 
-export class LessonError extends Error {}
+export class LessonError extends Error {
+  constructor(
+    message: string,
+    public code: "not-found" | "validation" = "validation",
+  ) {
+    super(message);
+  }
+}
 
 export type SectionProgress = {
   bestScore: number;
@@ -35,7 +42,7 @@ export async function progressOf(userId: string): Promise<ProgressMap> {
 export async function recordSection(userId: string, lessonId: string, sectionId: string, answers: (number | null)[]) {
   const lesson = getLesson(lessonId);
   const section = lesson?.sections.find((s) => s.id === sectionId);
-  if (!lesson || !section) throw new LessonError("Không tìm thấy bài học này.");
+  if (!lesson || !section) throw new LessonError("Không tìm thấy bài học này.", "not-found");
   if (answers.length !== section.questions.length) throw new LessonError("Bài làm chưa đầy đủ.");
   const score = section.questions.reduce((n, q, i) => n + (answers[i] === q.answer ? 1 : 0), 0);
   const total = section.questions.length;

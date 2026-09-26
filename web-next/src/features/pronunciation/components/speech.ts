@@ -22,11 +22,14 @@ export function useChineseVoice() {
   return ok;
 }
 
+/** Tốc độ đọc (1 = bình thường): chậm để người học nghe rõ từng âm. */
+export const SPEECH_RATE = { normal: 0.7, slow: 0.45, syllable: 0.55 } as const;
+
 /**
  * Đọc bằng giọng tiếng Trung của máy. Truyền mảng → đọc từng phần tách rời (vd từng chữ, để nghe thanh gốc trước biến điệu).
  * Không có giọng → không làm gì.
  */
-export function speakZh(text: string | string[], rate = 0.85) {
+export function speakZh(text: string | string[], rate: number = SPEECH_RATE.normal) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
   synth.cancel();

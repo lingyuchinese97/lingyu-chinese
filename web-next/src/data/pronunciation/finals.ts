@@ -64,7 +64,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "o",
-    "喔",
+    "哦",
     "single",
     ["Gần “ua / uô” tiếng Việt", "Like “aw” in “law” with rounded lips"],
     [
@@ -72,8 +72,8 @@ export const FINALS: SoundItem[] = [
       ["Round the lips.", "Starts with a light “u”."],
     ],
     [
-      ["我", "wǒ", "tôi", "I"],
       ["波", "bō", "sóng", "wave"],
+      ["摸", "mō", "sờ, chạm", "to touch"],
     ],
     ["bo, po, mo, fo đọc gần “bua, pua, mua, phua”.", "bo, po, mo, fo sound like “bwo, pwo…”."],
   ),
@@ -185,7 +185,7 @@ export const FINALS: SoundItem[] = [
   ),
   f(
     "ia",
-    "呀",
+    "压",
     "compound",
     ["“i-a” đọc liền (gần “da”)", "Like “ya” in “yard”"],
     [["i ngắn lướt nhanh sang a."], ["A short i gliding into a."]],

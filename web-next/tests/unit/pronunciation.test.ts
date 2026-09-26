@@ -80,6 +80,56 @@ describe("nội dung", () => {
         expect(e.spoken).not.toBe(e.pinyin);
       }
   });
+  it("mỗi ví dụ chứa đúng thanh mẫu / vận mẫu được dạy (tính cả cách viết y, w, iu, ui, un, ü)", () => {
+    const INI = ["zh", "ch", "sh", ..."bpmfdtnlgkhjqxrzcs"];
+    const WHOLE: Record<string, string> = {
+      yi: "i",
+      wu: "u",
+      yu: "ü",
+      ya: "ia",
+      ye: "ie",
+      yao: "iao",
+      you: "iou",
+      yan: "ian",
+      yin: "in",
+      yang: "iang",
+      ying: "ing",
+      yong: "iong",
+      yue: "üe",
+      yuan: "üan",
+      yun: "ün",
+      wa: "ua",
+      wo: "uo",
+      wai: "uai",
+      wei: "uei",
+      wan: "uan",
+      wen: "uen",
+      wang: "uang",
+      weng: "ueng",
+    };
+    const parts = (syl: string) => {
+      const plain = splitTone(syl).plain;
+      if (WHOLE[plain]) return { i: "", f: WHOLE[plain]! };
+      const i = INI.find((x) => plain.startsWith(x) && plain.length > x.length) ?? "";
+      let f = plain.slice(i.length);
+      if ("jqx".includes(i) && i && f.startsWith("u")) f = "ü" + f.slice(1);
+      f = ({ iu: "iou", ui: "uei", un: "uen" } as Record<string, string>)[f] ?? f;
+      return { i, f };
+    };
+    for (const x of INITIALS)
+      for (const e of x.examples)
+        expect(
+          splitSyllables(e.pinyin).map((s) => parts(s).i),
+          `${x.symbol}: ${e.hanzi}`,
+        ).toContain(x.symbol);
+    for (const x of FINALS)
+      for (const e of x.examples)
+        expect(
+          splitSyllables(e.pinyin).map((s) => parts(s).f),
+          `${x.symbol}: ${e.hanzi}`,
+        ).toContain(x.symbol);
+  });
+
   it("mã mục ghi chú: hợp lệ / không hợp lệ", () => {
     for (const t of ["initial:zh", "final:ü", "tone:3", "tone:5", "sandhi:yi", "sandhi:third-two:0", "sandhi:general"])
       expect(isTopic(t), t).toBe(true);
