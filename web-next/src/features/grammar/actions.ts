@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AuthError, currentUserOrThrow, type SessionUser } from "@/server/session";
 import { log } from "@/server/log";
-import { grammarInputSchema, grammarTagName } from "./schema";
+import { G_LIMITS, grammarInputSchema, grammarTagName } from "./schema";
 import * as svc from "./service";
 
 type Fail = { ok: false; message: string; fieldErrors?: Record<string, string> };
@@ -35,6 +35,14 @@ export const createGrammarAction = async (input: unknown) =>
   run((u) => svc.createGrammar(u.id, grammarInputSchema.parse(input)));
 export const updateGrammarAction = async (id: string, input: unknown) =>
   run((u) => svc.updateGrammar(u.id, uuid(id), grammarInputSchema.parse(input)));
+export const savePersonalNoteAction = async (id: string, text: string) =>
+  run((u) =>
+    svc.savePersonalNote(
+      u.id,
+      uuid(id),
+      z.string().max(G_LIMITS.personalNote, `Tối đa ${G_LIMITS.personalNote} ký tự.`).parse(text),
+    ),
+  );
 export const deleteGrammarAction = async (id: string) => run((u) => svc.deleteGrammar(u.id, uuid(id)));
 export const setBookmarkAction = async (id: string, saved: boolean) =>
   run((u) => svc.setBookmark(u.id, uuid(id), !!saved));

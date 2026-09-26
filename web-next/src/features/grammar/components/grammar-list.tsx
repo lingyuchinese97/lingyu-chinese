@@ -155,35 +155,6 @@ export function GrammarList({
                 <LeafDecor className="w-10 md:w-11" />
               </h1>
               <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{t("grammar.subtitle")}</p>
-              <div className="mt-4 flex flex-wrap gap-2.5">
-                <HeaderChip
-                  tone="blue"
-                  icon={<BookOpen />}
-                  on={params.view === "all"}
-                  onClick={() => go({ view: "all" })}
-                >
-                  {t("grammar.total", { count: data.totalAll })}
-                </HeaderChip>
-                <HeaderChip
-                  tone="amber"
-                  icon={<Bookmark />}
-                  on={params.view === "saved"}
-                  onClick={() => go({ view: "saved" })}
-                  badge={data.savedCount}
-                >
-                  {t("grammar.viewSaved")}
-                </HeaderChip>
-                <HeaderChip
-                  tone="green"
-                  icon={<Share2 />}
-                  on={params.view === "shared"}
-                  onClick={() => go({ view: "shared" })}
-                  badge={received.length}
-                  alert
-                >
-                  {t("grammar.viewShared")}
-                </HeaderChip>
-              </div>
             </div>
           </div>
 
@@ -392,55 +363,6 @@ export function GrammarList({
       <TagManager open={tagsOpen} tags={tags} onClose={() => setTagsOpen(false)} onChanged={refresh} />
       {confirmNode}
     </>
-  );
-}
-
-function HeaderChip({
-  tone,
-  icon,
-  on,
-  onClick,
-  badge,
-  alert,
-  children,
-}: {
-  tone: "blue" | "amber" | "green";
-  icon: React.ReactNode;
-  on: boolean;
-  onClick: () => void;
-  badge?: number;
-  alert?: boolean;
-  children: React.ReactNode;
-}) {
-  const tones = {
-    blue: "bg-[#E6F1FD] text-navy [&_svg]:text-blue-600",
-    amber: "bg-[#FFF3D6] text-navy [&_svg]:text-[#F29A17]",
-    green: "bg-[#E3F7EE] text-navy [&_svg]:text-green-700",
-  };
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={on}
-      className={cn(
-        "inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] md:min-h-12 md:px-5 [&_svg]:size-5",
-        tones[tone],
-        on ? "ring-2 ring-blue/50" : "hover:brightness-[.98]",
-      )}
-    >
-      {icon}
-      {children}
-      {badge ? (
-        <span
-          className={cn(
-            "rounded-full px-2 text-xs leading-5",
-            alert ? "bg-rose text-white" : "bg-white/80 text-text-2",
-          )}
-        >
-          {badge}
-        </span>
-      ) : null}
-    </button>
   );
 }
 

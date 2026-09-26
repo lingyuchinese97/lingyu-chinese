@@ -6,6 +6,7 @@ import { user } from "@/server/db/schema";
 import * as g from "@/features/grammar/service";
 import { grammarInputSchema, grammarListSchema, parseEmails } from "@/features/grammar/schema";
 import { listNotifications, markRead, unreadCount } from "@/features/notifications/service";
+import { splitStructure } from "@/features/grammar/components/structure-box";
 import { cleanupUsers, makeUser } from "./helpers";
 
 const input = (p: Record<string, unknown>) => grammarInputSchema.parse(p);
@@ -50,6 +51,24 @@ describe("ngữ pháp — CRUD", () => {
     expect(five.error!.issues[0]!.message).toBe("Tối đa 4 dòng cấu trúc.");
     expect(one("x".repeat(301)).success).toBe(false);
     expect(one("x".repeat(300) + "\n" + "y".repeat(300)).success).toBe(true);
+  });
+
+  it("ghi chú cá nhân sửa ngay trên trang chi tiết: chỉ chủ sở hữu, chuỗi rỗng = xoá", async () => {
+    const u = await makeUser("gpn");
+    const other = await makeUser("gpn2");
+    const id = await g.createGrammar(u, grammarInputSchema.parse({ title: "Ghi chú" }));
+    expect(await g.savePersonalNote(u, id, "  mẹo nhớ  ")).toBe("mẹo nhớ");
+    expect((await g.getOwnGrammar(u, id))!.personalNote).toBe("mẹo nhớ");
+    await expect(g.savePersonalNote(other, id, "xâm nhập")).rejects.toMatchObject({ code: "not-found" });
+    expect((await g.getOwnGrammar(u, id))!.personalNote).toBe("mẹo nhớ");
+    await g.savePersonalNote(u, id, "");
+    expect((await g.getOwnGrammar(u, id))!.personalNote).toBe("");
+  });
+
+  it("tách nhãn cấu trúc: “Câu phủ định: A + 不是 + B”", () => {
+    expect(splitStructure("Câu phủ định: A + 不是 + B")).toEqual({ label: "Câu phủ định", formula: "A + 不是 + B" });
+    expect(splitStructure("不：Câu khẳng định")).toEqual({ label: "", formula: "不：Câu khẳng định" });
+    expect(splitStructure("很 + ADJ")).toEqual({ label: "", formula: "很 + ADJ" });
   });
 
   it("tạo, sửa (giữ thứ tự ví dụ), tìm kiếm bỏ dấu, lọc thẻ, đã lưu", async () => {

@@ -262,6 +262,20 @@ async function setPersonalNote(tx: Tx, userId: string, grammarId: string, text: 
     });
 }
 
+/** Sửa riêng ghi chú cá nhân ngay trên trang chi tiết (chỉ chủ sở hữu; chuỗi rỗng = xoá ghi chú). */
+export async function savePersonalNote(userId: string, grammarId: string, text: string) {
+  await db.transaction(async (tx) => {
+    const [own] = await tx
+      .select({ id: grammar.id })
+      .from(grammar)
+      .where(and(eq(grammar.id, grammarId), eq(grammar.userId, userId)))
+      .limit(1);
+    if (!own) throw new GrammarError("not-found", NOT_FOUND);
+    await setPersonalNote(tx, userId, grammarId, text);
+  });
+  return text.trim();
+}
+
 export async function createGrammar(userId: string, input: GrammarInput) {
   return db.transaction(async (tx) => {
     const [row] = await tx
