@@ -255,7 +255,8 @@ export function ListeningPractice({
       notes: v.notes,
     });
     if (!r.ok) return { ok: false as const, message: r.message, fieldErrors: r.fieldErrors as DraftErrors | undefined };
-    set({ spans: formatted, notes: v.notes, checked: true });
+    // Lưu xong: xoá bài để làm bài mới, GIỮ LẠI link (và cài đặt nghe) để luyện tiếp đoạn khác của cùng nội dung.
+    set({ spans: [], notes: "", checked: false, reference: { answer: "", pinyin: "" } });
     setSavedId(r.data);
     toast.success(t("listening.save.saved", { title: v.title.trim() }), {
       action: { label: t("listening.save.view"), onClick: () => router.push(`/listening/exercises?id=${r.data}`) },

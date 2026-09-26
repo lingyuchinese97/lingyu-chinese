@@ -41,6 +41,9 @@
 
 ### Changed
 
+- Luyện nghe: bấm **Lưu bài làm** xong, trang tự xoá bài (bài chép, đáp án tham khảo, ghi chú, kết quả) để làm bài mới nhưng **giữ
+  lại link** đã dán (và trình phát, tốc độ, đoạn) để luyện tiếp.
+- Ngữ pháp: bỏ 3 nút "số ngữ pháp / Đã lưu / Được chia sẻ" ở phần đầu trang (đã có các tab ngay bên dưới).
 - **Trang chi tiết Ngữ pháp thiết kế lại theo mẫu**: tiêu đề có biểu tượng tròn, thẻ + ngày tạo / cập nhật, nút Lưu / Chia sẻ
   / Chỉnh sửa / Xóa; mỗi phần là một khung màu riêng có biểu tượng (Ý nghĩa xanh, Cấu trúc vàng, Ví dụ trắng, Lưu ý xanh, Ghi chú
   cá nhân xanh lá, Đã chia sẻ với). Cấu trúc dạng “Nhãn: công thức” (vd “Câu phủ định: A + 不是 + B”) hiện nhãn tách riêng. Mỗi

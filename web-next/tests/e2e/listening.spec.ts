@@ -89,6 +89,12 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await save.getByRole("button", { name: "Lưu bài làm" }).click();
   await expect(save).toBeHidden();
   await expect(page.getByText("Đã lưu bài làm “Hội thoại chào hỏi – Bài 1”.")).toBeVisible();
+  // Lưu xong: trang xoá bài (bài chép, đáp án, ghi chú) nhưng GIỮ link để luyện tiếp.
+  await expect(editor(page)).toHaveText("");
+  await expect(page.getByRole("textbox", { name: "Ghi chú" })).toHaveValue("");
+  await expect(page.getByRole("button", { name: "Thêm đáp án tham khảo" })).toBeVisible();
+  await expect(url).toHaveValue(`${baseURL}/audio/bai1/blending/q05.mp3`);
+  await expect(page.locator("audio")).toHaveCount(1);
 
   // Bài làm của tôi: danh sách (tiêu đề, thẻ, điểm) + chi tiết.
   await page.getByRole("link", { name: "Mở Bài làm của tôi" }).click();
@@ -138,6 +144,7 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   // Lưu vào Từ vựng từ bài chép: dùng lại form Từ vựng, lưu vào kho chung.
   await page.goto("/listening");
   await editor(page).click();
+  await page.keyboard.type("你好，我叫小雨。");
   await page.keyboard.press("ControlOrMeta+a");
   await page
     .getByRole("toolbar", { name: "Công cụ soạn thảo" })
