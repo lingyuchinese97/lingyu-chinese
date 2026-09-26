@@ -6,6 +6,17 @@
 
 ### Added
 
+- **Luyện nghe & Nói – Chép chính tả** (menu “Luyện nghe & Nói”, `/listening`): dán link YouTube (trình phát nhúng chính thức,
+  không tải video / không lấy phụ đề) hoặc link file âm thanh / video; chọn đoạn (ô giờ + thanh kéo 2 đầu), tốc độ 0.5x–1.5x, lặp
+  lại đoạn, tự chuyển đoạn tiếp theo; **người dùng tự nhập đáp án tham khảo** (ẩn trong lúc chép, có nút Tạo Pinyin); ô chép chính
+  tả tối đa 2.000 chữ có Bút đen / Bút đỏ / Bôi vàng / Hoàn tác / Làm lại; “Kiểm tra đáp án” so sánh từng chữ (Đúng / Sai / Thiếu /
+  Thừa, điểm “Đúng 5/6 chữ (83%)”), chữ không khớp tô đỏ ngay trong ô và tự hết đỏ khi sửa đúng; chọn một từ → “Lưu vào Từ vựng”
+  (dùng lại form Từ vựng, lưu vào kho chung); ghi chú; popup “Lưu bài làm” (tiêu đề, thẻ, đáp án chỉ đọc, sửa bài với so sánh tức
+  thì). Tab “Bài làm của tôi”: tìm theo tiêu đề / nội dung / thẻ, lọc thẻ, mới / cũ nhất, chi tiết (bài làm, đáp án, kết quả so
+  sánh, ghi chú), Chỉnh sửa & Lưu (chấm lại), thêm thẻ, tải xuống, xoá có xác nhận. Nháp đang làm được giữ khi tải lại trang.
+  Bài làm có trong xuất / nhập dữ liệu. API `/api/v1/listening/*`.
+- **API quản trị** (chỉ admin): `GET /api/v1/admin/stats` (tổng số người dùng, admin, bị khoá, mới / hoạt động 7 ngày, tổng nội
+  dung), `GET /api/v1/admin/users` (danh sách, tìm), `GET /api/v1/admin/users/{id}` (hồ sơ + số lượng nội dung).
 - **Swagger cho API**: trang `/api-docs` (Swagger UI) liệt kê mọi route `/api/v1`, có ví dụ và nút _Try it out_ gọi thử bằng phiên
   đăng nhập hiện tại; file OpenAPI 3.1 ở `/api/openapi.json` (thân request sinh từ schema Zod nên luôn khớp kiểm tra thật). Test
   bắt buộc mọi route `/api/v1` phải có trong tài liệu. Hai trang này khoá bằng **tài khoản riêng** (HTTP Basic, biến

@@ -7,7 +7,9 @@ import { image, session, srsCard, user, vocab } from "@/server/db/schema";
 import { findUserByEmail } from "@/server/users";
 import { changePassword, removeUser, updateName, verifyPassword } from "@/features/account/service";
 import { exportData, importData, ImportError } from "@/features/account/transfer";
-import { listUsers } from "@/features/admin/service";
+import { exerciseInputSchema, exerciseListSchema } from "@/features/listening/schema";
+import { createExercise, listExercises } from "@/features/listening/service";
+import { adminStats, adminUserDetail, listUsers } from "@/features/admin/service";
 import * as svc from "@/features/vocabulary/service";
 import * as g from "@/features/grammar/service";
 import { vocabInputSchema } from "@/features/vocabulary/schema";
@@ -112,6 +114,17 @@ describe("xuất / nhập dữ liệu", () => {
       A.id,
       sentenceInputSchema.parse({ chinese: "我爱你。", vietnamese: "Tôi yêu bạn.", tags: ["Tình cảm"] }),
     );
+    await createExercise(
+      A.id,
+      exerciseInputSchema.parse({
+        title: "Chào hỏi",
+        tags: ["HSK1"],
+        referenceAnswer: "你好，我是小雨。",
+        userAnswer: "你好，我叫小雨。",
+        formattedUserAnswer: [{ text: "你好，" }, { text: "我叫", color: "red" }, { text: "小雨。" }],
+        notes: "ghi chú nghe",
+      }),
+    );
     await setKnown(A.id, 85, true);
     const qs = getLesson("bai1")!.sections[1]!.questions;
     await recordSection(
@@ -129,6 +142,7 @@ describe("xuất / nhập dữ liệu", () => {
     expect(data.vocabTags).toEqual(expect.arrayContaining(["HSK1", "Tag trống"]));
     expect(data.grammar[0]).toMatchObject({ personalNote: "ghi chú riêng", tags: ["Câu hỏi"] });
     expect(data.sentences[0]).toMatchObject({ chinese: "我爱你。", tags: ["Tình cảm"] });
+    expect(data.listening[0]).toMatchObject({ title: "Chào hỏi", tags: ["HSK1"], notes: "ghi chú nghe" });
     expect(data.lessonProgress[0]).toMatchObject({ lessonId: "bai1", section: "blending", bestScore: 20 });
     // File xuất chỉ chứa dữ liệu của A.
     expect(JSON.stringify(data)).not.toContain(B.email);
@@ -150,6 +164,7 @@ describe("xuất / nhập dữ liệu", () => {
       vocab: { added: 2, skipped: 2 },
       grammar: { added: 1, skipped: 0 },
       sentences: { added: 1, skipped: 0 },
+      listening: { added: 1, skipped: 0 },
       radicals: 1,
       lessons: 1,
       images: 1,
@@ -167,6 +182,9 @@ describe("xuất / nhập dữ liệu", () => {
     expect(again.vocab.added).toBe(0);
     expect(again.grammar).toEqual({ added: 0, skipped: 1 });
     expect(again.sentences).toEqual({ added: 0, skipped: 1 });
+    expect(again.listening).toEqual({ added: 0, skipped: 1 });
+    const bl = await listExercises(B.id, exerciseListSchema.parse({}));
+    expect(bl.items[0]).toMatchObject({ title: "Chào hỏi", scorePercent: 83, tags: ["HSK1"] });
   });
 
   it("từ chối file không đúng định dạng / phiên bản mới hơn", async () => {
@@ -184,5 +202,25 @@ describe("quản trị", () => {
     expect(r.total).toBe(1);
     expect(r.items[0]).toMatchObject({ email: u.email, vocabCount: 1, role: "user", disabledAt: null });
     expect((await listUsers({ q: "khong-ai-co-email-nay" })).items).toEqual([]);
+  });
+
+  it("số liệu tổng và thông tin người dùng (chỉ số lượng, không có nội dung học)", async () => {
+    const u = await signUp("adm2");
+    await svc.createVocab(
+      u.id,
+      vocabInputSchema.parse({ hanzi: "二", pinyin: "èr", meaningVi: "hai", note: "bí mật" }),
+    );
+    const s = await adminStats();
+    expect(s.totalUsers).toBeGreaterThanOrEqual(1);
+    expect(s.newUsers7d).toBeGreaterThanOrEqual(1);
+    expect(s.content.vocab).toBeGreaterThanOrEqual(1);
+    const d = await adminUserDetail(u.id);
+    expect(d).toMatchObject({
+      email: u.email,
+      role: "user",
+      counts: { vocab: 1, sentences: 0, grammar: 0, listening: 0 },
+    });
+    expect(JSON.stringify(d)).not.toContain("bí mật");
+    expect(await adminUserDetail("00000000-0000-4000-8000-000000000000")).toBeNull();
   });
 });

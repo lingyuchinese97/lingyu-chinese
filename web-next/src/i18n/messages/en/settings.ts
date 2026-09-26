@@ -32,7 +32,7 @@ export const settings: Messages["settings"] = {
     "Imported {vocab, plural, one {# word} other {# words}} and {grammar, plural, one {# grammar point} other {# grammar points}}.",
   importDone: "Import complete:",
   importReport:
-    "Words: {va} added, {vs} skipped · Grammar: {ga} added, {gs} skipped · Sentences: {sa} added, {ss} skipped · Images: {img} · Learned radicals: {rad} · Lesson progress: {les}",
+    "Words: {va} added, {vs} skipped · Grammar: {ga} added, {gs} skipped · Sentences: {sa} added, {ss} skipped · Listening exercises: {la} added, {ls} skipped · Images: {img} · Learned radicals: {rad} · Lesson progress: {les}",
   sample: "Sample data",
   sampleDesc: "Add sample HSK words to try out reviews.",
   sampleAdd: "Add sample data",

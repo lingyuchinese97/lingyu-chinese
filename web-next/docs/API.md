@@ -55,6 +55,56 @@ Ví dụ lỗi kiểm tra dữ liệu (`400`):
 }
 ```
 
+## Luyện nghe `/api/v1/listening`
+
+Luồng: người dùng dán link, **tự nhập đáp án tham khảo** (không lấy phụ đề), chép chính tả, so sánh, sửa, lưu bài làm.
+
+| Route                              | Việc                                                                                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `GET /listening/exercises`         | Bài làm của tôi. Query: `q` (tiêu đề, bài chép, đáp án, ghi chú, thẻ), `tag`, `sort` (`newest`\|`oldest`), `page`, `pageSize` |
+| `POST /listening/exercises`        | Lưu bài làm → `201` bài làm (kết quả so sánh + điểm do **server** tính)                                                       |
+| `GET /listening/exercises/{id}`    | Một bài làm                                                                                                                   |
+| `PUT /listening/exercises/{id}`    | Sửa toàn bộ; đáp án / bài chép đổi → chấm lại                                                                                 |
+| `DELETE /listening/exercises/{id}` | Xoá (không xoá từ vựng đã lưu từ bài này) → `{ deleted: true }`                                                               |
+| `GET /listening/tags`              | Thẻ và số bài `[{ id, name, count }]`                                                                                         |
+| `POST /listening/compare`          | `{ referenceAnswer, userAnswer }` → kết quả so sánh (không lưu)                                                               |
+
+Bài làm gửi lên:
+
+```json
+{
+  "title": "Hội thoại chào hỏi – Bài 1",
+  "tags": ["HSK1", "Hội thoại"],
+  "contentUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "segmentStart": 12,
+  "segmentEnd": 45,
+  "playbackSpeed": 1,
+  "referenceAnswer": "你好，我是小雨。",
+  "referencePinyin": "Nǐ hǎo, wǒ shì Xiǎoyǔ.",
+  "userAnswer": "你好，我叫小雨。",
+  "formattedUserAnswer": [{ "text": "你好，" }, { "text": "我叫", "color": "red" }, { "text": "小雨。" }],
+  "notes": "Cần lưu ý 我是 và 我叫."
+}
+```
+
+- `contentUrl`: link YouTube hoặc link file âm thanh / video (.mp3, .m4a, .mp4…); để trống được. Link khác → `400`.
+- Giới hạn: tiêu đề 100 ký tự; đáp án, pinyin, bài chép, ghi chú 2.000 ký tự mỗi ô; tối đa 10 thẻ; `playbackSpeed` ∈ 0.5 / 0.75 / 1 / 1.25 / 1.5.
+- `formattedUserAnswer` là **định dạng người dùng tự tô** (bút đỏ `color: "red"`, bôi vàng `highlight: true`), tách hẳn khỏi kết quả
+  so sánh. Nếu lệch với `userAnswer`, server tự căn lại theo `userAnswer`.
+- Kết quả so sánh (`comparisonResult`, cũng là dạng trả về của `/compare`): mỗi chữ Hán (hoặc mỗi từ Latin) là một "chữ"; dấu câu,
+  khoảng trắng không tính; không phân biệt hoa / thường. `parts` theo thứ tự bài chép: `{ kind: "text", status: "correct" | "wrong" |
+"extra" | "neutral", start, end, expected? }` hoặc `{ kind: "missing", text, at }`. Điểm = `correct / total` (số chữ của đáp án).
+
+## Quản trị `/api/v1/admin` (chỉ admin)
+
+Người dùng thường → `403`. Không trả mật khẩu hay nội dung học của người dùng (chỉ số lượng).
+
+| Route                       | Việc                                                                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /admin/stats`          | `{ totalUsers, admins, disabled, newUsers7d, activeUsers7d, content: { vocab, sentences, grammar, listening } }`                       |
+| `GET /admin/users?q=&page=` | Danh sách người dùng (tìm theo tên / email, 20 người / trang): `id, name, email, role, disabledAt, createdAt, lastLoginAt, vocabCount` |
+| `GET /admin/users/{id}`     | Hồ sơ (`emailVerified`, `locale`…) + `counts: { vocab, sentences, grammar, listening }`                                                |
+
 ## Ôn tập `/api/v1/review`
 
 | Route                                 | Việc                                                                                  |

@@ -1,6 +1,6 @@
 /**
  * Xuất / nhập dữ liệu học tập (JSON). Xuất: từ vựng (kèm ảnh base64, lịch ôn), tag, ngữ pháp (kèm ví dụ, ghi chú cá nhân,
- * đã lưu), câu (Ôn dịch câu), bộ thủ đã thuộc, tiến độ bài học. Nhập: GỘP vào dữ liệu hiện có, không ghi đè — bản ghi trùng thì bỏ qua.
+ * đã lưu), câu (Ôn dịch câu), bài làm luyện nghe, bộ thủ đã thuộc, tiến độ bài học. Nhập: GỘP vào dữ liệu hiện có, không ghi đè — bản ghi trùng thì bỏ qua.
  */
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -14,6 +14,9 @@ import {
   grammarToTag,
   image,
   lessonProgress,
+  listeningExercise,
+  listeningTag,
+  listeningToTag,
   radicalKnown,
   sentence,
   sentenceTag,
@@ -34,6 +37,8 @@ import { grammarInputSchema } from "@/features/grammar/schema";
 import { getLesson } from "@/data/lessons";
 import { sentenceInputSchema } from "@/features/sentences/schema";
 import { ensureSentenceTags, sentenceValues } from "@/features/sentences/service";
+import { exerciseInputSchema } from "@/features/listening/schema";
+import { exerciseValues, setListeningTags } from "@/features/listening/service";
 
 export const EXPORT_FORMAT = "lingyu-export";
 export const EXPORT_VERSION = 1;
@@ -96,6 +101,17 @@ export async function exportData(u: { id: string; name: string; email: string })
     db.select().from(radicalKnown).where(eq(radicalKnown.userId, userId)),
     db.select().from(lessonProgress).where(eq(lessonProgress.userId, userId)),
   ]);
+  const ls = await db
+    .select()
+    .from(listeningExercise)
+    .where(eq(listeningExercise.userId, userId))
+    .orderBy(asc(listeningExercise.createdAt));
+  const lIds = ls.map((x) => x.id);
+  const [lTags, lLinks] = await Promise.all([
+    db.select().from(listeningTag).where(eq(listeningTag.userId, userId)).orderBy(asc(listeningTag.createdAt)),
+    lIds.length ? db.select().from(listeningToTag).where(inArray(listeningToTag.exerciseId, lIds)) : [],
+  ]);
+  const lTagName = new Map(lTags.map((t) => [t.id, t.name]));
 
   return {
     format: EXPORT_FORMAT,
@@ -168,6 +184,24 @@ export async function exportData(u: { id: string; name: string; email: string })
         .filter(Boolean),
       createdAt: x.createdAt.toISOString(),
     })),
+    listeningTags: lTags.map((t) => t.name),
+    listening: ls.map((x) => ({
+      title: x.title,
+      tags: lLinks
+        .filter((l) => l.exerciseId === x.id)
+        .map((l) => lTagName.get(l.tagId)!)
+        .filter(Boolean),
+      contentUrl: x.contentUrl,
+      segmentStart: x.segmentStart,
+      segmentEnd: x.segmentEnd,
+      playbackSpeed: x.playbackSpeed,
+      referenceAnswer: x.referenceAnswer,
+      referencePinyin: x.referencePinyin,
+      userAnswer: x.userAnswer,
+      formattedUserAnswer: x.formattedUserAnswer,
+      notes: x.notes,
+      createdAt: x.createdAt.toISOString(),
+    })),
     radicalsKnown: known.map((k) => k.radical).sort((a, b) => a - b),
     lessonProgress: lessons.map((l) => ({
       lessonId: l.lessonId,
@@ -208,6 +242,8 @@ const fileSchema = z.object({
   grammar: z.array(z.unknown()).max(5000).default([]),
   sentenceTags: z.array(z.unknown()).max(5000).default([]),
   sentences: z.array(z.unknown()).max(20000).default([]),
+  listeningTags: z.array(z.unknown()).max(5000).default([]),
+  listening: z.array(z.unknown()).max(5000).default([]),
   radicalsKnown: z.array(z.unknown()).max(214).default([]),
   lessonProgress: z.array(z.unknown()).max(1000).default([]),
 });
@@ -250,6 +286,7 @@ export type ImportReport = {
   vocab: { added: number; skipped: number };
   grammar: { added: number; skipped: number };
   sentences: { added: number; skipped: number };
+  listening: { added: number; skipped: number };
   radicals: number;
   lessons: number;
   images: number;
@@ -296,6 +333,7 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
     vocab: { added: 0, skipped: 0 },
     grammar: { added: 0, skipped: 0 },
     sentences: { added: 0, skipped: 0 },
+    listening: { added: 0, skipped: 0 },
     radicals: 0,
     lessons: 0,
     images: 0,
@@ -416,6 +454,41 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
       const tagIds = await ensureSentenceTags(tx, userId, input.data.tags);
       if (tagIds.length) await tx.insert(sentenceToTag).values(tagIds.map((tagId) => ({ sentenceId: ins!.id, tagId })));
       report.sentences.added++;
+    }
+
+    // Bài làm luyện nghe: trùng (cùng tiêu đề + đáp án + bài chép) → bỏ qua. Điểm luôn được chấm lại.
+    const lKey = (x: { title: string; referenceAnswer: string; userAnswer: string }) =>
+      `${x.title}\u0000${x.referenceAnswer}\u0000${x.userAnswer}`;
+    const lExisting = new Set(
+      (
+        await tx
+          .select({
+            title: listeningExercise.title,
+            referenceAnswer: listeningExercise.referenceAnswer,
+            userAnswer: listeningExercise.userAnswer,
+          })
+          .from(listeningExercise)
+          .where(eq(listeningExercise.userId, userId))
+      ).map(lKey),
+    );
+    for (const item of f.listening) {
+      const input = exerciseInputSchema.safeParse(item);
+      const created = z.object({ createdAt: date.optional().catch(undefined) }).safeParse(item ?? {});
+      if (!input.success || lExisting.has(lKey(input.data))) {
+        report.listening.skipped++;
+        continue;
+      }
+      lExisting.add(lKey(input.data));
+      const [ins] = await tx
+        .insert(listeningExercise)
+        .values({
+          userId,
+          ...exerciseValues(input.data),
+          ...(created.success && created.data.createdAt ? { createdAt: created.data.createdAt } : {}),
+        })
+        .returning({ id: listeningExercise.id });
+      await setListeningTags(tx, userId, ins!.id, input.data.tags);
+      report.listening.added++;
     }
 
     // Bộ thủ đã thuộc: hợp lại.

@@ -139,3 +139,41 @@
 @utility pb-safe {
   padding-bottom: var(--safe-b);
 }
+
+/* ---------- Luyện nghe – Chép chính tả ---------- */
+/* Thanh chọn đoạn 2 đầu: chỉ nút kéo nhận chuột (hai input range chồng nhau). */
+.lx-range::-webkit-slider-thumb {
+  pointer-events: auto;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid var(--color-blue);
+  box-shadow: 0 2px 6px rgba(21, 149, 245, 0.35);
+  cursor: pointer;
+}
+.lx-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid var(--color-blue);
+  cursor: pointer;
+}
+.lx-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--focus-ring);
+}
+/* Định dạng người dùng tự tô trong ô chép chính tả. */
+.lx-editor [data-c="red"] {
+  color: var(--color-red);
+}
+.lx-editor [data-h="1"] {
+  background-color: #fff1a8;
+}
+.lx-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #9aaac0;
+  pointer-events: none;
+}

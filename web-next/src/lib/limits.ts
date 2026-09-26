@@ -30,3 +30,17 @@ export const SENTENCE = {
   MAX_TAG: 24,
   PAGE_SIZE: 10,
 } as const;
+
+/** Luyện nghe – Chép chính tả. */
+export const LISTENING = {
+  MAX_TITLE: 100,
+  /** Đáp án, pinyin, bài chép, ghi chú: tối đa 2.000 ký tự mỗi ô. */
+  MAX_TEXT: 2000,
+  MAX_URL: 2000,
+  MAX_TAGS: 10,
+  MAX_TAG: 24,
+  /** Số đoạn định dạng tối đa trong bài chép (bút đỏ / bôi vàng). */
+  MAX_SPANS: 2000,
+  SPEEDS: [0.5, 0.75, 1, 1.25, 1.5] as const,
+  PAGE_SIZE: 20,
+} as const;

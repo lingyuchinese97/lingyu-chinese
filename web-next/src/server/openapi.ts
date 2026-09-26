@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "@/features/vocabulary/schema";
 import { customConfigSchema, dueConfigSchema } from "@/features/review/schema";
+import { compareInputSchema, exerciseInputSchema } from "@/features/listening/schema";
 
 /**
  * Tài liệu OpenAPI 3.1 của REST API (hiển thị bằng Swagger UI ở /api-docs).
@@ -27,6 +28,7 @@ const err = (description: string) => ({ description, content: { "application/jso
 const E = {
   400: err("Dữ liệu sai (có `fieldErrors` khi do kiểm tra dữ liệu)"),
   401: err("Chưa đăng nhập"),
+  403: err("Không có quyền (chỉ admin)"),
   404: err("Không có hoặc không phải của mình"),
   409: err("Không có từ / thẻ nào để ôn"),
   415: err("Thân request không phải JSON"),
@@ -97,6 +99,8 @@ const idsBody = (extra: Record<string, Schema> = {}) => obj({ ids: js(idsSchema)
 const EXAMPLE_ID = "3f2b6c1e-8a4d-4c5b-9e7f-1a2b3c4d5e6f";
 const V = "Từ vựng";
 const R = "Ôn tập";
+const L = "Luyện nghe";
+const AD = "Quản trị";
 const A = "Tài khoản";
 
 const vocabExample = {
@@ -106,6 +110,20 @@ const vocabExample = {
   note: "",
   tags: ["HSK1"],
   radicals: [9],
+};
+
+const listeningExample = {
+  title: "Hội thoại chào hỏi – Bài 1",
+  tags: ["HSK1", "Hội thoại"],
+  contentUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  segmentStart: 12,
+  segmentEnd: 45,
+  playbackSpeed: 1,
+  referenceAnswer: "你好，我是小雨。",
+  referencePinyin: "Nǐ hǎo, wǒ shì Xiǎoyǔ.",
+  userAnswer: "你好，我叫小雨。",
+  formattedUserAnswer: [{ text: "你好，" }, { text: "我叫", color: "red" }, { text: "小雨。" }],
+  notes: "Cần lưu ý cách dùng 我是 và 我叫.",
 };
 
 export function openApiDocument() {
@@ -129,6 +147,15 @@ export function openApiDocument() {
       { name: A, description: "Đăng nhập, đăng xuất, ngôn ngữ" },
       { name: V, description: "Kho từ vựng của mình, chia sẻ" },
       { name: R, description: "Ôn tự chọn và ôn thẻ đến hạn (FSRS)" },
+      {
+        name: L,
+        description:
+          "Luyện nghe – Chép chính tả. Đáp án tham khảo do người dùng nhập; kết quả so sánh và điểm do server tính lại khi lưu.",
+      },
+      {
+        name: AD,
+        description: "Chỉ tài khoản admin (người dùng thường → 403). Không trả nội dung học của người dùng.",
+      },
     ],
     security: [{ cookieAuth: [] }],
     components: {
@@ -165,6 +192,56 @@ export function openApiDocument() {
           },
           ["id", "hanzi", "pinyin", "meaningVi"],
         ),
+        Comparison: {
+          type: "object",
+          description:
+            "Kết quả so sánh. `parts` theo thứ tự bài chép: `text` (status correct | wrong | extra | neutral, vị trí start/end trong " +
+            "bài chép; wrong có `expected`) hoặc `missing` (chữ đáp án bị thiếu, chèn tại `at`). Dấu câu / khoảng trắng không tính điểm.",
+          properties: {
+            parts: { type: "array", items: { type: "object" } },
+            correct: int,
+            wrong: int,
+            missing: int,
+            extra: int,
+            total: int,
+            percent: int,
+          },
+        },
+        ListeningExerciseInput: js(exerciseInputSchema),
+        ListeningExerciseSummary: obj({
+          id: { type: "string", format: "uuid" },
+          title: { type: "string" },
+          tags: { type: "array", items: { type: "string" } },
+          scoreCorrect: int,
+          scoreTotal: int,
+          scorePercent: int,
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        }),
+        ListeningExercise: {
+          allOf: [
+            ref("ListeningExerciseSummary"),
+            {
+              type: "object",
+              properties: {
+                contentUrl: { type: "string" },
+                media: {
+                  type: ["object", "null"],
+                  description: "{ kind: youtube, videoId } | { kind: audio | video, url }",
+                },
+                segmentStart: { type: ["number", "null"] },
+                segmentEnd: { type: ["number", "null"] },
+                playbackSpeed: { type: "number" },
+                referenceAnswer: { type: "string" },
+                referencePinyin: { type: "string" },
+                userAnswer: { type: "string" },
+                formattedUserAnswer: { type: "array", items: { type: "object" } },
+                comparisonResult: ref("Comparison"),
+                notes: { type: "string" },
+              },
+            },
+          ],
+        },
         ReviewSession: {
           type: "object",
           description: "Phiên ôn. Câu chưa làm KHÔNG chứa đáp án; câu đã làm có thêm `reveal`.",
@@ -446,6 +523,129 @@ export function openApiDocument() {
           params: [pathId("id phiên")],
           data: ref("ReviewSession"),
           errors: [404],
+        }),
+      },
+
+      "/api/v1/listening/exercises": {
+        get: op(L, {
+          summary: "Bài làm của tôi (tìm, lọc thẻ, sắp xếp, phân trang)",
+          params: [
+            q("q", { type: "string" }, "Tìm theo tiêu đề, bài chép, đáp án, ghi chú, thẻ"),
+            q("tag", { type: "string" }),
+            q("sort", { enum: ["newest", "oldest"] }),
+            q("page", { type: "integer", minimum: 1 }),
+            q("pageSize", { type: "integer", minimum: 1, maximum: 100, default: 20 }),
+          ],
+          data: obj({
+            items: { type: "array", items: ref("ListeningExerciseSummary") },
+            total: int,
+            page: int,
+            pageCount: int,
+            pageSize: int,
+            tags: { type: "array", items: obj({ id: { type: "string" }, name: { type: "string" }, count: int }) },
+          }),
+        }),
+        post: op(L, {
+          summary: "Lưu bài làm (server so sánh + chấm điểm)",
+          body: ref("ListeningExerciseInput"),
+          example: listeningExample,
+          status: 201,
+          data: ref("ListeningExercise"),
+        }),
+      },
+      "/api/v1/listening/exercises/{id}": {
+        get: op(L, {
+          summary: "Xem một bài làm",
+          params: [pathId("id bài làm")],
+          data: ref("ListeningExercise"),
+          errors: [404],
+        }),
+        put: op(L, {
+          summary: "Sửa bài làm (toàn bộ; đáp án / bài chép đổi → chấm lại)",
+          params: [pathId("id bài làm")],
+          body: ref("ListeningExerciseInput"),
+          example: { ...listeningExample, userAnswer: "你好，我是小雨。" },
+          data: ref("ListeningExercise"),
+          errors: [404],
+        }),
+        delete: op(L, {
+          summary: "Xoá bài làm (không xoá từ vựng đã lưu)",
+          params: [pathId("id bài làm")],
+          data: obj({ deleted: { const: true } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/listening/tags": {
+        get: op(L, {
+          summary: "Thẻ của bài làm và số bài",
+          data: { type: "array", items: obj({ id: { type: "string" }, name: { type: "string" }, count: int }) },
+        }),
+      },
+      "/api/v1/admin/stats": {
+        get: op(AD, {
+          summary: "Số liệu tổng: số người dùng, admin, bị khoá, mới / hoạt động 7 ngày, tổng nội dung",
+          data: obj({
+            totalUsers: int,
+            admins: int,
+            disabled: int,
+            newUsers7d: int,
+            activeUsers7d: int,
+            content: obj({ vocab: int, sentences: int, grammar: int, listening: int }),
+          }),
+          errors: [403],
+        }),
+      },
+      "/api/v1/admin/users": {
+        get: op(AD, {
+          summary: "Danh sách người dùng (tìm theo tên / email, 20 người / trang)",
+          params: [q("q", { type: "string" }), q("page", { type: "integer", minimum: 1 })],
+          data: obj({
+            items: {
+              type: "array",
+              items: obj({
+                id: { type: "string", format: "uuid" },
+                name: { type: "string" },
+                email: { type: "string" },
+                role: { enum: ["user", "admin"] },
+                disabledAt: { type: ["string", "null"], format: "date-time" },
+                createdAt: { type: "string", format: "date-time" },
+                lastLoginAt: { type: ["string", "null"], format: "date-time" },
+                vocabCount: int,
+              }),
+            },
+            total: int,
+            page: int,
+            pageCount: int,
+            pageSize: int,
+          }),
+          errors: [403],
+        }),
+      },
+      "/api/v1/admin/users/{id}": {
+        get: op(AD, {
+          summary: "Thông tin một người dùng + số lượng nội dung",
+          params: [pathId("id người dùng")],
+          data: obj({
+            id: { type: "string", format: "uuid" },
+            name: { type: "string" },
+            email: { type: "string" },
+            emailVerified: { type: "boolean" },
+            role: { enum: ["user", "admin"] },
+            locale: { type: ["string", "null"] },
+            disabledAt: { type: ["string", "null"], format: "date-time" },
+            createdAt: { type: "string", format: "date-time" },
+            lastLoginAt: { type: ["string", "null"], format: "date-time" },
+            counts: obj({ vocab: int, sentences: int, grammar: int, listening: int }),
+          }),
+          errors: [403, 404],
+        }),
+      },
+      "/api/v1/listening/compare": {
+        post: op(L, {
+          summary: "So sánh bài chép với đáp án (không lưu)",
+          body: js(compareInputSchema),
+          example: { referenceAnswer: "你好，我是小雨。", userAnswer: "你好，我叫小雨。" },
+          data: ref("Comparison"),
         }),
       },
     }),

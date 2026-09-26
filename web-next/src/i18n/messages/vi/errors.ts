@@ -122,4 +122,15 @@ export const errors = {
   lessonIncomplete: "Bài làm chưa đầy đủ.",
   saveResultFailed: "Không lưu được kết quả. Vui lòng thử lại.",
   radicalNotFound: "Không tìm thấy bộ thủ này.",
+  // Luyện nghe
+  listeningNotFound: "Không tìm thấy bài làm này. Có thể nó đã bị xóa.",
+  referenceRequired: "Vui lòng nhập đáp án tham khảo.",
+  referenceMax: "Đáp án tối đa {max} ký tự.",
+  listeningTitleRequired: "Vui lòng nhập tiêu đề bài làm.",
+  listeningTagsMax: "Tối đa {max} thẻ cho một bài.",
+  urlTooLong: "Link quá dài.",
+  urlUnsupported: "Link này chưa được hỗ trợ. Hãy dán link YouTube hoặc link file âm thanh / video.",
+  speedInvalid: "Tốc độ nghe không hợp lệ.",
+  dictationMax: "Bài chép tối đa {max} ký tự.",
+  segmentOrder: "Thời điểm kết thúc phải sau thời điểm bắt đầu.",
 };
