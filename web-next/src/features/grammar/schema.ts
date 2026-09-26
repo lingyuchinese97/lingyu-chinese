@@ -12,11 +12,11 @@ export const G_LIMITS = {
 } as const;
 
 export const G_SORTS = [
-  { value: "updated", label: "Cập nhật gần nhất" },
-  { value: "newest", label: "Mới nhất" },
-  { value: "oldest", label: "Cũ nhất" },
-  { value: "az", label: "A → Z" },
-  { value: "za", label: "Z → A" },
+  { value: "updated", label: "grammar.sortUpdated" },
+  { value: "newest", label: "grammar.sortNewest" },
+  { value: "oldest", label: "grammar.sortOldest" },
+  { value: "az", label: "grammar.sortAz" },
+  { value: "za", label: "grammar.sortZa" },
 ] as const;
 export type GrammarSort = (typeof G_SORTS)[number]["value"];
 

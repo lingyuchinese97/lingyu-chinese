@@ -39,12 +39,13 @@ import {
   setBookmarkAction,
 } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
+import { useIntlTag, useT } from "@/i18n/client";
 
 type Data = { items: GrammarItem[]; total: number; totalAll: number; savedCount: number };
 type TagRow = { id: string; name: string; count: number };
 
-export const fmtDate = (d: Date | string) =>
-  new Date(d).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+export const fmtDate = (d: Date | string, tag = "vi-VN") =>
+  new Date(d).toLocaleDateString(tag, { day: "2-digit", month: "2-digit", year: "numeric" });
 
 export function GrammarList({
   data,
@@ -58,6 +59,7 @@ export function GrammarList({
   received: ReceivedShare[];
 }) {
   const router = useRouter();
+  const t = useT();
   const pathname = usePathname();
   const [pending, startTransition] = React.useTransition();
   const [confirm, confirmNode] = useConfirm();
@@ -80,42 +82,42 @@ export function GrammarList({
   );
   React.useEffect(() => {
     if (q === params.q) return;
-    const t = setTimeout(() => go({ q }), 350);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => go({ q }), 350);
+    return () => clearTimeout(timer);
   }, [q, params.q, go]);
   const refresh = () => startTransition(() => router.refresh());
 
   async function toggleSave(g: GrammarItem) {
     const r = await setBookmarkAction(g.id, !g.isSaved);
     if (!r.ok) return void toast.error(r.message);
-    toast.success(r.data ? "Đã lưu vào mục Đã lưu." : "Đã bỏ lưu.");
+    toast.success(r.data ? t("grammar.savedToast") : t("grammar.unsavedToast"));
     refresh();
   }
   async function remove(g: GrammarItem) {
     const ok = await confirm({
-      title: "Xóa ngữ pháp?",
+      title: t("grammar.deleteTitle"),
       message: (
         <>
-          Bạn có chắc muốn xóa ngữ pháp này?
+          {t("grammar.deleteConfirm")}
           <br />
           <strong>{g.title}</strong>
         </>
       ),
-      confirmLabel: "Xóa",
+      confirmLabel: t("common.delete"),
       danger: true,
     });
     if (!ok) return;
     const r = await deleteGrammarAction(g.id);
-    if (!r.ok) return void toast.error(r.message || "Không xóa được. Vui lòng thử lại.");
-    toast.success("Đã xóa ngữ pháp.");
+    if (!r.ok) return void toast.error(r.message || t("grammar.deleteFailed"));
+    toast.success(t("grammar.deleted"));
     refresh();
   }
 
   const listMode = params.view !== "shared";
   const views = [
-    { key: "all" as const, label: "Tất cả", icon: <GrammarIcon />, n: data.totalAll },
-    { key: "saved" as const, label: "Đã lưu", icon: <Bookmark />, n: data.savedCount },
-    { key: "shared" as const, label: "Được chia sẻ", icon: <Share2 />, n: received.length, alert: true },
+    { key: "all" as const, label: t("grammar.viewAll"), icon: <GrammarIcon />, n: data.totalAll },
+    { key: "saved" as const, label: t("grammar.viewSaved"), icon: <Bookmark />, n: data.savedCount },
+    { key: "shared" as const, label: t("grammar.viewShared"), icon: <Share2 />, n: received.length, alert: true },
   ];
 
   return (
@@ -129,28 +131,26 @@ export function GrammarList({
             id="gl-title"
             className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]"
           >
-            Ngữ pháp
+            {t("grammar.title")}
             <LeafDecor className="w-10" />
           </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">
-            Tự tạo, lưu và chia sẻ các điểm ngữ pháp tiếng Trung của bạn.
-          </p>
+          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("grammar.subtitle")}</p>
         </div>
         <Button asChild variant="solid" className="shrink-0 max-md:w-full">
           <Link href="/grammar/new">
             <Plus />
-            Thêm ngữ pháp mới
+            {t("grammar.addNew")}
           </Link>
         </Button>
       </section>
 
       <section
-        aria-label="Danh sách ngữ pháp"
+        aria-label={t("grammar.list")}
         className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
         <div
           role="tablist"
-          aria-label="Chế độ xem"
+          aria-label={t("grammar.viewMode")}
           className="-mx-1 flex [scrollbar-width:none] gap-2 overflow-x-auto border-b border-border px-1 pb-3"
         >
           {views.map((v) => {
@@ -190,19 +190,19 @@ export function GrammarList({
           <>
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto]">
               <label className="relative block">
-                <span className="sr-only">Tìm kiếm ngữ pháp</span>
+                <span className="sr-only">{t("grammar.searchLabel")}</span>
                 <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
                 <input
                   type="search"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Tìm kiếm ngữ pháp..."
+                  placeholder={t("grammar.searchPlaceholder")}
                   autoComplete="off"
                   className={cn(inputClass, "pl-11")}
                 />
               </label>
               <label>
-                <span className="sr-only">Sắp xếp</span>
+                <span className="sr-only">{t("grammar.sort")}</span>
                 <select
                   value={params.sort}
                   onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
@@ -210,29 +210,29 @@ export function GrammarList({
                 >
                   {G_SORTS.map((s) => (
                     <option key={s.value} value={s.value}>
-                      {s.label}
+                      {t(s.label)}
                     </option>
                   ))}
                 </select>
               </label>
               <Button variant="secondary" onClick={() => setTagsOpen(true)}>
                 <TagIcon />
-                Quản lý thẻ
+                {t("grammar.manageTags")}
               </Button>
             </div>
             <div className="flex items-center gap-3">
-              <span className="shrink-0 text-sm font-semibold text-text-2 max-md:hidden">Thẻ (Tags)</span>
+              <span className="shrink-0 text-sm font-semibold text-text-2 max-md:hidden">{t("grammar.tagsLabel")}</span>
               <div
                 role="group"
-                aria-label="Lọc theo thẻ"
+                aria-label={t("grammar.filterTag")}
                 className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
               >
                 <Chip on={!params.tag} onClick={() => go({ tag: "" })}>
-                  Tất cả <span className="opacity-70">{data.totalAll}</span>
+                  {t("grammar.all")} <span className="opacity-70">{data.totalAll}</span>
                 </Chip>
-                {tags.map((t) => (
-                  <Chip key={t.id} on={t.id === params.tag} onClick={() => go({ tag: t.id })}>
-                    {t.name} <span className="opacity-70">{t.count}</span>
+                {tags.map((tg) => (
+                  <Chip key={tg.id} on={tg.id === params.tag} onClick={() => go({ tag: tg.id })}>
+                    {tg.name} <span className="opacity-70">{tg.count}</span>
                   </Chip>
                 ))}
               </div>
@@ -256,11 +256,13 @@ export function GrammarList({
               <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                 {params.view === "saved" ? <Bookmark className="size-7" /> : <Search className="size-7" />}
               </span>
-              <h3 className="text-xl font-bold text-navy">Không có ngữ pháp phù hợp</h3>
+              <h3 className="text-xl font-bold text-navy">{t("grammar.noMatch")}</h3>
               <p className="max-w-[420px] text-text-2">
                 {params.view === "saved" && !params.q && !params.tag
-                  ? "Bạn chưa lưu ngữ pháp nào. Bấm biểu tượng dấu trang để lưu."
-                  : `Thử từ khoá khác hoặc bỏ bộ lọc${params.q ? ` cho “${params.q}”` : ""}.`}
+                  ? t("grammar.noneSaved")
+                  : params.q
+                    ? t("grammar.noMatchHintQ", { q: params.q })
+                    : t("grammar.noMatchHint")}
               </p>
               {params.q || params.tag ? (
                 <Button
@@ -271,13 +273,13 @@ export function GrammarList({
                   }}
                 >
                   <X />
-                  Xóa bộ lọc
+                  {t("grammar.clearFilters")}
                 </Button>
               ) : null}
             </div>
           ) : (
             <>
-              <p className="mb-3 text-[13.5px] text-text-3">{data.total} ngữ pháp</p>
+              <p className="mb-3 text-[13.5px] text-text-3">{t("grammar.total", { count: data.total })}</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
                 {data.items.map((g) => (
                   <GrammarCard
@@ -299,7 +301,7 @@ export function GrammarList({
       <ShareGrammarDialog grammar={shareOf} sent={[]} onClose={() => setShareOf(null)} />
       <AcceptShareDialog
         share={acceptOf}
-        myTags={tags.map((t) => t.name)}
+        myTags={tags.map((tg) => tg.name)}
         onClose={() => setAcceptOf(null)}
         onDone={(g) => {
           setAcceptOf(null);
@@ -345,6 +347,7 @@ function GrammarCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const t = useT();
   const btn =
     "inline-flex size-10 shrink-0 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] md:size-9 [&_svg]:size-5";
   return (
@@ -365,38 +368,40 @@ function GrammarCard({
           type="button"
           onClick={onSave}
           aria-pressed={g.isSaved}
-          aria-label={`${g.isSaved ? "Bỏ lưu" : "Lưu"} “${g.title}”`}
+          aria-label={
+            g.isSaved ? t("grammar.unsaveItem", { title: g.title }) : t("grammar.saveItem", { title: g.title })
+          }
           className={cn(btn, g.isSaved && "text-amber")}
         >
           <Bookmark className={cn(g.isSaved && "fill-amber")} />
         </button>
         <Menu>
           <MenuTrigger asChild>
-            <button type="button" className={btn} aria-label={`Thao tác cho “${g.title}”`}>
+            <button type="button" className={btn} aria-label={t("grammar.actionsFor", { title: g.title })}>
               <MoreHorizontal />
             </button>
           </MenuTrigger>
           <MenuContent className="w-[210px]">
             <MenuItem onSelect={onOpen}>
               <Eye />
-              Xem
+              {t("grammar.view")}
             </MenuItem>
             <MenuItem onSelect={onEdit}>
               <Pencil />
-              Chỉnh sửa
+              {t("grammar.editAction")}
             </MenuItem>
             <MenuItem onSelect={onShare}>
               <Share2 />
-              Chia sẻ
+              {t("grammar.share")}
             </MenuItem>
             <MenuItem onSelect={onSave}>
               <Bookmark />
-              {g.isSaved ? "Bỏ lưu" : "Lưu"}
+              {g.isSaved ? t("grammar.unsave") : t("grammar.save")}
             </MenuItem>
             <MenuSeparator />
             <MenuItem danger onSelect={onDelete}>
               <Trash2 />
-              Xóa
+              {t("grammar.delete")}
             </MenuItem>
           </MenuContent>
         </Menu>
@@ -417,19 +422,20 @@ function GrammarCard({
       {g.meaning ? (
         <div className="flex items-start gap-3 rounded-xl bg-[#EEF6FF] px-3.5 py-2.5 text-[15.5px]">
           <span className="inline-flex items-center gap-1.5 border-r-2 border-[#C9E1F8] pr-3 font-semibold whitespace-nowrap text-blue-600">
-            <Lightbulb className="size-5" />Ý nghĩa:
+            <Lightbulb className="size-5" />
+            {t("grammar.meaning")}
           </span>
           <span className="line-clamp-2 min-w-0 [overflow-wrap:anywhere] text-text-2">{g.meaning}</span>
         </div>
       ) : null}
       {g.tags.length ? (
         <div className="flex flex-wrap gap-1.5">
-          {g.tags.map((t) => (
+          {g.tags.map((tg) => (
             <span
-              key={t.id}
+              key={tg.id}
               className="rounded-[9px] bg-[#F0EAFF] px-3 py-1 text-[13.5px] font-semibold text-[#6B3FD0]"
             >
-              {t.name}
+              {tg.name}
             </span>
           ))}
         </div>
@@ -439,13 +445,13 @@ function GrammarCard({
           {g.examples.length ? (
             <span className="inline-flex items-center gap-1.5">
               <BookOpen className="size-[18px]" />
-              {g.examples.length} ví dụ
+              {t("grammar.examplesCount", { count: g.examples.length })}
             </span>
           ) : null}
           {g.sourceGrammarId ? (
             <span className="inline-flex items-center gap-1 text-green-700">
               <Share2 className="size-[15px]" />
-              Nhận từ {g.sourceOwnerName || "người khác"}
+              {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
             </span>
           ) : null}
         </div>
@@ -463,16 +469,16 @@ function Received({
   onAccept: (s: PendingShare) => void;
   onReject: (s: PendingShare) => void;
 }) {
+  const t = useT();
+  const tag = useIntlTag();
   if (!received.length)
     return (
       <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
         <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
           <Share2 className="size-7" />
         </span>
-        <h3 className="text-xl font-bold text-navy">Không có lời mời nào</h3>
-        <p className="max-w-[420px] text-text-2">
-          Khi ai đó chia sẻ ngữ pháp với bạn, lời mời sẽ xuất hiện ở đây và trong chuông thông báo.
-        </p>
+        <h3 className="text-xl font-bold text-navy">{t("grammar.noInvites")}</h3>
+        <p className="max-w-[420px] text-text-2">{t("grammar.noInvitesDesc")}</p>
       </div>
     );
   return (
@@ -486,10 +492,10 @@ function Received({
             <Share2 className="size-[22px]" />
           </span>
           <div className="min-w-[220px] flex-1 text-text-2">
-            <strong className="text-text">{s.senderName}</strong> đã chia sẻ một ngữ pháp với bạn.
+            {t.rich("grammar.sharedWithYou", { name: <strong className="text-text">{s.senderName}</strong> })}
             <div className="my-0.5 font-bold text-navy">{s.grammarTitle}</div>
             <span className="text-[13.5px] text-text-3">
-              {fmtDate(s.createdAt)} · {s.senderEmail}
+              {fmtDate(s.createdAt, tag)} · {s.senderEmail}
             </span>
           </div>
           <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto">
@@ -498,20 +504,20 @@ function Received({
                 <Button asChild size="sm" variant="secondary">
                   <Link href={`/grammar/${s.grammarId}?share=${s.id}`}>
                     <Eye />
-                    Xem
+                    {t("common.view")}
                   </Link>
                 </Button>
                 <Button size="sm" variant="solid" onClick={() => onAccept(s)}>
                   <Check />
-                  Chấp nhận
+                  {t("common.accept")}
                 </Button>
               </>
             ) : (
-              <span className="col-span-2 self-center text-sm text-text-3">Ngữ pháp gốc đã bị xóa</span>
+              <span className="col-span-2 self-center text-sm text-text-3">{t("grammar.sourceDeleted")}</span>
             )}
             <Button size="sm" variant="muted" onClick={() => onReject(s)}>
               <X />
-              Từ chối
+              {t("common.reject")}
             </Button>
           </div>
         </li>
@@ -521,19 +527,20 @@ function Received({
 }
 
 function EmptyAll({ onDone }: { onDone: () => void }) {
+  const t = useT();
   const [busy, setBusy] = React.useState(false);
   return (
     <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
       <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
         <GrammarIcon className="size-7" />
       </span>
-      <h3 className="text-xl font-bold text-navy">Chưa có ngữ pháp nào</h3>
-      <p className="max-w-[420px] text-text-2">Tạo điểm ngữ pháp đầu tiên của bạn, hoặc dùng dữ liệu mẫu để xem thử.</p>
+      <h3 className="text-xl font-bold text-navy">{t("grammar.emptyTitle")}</h3>
+      <p className="max-w-[420px] text-text-2">{t("grammar.emptyDesc")}</p>
       <div className="flex w-full max-w-md flex-col gap-2.5 sm:w-auto sm:flex-row">
         <Button asChild variant="solid">
           <Link href="/grammar/new">
             <Plus />
-            Thêm ngữ pháp mới
+            {t("grammar.addNew")}
           </Link>
         </Button>
         <Button
@@ -544,12 +551,12 @@ function EmptyAll({ onDone }: { onDone: () => void }) {
             const r = await importSampleGrammarAction();
             setBusy(false);
             if (!r.ok) return void toast.error(r.message);
-            toast.success(`Đã thêm ${r.data} ngữ pháp mẫu.`);
+            toast.success(t("grammar.sampleAdded", { count: r.data }));
             onDone();
           }}
         >
           <Database />
-          {busy ? "Đang thêm..." : "Dùng dữ liệu mẫu"}
+          {busy ? t("vocab.sampleAdding") : t("vocab.useSample")}
         </Button>
       </div>
     </div>
@@ -567,6 +574,7 @@ function TagManager({
   onClose: () => void;
   onChanged: () => void;
 }) {
+  const tr = useT();
   const [confirm, confirmNode] = useConfirm();
   const [name, setName] = React.useState("");
   const [err, setErr] = React.useState("");
@@ -578,7 +586,7 @@ function TagManager({
     if (!r.ok) return void setErr(r.message);
     setName("");
     setErr("");
-    toast.success(`Đã tạo thẻ “${r.data.name}”.`);
+    toast.success(tr("grammar.tags.created", { name: r.data.name }));
     onChanged();
   }
   async function rename(e: React.FormEvent) {
@@ -588,24 +596,20 @@ function TagManager({
     if (!r.ok) return void setErr(r.message);
     setEditing(null);
     setErr("");
-    toast.success("Đã đổi tên thẻ.");
+    toast.success(tr("grammar.tags.renamed"));
     onChanged();
   }
   async function remove(t: TagRow) {
     const ok = await confirm({
-      title: "Xóa thẻ?",
-      message: (
-        <>
-          Thẻ <strong>{t.name}</strong> sẽ bị bỏ khỏi {t.count} ngữ pháp. Các ngữ pháp vẫn được giữ nguyên.
-        </>
-      ),
-      confirmLabel: "Xóa thẻ",
+      title: tr("grammar.tags.deleteTitle"),
+      message: tr.rich("grammar.tags.deleteMessage", { name: <strong>{t.name}</strong>, count: t.count }),
+      confirmLabel: tr("grammar.tags.deleteConfirm"),
       danger: true,
     });
     if (!ok) return;
     const r = await deleteTagAction(t.id);
     if (!r.ok) return void setErr(r.message);
-    toast.success(`Đã xóa thẻ “${t.name}”.`);
+    toast.success(tr("grammar.tags.deleted", { name: t.name }));
     onChanged();
   }
 
@@ -613,10 +617,10 @@ function TagManager({
     <>
       <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
         {open ? (
-          <DialogContent title="Quản lý thẻ" icon={<TagIcon />} wide>
+          <DialogContent title={tr("grammar.tags.title")} icon={<TagIcon />} wide>
             <form onSubmit={create} noValidate className="flex gap-2">
               <label className="min-w-0 flex-1">
-                <span className="sr-only">Tên thẻ mới</span>
+                <span className="sr-only">{tr("grammar.tags.newName")}</span>
                 <Input
                   value={name}
                   maxLength={G_LIMITS.tag}
@@ -624,18 +628,18 @@ function TagManager({
                     setName(e.target.value);
                     setErr("");
                   }}
-                  placeholder="Tên thẻ mới (vd: HSK1)"
+                  placeholder={tr("grammar.tags.newPlaceholder")}
                   autoComplete="off"
                 />
               </label>
               <Button type="submit" variant="solid">
                 <Plus />
-                Tạo thẻ
+                {tr("grammar.tags.create")}
               </Button>
             </form>
             {err ? (
               <p role="alert" className="text-sm text-red">
-                {err}
+                {tr.maybe(err)}
               </p>
             ) : null}
             <ul className="flex max-h-[45dvh] flex-col gap-1.5 overflow-y-auto">
@@ -645,7 +649,7 @@ function TagManager({
                     <li key={t.id}>
                       <form onSubmit={rename} noValidate className="flex gap-2">
                         <label className="min-w-0 flex-1">
-                          <span className="sr-only">Tên mới cho thẻ {t.name}</span>
+                          <span className="sr-only">{tr("grammar.tags.renameLabel", { name: t.name })}</span>
                           <Input
                             autoFocus
                             value={editing.name}
@@ -661,10 +665,10 @@ function TagManager({
                           />
                         </label>
                         <Button type="submit" size="sm" variant="solid">
-                          Lưu
+                          {tr("common.save")}
                         </Button>
                         <Button type="button" size="sm" variant="secondary" onClick={() => setEditing(null)}>
-                          Hủy
+                          {tr("common.cancel")}
                         </Button>
                       </form>
                     </li>
@@ -672,11 +676,13 @@ function TagManager({
                     <li key={t.id} className="flex items-center gap-2 rounded-md bg-bg px-3 py-1.5">
                       <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                         <Tag name={t.name} />
-                        <span className="text-[13.5px] text-text-3">{t.count} ngữ pháp</span>
+                        <span className="text-[13.5px] text-text-3">
+                          {tr("grammar.tags.count", { count: t.count })}
+                        </span>
                       </span>
                       <button
                         type="button"
-                        aria-label={`Đổi tên thẻ ${t.name}`}
+                        aria-label={tr("grammar.tags.rename", { name: t.name })}
                         onClick={() => setEditing({ id: t.id, name: t.name })}
                         className="inline-flex size-10 items-center justify-center rounded-full text-blue-600 hover:bg-blue-50"
                       >
@@ -684,7 +690,7 @@ function TagManager({
                       </button>
                       <button
                         type="button"
-                        aria-label={`Xóa thẻ ${t.name}`}
+                        aria-label={tr("grammar.tags.remove", { name: t.name })}
                         onClick={() => remove(t)}
                         className="inline-flex size-10 items-center justify-center rounded-full text-red hover:bg-red-50"
                       >
@@ -694,13 +700,13 @@ function TagManager({
                   ),
                 )
               ) : (
-                <li className="text-sm text-text-3">Chưa có thẻ nào.</li>
+                <li className="text-sm text-text-3">{tr("grammar.tags.none")}</li>
               )}
             </ul>
-            <p className="text-[13.5px] text-text-3">Xóa thẻ chỉ bỏ thẻ khỏi các ngữ pháp, không xóa ngữ pháp.</p>
+            <p className="text-[13.5px] text-text-3">{tr("grammar.tags.note")}</p>
             <DialogActions>
               <DialogClose asChild>
-                <Button variant="solid">Xong</Button>
+                <Button variant="solid">{tr("grammar.tags.done")}</Button>
               </DialogClose>
             </DialogActions>
           </DialogContent>

@@ -1,6 +1,7 @@
 import { auth } from "./auth";
 import { common } from "./common";
 import { errors } from "./errors";
+import { grammar } from "./grammar";
 import { home } from "./home";
 import { landing } from "./landing";
 import { meta } from "./meta";
@@ -17,6 +18,7 @@ export const vi = {
   meta,
   common,
   errors,
+  ui,
   shell,
   notifications,
   auth,
@@ -24,8 +26,8 @@ export const vi = {
   home,
   settings,
   pages,
-  ui,
-  vocab,
+  grammar,
   sentences,
+  vocab,
 };
 export type Messages = typeof vi;

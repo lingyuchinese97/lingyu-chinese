@@ -3,8 +3,11 @@ import { requireUser } from "@/server/session";
 import { grammarListSchema } from "@/features/grammar/schema";
 import { listGrammar, listGrammarTags, listReceived } from "@/features/grammar/service";
 import { GrammarList } from "@/features/grammar/components/grammar-list";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Ngữ pháp" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("grammar.title") };
+}
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);

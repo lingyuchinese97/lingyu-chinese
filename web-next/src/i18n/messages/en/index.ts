@@ -2,6 +2,7 @@ import type { Messages } from "../vi";
 import { auth } from "./auth";
 import { common } from "./common";
 import { errors } from "./errors";
+import { grammar } from "./grammar";
 import { home } from "./home";
 import { landing } from "./landing";
 import { meta } from "./meta";
@@ -17,6 +18,7 @@ export const en: Messages = {
   meta,
   common,
   errors,
+  ui,
   shell,
   notifications,
   auth,
@@ -24,7 +26,7 @@ export const en: Messages = {
   home,
   settings,
   pages,
-  ui,
-  vocab,
+  grammar,
   sentences,
+  vocab,
 };

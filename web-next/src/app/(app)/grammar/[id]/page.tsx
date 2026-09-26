@@ -10,8 +10,11 @@ import { LeafDecor } from "@/components/layout/icons";
 import { requireUser } from "@/server/session";
 import { GrammarError, listGrammarTags, listSent, viewGrammar } from "@/features/grammar/service";
 import { OwnerActions, PreviewBar } from "@/features/grammar/components/grammar-detail-actions";
+import { getIntlTag, getT } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Ngữ pháp" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT())("grammar.title") };
+}
 export const dynamic = "force-dynamic";
 
 const lines = (text: string) =>
@@ -19,8 +22,8 @@ const lines = (text: string) =>
     .split(/\n+/)
     .map((l) => l.replace(/^[\s•\-*]+/, "").trim())
     .filter(Boolean);
-const fmt = (d: Date) =>
-  `${d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })} ${d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+const fmt = (d: Date, tag: string) =>
+  `${d.toLocaleDateString(tag, { day: "2-digit", month: "2-digit", year: "numeric" })} ${d.toLocaleTimeString(tag, { hour: "2-digit", minute: "2-digit" })}`;
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 
@@ -32,6 +35,8 @@ export default async function GrammarDetailPage({
   searchParams: SP;
 }) {
   const user = await requireUser();
+  const t = await getT();
+  const tag = await getIntlTag();
   const id = z.uuid().safeParse((await params).id);
   if (!id.success) notFound();
   const share = (await searchParams).share;
@@ -44,15 +49,15 @@ export default async function GrammarDetailPage({
     if (e instanceof GrammarError && e.code === "forbidden")
       return (
         <>
-          <Breadcrumb back="/grammar" section="Ngữ pháp" current="Không có quyền xem" />
+          <Breadcrumb back="/grammar" section={t("grammar.title")} current={t("grammar.detail.noAccess")} />
           <section className="flex flex-col items-center gap-3 rounded-[var(--radius-xl)] border border-border bg-white/92 px-5 py-12 text-center shadow-card">
             <span className="flex size-16 items-center justify-center rounded-full bg-red-50 text-red">
               <Lock className="size-7" />
             </span>
-            <h1 className="text-xl font-bold text-navy">Không có quyền xem</h1>
-            <p className="text-text-2">{e.message}</p>
+            <h1 className="text-xl font-bold text-navy">{t("grammar.detail.noAccess")}</h1>
+            <p className="text-text-2">{t.maybe(e.message)}</p>
             <Button asChild variant="solid">
-              <Link href="/grammar">Về danh sách ngữ pháp</Link>
+              <Link href="/grammar">{t("grammar.detail.backToList")}</Link>
             </Button>
           </section>
         </>
@@ -71,7 +76,7 @@ export default async function GrammarDetailPage({
 
   return (
     <>
-      <Breadcrumb back="/grammar" section="Ngữ pháp" current={g.title} />
+      <Breadcrumb back="/grammar" section={t("grammar.title")} current={g.title} />
       {preview && view.share ? (
         <PreviewBar
           share={{ id: view.share.id, grammarTitle: g.title, senderName: view.share.senderName }}
@@ -93,24 +98,27 @@ export default async function GrammarDetailPage({
             </h1>
             <div className="mt-2.5 mb-1.5 flex flex-wrap gap-1.5">
               {g.tags.length ? (
-                g.tags.map((t) => <Tag key={t.id} name={t.name} />)
+                g.tags.map((tg) => <Tag key={tg.id} name={tg.name} />)
               ) : (
-                <span className="text-sm text-text-3">Chưa có thẻ</span>
+                <span className="text-sm text-text-3">{t("grammar.detail.noTags")}</span>
               )}
             </div>
             <p className="text-[13.5px] text-text-3">
-              Tạo {fmt(g.createdAt)} · Cập nhật {fmt(g.updatedAt)}
-              {g.sourceGrammarId ? ` · Nhận từ ${g.sourceOwnerName || "người khác"}` : ""}
-              {preview && view.share ? ` · Người tạo: ${view.share.senderName}` : ""}
+              {t("grammar.detail.created", { date: fmt(g.createdAt, tag) })} ·{" "}
+              {t("grammar.detail.updated", { date: fmt(g.updatedAt, tag) })}
+              {g.sourceGrammarId
+                ? ` · ${t("grammar.detail.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}`
+                : ""}
+              {preview && view.share ? ` · ${t("grammar.detail.creator", { name: view.share.senderName })}` : ""}
             </p>
           </div>
           {!preview ? <OwnerActions g={{ id: g.id, title: g.title, isSaved: g.isSaved }} sent={sent} /> : null}
         </header>
 
-        <Section title="Ý nghĩa" icon={<Lightbulb />}>
+        <Section title={t("grammar.detail.meaning")} icon={<Lightbulb />} empty={t("grammar.detail.empty")}>
           {g.meaning ? <p className="whitespace-pre-line text-text">{g.meaning}</p> : null}
         </Section>
-        <Section title="Cấu trúc" icon={<Layers />}>
+        <Section title={t("grammar.detail.structure")} icon={<Layers />} empty={t("grammar.detail.empty")}>
           {g.structure ? (
             <div
               lang="zh"
@@ -120,7 +128,15 @@ export default async function GrammarDetailPage({
             </div>
           ) : null}
         </Section>
-        <Section title={`Ví dụ${g.examples.length ? ` (${g.examples.length})` : ""}`} icon={<FileText />}>
+        <Section
+          title={
+            g.examples.length
+              ? t("grammar.detail.examplesCount", { count: g.examples.length })
+              : t("grammar.detail.examples")
+          }
+          icon={<FileText />}
+          empty={t("grammar.detail.empty")}
+        >
           {g.examples.length ? (
             <ol className="grid list-decimal gap-3 pl-6 marker:font-semibold marker:text-text-3">
               {g.examples.map((e) => (
@@ -135,7 +151,7 @@ export default async function GrammarDetailPage({
             </ol>
           ) : null}
         </Section>
-        <Section title="Lưu ý" icon={<AlertTriangle />}>
+        <Section title={t("grammar.detail.notes")} icon={<AlertTriangle />} empty={t("grammar.detail.empty")}>
           {notes.length ? (
             <ul className="grid list-disc gap-1.5 pl-6 text-text">
               {notes.map((n, i) => (
@@ -145,7 +161,12 @@ export default async function GrammarDetailPage({
           ) : null}
         </Section>
         {!preview ? (
-          <Section title="Ghi chú cá nhân" icon={<Lock />} hint="Chỉ mình bạn xem được">
+          <Section
+            title={t("grammar.detail.personal")}
+            icon={<Lock />}
+            hint={t("grammar.detail.personalHint")}
+            empty={t("grammar.detail.empty")}
+          >
             {g.personalNote ? (
               <p className="rounded-xl border border-[#FBE3B4] bg-amber-50 px-3.5 py-3 whitespace-pre-line text-text">
                 {g.personalNote}
@@ -154,7 +175,7 @@ export default async function GrammarDetailPage({
           </Section>
         ) : null}
         {!preview ? (
-          <Section title="Đã chia sẻ với" icon={<Share2 />} last>
+          <Section title={t("grammar.detail.sharedWith")} icon={<Share2 />} last empty={t("grammar.detail.empty")}>
             {/* OwnerActions hiển thị danh sách vào đây (portal) để cập nhật ngay sau khi gửi chia sẻ. */}
             <div id="gd-sent" />
           </Section>
@@ -169,10 +190,12 @@ function Section({
   icon,
   hint,
   last,
+  empty,
   children,
 }: {
   title: string;
   icon: React.ReactNode;
+  empty: string;
   hint?: string;
   last?: boolean;
   children: React.ReactNode;
@@ -184,7 +207,7 @@ function Section({
         {title}
         {hint ? <span className="ml-1 text-[13.5px] font-medium text-text-3">{hint}</span> : null}
       </h2>
-      {children ?? <p className="text-sm text-text-3">Chưa có nội dung.</p>}
+      {children ?? <p className="text-sm text-text-3">{empty}</p>}
     </section>
   );
 }

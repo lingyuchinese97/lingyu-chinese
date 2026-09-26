@@ -7,7 +7,9 @@ import { Tag, checkboxClass } from "@/components/ui/badges";
 import { Dialog, DialogActions, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import { G_LIMITS, parseEmails, SHARE_STATUS_LABEL } from "../schema";
+import { G_LIMITS, parseEmails } from "../schema";
+import { useT } from "@/i18n/client";
+import { currentT } from "@/i18n/current";
 import { acceptShareAction, listSentAction, rejectShareAction, shareGrammarAction, sourceTagsAction } from "../actions";
 
 // ---------- Ô nhập thẻ: gõ tên → Enter ----------
@@ -18,7 +20,7 @@ export function TagInput({
   onChange,
   existing,
   id,
-  placeholder = "Nhập tên thẻ rồi nhấn Enter",
+  placeholder,
 }: {
   value: string[];
   onChange: (v: string[]) => void;
@@ -26,13 +28,15 @@ export function TagInput({
   id: string;
   placeholder?: string;
 }) {
+  const tr = useT();
   const [draft, setDraft] = React.useState("");
   const [err, setErr] = React.useState("");
   const add = (raw: string) => {
     const name = raw.trim().replace(/\s+/g, " ");
-    if (!name) return void setErr("Tên thẻ không được để trống.");
-    if (name.length > G_LIMITS.tag) return void setErr(`Tên thẻ tối đa ${G_LIMITS.tag} ký tự.`);
-    if (value.some((t) => t.toLowerCase() === name.toLowerCase())) return void setErr(`Thẻ “${name}” đã được thêm.`);
+    if (!name) return void setErr(tr("errors.grammarTagEmpty"));
+    if (name.length > G_LIMITS.tag) return void setErr(tr("errors.grammarTagMax", { max: G_LIMITS.tag }));
+    if (value.some((t) => t.toLowerCase() === name.toLowerCase()))
+      return void setErr(tr("grammar.dialogs.tagAdded", { name }));
     onChange([...value, existing.find((t) => t.toLowerCase() === name.toLowerCase()) ?? name]);
     setErr("");
     setDraft("");
@@ -66,7 +70,7 @@ export function TagInput({
             } else if (e.key === "Backspace" && !draft && value.length) onChange(value.slice(0, -1));
           }}
           onBlur={() => draft.trim() && add(draft)}
-          placeholder={placeholder}
+          placeholder={placeholder ?? tr("grammar.dialogs.tagPlaceholder")}
           autoComplete="off"
           aria-describedby={`${id}-err`}
           className="min-h-9 min-w-[160px] flex-1 border-0 bg-transparent px-1.5 text-[15.5px] outline-none placeholder:text-[#9AAAC0] focus-visible:shadow-none max-md:text-base"
@@ -88,7 +92,10 @@ export function TagInput({
 
 export type SentItem = { id: string; recipientEmail: string; status: "PENDING" | "ACCEPTED" | "REJECTED" };
 
+const STATUS_KEY = { PENDING: "pending", ACCEPTED: "accepted", REJECTED: "rejected" } as const;
+
 export function StatusPill({ status }: { status: SentItem["status"] }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -98,13 +105,14 @@ export function StatusPill({ status }: { status: SentItem["status"] }) {
         status === "REJECTED" && "bg-red-50 text-red",
       )}
     >
-      {SHARE_STATUS_LABEL[status]}
+      {t(`grammar.dialogs.${STATUS_KEY[status]}`)}
     </span>
   );
 }
 
 export function SentList({ sent }: { sent: SentItem[] }) {
-  if (!sent.length) return <p className="text-sm text-text-3">Chưa chia sẻ cho ai.</p>;
+  const t = useT();
+  if (!sent.length) return <p className="text-sm text-text-3">{t("grammar.dialogs.noneShared")}</p>;
   return (
     <ul className="flex flex-col gap-1.5">
       {sent.map((s) => (
@@ -145,6 +153,7 @@ function ShareBody({
   initialSent: SentItem[];
   onSent?: (sent: SentItem[]) => void;
 }) {
+  const t = useT();
   const [text, setText] = React.useState("");
   const [err, setErr] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -162,12 +171,12 @@ function ShareBody({
   async function submit() {
     if (busy) return;
     const emails = parseEmails(text);
-    if (!emails.length) return void setErr("Vui lòng nhập ít nhất 1 email người nhận.");
+    if (!emails.length) return void setErr(t("errors.recipientRequired"));
     setErr("");
     setBusy(true);
     const r = await shareGrammarAction(grammar.id, emails);
     setBusy(false);
-    if (!r.ok) return void setErr(r.message || "Không gửi được. Vui lòng thử lại.");
+    if (!r.ok) return void setErr(r.message || t("vocab.share.sendFailed"));
     setResults(r.data.results);
     // Giữ lại các email lỗi trong ô để sửa.
     setText(
@@ -177,21 +186,23 @@ function ShareBody({
         .join(", "),
     );
     if (r.data.sent) {
-      toast.success(`Đã gửi chia sẻ cho ${r.data.sent} người.`);
+      toast.success(t("grammar.dialogs.sentToast", { count: r.data.sent }));
       setSent(r.data.sentList);
       onSent?.(r.data.sentList);
     }
   }
 
   return (
-    <DialogContent title="Chia sẻ ngữ pháp" icon={<Share2 />} wide>
+    <DialogContent title={t("grammar.dialogs.shareTitle")} icon={<Share2 />} wide>
       <p className="text-[15px] text-text-2">
-        Chia sẻ <strong className="text-text">{grammar.title}</strong> cho người dùng LingYu Chinese khác. Ghi chú cá
-        nhân của bạn sẽ <strong className="text-text">không</strong> được chia sẻ.
+        {t.rich("grammar.dialogs.shareDesc", {
+          title: <strong className="text-text">{grammar.title}</strong>,
+          not: <strong className="text-text">{t("grammar.dialogs.not")}</strong>,
+        })}
       </p>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="gs-emails" className="text-[15px] font-semibold text-text">
-          Email người nhận
+          {t("grammar.dialogs.recipient")}
         </label>
         <Textarea
           id="gs-emails"
@@ -207,15 +218,15 @@ function ShareBody({
               void submit();
             }
           }}
-          placeholder="vd: ban@gmail.com, linh@gmail.com"
+          placeholder={t("grammar.dialogs.recipientPlaceholder")}
           aria-invalid={!!err || undefined}
           aria-describedby="gs-hint gs-err"
         />
         <span id="gs-hint" className="text-[13.5px] text-text-3">
-          Có thể nhập nhiều email, cách nhau bằng dấu phẩy hoặc xuống dòng.
+          {t("grammar.dialogs.recipientHint")}
         </span>
         <span id="gs-err" role="alert" className={cn("text-sm text-red", !err && "hidden")}>
-          {err}
+          {err ? t.maybe(err) : null}
         </span>
       </div>
       {results.length ? (
@@ -234,23 +245,23 @@ function ShareBody({
                 <AlertCircle className="mt-px size-4 shrink-0" />
               )}
               <span>
-                <strong>{x.email}</strong> — {x.message}
+                <strong>{x.email}</strong> — {t.maybe(x.message)}
               </span>
             </li>
           ))}
         </ul>
       ) : null}
       <div className="flex flex-col gap-2">
-        <strong className="text-navy">Đã chia sẻ với</strong>
+        <strong className="text-navy">{t("grammar.dialogs.sharedWith")}</strong>
         <SentList sent={sent} />
       </div>
       <DialogActions>
         <DialogClose asChild>
-          <Button variant="secondary">Đóng</Button>
+          <Button variant="secondary">{t("common.close")}</Button>
         </DialogClose>
         <Button variant="solid" disabled={busy} onClick={submit}>
           {busy ? <Loader2 className="animate-spin" /> : <Share2 />}
-          {busy ? "Đang gửi..." : "Gửi chia sẻ"}
+          {busy ? t("vocab.share.sending") : t("vocab.share.send")}
         </Button>
       </DialogActions>
     </DialogContent>
@@ -289,6 +300,7 @@ function AcceptBody({
   myTags: string[];
   onDone: (g: { id: string; title: string }) => void;
 }) {
+  const t = useT();
   const [senderTags, setSenderTags] = React.useState<string[] | null>(null);
   const [keep, setKeep] = React.useState(true);
   const [extra, setExtra] = React.useState<string[]>([]);
@@ -307,52 +319,53 @@ function AcceptBody({
     const r = await acceptShareAction(share.id, { keepTags: keep && !!senderTags?.length, extraTags: extra });
     if (!r.ok) {
       setBusy(false);
-      return void setErr(r.message || "Không chấp nhận được. Vui lòng thử lại.");
+      return void setErr(r.message || t("vocab.share.acceptFailed"));
     }
-    toast.success(`Đã thêm “${r.data.title}” vào thư viện của bạn.`);
+    toast.success(t("grammar.dialogs.acceptedToast", { title: r.data.title }));
     onDone(r.data);
   }
 
   return (
-    <DialogContent title="Thêm vào thư viện của bạn" icon={<CheckCircle2 />} wide>
+    <DialogContent title={t("grammar.dialogs.acceptTitle")} icon={<CheckCircle2 />} wide>
       <p className="text-[15px] text-text-2">
-        <strong className="text-text">{share.senderName}</strong> đã chia sẻ{" "}
-        <strong className="text-text">{share.grammarTitle}</strong>. Một bản riêng sẽ được thêm vào thư viện của bạn —
-        bạn sửa hay xóa bản này không ảnh hưởng đến bản của người gửi.
+        {t.rich("grammar.dialogs.acceptDesc", {
+          name: <strong className="text-text">{share.senderName}</strong>,
+          title: <strong className="text-text">{share.grammarTitle}</strong>,
+        })}
       </p>
       {senderTags?.length ? (
         <label className="flex cursor-pointer flex-wrap items-center gap-2.5 rounded-md bg-bg px-3 py-2.5">
           <input type="checkbox" className={checkboxClass} checked={keep} onChange={(e) => setKeep(e.target.checked)} />
-          <span className="text-[15px]">Giữ thẻ hiện tại:</span>
-          {senderTags.map((t) => (
-            <Tag key={t} name={t} />
+          <span className="text-[15px]">{t("grammar.dialogs.keepTags")}</span>
+          {senderTags.map((tag) => (
+            <Tag key={tag} name={tag} />
           ))}
         </label>
       ) : null}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="ga-tags" className="text-[15px] font-semibold text-text">
-          Thêm thẻ của tôi <span className="font-medium text-text-2">(không bắt buộc)</span>
+          {t("grammar.dialogs.myTags")} <span className="font-medium text-text-2">{t("vocab.form.optional")}</span>
         </label>
         <TagInput
           id="ga-tags"
           value={extra}
           onChange={setExtra}
           existing={myTags}
-          placeholder="vd: Bài 2 — nhấn Enter để thêm"
+          placeholder={t("grammar.dialogs.myTagsPlaceholder")}
         />
       </div>
       {err ? (
         <p role="alert" className="text-sm text-red">
-          {err}
+          {t.maybe(err)}
         </p>
       ) : null}
       <DialogActions>
         <DialogClose asChild>
-          <Button variant="secondary">Hủy</Button>
+          <Button variant="secondary">{t("common.cancel")}</Button>
         </DialogClose>
         <Button variant="solid" disabled={busy || senderTags === null} onClick={accept}>
           {busy ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-          {busy ? "Đang thêm..." : "Chấp nhận"}
+          {busy ? t("vocab.share.adding") : t("common.accept")}
         </Button>
       </DialogActions>
     </DialogContent>
@@ -369,14 +382,14 @@ export async function rejectWithConfirm(
   }) => Promise<boolean>,
   share: PendingShare,
 ) {
+  const t = currentT();
   const ok = await confirm({
-    title: "Từ chối chia sẻ?",
-    message: (
-      <>
-        Từ chối <strong>{share.grammarTitle}</strong> từ {share.senderName}?
-      </>
-    ),
-    confirmLabel: "Từ chối",
+    title: t("grammar.dialogs.rejectTitle"),
+    message: t.rich("grammar.dialogs.rejectMessage", {
+      title: <strong>{share.grammarTitle}</strong>,
+      name: share.senderName,
+    }),
+    confirmLabel: t("common.reject"),
     icon: <X />,
   });
   if (!ok) return false;
@@ -385,6 +398,6 @@ export async function rejectWithConfirm(
     toast.error(r.message);
     return false;
   }
-  toast.info("Đã từ chối lời mời chia sẻ.");
+  toast.info(t("vocab.share.rejected"));
   return true;
 }
