@@ -22,6 +22,14 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await url.fill(`${baseURL}/audio/bai1/blending/q05.mp3`);
   await page.getByRole("button", { name: "Mở nội dung" }).click();
   await expect(page.locator("audio")).toHaveCount(1);
+  // Tải lại trang: link và trình phát cũ bị xoá.
+  await page.waitForTimeout(600); // nháp được lưu sau 0,4 giây
+  await page.reload();
+  await expect(url).toHaveValue("");
+  await expect(page.locator("audio")).toHaveCount(0);
+  await url.fill(`${baseURL}/audio/bai1/blending/q05.mp3`);
+  await page.getByRole("button", { name: "Mở nội dung" }).click();
+  await expect(page.locator("audio")).toHaveCount(1);
   await expect(page.getByRole("combobox", { name: "Tốc độ nghe" })).toHaveValue("1");
   await page.getByRole("combobox", { name: "Tốc độ nghe" }).selectOption("0.75");
 
@@ -89,12 +97,12 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await save.getByRole("button", { name: "Lưu bài làm" }).click();
   await expect(save).toBeHidden();
   await expect(page.getByText("Đã lưu bài làm “Hội thoại chào hỏi – Bài 1”.")).toBeVisible();
-  // Lưu xong: trang xoá bài (bài chép, đáp án, ghi chú) nhưng GIỮ link để luyện tiếp.
+  // Lưu xong: trang xoá sạch — bài chép, đáp án, ghi chú, link và trình phát.
   await expect(editor(page)).toHaveText("");
   await expect(page.getByRole("textbox", { name: "Ghi chú" })).toHaveValue("");
   await expect(page.getByRole("button", { name: "Thêm đáp án tham khảo" })).toBeVisible();
-  await expect(url).toHaveValue(`${baseURL}/audio/bai1/blending/q05.mp3`);
-  await expect(page.locator("audio")).toHaveCount(1);
+  await expect(url).toHaveValue("");
+  await expect(page.locator("audio")).toHaveCount(0);
 
   // Bài làm của tôi: danh sách (tiêu đề, thẻ, điểm) + chi tiết.
   await page.getByRole("link", { name: "Mở Bài làm của tôi" }).click();

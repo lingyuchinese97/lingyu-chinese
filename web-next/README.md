@@ -103,6 +103,10 @@ chấm điểm), thẻ, so sánh bài chép với đáp án. **Quản trị** (`
 (tổng số người dùng, admin, bị khoá, mới / hoạt động 7 ngày, tổng nội dung), danh sách người dùng, thông tin một người dùng (hồ sơ +
 số lượng nội dung, không có nội dung học).
 
+**Phát âm** (`/api/v1/pronunciation*`): nội dung bài học (thanh mẫu, vận mẫu, thanh điệu, quy tắc biến điệu, chữ có sẵn vi / en),
+tạo bài tự luyện theo chế độ (câu hỏi kèm đáp án, không lưu điểm), ghi chú phát âm của tôi (thêm / sửa / xoá; ghi chú gắn mục qua
+`topic`; người khác → 404).
+
 **Swagger**: [`/api-docs`](https://lingyuchinese.com/api-docs) liệt kê mọi route, bấm _Try it out_ để gọi thử. File OpenAPI 3.1:
 `/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client. Hai trang này khoá bằng **tài khoản riêng**
 (trình duyệt hỏi tên + mật khẩu), đặt ở biến môi trường `API_DOCS_USER` và `API_DOCS_PASSWORD` (≥ 12 ký tự; Vercel → Settings →

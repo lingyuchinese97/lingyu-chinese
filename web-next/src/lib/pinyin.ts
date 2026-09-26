@@ -166,3 +166,49 @@ export function applyToneInput(
   input.setSelectionRange(pos, pos);
   return next;
 }
+
+/** Âm tiết (không dấu, ü viết là ü) có trong bảng âm tiết pinyin chuẩn không: "zhong" → true, "zha" → true, "bu" → true. */
+export const isPinyinSyllable = (s: string) => SYLLABLES.has(plain(toUmlaut(s)));
+
+/** Tách dấu thanh của 1 âm tiết: "hǎo" → { plain: "hao", tone: 3 }, "ma" → { plain: "ma", tone: 5 } (thanh nhẹ). */
+export function splitTone(syl: string): { plain: string; tone: 1 | 2 | 3 | 4 | 5 } {
+  let tone = 5;
+  for (const c of syl.toLowerCase()) {
+    const base = MARKED[c];
+    if (base) tone = TONES[base]!.indexOf(c) + 1;
+  }
+  return { plain: plain(toUmlaut(syl)), tone: tone as 1 | 2 | 3 | 4 | 5 };
+}
+
+/** Chuẩn hoá để so pinyin người dùng gõ: số → dấu, v / u: → ü, bỏ khoảng trắng, dấu ' và -, không phân biệt hoa thường. */
+export const normalizePinyin = (s: string) =>
+  toneNumbersToMarks(toUmlaut(s.normalize("NFC").trim()))
+    .toLowerCase()
+    .replace(/[\s'’\-·.,，。!?！？]+/g, "");
+
+/** "ba1" ≡ "bā", "ni3 hao3" ≡ "nǐhǎo", "lv4" ≡ "lǜ". */
+export const samePinyin = (a: string, b: string) => {
+  const x = normalizePinyin(a);
+  return x.length > 0 && x === normalizePinyin(b);
+};
+
+/** Tách pinyin (có dấu) thành từng âm tiết: "shuíguǒ" → ["shuí", "guǒ"], "nǐ hǎo" → ["nǐ", "hǎo"]. Cụm không tách được giữ nguyên. */
+export function splitSyllables(text: string): string[] {
+  const out: string[] = [];
+  for (const run of text
+    .trim()
+    .split(/[\s']+/)
+    .filter(Boolean)) {
+    const parts = segment(run);
+    if (!parts) {
+      out.push(run);
+      continue;
+    }
+    let at = 0;
+    for (const len of parts) {
+      out.push(run.slice(at, at + len));
+      at += len;
+    }
+  }
+  return out;
+}

@@ -124,4 +124,11 @@ export const errors: Messages["errors"] = {
   speedInvalid: "Invalid playback speed.",
   dictationMax: "Dictation can be at most {max} characters.",
   segmentOrder: "The end time must be after the start time.",
+  // Pronunciation
+  pronNoteNotFound: "This note wasn't found. It may have been deleted.",
+  pronNotesMax: "You already have the maximum of {max} pronunciation notes.",
+  pronNoteTitleRequired: "Please enter a note title.",
+  pronNoteContentRequired: "Please enter the note content.",
+  pronTopicInvalid: "Invalid note topic.",
+  pronModeInvalid: "Invalid practice mode.",
 };

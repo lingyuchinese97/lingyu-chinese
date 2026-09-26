@@ -6,6 +6,7 @@ import { getT } from "@/i18n/server";
 import { VocabError } from "@/features/vocabulary/service";
 import { ReviewError } from "@/features/review/service";
 import { ListeningError } from "@/features/listening/service";
+import { PronunciationError } from "@/features/pronunciation/service";
 
 /**
  * Khung chung cho REST API `/api/v1/...` (quy ước ở CLAUDE.md):
@@ -77,7 +78,7 @@ function errorResponse(e: unknown, t: Awaited<ReturnType<typeof getT>>) {
   if (e instanceof ApiError) return json({ ok: false, message: t.maybe(e.message) }, e.status);
   if (e instanceof VocabError)
     return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
-  if (e instanceof ListeningError)
+  if (e instanceof ListeningError || e instanceof PronunciationError)
     return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
   if (e instanceof ReviewError)
     return json(

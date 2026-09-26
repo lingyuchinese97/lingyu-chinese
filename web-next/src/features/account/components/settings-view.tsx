@@ -324,6 +324,8 @@ function DataCard() {
             ss: report.sentences.skipped,
             la: report.listening.added,
             ls: report.listening.skipped,
+            pa: report.pronunciation.added,
+            ps: report.pronunciation.skipped,
             img: report.images,
             rad: report.radicals,
             les: report.lessons,

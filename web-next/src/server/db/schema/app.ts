@@ -463,3 +463,28 @@ export const listeningToTag = pgTable(
   },
   (t) => [primaryKey({ columns: [t.exerciseId, t.tagId] }), index("listening_to_tag_tag_idx").on(t.tagId)],
 );
+
+// ---------- Phát âm & Biến điệu ----------
+/**
+ * Ghi chú phát âm của riêng người dùng (KHÔNG chia sẻ). `topic` = mục gắn ghi chú ("initial:b", "final:ang", "tone:3",
+ * "sandhi:third-two", "sandhi:third-two:0" (một ví dụ), "sandhi:general"); mỗi mục một ghi chú. `topic` null = ghi chú tự do
+ * có tiêu đề (Ghi chú của tôi).
+ */
+export const pronunciationNote = pgTable(
+  "pronunciation_note",
+  {
+    id: id(),
+    userId: userRef(),
+    topic: text("topic"),
+    title: text("title").notNull().default(""),
+    content: text("content").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex("pronunciation_note_user_topic_uq")
+      .on(t.userId, t.topic)
+      .where(sql`${t.topic} is not null`),
+    index("pronunciation_note_user_updated_idx").on(t.userId, t.updatedAt),
+  ],
+);

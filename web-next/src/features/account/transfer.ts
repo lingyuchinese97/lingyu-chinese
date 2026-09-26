@@ -1,6 +1,6 @@
 /**
  * Xuất / nhập dữ liệu học tập (JSON). Xuất: từ vựng (kèm ảnh base64, lịch ôn), tag, ngữ pháp (kèm ví dụ, ghi chú cá nhân,
- * đã lưu), câu (Ôn dịch câu), bài làm luyện nghe, bộ thủ đã thuộc, tiến độ bài học. Nhập: GỘP vào dữ liệu hiện có, không ghi đè — bản ghi trùng thì bỏ qua.
+ * đã lưu), câu (Ôn dịch câu), bài làm luyện nghe, ghi chú phát âm, bộ thủ đã thuộc, tiến độ bài học. Nhập: GỘP vào dữ liệu hiện có, không ghi đè — bản ghi trùng thì bỏ qua.
  */
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -17,6 +17,7 @@ import {
   listeningExercise,
   listeningTag,
   listeningToTag,
+  pronunciationNote,
   radicalKnown,
   sentence,
   sentenceTag,
@@ -27,7 +28,7 @@ import {
   vocabToTag,
 } from "@/server/db/schema";
 import { storage } from "@/server/storage";
-import { IMAGE } from "@/lib/limits";
+import { IMAGE, PRONUNCIATION } from "@/lib/limits";
 import { imageSize, sniffImage } from "@/lib/image-sniff";
 import { isRadicalNum } from "@/lib/radicals";
 import { newCardColumns } from "@/lib/srs";
@@ -39,6 +40,7 @@ import { sentenceInputSchema } from "@/features/sentences/schema";
 import { ensureSentenceTags, sentenceValues } from "@/features/sentences/service";
 import { exerciseInputSchema } from "@/features/listening/schema";
 import { exerciseValues, setListeningTags } from "@/features/listening/service";
+import { noteInputSchema } from "@/features/pronunciation/schema";
 
 export const EXPORT_FORMAT = "lingyu-export";
 export const EXPORT_VERSION = 1;
@@ -112,6 +114,11 @@ export async function exportData(u: { id: string; name: string; email: string })
     lIds.length ? db.select().from(listeningToTag).where(inArray(listeningToTag.exerciseId, lIds)) : [],
   ]);
   const lTagName = new Map(lTags.map((t) => [t.id, t.name]));
+  const pNotes = await db
+    .select()
+    .from(pronunciationNote)
+    .where(eq(pronunciationNote.userId, userId))
+    .orderBy(asc(pronunciationNote.createdAt));
 
   return {
     format: EXPORT_FORMAT,
@@ -202,6 +209,12 @@ export async function exportData(u: { id: string; name: string; email: string })
       notes: x.notes,
       createdAt: x.createdAt.toISOString(),
     })),
+    pronunciationNotes: pNotes.map((n) => ({
+      topic: n.topic,
+      title: n.title,
+      content: n.content,
+      createdAt: n.createdAt.toISOString(),
+    })),
     radicalsKnown: known.map((k) => k.radical).sort((a, b) => a - b),
     lessonProgress: lessons.map((l) => ({
       lessonId: l.lessonId,
@@ -244,6 +257,7 @@ const fileSchema = z.object({
   sentences: z.array(z.unknown()).max(20000).default([]),
   listeningTags: z.array(z.unknown()).max(5000).default([]),
   listening: z.array(z.unknown()).max(5000).default([]),
+  pronunciationNotes: z.array(z.unknown()).max(5000).default([]),
   radicalsKnown: z.array(z.unknown()).max(214).default([]),
   lessonProgress: z.array(z.unknown()).max(1000).default([]),
 });
@@ -287,6 +301,7 @@ export type ImportReport = {
   grammar: { added: number; skipped: number };
   sentences: { added: number; skipped: number };
   listening: { added: number; skipped: number };
+  pronunciation: { added: number; skipped: number };
   radicals: number;
   lessons: number;
   images: number;
@@ -334,6 +349,7 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
     grammar: { added: 0, skipped: 0 },
     sentences: { added: 0, skipped: 0 },
     listening: { added: 0, skipped: 0 },
+    pronunciation: { added: 0, skipped: 0 },
     radicals: 0,
     lessons: 0,
     images: 0,
@@ -489,6 +505,39 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
         .returning({ id: listeningExercise.id });
       await setListeningTags(tx, userId, ins!.id, input.data.tags);
       report.listening.added++;
+    }
+
+    // Ghi chú phát âm: mục đã có ghi chú, hoặc ghi chú tự do trùng tiêu đề + nội dung → bỏ qua; không vượt giới hạn số ghi chú.
+    const pRows = await tx
+      .select({ topic: pronunciationNote.topic, title: pronunciationNote.title, content: pronunciationNote.content })
+      .from(pronunciationNote)
+      .where(eq(pronunciationNote.userId, userId));
+    const pKey = (x: { topic?: string | null; title: string; content: string }) =>
+      x.topic ? `t\u0000${x.topic}` : `f\u0000${x.title}\u0000${x.content}`;
+    const pExisting = new Set(pRows.map(pKey));
+    let pCount = pRows.length;
+    for (const item of f.pronunciationNotes) {
+      const input = noteInputSchema.safeParse(item);
+      const created = z.object({ createdAt: date.optional().catch(undefined) }).safeParse(item ?? {});
+      if (
+        !input.success ||
+        !input.data.content ||
+        pExisting.has(pKey(input.data)) ||
+        pCount >= PRONUNCIATION.MAX_NOTES
+      ) {
+        report.pronunciation.skipped++;
+        continue;
+      }
+      pExisting.add(pKey(input.data));
+      pCount++;
+      await tx.insert(pronunciationNote).values({
+        userId,
+        topic: input.data.topic ?? null,
+        title: input.data.title,
+        content: input.data.content,
+        ...(created.success && created.data.createdAt ? { createdAt: created.data.createdAt } : {}),
+      });
+      report.pronunciation.added++;
     }
 
     // Bộ thủ đã thuộc: hợp lại.

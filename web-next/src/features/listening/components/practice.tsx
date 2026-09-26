@@ -71,7 +71,8 @@ function loadDraft(userId: string, fresh: boolean): Draft {
     const raw = localStorage.getItem(draftKey(userId));
     if (!raw) return EMPTY;
     const d = { ...EMPTY, ...(JSON.parse(raw) as Partial<Draft>) };
-    return { ...d, spans: Array.isArray(d.spans) ? d.spans : [] };
+    // Tải lại trang: không mở lại link / video cũ (chỉ giữ bài chép, đáp án, ghi chú đang làm dở).
+    return { ...d, url: "", opened: "", segment: null, spans: Array.isArray(d.spans) ? d.spans : [] };
   } catch {
     return EMPTY;
   }
@@ -255,8 +256,16 @@ export function ListeningPractice({
       notes: v.notes,
     });
     if (!r.ok) return { ok: false as const, message: r.message, fieldErrors: r.fieldErrors as DraftErrors | undefined };
-    // Lưu xong: xoá bài để làm bài mới, GIỮ LẠI link (và cài đặt nghe) để luyện tiếp đoạn khác của cùng nội dung.
-    set({ spans: [], notes: "", checked: false, reference: { answer: "", pinyin: "" } });
+    // Lưu xong: xoá sạch để làm bài mới — cả link và trình phát (giữ cài đặt tốc độ / lặp lại).
+    set({
+      url: "",
+      opened: "",
+      segment: null,
+      spans: [],
+      notes: "",
+      checked: false,
+      reference: { answer: "", pinyin: "" },
+    });
     setSavedId(r.data);
     toast.success(t("listening.save.saved", { title: v.title.trim() }), {
       action: { label: t("listening.save.view"), onClick: () => router.push(`/listening/exercises?id=${r.data}`) },
