@@ -6,6 +6,11 @@
 
 ### Added
 
+- **REST API cho Từ vựng và Ôn tập** (để app điện thoại / app khác dùng): `/api/v1/vocab` (danh sách, thêm, sửa, xoá, yêu thích,
+  tag, thống kê, thêm từ mẫu, xoá / đổi trạng thái / gắn tag hàng loạt, chia sẻ, lời mời đã gửi / nhận, chấp nhận / từ chối) và
+  `/api/v1/review` (số từ theo tag, số thẻ đến hạn, thiết lập gần nhất, tạo bài, bài đang làm, bỏ bài, trả lời, đánh giá, chuyển câu,
+  nộp bài, kết quả gần nhất). Dùng chung service với giao diện; cần đăng nhập (401), dữ liệu người khác → 404, thân phải là JSON
+  (415), lỗi dữ liệu → 400 kèm `fieldErrors`, thông báo theo ngôn ngữ của người dùng. Tài liệu: `docs/API.md`.
 - **Giao diện tiếng Anh**: đổi Tiếng Việt / English bất cứ lúc nào (menu tài khoản, Cài đặt → Ngôn ngữ, trang đăng nhập và trang
   giới thiệu). Lựa chọn lưu vào tài khoản (đăng nhập máy khác vẫn giữ) và cookie khi chưa đăng nhập. Toàn bộ màn hình, thông báo
   lỗi, ngày giờ, số nhiều đều theo ngôn ngữ đã chọn; bộ thủ có nghĩa tiếng Anh và tìm được bằng tiếng Anh ("water"), Bài 1 có
