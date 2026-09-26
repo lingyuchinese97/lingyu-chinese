@@ -2,6 +2,8 @@ import { z } from "zod";
 import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "@/features/vocabulary/schema";
 import { customConfigSchema, dueConfigSchema } from "@/features/review/schema";
 import { compareInputSchema, exerciseInputSchema } from "@/features/listening/schema";
+import { noteInputSchema, noteUpdateSchema } from "@/features/pronunciation/schema";
+import { PRACTICE_MODES } from "@/features/pronunciation/practice";
 
 /**
  * Tài liệu OpenAPI 3.1 của REST API (hiển thị bằng Swagger UI ở /api-docs).
@@ -100,6 +102,7 @@ const EXAMPLE_ID = "3f2b6c1e-8a4d-4c5b-9e7f-1a2b3c4d5e6f";
 const V = "Từ vựng";
 const R = "Ôn tập";
 const L = "Luyện nghe";
+const P = "Phát âm";
 const AD = "Quản trị";
 const A = "Tài khoản";
 
@@ -153,6 +156,11 @@ export function openApiDocument() {
           "Luyện nghe – Chép chính tả. Đáp án tham khảo do người dùng nhập; kết quả so sánh và điểm do server tính lại khi lưu.",
       },
       {
+        name: P,
+        description:
+          "Phát âm & Biến điệu: nội dung bài học (tĩnh), bài tự luyện (không lưu điểm) và ghi chú riêng của người dùng (không chia sẻ).",
+      },
+      {
         name: AD,
         description: "Chỉ tài khoản admin (người dùng thường → 403). Không trả nội dung học của người dùng.",
       },
@@ -191,6 +199,28 @@ export function openApiDocument() {
             createdAt: { type: "string", format: "date-time" },
           },
           ["id", "hanzi", "pinyin", "meaningVi"],
+        ),
+        PronunciationNote: obj({
+          id: { type: "string", format: "uuid" },
+          topic: { type: ["string", "null"], description: "Mục gắn ghi chú; null = ghi chú tự do" },
+          title: { type: "string" },
+          content: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        }),
+        PracticeQuestion: obj(
+          {
+            id: { type: "string" },
+            mode: { enum: [...PRACTICE_MODES] },
+            speak: { type: "string", description: "Chữ Hán để máy đọc" },
+            hanzi: { type: "string" },
+            meaning: obj({ vi: { type: "string" }, en: { type: "string" } }),
+            answer: { type: "string", description: "Pinyin có dấu" },
+            options: { type: "array", items: { type: "string" }, description: "Rỗng với listen-type / speak-compare" },
+            hint: { type: "object" },
+            written: { type: "string", description: "Chỉ bài sandhi: pinyin trước biến điệu" },
+          },
+          ["id", "mode", "speak", "hanzi", "meaning", "answer", "options", "hint"],
         ),
         Comparison: {
           type: "object",
@@ -638,6 +668,69 @@ export function openApiDocument() {
             counts: obj({ vocab: int, sentences: int, grammar: int, listening: int }),
           }),
           errors: [403, 404],
+        }),
+      },
+      "/api/v1/pronunciation": {
+        get: op(P, {
+          summary: "Nội dung bài học: thanh mẫu, vận mẫu, thanh điệu, quy tắc biến điệu (chữ có sẵn vi / en)",
+          data: obj({
+            initials: obj({ groups: { type: "array" }, items: { type: "array" } }),
+            finals: obj({ groups: { type: "array" }, items: { type: "array" } }),
+            tones: obj({ items: { type: "array" }, sets: { type: "array" }, tips: { type: "array" } }),
+            sandhi: obj({ rules: { type: "array" }, tips: { type: "array" } }),
+          }),
+        }),
+      },
+      "/api/v1/pronunciation/practice": {
+        get: op(P, {
+          summary: "Tạo bài tự luyện (có kèm đáp án để chấm trên máy)",
+          params: [
+            { ...q("mode", { enum: [...PRACTICE_MODES] }), required: true },
+            q("count", { type: "integer", minimum: 1, maximum: 20, default: 10 }),
+          ],
+          data: obj({
+            mode: { enum: [...PRACTICE_MODES] },
+            questions: { type: "array", items: ref("PracticeQuestion") },
+          }),
+          errors: [400],
+        }),
+      },
+      "/api/v1/pronunciation/notes": {
+        get: op(P, {
+          summary: "Ghi chú phát âm của tôi (mới sửa trước)",
+          data: { type: "array", items: ref("PronunciationNote") },
+        }),
+        post: op(P, {
+          summary:
+            "Tạo ghi chú tự do (201), hoặc lưu ghi chú của một mục qua `topic` (200; nội dung rỗng = xoá → data null)",
+          description:
+            "`topic`: `initial:b`, `final:ang`, `tone:3`, `sandhi:third-two`, `sandhi:third-two:0` (ví dụ thứ 1), `sandhi:general`.",
+          body: js(noteInputSchema),
+          example: { title: "Phân biệt z / zh", content: "早 zǎo – 找 zhǎo: zh cong lưỡi." },
+          status: 201,
+          data: ref("PronunciationNote"),
+        }),
+      },
+      "/api/v1/pronunciation/notes/{id}": {
+        get: op(P, {
+          summary: "Xem một ghi chú",
+          params: [pathId("id ghi chú")],
+          data: ref("PronunciationNote"),
+          errors: [404],
+        }),
+        put: op(P, {
+          summary: "Sửa ghi chú",
+          params: [pathId("id ghi chú")],
+          body: js(noteUpdateSchema),
+          example: { content: "Nhớ bật hơi với p, t, k." },
+          data: ref("PronunciationNote"),
+          errors: [404],
+        }),
+        delete: op(P, {
+          summary: "Xoá ghi chú",
+          params: [pathId("id ghi chú")],
+          data: obj({ deleted: { const: true } }),
+          errors: [404],
         }),
       },
       "/api/v1/listening/compare": {

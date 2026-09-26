@@ -44,3 +44,11 @@ export const LISTENING = {
   SPEEDS: [0.5, 0.75, 1, 1.25, 1.5] as const,
   PAGE_SIZE: 20,
 } as const;
+
+export const PRONUNCIATION = {
+  MAX_TITLE: 100,
+  /** Nội dung một ghi chú phát âm. */
+  MAX_TEXT: 2000,
+  /** Số ghi chú tối đa của một người. */
+  MAX_NOTES: 500,
+} as const;

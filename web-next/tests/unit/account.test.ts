@@ -9,6 +9,8 @@ import { changePassword, removeUser, updateName, verifyPassword } from "@/featur
 import { exportData, importData, ImportError } from "@/features/account/transfer";
 import { exerciseInputSchema, exerciseListSchema } from "@/features/listening/schema";
 import { createExercise, listExercises } from "@/features/listening/service";
+import { noteInputSchema } from "@/features/pronunciation/schema";
+import { listNotes, saveNote } from "@/features/pronunciation/service";
 import { adminStats, adminUserDetail, listUsers } from "@/features/admin/service";
 import * as svc from "@/features/vocabulary/service";
 import * as g from "@/features/grammar/service";
@@ -125,6 +127,8 @@ describe("xuất / nhập dữ liệu", () => {
         notes: "ghi chú nghe",
       }),
     );
+    await saveNote(A.id, noteInputSchema.parse({ topic: "initial:zh", content: "zh cong lưỡi" }));
+    await saveNote(A.id, noteInputSchema.parse({ title: "Cặp z / zh", content: "早 zǎo – 找 zhǎo" }));
     await setKnown(A.id, 85, true);
     const qs = getLesson("bai1")!.sections[1]!.questions;
     await recordSection(
@@ -143,6 +147,10 @@ describe("xuất / nhập dữ liệu", () => {
     expect(data.grammar[0]).toMatchObject({ personalNote: "ghi chú riêng", tags: ["Câu hỏi"] });
     expect(data.sentences[0]).toMatchObject({ chinese: "我爱你。", tags: ["Tình cảm"] });
     expect(data.listening[0]).toMatchObject({ title: "Chào hỏi", tags: ["HSK1"], notes: "ghi chú nghe" });
+    expect(data.pronunciationNotes).toEqual([
+      expect.objectContaining({ topic: "initial:zh", title: "Thanh mẫu zh", content: "zh cong lưỡi" }),
+      expect.objectContaining({ topic: null, title: "Cặp z / zh", content: "早 zǎo – 找 zhǎo" }),
+    ]);
     expect(data.lessonProgress[0]).toMatchObject({ lessonId: "bai1", section: "blending", bestScore: 20 });
     // File xuất chỉ chứa dữ liệu của A.
     expect(JSON.stringify(data)).not.toContain(B.email);
@@ -165,6 +173,7 @@ describe("xuất / nhập dữ liệu", () => {
       grammar: { added: 1, skipped: 0 },
       sentences: { added: 1, skipped: 0 },
       listening: { added: 1, skipped: 0 },
+      pronunciation: { added: 2, skipped: 0 },
       radicals: 1,
       lessons: 1,
       images: 1,
@@ -183,6 +192,8 @@ describe("xuất / nhập dữ liệu", () => {
     expect(again.grammar).toEqual({ added: 0, skipped: 1 });
     expect(again.sentences).toEqual({ added: 0, skipped: 1 });
     expect(again.listening).toEqual({ added: 0, skipped: 1 });
+    expect(again.pronunciation).toEqual({ added: 0, skipped: 2 });
+    expect((await listNotes(B.id)).map((n) => n.content).sort()).toEqual(["zh cong lưỡi", "早 zǎo – 找 zhǎo"]);
     const bl = await listExercises(B.id, exerciseListSchema.parse({}));
     expect(bl.items[0]).toMatchObject({ title: "Chào hỏi", scorePercent: 83, tags: ["HSK1"] });
   });

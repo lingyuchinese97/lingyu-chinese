@@ -11,6 +11,7 @@ import { listening } from "./listening";
 import { meta } from "./meta";
 import { notifications } from "./notifications";
 import { pages } from "./pages";
+import { pronunciation } from "./pronunciation";
 import { radicals } from "./radicals";
 import { review } from "./review";
 import { sentences } from "./sentences";
@@ -37,6 +38,7 @@ export const vi = {
   grammar,
   lessons,
   listening,
+  pronunciation,
   radicals,
   review,
   sentences,

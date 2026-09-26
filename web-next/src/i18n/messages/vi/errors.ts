@@ -134,4 +134,11 @@ export const errors = {
   speedInvalid: "Tốc độ nghe không hợp lệ.",
   dictationMax: "Bài chép tối đa {max} ký tự.",
   segmentOrder: "Thời điểm kết thúc phải sau thời điểm bắt đầu.",
+  // Phát âm
+  pronNoteNotFound: "Không tìm thấy ghi chú này. Có thể nó đã bị xóa.",
+  pronNotesMax: "Bạn đã có tối đa {max} ghi chú phát âm.",
+  pronNoteTitleRequired: "Vui lòng nhập tiêu đề ghi chú.",
+  pronNoteContentRequired: "Vui lòng nhập nội dung ghi chú.",
+  pronTopicInvalid: "Mục ghi chú không hợp lệ.",
+  pronModeInvalid: "Chế độ luyện tập không hợp lệ.",
 };

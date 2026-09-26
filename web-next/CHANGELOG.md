@@ -6,6 +6,23 @@
 
 ### Added
 
+- **Phát âm & Biến điệu** (menu “Phát âm & Biến điệu”, `/pronunciation`), 7 tab:
+  - **Tổng quan**: 4 thẻ (21 thanh mẫu, 36 vận mẫu, 4 thanh + thanh nhẹ, 4 quy tắc biến điệu) và lối vào Luyện tập / Ghi chú.
+  - **Thanh mẫu** (6 nhóm theo vị trí phát âm) và **Vận mẫu** (lọc đơn 6 / kép 13 / mũi 16 / er): bấm một âm → cách phát âm,
+    gần giống âm tiếng Việt nào, ví dụ, mẹo ghi nhớ, nút Nghe, nút Ghi chú riêng. Âm đang chọn nằm trên link (`?s=zh`).
+  - **Thanh điệu**: đường thanh điệu (Cao / Trung / Thấp) từng thanh, ví dụ 妈 麻 马 骂, biểu đồ so sánh 4 thanh, bộ ví dụ
+    so sánh, mẹo, ghi chú từng thanh.
+  - **Biến điệu**: hai thanh 3, ba thanh 3, 一, 不 — công thức, ví dụ trước → sau biến điệu (ghi chú từng ví dụ), so sánh phát âm
+    trước / sau (nghe từng chữ / nghe cả từ), luyện tập nhanh 5 câu, ghi chú của tôi, ghi chú chung, mẹo.
+  - **Luyện tập** (10 câu, chấm ngay, không lưu điểm): Nghe & Chọn, Nghe & Gõ pinyin (gõ số thanh `ba1` → `bā`), Phát âm & So
+    sánh (ghi âm bằng micro rồi nghe lại, **bản ghi chỉ ở trên máy**, không tải lên), Phân biệt cặp âm, Luyện đọc từ, Biến điệu;
+    cột Gợi ý / Tiến độ (Đã làm, Đúng, Sai, Chưa trả lời) / Mẹo nhỏ.
+  - **Ghi chú của tôi**: mọi ghi chú phát âm (tự do có tiêu đề + ghi chú gắn âm / thanh / quy tắc / ví dụ), thêm, sửa, xoá, mở lại
+    bài học. Ghi chú **chỉ người viết xem được** (bảng `pronunciation_note`, migration 0006), có trong xuất / nhập dữ liệu.
+  - Âm thanh dùng giọng đọc tiếng Trung có sẵn của máy (Web Speech); máy không có giọng đọc thì ẩn nút nghe và vẫn luyện được
+    bằng chữ Hán. `Permissions-Policy` cho phép micro trên chính trang (`microphone=(self)`).
+  - API `/api/v1/pronunciation` (nội dung), `/api/v1/pronunciation/practice?mode=&count=` (tạo bài), `/api/v1/pronunciation/notes`
+    (+ `/{id}`) — có trong Swagger.
 - **Ngữ pháp: nhiều dòng cấu trúc** — mỗi ngữ pháp có 1 dòng cấu trúc chính và thêm được 1–3 dòng (tối đa 4, mỗi dòng
   300 ký tự; nút "Thêm dòng cấu trúc" / xoá từng dòng). Lưu chung ô `structure`, mỗi dòng một cấu trúc (dữ liệu cũ vẫn dùng được).
 - **Luyện nghe & Nói – Chép chính tả** (menu “Luyện nghe & Nói”, `/listening`): dán link YouTube (trình phát nhúng chính thức,
@@ -40,6 +57,9 @@
 - Kết quả Ôn dịch câu: mascot không còn đè lên vòng tròn điểm (dùng ảnh nền trong suốt, đặt cạnh vòng tròn).
 
 ### Changed
+
+- **Luyện nghe**: bấm “Lưu bài làm” xong, hoặc tải lại trang, thì link và trình phát (video YouTube) cũng bị xoá — trang trở về
+  trống để làm bài mới (nháp bài chép / đáp án / ghi chú vẫn giữ khi tải lại).
 
 - Luyện nghe: bấm **Lưu bài làm** xong, trang tự xoá bài (bài chép, đáp án tham khảo, ghi chú, kết quả) để làm bài mới nhưng **giữ
   lại link** đã dán (và trình phát, tốc độ, đoạn) để luyện tiếp.

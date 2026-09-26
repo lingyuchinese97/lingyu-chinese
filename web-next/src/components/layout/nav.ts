@@ -1,5 +1,14 @@
 import type { Messages } from "@/i18n/messages/vi";
-import { BookOpen, GraduationCap, Headphones, House, MessagesSquare, Settings, ShieldCheck } from "lucide-react";
+import {
+  AudioLines,
+  BookOpen,
+  GraduationCap,
+  Headphones,
+  House,
+  MessagesSquare,
+  Settings,
+  ShieldCheck,
+} from "lucide-react";
 import { GrammarIcon, RadicalIcon, ReviewIcon } from "./icons";
 
 export type NavKey =
@@ -9,6 +18,7 @@ export type NavKey =
   | "grammar"
   | "radicals"
   | "listening"
+  | "pronunciation"
   | "lessons"
   | "review"
   | "settings"
@@ -23,6 +33,7 @@ export const NAV: NavItem[] = [
   { key: "grammar", href: "/grammar", icon: GrammarIcon },
   { key: "radicals", href: "/radicals", icon: RadicalIcon },
   { key: "listening", href: "/listening", icon: Headphones },
+  { key: "pronunciation", href: "/pronunciation", icon: AudioLines },
   { key: "lessons", href: "/lessons", icon: GraduationCap },
   { key: "review", href: "/review/setup", icon: ReviewIcon },
   { key: "settings", href: "/settings", icon: Settings },
@@ -40,6 +51,7 @@ const QUOTES: Partial<Record<NavKey, QuoteKey>> = {
   grammar: "shell.quote.grammar",
   radicals: "shell.quote.radicals",
   listening: "shell.quote.listening",
+  pronunciation: "shell.quote.pronunciation",
   lessons: "shell.quote.lessons",
   review: "shell.quote.review",
   settings: "shell.quote.default",

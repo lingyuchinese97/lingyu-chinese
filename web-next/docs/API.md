@@ -95,6 +95,23 @@ Bài làm gửi lên:
   khoảng trắng không tính; không phân biệt hoa / thường. `parts` theo thứ tự bài chép: `{ kind: "text", status: "correct" | "wrong" |
 "extra" | "neutral", start, end, expected? }` hoặc `{ kind: "missing", text, at }`. Điểm = `correct / total` (số chữ của đáp án).
 
+## Phát âm `/api/v1/pronunciation`
+
+| Route                              | Việc                                                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /pronunciation`               | Nội dung: `initials`, `finals` (nhóm + âm), `tones`, `sandhi` (quy tắc + ví dụ). Chữ có sẵn `vi` / `en`                                          |
+| `GET /pronunciation/practice`      | Tạo bài tự luyện. Query: `mode` (bắt buộc), `count` (1–20, mặc định 10) → `{ mode, questions }`                                                  |
+| `GET /pronunciation/notes`         | Ghi chú phát âm của tôi (mới sửa trước)                                                                                                          |
+| `POST /pronunciation/notes`        | Không `topic` → ghi chú tự do (`title`, `content` bắt buộc) → `201`. Có `topic` → lưu ghi chú mục đó → `200` (nội dung rỗng = xoá, `data: null`) |
+| `GET /pronunciation/notes/{id}`    | Một ghi chú                                                                                                                                      |
+| `PUT /pronunciation/notes/{id}`    | Sửa `{ title?, content }`                                                                                                                        |
+| `DELETE /pronunciation/notes/{id}` | Xoá → `{ deleted: true }`                                                                                                                        |
+
+- `mode`: `listen-choose` · `listen-type` · `speak-compare` · `pairs` · `read-words` · `sandhi`. Bài tự luyện không lưu điểm nên
+  câu hỏi có kèm `answer`; chấm pinyin gõ tay chấp nhận số thanh (`ba1` ≡ `bā`, `lv4` ≡ `lǜ`). `speak` là chữ Hán để máy đọc.
+- `topic`: `initial:b`, `final:ang`, `tone:3`, `sandhi:third-two`, `sandhi:third-two:0` (ví dụ thứ 1), `sandhi:general`. Mỗi mục một
+  ghi chú. Giới hạn: tiêu đề 100, nội dung 2.000 ký tự, tối đa 500 ghi chú.
+
 ## Quản trị `/api/v1/admin` (chỉ admin)
 
 Người dùng thường → `403`. Không trả mật khẩu hay nội dung học của người dùng (chỉ số lượng).
