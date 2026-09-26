@@ -2,6 +2,7 @@
 import * as React from "react";
 import { useLocale } from "@/i18n/client";
 import type { L } from "@/data/pronunciation";
+import { SPEECH_RATE } from "@/lib/speech-rate";
 
 /** Chọn chữ theo ngôn ngữ đang hiển thị cho nội dung song ngữ `{ vi, en }`. */
 export function useL() {
@@ -22,8 +23,7 @@ export function useChineseVoice() {
   return ok;
 }
 
-/** Tốc độ đọc (1 = bình thường): chậm để người học nghe rõ từng âm. */
-export const SPEECH_RATE = { normal: 0.7, slow: 0.45, syllable: 0.55 } as const;
+export { SPEECH_RATE };
 
 /**
  * Đọc bằng giọng tiếng Trung của máy. Truyền mảng → đọc từng phần tách rời (vd từng chữ, để nghe thanh gốc trước biến điệu).
