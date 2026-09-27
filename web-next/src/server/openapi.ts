@@ -8,6 +8,8 @@ import { sentenceConfigSchema, sentenceInputSchema } from "@/features/sentences/
 import { PRACTICE_MODES } from "@/features/pronunciation/practice";
 import { clientActivitySchema, goalsSchema } from "@/features/progress/schema";
 import { ACTIVITY_KINDS } from "@/features/progress/constants";
+import { T_TOPICS } from "@/data/translation/items";
+import { elapsedSchema, translationConfigSchema } from "@/features/translation/schema";
 
 /**
  * Tài liệu OpenAPI 3.1 của REST API (hiển thị bằng Swagger UI ở /api-docs).
@@ -115,6 +117,7 @@ const N = "Thông báo";
 const H = "Trang chủ";
 const PG = "Tiến độ học tập";
 const SE = "Tìm kiếm";
+const TR = "Luyện dịch";
 const AD = "Quản trị";
 const A = "Tài khoản";
 
@@ -172,6 +175,11 @@ export function openApiDocument() {
         name: PG,
         description:
           "Thời gian học theo ngày (nhịp ping mỗi phút), chuỗi ngày học, mục tiêu, tiến độ theo HSK / thẻ, lịch sử hoạt động",
+      },
+      {
+        name: TR,
+        description:
+          "Luyện dịch với kho câu mẫu có sẵn (HSK 1–4, câu và đoạn ngắn, giải thích ngữ pháp). Đáp án chỉ trả về sau khi trả lời; server tự chấm.",
       },
       { name: SE, description: "Tìm kiếm chung: từ vựng, ngữ pháp, câu của tôi + bài học, bộ thủ" },
       { name: G, description: "Ngữ pháp của mình (ví dụ, cấu trúc, ghi chú cá nhân riêng tư), thẻ, lưu, chia sẻ" },
@@ -1216,6 +1224,152 @@ export function openApiDocument() {
           example: { kind: "pronunciation", title: "Nghe & Chọn đáp án", correct: 8, total: 10 },
           status: 201,
           data: obj({ recorded: { const: true } }),
+        }),
+      },
+      "/api/v1/translation": {
+        get: op(TR, {
+          summary:
+            "Thông tin tạo bài: trình độ ước lượng, điểm ngữ pháp, chủ đề, số câu, bài đang làm, lịch sử gần đây",
+          data: obj({
+            level: int,
+            grammar: { type: "array" },
+            topics: { type: "array", items: { enum: [...T_TOPICS] } },
+            counts: { type: "object" },
+            active: { type: ["object", "null"] },
+            history: { type: "array" },
+          }),
+        }),
+      },
+      "/api/v1/translation/bank": {
+        get: op(TR, {
+          summary: "Kho câu mẫu kèm bản dịch, cách nói khác, phân tích từ, giải thích ngữ pháp",
+          params: [
+            q("type", { enum: ["sentence", "paragraph"] }),
+            q("level", { type: "integer", minimum: 1, maximum: 4 }),
+            q("grammar", { type: "string" }, "id điểm ngữ pháp (vd `bi`)"),
+            q("topic", { enum: [...T_TOPICS] }),
+            q("q", { type: "string", maxLength: 100 }, "Tìm theo chữ Hán, pinyin hoặc nghĩa"),
+          ],
+          data: { type: "array", items: { type: "object" } },
+        }),
+      },
+      "/api/v1/translation/bank/{id}": {
+        get: op(TR, {
+          summary: "Một câu mẫu",
+          params: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "vd `s019`" }],
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/bank/{id}/save": {
+        post: op(TR, {
+          summary: "Lưu câu mẫu vào Kho câu của tôi (đã có → 409)",
+          params: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          status: 201,
+          data: obj({ id: { type: "string", format: "uuid" } }),
+          errors: [404, 409],
+        }),
+      },
+      "/api/v1/translation/sessions": {
+        post: op(TR, {
+          summary: "Tạo bài luyện dịch (bỏ bài đang dở). Không có câu mẫu phù hợp → 409",
+          body: js(translationConfigSchema),
+          example: { type: "sentence", direction: "to-zh", source: "grammar", grammarIds: ["bi"], count: 5 },
+          status: 201,
+          data: { type: "object" },
+          errors: [409],
+        }),
+      },
+      "/api/v1/translation/sessions/active": {
+        get: op(TR, { summary: "Bài đang làm (hoặc null)", data: { type: ["object", "null"] } }),
+        delete: op(TR, { summary: "Bỏ bài đang làm", data: obj({ abandoned: { const: true } }) }),
+      },
+      "/api/v1/translation/sessions/{id}": {
+        get: op(TR, {
+          summary: "Một bài của tôi (đã xong thì có đủ lời giải). Bài của người khác → 404",
+          params: [pathId("id bài")],
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/sessions/{id}/answer": {
+        post: op(TR, {
+          summary: "Trả lời một câu → bài đã chấm (độ giống 0–100 + lời giải)",
+          params: [pathId("id bài")],
+          body: obj({ index: int, answer: { type: "string", maxLength: 1000 }, elapsedSec: js(elapsedSchema) }, [
+            "index",
+            "answer",
+          ]),
+          example: { index: 0, answer: "我哥哥比我高。", elapsedSec: 42 },
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/sessions/{id}/skip": {
+        post: op(TR, {
+          summary: "Bỏ qua một câu",
+          params: [pathId("id bài")],
+          body: obj({ index: int, elapsedSec: js(elapsedSchema) }, ["index"]),
+          example: { index: 0 },
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/sessions/{id}/hint": {
+        post: op(TR, {
+          summary: "Gợi ý tiếp theo: lần 1 từ khoá, lần 2 cấu trúc ngữ pháp",
+          params: [pathId("id bài")],
+          body: obj({ index: int }),
+          example: { index: 0 },
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/sessions/{id}/override": {
+        post: op(TR, {
+          summary: "Tính là đúng (câu đang bị chấm sai)",
+          params: [pathId("id bài")],
+          body: obj({ index: int }),
+          example: { index: 0 },
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/sessions/{id}/move": {
+        post: op(TR, {
+          summary: "Chuyển đến câu `index`",
+          params: [pathId("id bài")],
+          body: obj({ index: int }),
+          example: { index: 1 },
+          data: obj({ index: int }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/sessions/{id}/time": {
+        post: op(TR, {
+          summary: "Lưu thời gian làm bài khi tạm dừng (không giảm, tối đa 6 giờ)",
+          params: [pathId("id bài")],
+          body: obj({ elapsedSec: js(elapsedSchema) }),
+          example: { elapsedSec: 120 },
+          data: obj({ elapsedSec: int }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/sessions/{id}/complete": {
+        post: op(TR, {
+          summary: "Nộp bài (chưa làm hết → 400) → bài đã xong; ghi vào Tiến độ học tập",
+          params: [pathId("id bài")],
+          body: obj({ elapsedSec: js(elapsedSchema) }, []),
+          example: { elapsedSec: 300 },
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/translation/history": {
+        get: op(TR, {
+          summary: "Lịch sử luyện dịch (bài đã nộp)",
+          params: [q("limit", { type: "integer", minimum: 1, maximum: 50, default: 20 })],
+          data: { type: "array", items: { type: "object" } },
         }),
       },
       "/api/v1/search": {

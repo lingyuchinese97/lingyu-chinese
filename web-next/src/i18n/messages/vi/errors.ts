@@ -141,4 +141,11 @@ export const errors = {
   pronNoteContentRequired: "Vui lòng nhập nội dung ghi chú.",
   pronTopicInvalid: "Mục ghi chú không hợp lệ.",
   pronModeInvalid: "Chế độ luyện tập không hợp lệ.",
+  // Luyện dịch
+  trGone: "Bài luyện dịch không còn tồn tại. Hãy tạo bài mới.",
+  trEmpty: "Không có câu mẫu nào phù hợp. Hãy đổi lựa chọn.",
+  trItemNotFound: "Không tìm thấy câu mẫu này.",
+  trDuplicate: "Câu này đã có trong kho câu của bạn.",
+  trPickGrammar: "Hãy chọn ít nhất một điểm ngữ pháp.",
+  trBadGrammar: "Điểm ngữ pháp không tồn tại.",
 };

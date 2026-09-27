@@ -179,6 +179,24 @@ Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu tr�
 - `topic`: `initial:b`, `final:ang`, `tone:3`, `sandhi:third-two`, `sandhi:third-two:0` (ví dụ thứ 1), `sandhi:general`. Mỗi mục một
   ghi chú. Giới hạn: tiêu đề 100, nội dung 2.000 ký tự, tối đa 500 ghi chú.
 
+## Luyện dịch `/api/v1/translation`
+
+Kho câu mẫu là nội dung tĩnh (HSK 1–4). Trong bài làm, đáp án, phân tích và id câu mẫu chỉ có sau khi trả lời / bỏ qua.
+
+| Route                                      | Việc                                                                                                                                                          |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /translation`                         | `{ level, grammar, topics, counts, active, history }`                                                                                                         |
+| `GET /translation/bank`                    | Kho câu mẫu: `?type=sentence\|paragraph&level=1–4&grammar=&topic=&q=`                                                                                         |
+| `GET /translation/bank/{id}`               | Một câu mẫu (`s001`…, `p001`…); không có → `404`                                                                                                              |
+| `POST /translation/bank/{id}/save`         | Lưu vào Kho câu của tôi → `201 { id }`; đã có → `409`                                                                                                         |
+| `POST /translation/sessions`               | `{ type, direction: to-zh\|from-zh\|mixed, source: auto\|grammar\|vocab, grammarIds, level, topic, count, showPinyin }` → `201`; không có câu phù hợp → `409` |
+| `GET\|DELETE /translation/sessions/active` | Bài đang làm / bỏ bài                                                                                                                                         |
+| `GET /translation/sessions/{id}`           | Một bài của tôi                                                                                                                                               |
+| `POST …/answer` · `…/skip`                 | `{ index, answer?, elapsedSec? }` → bài đã chấm (`similarity` 0–100, `reveal`)                                                                                |
+| `POST …/hint` · `…/override` · `…/move`    | `{ index }` — gợi ý (lần 1 từ khoá, lần 2 cấu trúc) · tính là đúng · chuyển câu                                                                               |
+| `POST …/time` · `…/complete`               | `{ elapsedSec }` lưu thời gian (không giảm, ≤ 6 giờ) · nộp bài (chưa làm hết → `400`)                                                                         |
+| `GET /translation/history?limit=`          | Bài đã nộp, mới nhất trước                                                                                                                                    |
+
 ## Tiến độ học tập `/api/v1/progress`, Tìm kiếm `/api/v1/search`
 
 Mọi số liệu chỉ của người đang đăng nhập (người khác không bao giờ thấy). Ngày tính theo giờ Việt Nam (UTC+7).

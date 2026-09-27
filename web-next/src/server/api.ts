@@ -12,6 +12,7 @@ import { SentenceError } from "@/features/sentences/service";
 import { SentenceReviewError } from "@/features/sentences/review-service";
 import { LessonError } from "@/features/lessons/service";
 import { AccountError } from "@/features/account/service";
+import { TranslationError } from "@/features/translation/service";
 
 /**
  * Khung chung cho REST API `/api/v1/...` (quy ước ở CLAUDE.md):
@@ -110,6 +111,11 @@ function errorResponse(e: unknown, t: Awaited<ReturnType<typeof getT>>) {
     return json(
       { ok: false, message: t.maybe(e.message) },
       e.code === "not-found" ? 404 : e.code === "empty" ? 409 : 400,
+    );
+  if (e instanceof TranslationError)
+    return json(
+      { ok: false, message: t.maybe(e.message) },
+      e.code === "not-found" ? 404 : e.code === "empty" || e.code === "duplicate" ? 409 : 400,
     );
   if (e instanceof z.ZodError) {
     const fieldErrors: Record<string, string> = {};

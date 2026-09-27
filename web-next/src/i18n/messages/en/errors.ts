@@ -131,4 +131,10 @@ export const errors: Messages["errors"] = {
   pronNoteContentRequired: "Please enter the note content.",
   pronTopicInvalid: "Invalid note topic.",
   pronModeInvalid: "Invalid practice mode.",
+  trGone: "This translation exercise no longer exists. Please create a new one.",
+  trEmpty: "No sample sentences match. Try different options.",
+  trItemNotFound: "Sample sentence not found.",
+  trDuplicate: "This sentence is already in your sentences.",
+  trPickGrammar: "Choose at least one grammar point.",
+  trBadGrammar: "Grammar point does not exist.",
 };
