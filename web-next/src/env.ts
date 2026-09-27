@@ -10,7 +10,7 @@ const serverSchema = z.object({
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),
   BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET cần ≥ 32 ký tự — tạo bằng: openssl rand -base64 32"),
   BETTER_AUTH_URL: z.url(),
-  NEXT_PUBLIC_APP_URL: z.url(),
+  NEXT_PUBLIC_APP_URL: z.url().optional(),
   ADMIN_EMAILS: z
     .string()
     .default("")
@@ -29,8 +29,14 @@ function load() {
     const lines = parsed.error.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new Error(`Thiếu hoặc sai biến môi trường:\n${lines}\nXem .env.example.`);
   }
-  return parsed.data;
+  // Most deployments serve the app and auth from the same URL. Keep a separate
+  // public URL available for deployments that need a different trusted origin.
+  return {
+    ...parsed.data,
+    NEXT_PUBLIC_APP_URL: parsed.data.NEXT_PUBLIC_APP_URL ?? parsed.data.BETTER_AUTH_URL,
+  };
 }
 
 export const env = load();
 export type Env = typeof env;
+
