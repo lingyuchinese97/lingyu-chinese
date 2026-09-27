@@ -6,6 +6,12 @@
 
 ### Added
 
+- **Trang chủ thiết kế lại theo mẫu mới**: ảnh bìa (lời chào, nút "Bắt đầu học ngay", câu trích viết tay, linh vật, thẻ
+  chuỗi ngày học với 7 ngày trong tuần), 5 thẻ Bài học / Từ vựng / Ngữ pháp / Phát âm & Biến điệu / Luyện nghe & Nói,
+  "Mục tiêu của bạn" (phút học hôm nay / mục tiêu), "Tiến độ học tập" dạng vòng tròn (Từ vựng, Ngữ pháp, Đọc hiểu, Luyện dịch,
+  Ôn tập), "Bài học gần đây" có thời gian tương đối. Menu bên trái sắp lại: Trang chủ, Bài học, Từ vựng, Ngữ pháp, Phát âm &
+  Biến điệu, Luyện nghe & Nói, Đọc hiểu, Luyện dịch, Ôn tập │ Tiến độ học tập, Bộ thủ │ Cài đặt. `GET /api/v1/progress` thêm
+  `summary.sessions30` (số bài 30 ngày theo kỹ năng).
 - **Trang chủ mới + Tiến độ học tập** (theo thiết kế):
   - Trang chủ: lời chào, ô **Tìm kiếm** (từ vựng, ngữ pháp, câu, bài học, bộ thủ — `/search`), 5 thẻ Từ vựng / Ngữ pháp / Luyện
     dịch / Đọc hiểu / Ôn tập, khối **Học tập hôm nay** (từ đã học, ngữ pháp, bài đọc, câu dịch, số phút), **Tiến độ học tập** và

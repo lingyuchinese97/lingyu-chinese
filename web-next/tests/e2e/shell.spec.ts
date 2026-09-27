@@ -28,9 +28,9 @@ test("khung app: điều hướng theo kích thước màn hình", async ({ page
     await expect(tabbar.getByRole("link", { name: "Trang chủ" })).toHaveAttribute("aria-current", "page");
     // Ngăn kéo menu mở/đóng được.
     await menuBtn.click();
-    await expect(sidebar.getByRole("link", { name: "Bộ thủ" })).toBeInViewport();
+    await expect(sidebar.getByRole("link", { name: "Từ vựng" })).toBeInViewport();
     await page.keyboard.press("Escape");
-    await expect(sidebar.getByRole("link", { name: "Bộ thủ" })).not.toBeInViewport();
+    await expect(sidebar.getByRole("link", { name: "Từ vựng" })).not.toBeInViewport();
   }
   // Không cuộn ngang trên mọi màn hình.
   const overflow = await page.evaluate(
