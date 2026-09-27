@@ -6,6 +6,20 @@
 
 ### Added
 
+- **Trang chủ mới + Tiến độ học tập** (theo thiết kế):
+  - Trang chủ: lời chào, ô **Tìm kiếm** (từ vựng, ngữ pháp, câu, bài học, bộ thủ — `/search`), 5 thẻ Từ vựng / Ngữ pháp / Luyện
+    dịch / Đọc hiểu / Ôn tập, khối **Học tập hôm nay** (từ đã học, ngữ pháp, bài đọc, câu dịch, số phút), **Tiến độ học tập** và
+    **Bài học gần đây**.
+  - Menu chia 3 nhóm; “Ôn dịch câu” đổi tên thành **Luyện dịch**, thêm **Đọc hiểu** (`/reading`, đang làm) và **Tiến độ học tập**
+    (`/progress`); thanh tab dưới trên điện thoại: Trang chủ, Từ vựng, Ngữ pháp, Ôn tập, Tiến độ.
+  - **Tiến độ học tập** (`/progress`): tổng thời gian học (so với tuần trước), bài học, từ vựng, ngữ pháp đã học, chuỗi ngày học
+    liên tiếp + lưới 2 tuần, biểu đồ thời gian học 7 / 30 / 90 ngày, kỹ năng, mục tiêu (sửa được); trang con Từ vựng (theo HSK 1–7
+    theo HSK 3.0 và theo tag), Ngữ pháp (theo HSK / tag), Lịch sử học tập (lọc loại + thời gian).
+  - Thời gian học đếm bằng nhịp 60 giây khi trang đang mở và người dùng đang thao tác. Ôn từ, ôn câu, bài học, luyện nghe, luyện
+    phát âm, thêm từ / ngữ pháp được tự ghi vào lịch sử (bảng `study_activity`, `study_day`, `study_goal`, `grammar_mastery`,
+    migration 0007). Danh sách từ HSK từ gói `hsk3.1-syllabus` (MIT).
+  - API `/api/v1/progress*`, `/api/v1/search`; `/api/v1/home` thêm `today`, `streak`, `recent` — có trong Swagger. Dữ liệu của
+    người khác không bao giờ lộ (có test unit + e2e).
 - **API cho mọi chức năng còn thiếu** (để app điện thoại / app khác dùng được hết như web), có trong Swagger:
   - Ngữ pháp `/api/v1/grammar/*`: danh sách, thêm / sửa / xoá, ghi chú cá nhân, lưu, thẻ, chia sẻ, lời mời nhận được, xem trước,
     chấp nhận / từ chối, ngữ pháp mẫu.

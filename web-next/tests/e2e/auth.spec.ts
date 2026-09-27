@@ -20,7 +20,7 @@ test("đăng ký → vào app → đăng xuất → đăng nhập lại", async 
   await page.getByLabel("Nhập lại mật khẩu").fill("matkhau123");
   await page.getByRole("button", { name: "Đăng ký" }).click();
   await expect(page).toHaveURL(/\/home$/);
-  await expect(page.getByRole("heading", { name: /Chào mừng bạn trở lại\s*viên E2E!/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Xin chào, viên E2E!" })).toBeVisible();
 
   // Đã đăng nhập thì /login chuyển thẳng về /home.
   await page.goto("/login");

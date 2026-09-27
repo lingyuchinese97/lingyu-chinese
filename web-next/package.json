@@ -37,6 +37,7 @@
     "drizzle-orm": "^0.45.3",
     "hanzi-writer": "^3.7.3",
     "hanzi-writer-data": "^2.0.1",
+    "hsk3.1-syllabus": "0.1.0",
     "lucide-react": "^1.48.0",
     "next": "^16.3.6",
     "pg": "^8.23.0",

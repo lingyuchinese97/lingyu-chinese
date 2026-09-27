@@ -3,6 +3,7 @@
  * Ghi chú cá nhân nằm ở bảng riêng (grammar_personal_note) và KHÔNG BAO GIỜ nằm trong bản xem trước / bản chép khi chia sẻ.
  */
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { bumpDaily } from "@/features/progress/service";
 import { db } from "@/server/db/client";
 import {
   grammar,
@@ -283,6 +284,7 @@ export async function createGrammar(userId: string, input: GrammarInput) {
       .values({ userId, title: input.title, meaning: input.meaning, structure: input.structure, notes: input.notes })
       .returning({ id: grammar.id });
     await writeChildren(tx, userId, row!.id, input);
+    await bumpDaily(tx, userId, "grammar_add");
     return row!.id;
   });
 }

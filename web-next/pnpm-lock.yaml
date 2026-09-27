@@ -41,6 +41,9 @@ importers:
       hanzi-writer-data:
         specifier: ^2.0.1
         version: 2.0.1
+      hsk3.1-syllabus:
+        specifier: 0.1.0
+        version: 0.1.0
       lucide-react:
         specifier: ^1.48.0
         version: 1.48.0(react@19.3.0)
@@ -3277,6 +3280,10 @@ packages:
 
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
+
+  hsk3.1-syllabus@0.1.0:
+    resolution: {integrity: sha512-yXGqz80rxvCkiaQilReXx1uFreQ8FZMp7TkfyXmf7D8XS7Xvt/irNQTDOM+XwjUs/some+NAkSgWv+1wFCIkXA==}
+    engines: {node: '>=20.10'}
 
   idb@8.0.3:
     resolution: {integrity: sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg==}
@@ -7369,6 +7376,8 @@ snapshots:
   hermes-parser@0.25.1:
     dependencies:
       hermes-estree: 0.25.1
+
+  hsk3.1-syllabus@0.1.0: {}
 
   idb@8.0.3: {}
 

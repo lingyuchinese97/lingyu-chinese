@@ -3,6 +3,7 @@
  * và mọi truy vấn đều lọc theo userId đó.
  */
 import { and, asc, count, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { bumpDaily } from "@/features/progress/service";
 import { db } from "@/server/db/client";
 import { srsCard, vocab, vocabTag, vocabToTag } from "@/server/db/schema";
 import { storage } from "@/server/storage";
@@ -217,6 +218,7 @@ export async function createVocab(userId: string, input: VocabInput, img?: NewIm
     await setTags(tx, userId, row!.id, input.tags);
     // Mỗi từ mới tự có thẻ ôn tập FSRS.
     await tx.insert(srsCard).values({ userId, vocabId: row!.id, ...newCardColumns() });
+    await bumpDaily(tx, userId, "vocab_add");
     return row!.id;
   });
 }
@@ -340,6 +342,7 @@ export async function importSample(userId: string) {
       await tx.insert(srsCard).values({ userId, vocabId: row!.id, ...newCardColumns() });
       added++;
     }
+    if (added) await bumpDaily(tx, userId, "vocab_add", added);
     return added;
   });
 }

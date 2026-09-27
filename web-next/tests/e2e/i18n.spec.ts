@@ -18,7 +18,7 @@ test("đổi ngôn ngữ: đăng nhập (cookie) → trong app (lưu tài khoả
   const email = await register(page, "Người Học", "i18n");
   await page.getByRole("button", { name: /Tài khoản/ }).click();
   await page.getByRole("menuitemradio", { name: "English" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: /Welcome back/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hello, / })).toBeVisible();
   await expect(page.getByRole("link", { name: "Vocabulary" }).first()).toBeVisible();
 
   await page.goto("/vocabulary/new");
@@ -33,7 +33,7 @@ test("đổi ngôn ngữ: đăng nhập (cookie) → trong app (lưu tài khoả
   await page.getByLabel("Mật khẩu", { exact: true }).fill("matkhau123");
   await page.getByRole("button", { name: "Đăng nhập" }).click();
   await expect(page).toHaveURL(/\/home$/);
-  await expect(page.getByRole("heading", { level: 1, name: /Welcome back/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hello, / })).toBeVisible();
 
   // Đổi lại tiếng Việt trong Cài đặt.
   await page.goto("/settings");
@@ -52,5 +52,5 @@ test("đổi ngôn ngữ: đăng nhập (cookie) → trong app (lưu tài khoả
   expect(ok.status()).toBe(200);
   expect((await ok.json()).data.locale).toBe("en");
   await page.goto("/home");
-  await expect(page.getByRole("heading", { level: 1, name: /Welcome back/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hello, / })).toBeVisible();
 });

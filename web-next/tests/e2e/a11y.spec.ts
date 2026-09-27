@@ -63,6 +63,12 @@ test("a11y (axe): không có lỗi serious/critical ở các trang chính", asyn
     "/pronunciation/practice",
     "/pronunciation/practice?mode=listen-type",
     "/pronunciation/notes",
+    "/progress",
+    "/progress/vocab",
+    "/progress/grammar",
+    "/progress/history",
+    "/search?q=%E4%BD%A0",
+    "/reading",
     "/settings",
     "/~offline",
   ]) {

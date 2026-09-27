@@ -6,6 +6,8 @@ import { noteInputSchema, noteUpdateSchema } from "@/features/pronunciation/sche
 import { grammarInputSchema, grammarTagName } from "@/features/grammar/schema";
 import { sentenceConfigSchema, sentenceInputSchema } from "@/features/sentences/schema";
 import { PRACTICE_MODES } from "@/features/pronunciation/practice";
+import { clientActivitySchema, goalsSchema } from "@/features/progress/schema";
+import { ACTIVITY_KINDS } from "@/features/progress/constants";
 
 /**
  * Tài liệu OpenAPI 3.1 của REST API (hiển thị bằng Swagger UI ở /api-docs).
@@ -111,6 +113,8 @@ const RD = "Bộ thủ";
 const LS = "Bài học";
 const N = "Thông báo";
 const H = "Trang chủ";
+const PG = "Tiến độ học tập";
+const SE = "Tìm kiếm";
 const AD = "Quản trị";
 const A = "Tài khoản";
 
@@ -164,6 +168,12 @@ export function openApiDocument() {
           "Luyện nghe – Chép chính tả. Đáp án tham khảo do người dùng nhập; kết quả so sánh và điểm do server tính lại khi lưu.",
       },
       { name: H, description: "Số liệu Trang chủ" },
+      {
+        name: PG,
+        description:
+          "Thời gian học theo ngày (nhịp ping mỗi phút), chuỗi ngày học, mục tiêu, tiến độ theo HSK / thẻ, lịch sử hoạt động",
+      },
+      { name: SE, description: "Tìm kiếm chung: từ vựng, ngữ pháp, câu của tôi + bài học, bộ thủ" },
       { name: G, description: "Ngữ pháp của mình (ví dụ, cấu trúc, ghi chú cá nhân riêng tư), thẻ, lưu, chia sẻ" },
       { name: S, description: "Kho câu và bài ôn dịch câu (Việt ↔ Trung)" },
       { name: RD, description: "214 bộ thủ và đánh dấu đã thuộc" },
@@ -1141,6 +1151,85 @@ export function openApiDocument() {
           body: obj({ ids: { type: "array", items: { type: "string", format: "uuid" }, maxItems: 100 } }, []),
           example: {},
           data: obj({ unread: int }),
+        }),
+      },
+
+      "/api/v1/progress": {
+        get: op(PG, {
+          summary:
+            "Tổng quan: tổng thời gian học, bài học, từ vựng, ngữ pháp, kỹ năng (%), chuỗi ngày học, mục tiêu, hôm nay",
+          data: { type: "object" },
+        }),
+      },
+      "/api/v1/progress/daily": {
+        get: op(PG, {
+          summary: "Số phút học mỗi ngày",
+          params: [q("days", { enum: [7, 30, 90], default: 7 })],
+          data: { type: "array", items: obj({ day: { type: "string", format: "date" }, minutes: int }) },
+        }),
+      },
+      "/api/v1/progress/history": {
+        get: op(PG, {
+          summary: "Lịch sử học tập (mới nhất trước)",
+          params: [
+            q("kind", { enum: [...ACTIVITY_KINDS] }),
+            q("days", { type: "integer", minimum: 1, maximum: 365, default: 7 }),
+            q("limit", { type: "integer", minimum: 1, maximum: 500, default: 100 }),
+          ],
+          data: { type: "array", items: { type: "object" } },
+        }),
+      },
+      "/api/v1/progress/vocab": {
+        get: op(PG, {
+          summary: "Tiến độ từ vựng theo cấp HSK (HSK 3.1) và theo thẻ",
+          data: obj({ hsk: { type: "array" }, tags: { type: "array" } }),
+        }),
+      },
+      "/api/v1/progress/grammar": {
+        get: op(PG, {
+          summary: "Tiến độ ngữ pháp theo cấp HSK (thẻ “HSK n”) và theo thẻ",
+          data: obj({ hsk: { type: "array" }, tags: { type: "array" } }),
+        }),
+      },
+      "/api/v1/progress/goals": {
+        get: op(PG, {
+          summary: "Mục tiêu học tập",
+          data: obj({ minutes_day: int, lessons_week: int, vocab_month: int }),
+        }),
+        put: op(PG, {
+          summary: "Đổi mục tiêu",
+          body: js(goalsSchema),
+          example: { minutes_day: 30, lessons_week: 2, vocab_month: 50 },
+          data: obj({ minutes_day: int, lessons_week: int, vocab_month: int }),
+        }),
+      },
+      "/api/v1/progress/ping": {
+        post: op(PG, {
+          summary: "Nhịp “đang học” (~mỗi phút khi app mở và có thao tác) → cộng thời gian học hôm nay",
+          data: obj({ day: { type: "string", format: "date" }, seconds: int }),
+        }),
+      },
+      "/api/v1/progress/activity": {
+        post: op(PG, {
+          summary: "Ghi hoạt động tự luyện chấm trên máy (hiện có: pronunciation)",
+          body: js(clientActivitySchema),
+          example: { kind: "pronunciation", title: "Nghe & Chọn đáp án", correct: 8, total: 10 },
+          status: 201,
+          data: obj({ recorded: { const: true } }),
+        }),
+      },
+      "/api/v1/search": {
+        get: op(SE, {
+          summary: "Tìm kiếm chung (mỗi loại tối đa 5 kết quả)",
+          params: [q("q", { type: "string", maxLength: 100 })],
+          data: obj({
+            vocab: { type: "array" },
+            grammar: { type: "array" },
+            sentences: { type: "array" },
+            lessons: { type: "array" },
+            radicals: { type: "array" },
+            total: int,
+          }),
         }),
       },
 

@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import * as React from "react";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,7 +36,7 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
         href="/home"
         onClick={onNavigate}
         aria-label={t("shell.homeLink")}
-        className="mb-6 block px-1.5 lg:w-[72px] lg:px-0 xl:w-auto xl:px-1.5"
+        className="mb-5 block shrink-0 px-1.5 lg:w-[72px] lg:px-0 xl:w-auto xl:px-1.5"
       >
         {/* Logo chữ (không kèm mascot), cỡ vừa. Thanh thu gọn (lg) không đủ chỗ cho chữ → dùng icon app. */}
         <Image
@@ -56,31 +57,34 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
           className="hidden size-14 rounded-full lg:mx-auto lg:block xl:hidden"
         />
       </Link>
-      <nav className="relative z-[1] flex flex-col gap-2">
-        {items.map((n) => {
+      <nav className="relative z-[1] -mx-1 flex min-h-0 flex-col gap-1 overflow-y-auto px-1 xl:gap-1.5">
+        {items.map((n, i) => {
           const on = n.key === active;
           const Icon = n.icon;
+          const divider = i > 0 && items[i - 1]!.group !== n.group;
           return (
-            <Link
-              key={n.key}
-              href={n.href}
-              onClick={onNavigate}
-              title={t(`shell.nav.${n.key}`)}
-              aria-current={on ? "page" : undefined}
-              className={cn(
-                "relative flex h-[52px] items-center gap-4 rounded-md px-5 text-base font-medium text-text-2 transition-colors hover:bg-[#EAF4FE] hover:text-navy xl:h-14 xl:text-[17px]",
-                "lg:w-16 lg:justify-center lg:px-0 xl:w-auto xl:justify-start xl:px-5",
-                on &&
-                  "bg-[linear-gradient(90deg,#DDEEFF_0%,#E8F4FF_100%)] font-bold text-blue-600 before:absolute before:inset-y-3 before:-left-[18px] before:w-1 before:rounded-r before:bg-blue lg:before:-left-3 xl:before:-left-[18px]",
-              )}
-            >
-              <Icon className={cn("size-7 shrink-0 text-blue-600", !on && "opacity-85")} />
-              <span className="lg:sr-only xl:not-sr-only">{t(`shell.nav.${n.key}`)}</span>
-            </Link>
+            <React.Fragment key={n.key}>
+              {divider ? <hr className="my-2 border-t border-[#DDE9F5] lg:mx-2 xl:mx-3" aria-hidden="true" /> : null}
+              <Link
+                href={n.href}
+                onClick={onNavigate}
+                title={t(`shell.nav.${n.key}`)}
+                aria-current={on ? "page" : undefined}
+                className={cn(
+                  "relative flex h-12 shrink-0 items-center gap-4 rounded-md px-5 text-base font-medium text-text-2 transition-colors hover:bg-[#EAF4FE] hover:text-navy xl:h-[50px] xl:text-[16.5px]",
+                  "lg:w-16 lg:justify-center lg:px-0 xl:w-auto xl:justify-start xl:px-5",
+                  on &&
+                    "bg-[linear-gradient(90deg,#DDEEFF_0%,#E8F4FF_100%)] font-bold text-blue-600 before:absolute before:inset-y-3 before:-left-[18px] before:w-1 before:rounded-r before:bg-blue lg:before:-left-3 xl:before:-left-[18px]",
+                )}
+              >
+                <Icon className={cn("size-6 shrink-0 text-blue-600 xl:size-[26px]", !on && "opacity-85")} />
+                <span className="lg:sr-only xl:not-sr-only">{t(`shell.nav.${n.key}`)}</span>
+              </Link>
+            </React.Fragment>
           );
         })}
       </nav>
-      <div aria-hidden="true" className="relative mt-auto pt-5 lg:hidden xl:block [@media(max-height:799px)]:hidden">
+      <div aria-hidden="true" className="relative mt-auto pt-5 lg:hidden xl:block [@media(max-height:959px)]:hidden">
         <LeafDecor className="pointer-events-none absolute top-[-10px] left-1.5 w-10 -rotate-30 opacity-45" />
         <LeafDecor className="pointer-events-none absolute top-5 right-2.5 w-9 rotate-25 opacity-45" />
         <Image
@@ -101,7 +105,7 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
       </div>
       <div
         aria-hidden="true"
-        className="mt-[18px] hidden items-center gap-2.5 pl-1.5 text-[13.5px] leading-tight text-text-3 italic xl:flex [@media(max-height:799px)]:!hidden"
+        className="mt-[18px] hidden items-center gap-2.5 pl-1.5 text-[13.5px] leading-tight text-text-3 italic xl:flex [@media(max-height:959px)]:!hidden"
       >
         <LeafDecor className="w-[30px]" />
         <span>

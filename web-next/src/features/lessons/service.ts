@@ -1,5 +1,6 @@
 /** Tiến độ bài học (bảng lesson_progress). Nội dung bài học là tĩnh (data/lessons). */
 import { eq, sql } from "drizzle-orm";
+import { recordActivity } from "@/features/progress/service";
 import { db } from "@/server/db/client";
 import { lessonProgress } from "@/server/db/schema";
 import { getLesson, LESSONS } from "@/data/lessons";
@@ -59,6 +60,13 @@ export async function recordSection(userId: string, lessonId: string, sectionId:
         lastAttemptAt: new Date(),
       },
     });
+  await recordActivity(db, userId, {
+    kind: "lesson",
+    title: `${lesson.title} — ${section.title}`,
+    detail: `${lesson.id}/${sectionId}`,
+    correct: score,
+    total,
+  });
   return { score, total };
 }
 

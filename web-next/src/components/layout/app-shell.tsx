@@ -8,6 +8,8 @@ import { ADMIN_NAV, NAV, TAB_KEYS, shellState } from "./nav";
 import { NavProgress } from "./nav-progress";
 import { NotificationBell } from "./notification-bell";
 import { Sidebar } from "./sidebar";
+import { StudyTimer } from "./study-timer";
+import { TopSearch } from "./top-search";
 import { UserMenu } from "./user-menu";
 import { useT } from "@/i18n/client";
 
@@ -53,6 +55,7 @@ export function AppShell({
       className="relative grid min-h-dvh bg-[radial-gradient(1200px_500px_at_70%_-10%,#EAF5FF_0%,transparent_60%),linear-gradient(180deg,#F7FBFF_0%,#F2F8FE_100%)] lg:grid-cols-[96px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]"
     >
       <NavProgress />
+      <StudyTimer />
       <a
         href="#main"
         className="sr-only z-[70] rounded-md bg-white px-4 py-2 font-semibold text-blue-600 shadow-card focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
@@ -82,10 +85,13 @@ export function AppShell({
             aria-label={navOpen ? t("shell.closeMenu") : t("shell.openMenu")}
             aria-controls="sidebar"
             aria-expanded={navOpen}
-            className="mr-auto flex size-11 items-center justify-center rounded-full text-navy outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)] lg:hidden"
+            className="mr-auto flex size-11 items-center justify-center rounded-full text-navy outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)] md:mr-0 lg:hidden"
           >
             <Menu className="size-[26px]" aria-hidden="true" />
           </button>
+          <React.Suspense fallback={<span className="mr-auto hidden flex-1 md:block" />}>
+            <TopSearch />
+          </React.Suspense>
           <NotificationBell initialUnread={unread} />
           <span className="h-[30px] w-px bg-border" aria-hidden="true" />
           <UserMenu name={user.name} email={user.email} />

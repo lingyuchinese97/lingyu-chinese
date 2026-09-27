@@ -70,7 +70,15 @@ export function Quiz({
     answer(choice);
   }
   function next() {
-    if (index + 1 >= total) return setFinished(true);
+    if (index + 1 >= total) {
+      // Ghi vào Lịch sử học tập (bài tự luyện chấm trên máy).
+      void fetch("/api/v1/progress/activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "pronunciation", title: label, correct: right, total }),
+      }).catch(() => undefined);
+      return setFinished(true);
+    }
     setIndex(index + 1);
     setChoice("");
     setTyped("");
