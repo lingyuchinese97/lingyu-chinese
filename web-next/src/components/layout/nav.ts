@@ -43,7 +43,7 @@ export const NAV: NavItem[] = [
   { key: "pronunciation", href: "/pronunciation", icon: AudioLines, group: 1 },
   { key: "listening", href: "/listening", icon: Headphones, group: 1 },
   { key: "reading", href: "/reading", icon: BookOpenText, group: 1 },
-  { key: "sentences", href: "/sentences", icon: MessagesSquare, group: 1 },
+  { key: "sentences", href: "/translate", icon: MessagesSquare, group: 1 },
   { key: "review", href: "/review/setup", icon: ReviewIcon, group: 1 },
   { key: "progress", href: "/progress", icon: BarChart3, group: 2 },
   { key: "radicals", href: "/radicals", icon: RadicalIcon, group: 2 },
@@ -80,12 +80,14 @@ export type ShellState = { nav: NavKey | null; quote: QuoteKey | null; focus: bo
 export function shellState(pathname: string): ShellState {
   const seg = pathname.split("/").filter(Boolean);
   const first = seg[0] ?? "";
+  // Kho câu của tôi (/sentences) thuộc mục Luyện dịch (/translate).
   const nav = (NAV.find((n) => n.href.split("/")[1] === first)?.key ??
-    (first === "admin" ? "admin" : null)) as NavKey | null;
+    (first === "sentences" ? "sentences" : first === "admin" ? "admin" : null)) as NavKey | null;
   const focus =
     ((first === "vocabulary" || first === "grammar" || first === "sentences") &&
       (seg[1] === "new" || seg[2] === "edit")) ||
     (first === "sentences" && seg[1] === "review" && seg[2] === "session") ||
+    (first === "translate" && seg[1] === "session") ||
     (first === "review" && seg[1] === "session") ||
     (first === "lessons" && seg.length === 3 && seg[2] !== "result");
   if (first === "review" && seg[1] === "session") return { nav, quote: "shell.quote.reviewSession", focus };

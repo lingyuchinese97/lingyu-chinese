@@ -6,6 +6,17 @@
 
 ### Added
 
+- **Luyện dịch với kho câu mẫu có sẵn** (menu “Luyện dịch”, `/translate`):
+  - Kho câu mẫu HSK 1–4: 48 câu + 8 đoạn ngắn, 10 chủ đề, 24 điểm ngữ pháp. Mỗi câu có bản dịch vi / en (nhiều cách dịch được
+    chấp nhận), cách nói khác, phân tích từ (chữ Hán, pinyin, nghĩa) và giải thích cấu trúc ngữ pháp (công thức + áp vào câu).
+    Trang **Kho câu mẫu** (`/translate/bank`) lọc theo cấp / ngữ pháp / dạng, tìm theo chữ Hán, pinyin hoặc nghĩa.
+  - Tạo bài: dịch câu hoặc đoạn ngắn; Việt → Trung, Trung → Việt hoặc trộn; nội dung **LingYu tự chọn** (theo trình độ ước lượng từ
+    kho từ vựng, ưu tiên câu chưa làm), **theo ngữ pháp** (chọn điểm ngữ pháp) hoặc **theo từ vựng của tôi**; cấp độ, chủ đề, số câu.
+  - Làm bài: đồng hồ + tạm dừng (thời gian lưu ở server, không tính lúc dừng), gợi ý 2 bước (từ khoá → cấu trúc), server chấm (bỏ dấu
+    câu / khoảng trắng; kèm độ giống %), “Tính là đúng”, danh sách câu đã làm, làm tiếp được sau khi tải lại.
+  - Kết quả: điểm, độ chính xác, thời gian, gợi ý đã dùng, lời giải từng câu; **Lịch sử luyện dịch**; ghi vào Tiến độ học tập.
+  - “Lưu vào kho câu” → câu mẫu vào Kho câu của tôi (`/sentences`, vẫn ôn dịch câu như cũ).
+  - Bảng `translation_session` (migration 0008). API `/api/v1/translation/*` — có trong Swagger; bài của người khác → 404.
 - **Trang chủ thiết kế lại theo mẫu mới**: ảnh bìa (lời chào, nút "Bắt đầu học ngay", câu trích viết tay, linh vật, thẻ
   chuỗi ngày học với 7 ngày trong tuần), 5 thẻ Bài học / Từ vựng / Ngữ pháp / Phát âm & Biến điệu / Luyện nghe & Nói,
   "Mục tiêu của bạn" (phút học hôm nay / mục tiêu), "Tiến độ học tập" dạng vòng tròn (Từ vựng, Ngữ pháp, Đọc hiểu, Luyện dịch,

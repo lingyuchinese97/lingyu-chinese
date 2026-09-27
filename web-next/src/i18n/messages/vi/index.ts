@@ -20,6 +20,7 @@ import { search } from "./search";
 import { sentences } from "./sentences";
 import { settings } from "./settings";
 import { shell } from "./shell";
+import { translate } from "./translate";
 import { ui } from "./ui";
 import { vocab } from "./vocab";
 
@@ -48,6 +49,7 @@ export const vi = {
   review,
   search,
   sentences,
+  translate,
   vocab,
 };
 export type Messages = typeof vi;

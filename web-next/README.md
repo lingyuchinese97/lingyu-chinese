@@ -118,6 +118,10 @@ kỹ năng, chuỗi ngày, mục tiêu), số liệu hôm nay, thời gian học
 pháp theo HSK / tag, lịch sử học tập (lọc loại + khoảng thời gian), xem / đổi mục tiêu, nhịp đếm thời gian học, ghi hoạt động luyện
 phát âm; tìm chung trong từ vựng, ngữ pháp, câu của mình + bài học, bộ thủ. Chỉ thấy dữ liệu của chính mình.
 
+**Luyện dịch** (`/api/v1/translation*`): thông tin tạo bài (trình độ ước lượng, điểm ngữ pháp, chủ đề), kho câu mẫu kèm giải thích
+ngữ pháp, lưu câu mẫu vào kho câu của tôi, tạo bài / trả lời (server chấm) / bỏ qua / gợi ý / tính là đúng / chuyển câu / lưu thời
+gian / nộp bài, bài đang làm, lịch sử. Đáp án chỉ trả về sau khi trả lời; bài của người khác → 404.
+
 **Swagger**: [`/api-docs`](https://lingyuchinese.com/api-docs) liệt kê mọi route, bấm _Try it out_ để gọi thử. File OpenAPI 3.1:
 `/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client. Hai trang này khoá bằng **tài khoản riêng**
 (trình duyệt hỏi tên + mật khẩu), đặt ở biến môi trường `API_DOCS_USER` và `API_DOCS_PASSWORD` (≥ 12 ký tự; Vercel → Settings →

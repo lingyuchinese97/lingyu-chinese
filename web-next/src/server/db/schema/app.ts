@@ -555,3 +555,28 @@ export const grammarMastery = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.grammarId] })],
 );
+
+// ---------- Luyện dịch (kho câu mẫu có sẵn) ----------
+/**
+ * Bài luyện dịch từ kho câu mẫu tĩnh (`src/data/translation`). Câu hỏi chỉ lưu id câu mẫu + chiều dịch + bài làm;
+ * đáp án không gửi xuống trình duyệt trước khi trả lời / bỏ qua. `elapsedSec` = thời gian làm bài (không tính lúc tạm dừng).
+ */
+export const translationSession = pgTable(
+  "translation_session",
+  {
+    id: id(),
+    userId: userRef(),
+    config: jsonb("config").notNull(),
+    questions: jsonb("questions").notNull(),
+    currentIndex: integer("current_index").notNull().default(0),
+    correctCount: integer("correct_count").notNull().default(0),
+    wrongCount: integer("wrong_count").notNull().default(0),
+    skippedCount: integer("skipped_count").notNull().default(0),
+    elapsedSec: integer("elapsed_sec").notNull().default(0),
+    /** "active" | "completed" | "abandoned" */
+    status: text("status").notNull().default("active"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => [index("translation_session_user_status_idx").on(t.userId, t.status, t.startedAt)],
+);
