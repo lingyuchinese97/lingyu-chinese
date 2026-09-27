@@ -11,9 +11,8 @@ import {
   Check,
   ChevronRight,
   Clock3,
-  GraduationCap,
+  Headphones,
   Languages,
-  Mic,
   RefreshCw,
   Target,
 } from "lucide-react";
@@ -52,11 +51,12 @@ const CARDS = [
   {
     key: "lessons",
     href: "/lessons",
-    icon: GraduationCap,
+    icon: BookOpenText,
     badge: "HSK",
     bg: "bg-[linear-gradient(160deg,#FFF3D6_0%,#FFF9EC_100%)]",
     ring: "border-[#FBE3B5]",
-    art: "bg-[#FFD98A] text-[#B35C00]",
+    art: "bg-white text-[#E9A22D]",
+    halo: "bg-[#FFE5AA]",
     btn: "bg-[#F5A524]",
   },
   {
@@ -66,7 +66,8 @@ const CARDS = [
     badge: "词",
     bg: "bg-[linear-gradient(160deg,#E3F0FF_0%,#F3F8FF_100%)]",
     ring: "border-[#CFE3F9]",
-    art: "bg-[#BFDCFB] text-blue-700",
+    art: "bg-white text-blue-700",
+    halo: "bg-[#BBDDFC]",
     btn: "bg-blue",
   },
   {
@@ -76,7 +77,8 @@ const CARDS = [
     badge: "文",
     bg: "bg-[linear-gradient(160deg,#FFE4EA_0%,#FFF4F6_100%)]",
     ring: "border-[#FBD2DC]",
-    art: "bg-[#FFC6D3] text-[#B4234A]",
+    art: "bg-white text-[#EF5C8C]",
+    halo: "bg-[#FFCAD8]",
     btn: "bg-rose",
   },
   {
@@ -86,17 +88,19 @@ const CARDS = [
     badge: "音",
     bg: "bg-[linear-gradient(160deg,#DDF6EA_0%,#F1FBF6_100%)]",
     ring: "border-[#C6EEDB]",
-    art: "bg-[#B6EBD2] text-green-700",
+    art: "bg-white text-[#08AA9C]",
+    halo: "bg-[#B4F0DC]",
     btn: "bg-green",
   },
   {
     key: "listening",
     href: "/listening",
-    icon: Mic,
+    icon: Headphones,
     badge: "听",
     bg: "bg-[linear-gradient(160deg,#ECE6FF_0%,#F7F4FF_100%)]",
     ring: "border-[#DDD3FB]",
-    art: "bg-[#D6CAFB] text-[#5B3CC4]",
+    art: "bg-white text-[#7757DE]",
+    halo: "bg-[#DCD2FF]",
     btn: "bg-[#7C5CE6]",
   },
 ] as const;
@@ -197,20 +201,22 @@ export default async function HomePage() {
       {/* ---------- Ảnh bìa: lời chào + linh vật + chuỗi ngày học ---------- */}
       <section
         aria-labelledby="home-hello"
-        className="relative isolate overflow-hidden rounded-[28px] border border-[#DDEBF8] bg-[linear-gradient(110deg,#F7FBFF_0%,#EEF6FF_45%,#E2F0FD_100%)] shadow-card"
+        className="relative isolate overflow-hidden rounded-[24px] border border-[#D7EAF9] bg-[linear-gradient(110deg,#F7FCFF_0%,#E7F5FF_55%,#D8EEFF_100%)] shadow-card"
       >
         {/* Nền: ánh sáng + lá trang trí */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-24 left-[38%] size-[340px] rounded-full bg-white/70 blur-3xl" />
           <div className="absolute -bottom-28 -left-16 size-[260px] rounded-full bg-[#DDF6EA]/70 blur-3xl" />
           <div className="absolute top-6 right-[30%] size-[180px] rounded-full bg-[#CFE7FF]/60 blur-2xl" />
+          <div className="absolute -right-16 -bottom-24 h-44 w-[70%] rotate-[-7deg] rounded-[50%] bg-[#B9E4FA]/55" />
+          <div className="absolute -bottom-28 left-[12%] h-40 w-[58%] rotate-[6deg] rounded-[50%] bg-white/55" />
           <LeafDecor className="absolute top-3 left-3 w-10 -rotate-45 opacity-50" />
           <LeafDecor className="absolute bottom-4 left-[32%] w-12 rotate-12 opacity-40" />
           <LeafDecor className="absolute top-8 right-[34%] hidden w-9 rotate-45 opacity-50 lg:block" />
           <LeafDecor className="absolute right-4 bottom-3 w-11 -rotate-12 opacity-40" />
         </div>
 
-        <div className="grid items-center gap-4 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:p-7 xl:grid-cols-[minmax(0,1fr)_auto_312px] xl:gap-5">
+        <div className="grid items-center gap-4 p-5 md:grid-cols-[minmax(0,1fr)_180px] md:p-7 xl:min-h-[288px] xl:grid-cols-[minmax(0,1fr)_minmax(210px,280px)_minmax(240px,300px)] xl:gap-2">
           <div className="min-w-0">
             <h1 id="home-hello" className="text-navy-900">
               <span className="block text-[20px] font-bold text-blue-600 md:text-[22px]">{t("home.helloSmall")}</span>{" "}
@@ -242,24 +248,27 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div aria-hidden="true" className="hidden items-center gap-1 md:flex">
-            <p className="hidden w-[140px] -rotate-[10deg] hand text-[20px] leading-[1.25] whitespace-pre-line text-navy 2xl:block">
+          <div aria-hidden="true" className="relative hidden h-full min-h-[190px] items-center justify-center md:flex">
+            <p className="absolute top-2 left-0 z-10 hidden w-[125px] -rotate-[10deg] hand text-[19px] leading-[1.25] whitespace-pre-line text-navy xl:block">
               {t("home.quote")}
             </p>
+            <div className="absolute right-0 bottom-1 hidden h-[52px] w-[175px] -rotate-6 rounded-[50%] border-b-[10px] border-[#92BCD9] bg-white shadow-[0_12px_18px_rgba(28,80,130,.15)] xl:block">
+              <BookOpenText className="mx-auto mt-1 size-11 text-[#315A85]" strokeWidth={1.3} />
+            </div>
             <Image
               src="/brand/lingyu-mascot.png"
               alt=""
               width={1536}
               height={1024}
               priority
-              className="h-auto w-[200px] drop-shadow-[0_16px_24px_rgba(20,60,110,.16)] 2xl:w-[240px]"
+              className="relative z-0 h-auto w-[175px] translate-x-6 -translate-y-1 drop-shadow-[0_16px_24px_rgba(20,60,110,.16)] xl:w-[230px] xl:translate-x-9 xl:-translate-y-4"
             />
           </div>
 
           {/* Chuỗi ngày học */}
           <section
             aria-labelledby="home-streak"
-            className="rounded-[22px] border border-white bg-white/92 p-4 shadow-[0_14px_36px_rgba(20,60,110,.10)] md:col-span-2 xl:col-span-1"
+            className="rounded-[26px] border border-white bg-white/95 p-3.5 shadow-[0_14px_36px_rgba(20,60,110,.10)] md:col-span-2 xl:col-span-1"
           >
             <div className="flex items-center gap-3 rounded-2xl bg-[linear-gradient(135deg,#FFF6E4,#FFFBF2)] px-3.5 py-3">
               <span aria-hidden="true" className="text-[40px] leading-none">
@@ -321,21 +330,38 @@ export default async function HomePage() {
                   )}
                 >
                   <LeafDecor className="pointer-events-none absolute top-3 right-3 w-8 rotate-12 opacity-40" />
-                  <div className="flex h-[92px] items-center justify-center md:h-[118px]">
+                  <div className="relative flex h-[106px] items-center justify-center overflow-hidden md:h-[124px]">
+                    <span
+                      aria-hidden="true"
+                      className={cn("absolute top-5 size-[100px] rounded-full opacity-70 blur-xl", c.halo)}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-1 left-5 h-5 w-11 -rotate-[18deg] rounded-[50%] bg-white/70"
+                    />
+                    {(c.key === "vocabulary" || c.key === "grammar" || c.key === "lessons") && (
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "absolute size-[72px] rotate-[-17deg] rounded-[16px] border border-white/80 shadow-[0_8px_18px_rgba(20,60,110,.1)] md:size-[86px]",
+                          c.halo,
+                        )}
+                      />
+                    )}
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "relative flex size-[60px] -rotate-6 items-center justify-center rounded-[20px] shadow-[0_12px_26px_rgba(20,60,110,.14)] transition-transform group-hover:rotate-0 motion-reduce:transition-none md:size-[78px]",
+                        "relative flex size-[72px] -rotate-6 items-center justify-center rounded-[20px] border border-white/80 shadow-[0_13px_22px_rgba(20,60,110,.16)] transition-transform group-hover:rotate-0 motion-reduce:transition-none md:size-[86px]",
                         c.art,
                       )}
                     >
-                      <c.icon className="size-8 md:size-10" />
-                      <span className="absolute -top-2.5 -right-4 rotate-6 rounded-[10px] bg-white px-1.5 py-0.5 text-[15px] font-extrabold text-red shadow-soft md:text-[17px]">
+                      <c.icon className="size-10 md:size-12" strokeWidth={1.9} />
+                      <span className="absolute -top-2.5 -right-4 rotate-6 rounded-[10px] bg-white px-1.5 py-0.5 text-[15px] font-extrabold text-blue-700 shadow-soft md:text-[17px]">
                         <span className={c.badge === "HSK" ? undefined : "hanzi"}>{c.badge}</span>
                       </span>
                     </span>
                   </div>
-                  <div className="flex flex-1 items-end gap-2 bg-white/75 px-3.5 pt-3 pb-3.5 md:px-4">
+                  <div className="flex flex-1 items-end gap-2 rounded-t-[16px] bg-white/80 px-3.5 pt-3 pb-3.5 md:px-4">
                     <div className="min-w-0 flex-1">
                       <span className="block text-[16px] leading-tight font-extrabold text-navy-900 md:text-[18px]">
                         {title}
