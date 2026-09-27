@@ -232,6 +232,21 @@ export async function today(userId: string, now = new Date()) {
 }
 
 /** Điểm trung bình (%) các hoạt động có chấm điểm trong 30 ngày. */
+/** Số bài (hoạt động) trong 30 ngày gần nhất. */
+async function count30(userId: string, kinds: ActivityKind[], now = new Date()) {
+  const [r] = await db
+    .select({ n: count() })
+    .from(studyActivity)
+    .where(
+      and(
+        eq(studyActivity.userId, userId),
+        inArray(studyActivity.kind, kinds),
+        gte(studyActivity.createdAt, new Date(now.getTime() - 30 * 86400_000)),
+      ),
+    );
+  return r?.n ?? 0;
+}
+
 async function avgScore(userId: string, kinds: ActivityKind[], now = new Date()) {
   const rows = await db
     .select({ c: studyActivity.correct, t: studyActivity.total })
@@ -305,10 +320,18 @@ export async function summary(userId: string, now = new Date()) {
   const totalSections = LESSONS.reduce((n, l) => n + l.sections.length, 0);
   const v = vocabRow[0] ?? { total: 0, learned: 0 };
   const g = grammarRow[0] ?? { total: 0, learned: 0 };
-  const [reading, translation, review] = await Promise.all([
-    avgScore(userId, ["reading"], now),
-    avgScore(userId, ["translation", "sentence_review"], now),
-    avgScore(userId, ["vocab_review", "grammar_review"], now),
+  const K = {
+    reading: ["reading"],
+    translation: ["translation", "sentence_review"],
+    review: ["vocab_review", "grammar_review"],
+  } satisfies Record<string, ActivityKind[]>;
+  const [reading, translation, review, nReading, nTranslation, nReview] = await Promise.all([
+    avgScore(userId, K.reading, now),
+    avgScore(userId, K.translation, now),
+    avgScore(userId, K.review, now),
+    count30(userId, K.reading, now),
+    count30(userId, K.translation, now),
+    count30(userId, K.review, now),
   ]);
   return {
     totalSeconds: secs[0]?.s ?? 0,
@@ -323,6 +346,8 @@ export async function summary(userId: string, now = new Date()) {
       translation,
       review,
     },
+    /** Số bài 30 ngày gần nhất theo kỹ năng. */
+    sessions30: { reading: nReading, translation: nTranslation, review: nReview },
     streak: st,
     goals: {
       minutes_day: { target: goals.minutes_day, value: todayMin },

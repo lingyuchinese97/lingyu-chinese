@@ -14,7 +14,7 @@ test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiê
 
   // Trang chủ: lời chào, 5 chức năng, học tập hôm nay.
   await expect(page.getByRole("heading", { level: 1, name: "Xin chào, Văn An!" })).toBeVisible();
-  for (const name of ["Từ vựng", "Ngữ pháp", "Luyện dịch", "Đọc hiểu", "Ôn tập"])
+  for (const name of ["Bài học", "Từ vựng", "Ngữ pháp", "Phát âm & Biến điệu", "Luyện nghe & Nói"])
     await expect(page.getByRole("link", { name: `Mở ${name}` })).toBeVisible();
   await expect(page.getByText("Chưa có hoạt động nào. Bắt đầu học để thấy ở đây nhé!")).toBeVisible();
 

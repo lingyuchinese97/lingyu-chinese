@@ -37,16 +37,16 @@ export type NavItem = {
 
 export const NAV: NavItem[] = [
   { key: "home", href: "/home", icon: House, group: 1 },
+  { key: "lessons", href: "/lessons", icon: GraduationCap, group: 1 },
   { key: "vocabulary", href: "/vocabulary", icon: BookOpen, group: 1 },
   { key: "grammar", href: "/grammar", icon: GrammarIcon, group: 1 },
-  { key: "sentences", href: "/sentences", icon: MessagesSquare, group: 1 },
+  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, group: 1 },
+  { key: "listening", href: "/listening", icon: Headphones, group: 1 },
   { key: "reading", href: "/reading", icon: BookOpenText, group: 1 },
+  { key: "sentences", href: "/sentences", icon: MessagesSquare, group: 1 },
   { key: "review", href: "/review/setup", icon: ReviewIcon, group: 1 },
-  { key: "progress", href: "/progress", icon: BarChart3, group: 1 },
-  { key: "lessons", href: "/lessons", icon: GraduationCap, group: 2 },
-  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, group: 2 },
+  { key: "progress", href: "/progress", icon: BarChart3, group: 2 },
   { key: "radicals", href: "/radicals", icon: RadicalIcon, group: 2 },
-  { key: "listening", href: "/listening", icon: Headphones, group: 2 },
   { key: "settings", href: "/settings", icon: Settings, group: 3 },
 ];
 export const ADMIN_NAV: NavItem = { key: "admin", href: "/admin", icon: ShieldCheck, group: 3 };
