@@ -86,7 +86,9 @@ export async function adminListWords(p: AdminLibListParams) {
   const q = p.q.trim();
   if (q) {
     const like = `%${likeEscape(q)}%`;
-    conds.push(or(ilike(libraryWord.hanzi, like), ilike(libraryWord.pinyin, like), ilike(libraryWord.meaningVi, like))!);
+    conds.push(
+      or(ilike(libraryWord.hanzi, like), ilike(libraryWord.pinyin, like), ilike(libraryWord.meaningVi, like))!,
+    );
   }
   const where = conds.length ? and(...conds) : undefined;
   const [{ total } = { total: 0 }] = await db.select({ total: count() }).from(libraryWord).where(where);

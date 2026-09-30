@@ -63,9 +63,7 @@ export const libWordInputSchema = z.object({
     .max(LIB_LIMITS.examples)
     .default([]),
   grammar: z
-    .array(
-      z.object({ structure: s(LIB_LIMITS.short).pipe(z.string().min(1)), explain: s(300), example: s(200) }),
-    )
+    .array(z.object({ structure: s(LIB_LIMITS.short).pipe(z.string().min(1)), explain: s(300), example: s(200) }))
     .max(LIB_LIMITS.grammar)
     .default([]),
 });
