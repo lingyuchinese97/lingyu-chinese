@@ -1,10 +1,27 @@
 "use client";
 import * as React from "react";
-import { BookmarkPlus, Eraser, Highlighter, PenLine, Redo2, Undo2 } from "lucide-react";
+import { BookmarkPlus, Eraser, Highlighter, Loader2, PenLine, Redo2, Undo2, X } from "lucide-react";
 import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toaster";
 import { normalizeSpans, plainOf, type Comparison, type FormattedSpan, type PenColor } from "@/lib/dictation-compare";
+import { LISTENING } from "@/lib/limits";
+import { lookupWordsAction } from "../actions";
+
+/** Tra pinyin + nghĩa (kho Từ vựng của mình) cho từ bôi vàng; nhớ kết quả trong phiên trang. */
+type Lookup = { pinyin: string; meaning: string | null };
+const lookupCache = new Map<string, Promise<Lookup | null>>();
+function lookup(word: string) {
+  let p = lookupCache.get(word);
+  if (!p) {
+    p = lookupWordsAction([word]).then((r) =>
+      r.ok && r.data[0] ? { pinyin: r.data[0].pinyin, meaning: r.data[0].meaning } : null,
+    );
+    lookupCache.set(word, p);
+  }
+  return p;
+}
+type WordCard = { word: string; start: number; end: number; x: number; y: number; note: string; editing: boolean };
 
 /**
  * Ô chép chính tả có định dạng (Bút đen / Bút đỏ / Bôi vàng, Hoàn tác / Làm lại).
@@ -27,7 +44,7 @@ const HIGHLIGHT_CSS =
   "::highlight(lx-extra){color:#6b7a90;background-color:#eceff4}";
 
 type Snapshot = { spans: FormattedSpan[]; sel: [number, number] };
-type Fmt = { color?: PenColor; highlight?: boolean };
+type Fmt = { color?: PenColor; highlight?: boolean; note?: string };
 
 // ---------- DOM ↔ dữ liệu ----------
 
@@ -39,6 +56,7 @@ function render(root: HTMLElement, spans: FormattedSpan[]) {
       const el = document.createElement("span");
       if (s.color === "red") el.dataset.c = "red";
       if (s.highlight) el.dataset.h = "1";
+      if (s.highlight && s.note) el.dataset.n = s.note;
       el.textContent = s.text;
       frag.append(el);
     }
@@ -70,6 +88,7 @@ function serialize(root: HTMLElement): FormattedSpan[] {
         const nf: Fmt = {
           color: child.dataset.c === "red" ? "red" : child.dataset.c === "black" ? undefined : f.color,
           highlight: child.dataset.h === "1" || f.highlight,
+          note: child.dataset.n ?? f.note,
         };
         // Khối (trình duyệt tự chèn) = xuống dòng.
         if (BLOCK.has(child.tagName) && out.length && !plainOf(out).endsWith("\n")) push("\n", f);
@@ -158,7 +177,8 @@ function setSel(root: HTMLElement, [a, b]: [number, number]) {
 
 function chars(spans: FormattedSpan[]) {
   const out: { ch: string; f: Fmt }[] = [];
-  for (const s of spans) for (const ch of s.text) out.push({ ch, f: { color: s.color, highlight: s.highlight } });
+  for (const s of spans)
+    for (const ch of s.text) out.push({ ch, f: { color: s.color, highlight: s.highlight, note: s.note } });
   return out;
 }
 /** Chỉ số theo code unit (như DOM) → chỉ số ký tự. */
@@ -191,6 +211,10 @@ export const DictationEditor = React.forwardRef<
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
   const [bubble, setBubble] = React.useState<{ text: string; x: number; y: number } | null>(null);
+  const [card, setCard] = React.useState<WordCard | null>(null);
+  const [info, setInfo] = React.useState<{ word: string; data: Lookup | null } | null>(null);
+  const [noteDraft, setNoteDraft] = React.useState("");
+  const hideTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const len = plainOf(spans).length;
 
   React.useImperativeHandle(ref, () => ({ focus: () => root.current?.focus() }));
@@ -345,7 +369,7 @@ export const DictationEditor = React.forwardRef<
     for (const c of slice) {
       if (kind === "red") c.f = { ...c.f, color: "red" };
       else if (kind === "black") c.f = { ...c.f, color: undefined };
-      else c.f = { ...c.f, highlight: !allYellow };
+      else c.f = { ...c.f, highlight: !allYellow, note: allYellow ? undefined : c.f.note };
     }
     const next = fromChars(list);
     render(el, next);
@@ -375,6 +399,54 @@ export const DictationEditor = React.forwardRef<
     emit([]);
     record([], [0, 0]);
     el.focus();
+  }
+
+  /** Mở thẻ pinyin / nghĩa cho đoạn bôi vàng `el`. */
+  function openCard(el: HTMLElement, editing: boolean) {
+    const r = root.current;
+    if (!r || !r.contains(el)) return;
+    const word = (el.textContent ?? "").trim();
+    if (!word || word.length > 40) return;
+    const first = el.firstChild ?? el;
+    const start = toOffset(r, first, 0);
+    const rect = el.getBoundingClientRect();
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    const note = el.dataset.n ?? "";
+    setCard({
+      word,
+      start,
+      end: start + (el.textContent ?? "").length,
+      x: rect.left + rect.width / 2,
+      y: rect.bottom,
+      note,
+      editing,
+    });
+    setNoteDraft(note);
+    if (info?.word !== word) {
+      setInfo({ word, data: null });
+      void lookup(word).then((data) => setInfo((cur) => (cur?.word === word ? { word, data } : cur)));
+    }
+  }
+  const scheduleHide = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setCard((c) => (c?.editing ? c : null)), 250);
+  };
+
+  /** Gắn / xoá ghi chú cho đoạn [start, end) (theo code unit của DOM). */
+  function saveNote(c: WordCard, note: string) {
+    const el = root.current!;
+    const cur = serialize(el);
+    const text = plainOf(cur);
+    const list = chars(cur);
+    const ca = unitToChar(text, c.start);
+    const cb = unitToChar(text, c.end);
+    const clean = note.trim().slice(0, LISTENING.MAX_NOTE);
+    for (const ch of list.slice(ca, cb)) ch.f = { ...ch.f, note: clean || undefined };
+    const next = fromChars(list);
+    render(el, next);
+    emit(next);
+    record(next, [c.end, c.end]);
+    setCard(null);
   }
 
   const tool =
@@ -458,6 +530,17 @@ export const DictationEditor = React.forwardRef<
         suppressContentEditableWarning
         spellCheck={false}
         lang="zh"
+        onMouseOver={(e) => {
+          const el = (e.target as HTMLElement).closest?.("span[data-h]");
+          if (el instanceof HTMLElement) openCard(el, false);
+        }}
+        onMouseOut={(e) => {
+          if ((e.target as HTMLElement).closest?.("span[data-h]")) scheduleHide();
+        }}
+        onClick={(e) => {
+          const el = (e.target as HTMLElement).closest?.("span[data-h]");
+          if (el instanceof HTMLElement) openCard(el, true);
+        }}
         data-placeholder={t("listening.dictation.placeholder")}
         className="lx-editor min-h-[260px] w-full overflow-y-auto rounded-[14px] border-[1.5px] border-border bg-white px-4 py-3 font-cn text-[19px] leading-[1.9] break-words whitespace-pre-wrap text-text outline-none hover:border-border-strong focus-visible:border-blue focus-visible:shadow-[var(--focus-ring)] md:min-h-[300px]"
         onBeforeInput={(e) => {
@@ -515,6 +598,97 @@ export const DictationEditor = React.forwardRef<
         }}
       />
 
+      {card ? (
+        <div
+          role="dialog"
+          aria-label={t("listening.word.noteLabel", { word: card.word })}
+          onMouseEnter={() => hideTimer.current && clearTimeout(hideTimer.current)}
+          onMouseLeave={scheduleHide}
+          style={{ left: card.x, top: card.y + 8 }}
+          className="fixed z-[70] w-[280px] -translate-x-1/2 rounded-[16px] border border-[#F6DE9E] bg-white p-3.5 shadow-card"
+        >
+          <div className="flex items-start gap-2">
+            <p lang="zh" className="min-w-0 flex-1 font-cn text-[22px] leading-tight font-bold text-navy-900">
+              {card.word}
+            </p>
+            <button
+              type="button"
+              onClick={() => setCard(null)}
+              aria-label={t("listening.word.close")}
+              className="flex size-8 items-center justify-center rounded-full text-text-3 hover:bg-blue-50"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          {info?.word === card.word && info.data ? (
+            <>
+              <p className="text-[15px] text-pinyin">
+                <span className="sr-only">{t("listening.word.pinyin")}: </span>
+                {info.data.pinyin}
+              </p>
+              <p className="mt-1 text-[14.5px] text-text">
+                <span className="font-semibold text-text-2">{t("listening.word.meaning")}: </span>
+                {card.note || info.data.meaning || <span className="text-text-3">{t("listening.word.noMeaning")}</span>}
+                {!card.note && info.data.meaning ? (
+                  <span className="ml-1 text-[12.5px] text-text-3">{t("listening.word.fromVocab")}</span>
+                ) : null}
+              </p>
+            </>
+          ) : (
+            <p className="flex items-center gap-2 text-[14px] text-text-3">
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              {t("listening.word.loading")}
+            </p>
+          )}
+          {card.editing ? (
+            <form
+              className="mt-2.5 flex flex-col gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                saveNote(card, noteDraft);
+              }}
+            >
+              <label className="sr-only" htmlFor="lx-word-note">
+                {t("listening.word.noteLabel", { word: card.word })}
+              </label>
+              <input
+                id="lx-word-note"
+                autoFocus
+                value={noteDraft}
+                maxLength={LISTENING.MAX_NOTE}
+                onChange={(e) => setNoteDraft(e.target.value)}
+                placeholder={t("listening.word.notePlaceholder")}
+                className="h-10 rounded-[10px] border border-border px-3 text-[14.5px] outline-none focus:border-blue"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="inline-flex h-9 items-center rounded-[10px] bg-blue-600 px-3.5 text-[14px] font-semibold text-white hover:bg-blue-700"
+                >
+                  {t("listening.word.save")}
+                </button>
+                {card.note ? (
+                  <button
+                    type="button"
+                    onClick={() => saveNote(card, "")}
+                    className="inline-flex h-9 items-center rounded-[10px] px-3 text-[14px] font-semibold text-red hover:bg-red-50"
+                  >
+                    {t("listening.word.remove")}
+                  </button>
+                ) : null}
+              </div>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCard({ ...card, editing: true })}
+              className="mt-2 inline-flex h-9 items-center rounded-[10px] bg-[#FFF3D2] px-3 text-[14px] font-semibold text-[#8A5300] hover:bg-[#FFE9B0]"
+            >
+              {card.note ? t("listening.word.edit") : t("listening.word.add")}
+            </button>
+          )}
+        </div>
+      ) : null}
       {bubble ? (
         <button
           type="button"

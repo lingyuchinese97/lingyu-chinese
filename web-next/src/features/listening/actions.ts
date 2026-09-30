@@ -41,3 +41,5 @@ export const updateExerciseAction = async (id: string, input: unknown) =>
 export const deleteExerciseAction = async (id: string) => run((uid) => svc.deleteExercise(uid, uuid(id)), true);
 export const getExerciseAction = async (id: string) => run((uid) => svc.getExercise(uid, uuid(id)));
 export const listListeningTagsAction = async () => run((uid) => svc.listListeningTags(uid));
+export const lookupWordsAction = async (words: unknown) =>
+  run((uid) => svc.lookupWords(uid, z.array(z.string().max(40)).max(50).parse(words)));

@@ -266,6 +266,7 @@ export default async function HomePage() {
               {t("home.quote")}
             </p>
             <Image
+              unoptimized
               src="/brand/ui/mascot-write-leaves.png"
               alt=""
               width={433}
@@ -283,6 +284,7 @@ export default async function HomePage() {
           >
             <div className="flex items-center gap-3 rounded-2xl bg-[linear-gradient(135deg,#FFF6E4,#FFFBF2)] px-3.5 py-3">
               <Image
+                unoptimized
                 src="/brand/ui/icon-flame.png"
                 alt=""
                 aria-hidden="true"
@@ -348,6 +350,7 @@ export default async function HomePage() {
                   {/* Hình minh hoạ theo thiết kế (nền pastel + lá trang trí đã có trong ảnh). */}
                   <div className="relative aspect-[242/118] w-full overflow-hidden">
                     <Image
+                      unoptimized
                       src={c.img}
                       alt=""
                       aria-hidden="true"
@@ -390,6 +393,7 @@ export default async function HomePage() {
         >
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <Image
+              unoptimized
               src="/brand/ui/icon-calendar.png"
               alt=""
               aria-hidden="true"
@@ -412,7 +416,7 @@ export default async function HomePage() {
                   aria-hidden="true"
                   className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", x.c)}
                 >
-                  <Image src={x.img} alt="" width={48} height={48} className="size-6 object-contain" />
+                  <Image unoptimized src={x.img} alt="" width={48} height={48} className="size-6 object-contain" />
                 </span>
                 <span className="flex min-w-0 flex-col">
                   <span className="text-[22px] leading-none font-extrabold text-navy-900 tabular-nums">{x.value}</span>
@@ -429,6 +433,7 @@ export default async function HomePage() {
         >
           <div className="mb-3 flex items-center gap-2">
             <Image
+              unoptimized
               src="/brand/ui/icon-target.png"
               alt=""
               aria-hidden="true"
@@ -448,7 +453,7 @@ export default async function HomePage() {
               aria-hidden="true"
               className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-50"
             >
-              <Image src="/brand/ui/icon-flame.png" alt="" width={60} height={67} className="h-auto w-6" />
+              <Image unoptimized src="/brand/ui/icon-flame.png" alt="" width={60} height={67} className="h-auto w-6" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[14.5px] font-semibold text-navy-900">{t("home.goalMinutes", { n: goal.target })}</p>
@@ -479,6 +484,7 @@ export default async function HomePage() {
         >
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <Image
+              unoptimized
               src="/brand/ui/nav-progress.png"
               alt=""
               aria-hidden="true"
@@ -545,7 +551,14 @@ export default async function HomePage() {
                           aria-hidden="true"
                           className="relative flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#F4F8FD]"
                         >
-                          <Image src={RECENT_IMG[a.kind]!} alt="" width={63} height={50} className="h-auto w-9" />
+                          <Image
+                            unoptimized
+                            src={RECENT_IMG[a.kind]!}
+                            alt=""
+                            width={63}
+                            height={50}
+                            className="h-auto w-9"
+                          />
                           <span className="absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center rounded-full border-2 border-white bg-green text-white">
                             <Check className="size-2.5" strokeWidth={4} />
                           </span>

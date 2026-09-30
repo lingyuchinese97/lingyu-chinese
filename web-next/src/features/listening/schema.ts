@@ -27,6 +27,7 @@ export const formattedSpanSchema = z.object({
   text: z.string().max(LISTENING.MAX_TEXT),
   color: z.enum(["black", "red"]).optional(),
   highlight: z.boolean().optional(),
+  note: z.string().max(LISTENING.MAX_NOTE, `Ghi chú từ tối đa ${LISTENING.MAX_NOTE} ký tự.`).optional(),
 });
 
 export const referenceSchema = z.object({

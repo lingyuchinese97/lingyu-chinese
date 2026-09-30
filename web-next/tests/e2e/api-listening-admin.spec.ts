@@ -22,11 +22,38 @@ test("API luyện nghe + quản trị: 401/403/404, server chấm lại điểm,
     ["post", "/api/v1/listening/exercises"],
     ["post", "/api/v1/listening/compare"],
     ["get", "/api/v1/listening/tags"],
+    ["get", "/api/v1/listening/lookup?words=你好"],
     ["get", "/api/v1/admin/stats"],
     ["get", "/api/v1/admin/users"],
   ] as const)
     expect((await anon.request[method](url, method === "post" ? { data: {} } : undefined)).status(), url).toBe(401);
   await anon.close();
+
+  // Tra từ bôi vàng: nghĩa chỉ lấy từ kho Từ vựng của chính mình (người dùng riêng để không đổi số liệu ở dưới).
+  const lookerCtx = await browser.newContext();
+  await register(await lookerCtx.newPage(), "Người Tra", "apil-l");
+  const looker = lookerCtx.request;
+  await looker.post("/api/v1/vocab", { data: { hanzi: "小雨", pinyin: "xiǎo yǔ", meaningVi: "mưa nhỏ của tôi" } });
+  const look = (await (await looker.get("/api/v1/listening/lookup?words=小雨,你好")).json()).data;
+  expect(look).toEqual([
+    { word: "小雨", pinyin: "xiǎo yǔ", meaning: "mưa nhỏ của tôi" },
+    { word: "你好", pinyin: "nǐ hǎo", meaning: null },
+  ]);
+  expect((await (await other.get("/api/v1/listening/lookup?words=小雨")).json()).data[0].meaning).toBeNull();
+  // TikTok + link phát trực tiếp (radio / podcast) lưu được.
+  for (const contentUrl of [
+    "https://www.tiktok.com/@lingyu/video/7234567890123456789",
+    "https://radio.example.com/live#lingyu=audio",
+  ])
+    expect(
+      (
+        await looker.post("/api/v1/listening/exercises", {
+          data: { title: "Nguồn", referenceAnswer: "你好", contentUrl },
+        })
+      ).status(),
+      contentUrl,
+    ).toBe(201);
+  await lookerCtx.close();
 
   // So sánh không lưu.
   const cmp = await (

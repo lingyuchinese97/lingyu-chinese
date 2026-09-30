@@ -89,6 +89,7 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
         <LeafDecor className="pointer-events-none absolute top-5 right-2.5 w-9 rotate-25 opacity-45" />
         <Image
           src="/brand/ui/mascot-wave.png"
+          unoptimized
           alt=""
           width={241}
           height={246}

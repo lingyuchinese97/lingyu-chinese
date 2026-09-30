@@ -95,6 +95,12 @@ Bài làm gửi lên:
   khoảng trắng không tính; không phân biệt hoa / thường. `parts` theo thứ tự bài chép: `{ kind: "text", status: "correct" | "wrong" |
 "extra" | "neutral", start, end, expected? }` hoặc `{ kind: "missing", text, at }`. Điểm = `correct / total` (số chữ của đáp án).
 
+### Tra từ bôi vàng
+
+`GET /listening/lookup?words=小雨,你好` (tối đa 50 từ) → `[{ word, pinyin, meaning }]`: `meaning` lấy từ kho Từ vựng của chính người
+dùng (`null` nếu chưa có). Trong `formattedUserAnswer`, đoạn bôi vàng có thể có `note` (≤ 200 ký tự) — nghĩa người dùng tự ghi.
+`contentUrl` nhận thêm link TikTok và link phát trực tiếp có đuôi `#lingyu=audio`; `playbackSpeed` 0.5–2.
+
 ## Tài khoản `/api/v1/me`
 
 | Route                 | Việc                                                                                            |

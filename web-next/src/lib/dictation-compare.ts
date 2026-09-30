@@ -211,7 +211,8 @@ export function summarize(c: Comparison): ComparisonSummary {
 // ---------- Định dạng người dùng tự tô (tách khỏi kết quả so sánh) ----------
 
 export type PenColor = "black" | "red";
-export type FormattedSpan = { text: string; color?: PenColor; highlight?: boolean };
+/** `note`: nghĩa / ghi chú người dùng gắn cho đoạn bôi vàng (hiện khi rê chuột vào). */
+export type FormattedSpan = { text: string; color?: PenColor; highlight?: boolean; note?: string };
 
 export const plainOf = (spans: readonly FormattedSpan[]) => spans.map((s) => s.text).join("");
 
@@ -223,8 +224,10 @@ export function normalizeSpans(spans: readonly FormattedSpan[]): FormattedSpan[]
     const f: FormattedSpan = { text: s.text };
     if (s.color === "red") f.color = "red";
     if (s.highlight) f.highlight = true;
+    if (s.highlight && s.note?.trim()) f.note = s.note.trim();
     const last = out[out.length - 1];
-    if (last && last.color === f.color && !!last.highlight === !!f.highlight) last.text += f.text;
+    if (last && last.color === f.color && !!last.highlight === !!f.highlight && last.note === f.note)
+      last.text += f.text;
     else out.push(f);
   }
   return out;
@@ -234,8 +237,9 @@ export function normalizeSpans(spans: readonly FormattedSpan[]): FormattedSpan[]
  * Văn bản đổi (sửa trong popup / màn Bài làm) → giữ định dạng của các ký tự còn nguyên, ký tự mới lấy định dạng mặc định.
  */
 export function reformat(old: readonly FormattedSpan[], nextText: string): FormattedSpan[] {
-  const oldChars: { ch: string; color?: PenColor; highlight?: boolean }[] = [];
-  for (const s of old) for (const ch of s.text) oldChars.push({ ch, color: s.color, highlight: s.highlight });
+  const oldChars: { ch: string; color?: PenColor; highlight?: boolean; note?: string }[] = [];
+  for (const s of old)
+    for (const ch of s.text) oldChars.push({ ch, color: s.color, highlight: s.highlight, note: s.note });
   const newChars = [...nextText];
   if (oldChars.map((c) => c.ch).join("") === nextText) return normalizeSpans(old);
   const ops = lcsOps(
@@ -245,7 +249,12 @@ export function reformat(old: readonly FormattedSpan[], nextText: string): Forma
   const spans: FormattedSpan[] = [];
   for (const o of ops) {
     if (o.op === "eq")
-      spans.push({ text: newChars[o.b]!, color: oldChars[o.a]!.color, highlight: oldChars[o.a]!.highlight });
+      spans.push({
+        text: newChars[o.b]!,
+        color: oldChars[o.a]!.color,
+        highlight: oldChars[o.a]!.highlight,
+        note: oldChars[o.a]!.note,
+      });
     else if (o.op === "ins") spans.push({ text: newChars[o.b]! });
   }
   return normalizeSpans(spans);

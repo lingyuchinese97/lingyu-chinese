@@ -11,7 +11,7 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   test.setTimeout(120_000);
   await register(page, "Người Nghe", "listen");
   await page.goto("/listening");
-  await expect(page.getByRole("heading", { level: 1, name: /Luyện nghe & Nói/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /Luyện nghe · Chép chính tả/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "Luyện nghe từ các kênh" })).toHaveAttribute("aria-current", "page");
 
   // Link không hỗ trợ → báo lỗi; link file âm thanh → mở trình phát (không cần chọn "Nguồn").
@@ -30,13 +30,13 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await url.fill(`${baseURL}/audio/bai1/blending/q05.mp3`);
   await page.getByRole("button", { name: "Mở nội dung" }).click();
   await expect(page.locator("audio")).toHaveCount(1);
-  await expect(page.getByRole("combobox", { name: "Tốc độ nghe" })).toHaveValue("1");
-  await page.getByRole("combobox", { name: "Tốc độ nghe" }).selectOption("0.75");
+  await expect(page.getByRole("radio", { name: "1x", exact: true })).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("radio", { name: "0.75x" }).click();
 
   // Chưa có đáp án tham khảo → không kiểm tra được; đáp án do người dùng tự nhập.
-  const check = page.getByRole("button", { name: "Kiểm tra đáp án" });
+  const check = page.getByRole("button", { name: "Kiểm tra kết quả" });
   await expect(check).toBeDisabled();
-  await page.getByRole("button", { name: "Thêm đáp án tham khảo" }).click();
+  await page.getByRole("button", { name: "Nhập đáp án" }).click();
   const refDialog = page.getByRole("dialog", { name: "Thêm đáp án tham khảo" });
   await refDialog.getByRole("button", { name: "Lưu đáp án" }).click();
   await expect(refDialog.getByText("Vui lòng nhập đáp án tham khảo.")).toBeVisible();
@@ -79,7 +79,7 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await page.getByRole("textbox", { name: "Ghi chú" }).fill("Cần lưu ý 我是 và 我叫.");
 
   // Lưu bài làm: popup riêng, đáp án chỉ đọc, bài làm sửa được + so sánh tức thì.
-  await page.getByRole("button", { name: "Lưu bài làm" }).click();
+  await page.getByRole("button", { name: "Lưu bài làm" }).last().click();
   const save = page.getByRole("dialog", { name: "Lưu bài làm" });
   await save.getByRole("button", { name: "Lưu bài làm" }).click();
   await expect(save.getByText("Vui lòng nhập tiêu đề bài làm.")).toBeVisible();
@@ -100,7 +100,7 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   // Lưu xong: trang xoá sạch — bài chép, đáp án, ghi chú, link và trình phát.
   await expect(editor(page)).toHaveText("");
   await expect(page.getByRole("textbox", { name: "Ghi chú" })).toHaveValue("");
-  await expect(page.getByRole("button", { name: "Thêm đáp án tham khảo" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Nhập đáp án" })).toBeVisible();
   await expect(url).toHaveValue("");
   await expect(page.locator("audio")).toHaveCount(0);
 
@@ -168,4 +168,25 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await expect(vd).toBeHidden();
   const vocab = await (await page.request.get("/api/v1/vocab?q=小雨")).json();
   expect(vocab.data.items.map((i: { hanzi: string }) => i.hanzi)).toEqual(["小雨"]);
+
+  // Bôi vàng "小雨" → rê chuột: pinyin + nghĩa từ kho Từ vựng; bấm → ghi nghĩa riêng → rê chuột thấy ghi chú.
+  await editor(page).click();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("Shift+ArrowLeft");
+  await page.keyboard.press("Shift+ArrowLeft");
+  await page.getByRole("button", { name: "Bôi vàng" }).click();
+  const mark = editor(page).locator("span[data-h]");
+  await expect(mark).toHaveText("小雨");
+  await mark.hover();
+  const card = page.getByRole("dialog", { name: "Nghĩa / ghi chú cho “小雨”" });
+  await expect(card.getByText("xiǎo yǔ")).toBeVisible();
+  await expect(card.getByText("mưa nhỏ")).toBeVisible();
+  await card.getByRole("button", { name: "Ghi nghĩa" }).click();
+  await card.getByRole("textbox").fill("tên bạn Tiểu Vũ");
+  await card.getByRole("button", { name: "Lưu" }).click();
+  await expect(mark).toHaveAttribute("data-n", "tên bạn Tiểu Vũ");
+  await page.mouse.move(0, 0);
+  await mark.hover();
+  await expect(card.getByText("tên bạn Tiểu Vũ")).toBeVisible();
 });
