@@ -137,4 +137,7 @@ export const errors: Messages["errors"] = {
   trDuplicate: "This sentence is already in your sentences.",
   trPickGrammar: "Choose at least one grammar point.",
   trBadGrammar: "Grammar point does not exist.",
+  rdNotFound: "Reading passage not found.",
+  rdEmpty: "No passages match. Try different options.",
+  rdWordNotIn: "This word is not in the passage.",
 };

@@ -71,6 +71,7 @@ test("a11y (axe): không có lỗi serious/critical ở các trang chính", asyn
     "/progress/history",
     "/search?q=%E4%BD%A0",
     "/reading",
+    "/reading/r302",
     "/settings",
     "/~offline",
   ]) {

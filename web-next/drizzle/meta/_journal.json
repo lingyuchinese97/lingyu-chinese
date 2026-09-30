@@ -64,6 +64,13 @@
       "when": 1790468627135,
       "tag": "0008_translation",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790744647285,
+      "tag": "0009_reading",
+      "breakpoints": true
     }
   ]
 }

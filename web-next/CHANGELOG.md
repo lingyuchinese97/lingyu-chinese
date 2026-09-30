@@ -6,6 +6,16 @@
 
 ### Added
 
+- **Đọc hiểu** (`/reading`, thay trang “đang hoàn thiện”):
+  - Kho 16 bài đọc HSK 1–4 (đoạn ngắn, hội thoại, bài đọc; 10 chủ đề), mỗi bài có pinyin từng chữ, bản dịch vi / en từng câu,
+    từ khoá, điểm ngữ pháp, 3 câu hỏi (trắc nghiệm + điền từ).
+  - Chọn bài: cấp (tự động theo trình độ ước lượng từ kho từ vựng, hoặc HSK 1–4), dạng bài, chủ đề, nội dung — LingYu tự chọn
+    (ưu tiên bài chưa đọc) / theo từ vựng của tôi / theo ngữ pháp. Kho bài đọc hiển thị để chọn trực tiếp.
+  - Đọc: **pinyin trên đầu chữ** (bật/tắt), bản dịch (bật/tắt), nghe từng câu, bấm từ khoá → pinyin + nghĩa + **Lưu vào từ vựng**,
+    **Lưu bài** để đọc lại.
+  - Nộp bài: server chấm, đáp án đúng từng câu, từ vựng + ngữ pháp trong bài, **Lưu tất cả** từ vào Từ vựng (bỏ qua từ đã có),
+    Làm lại / Đọc bài khác; ghi vào Tiến độ học tập và Lịch sử đọc.
+  - Bảng `reading_attempt`, `reading_saved` (migration 0009). API `/api/v1/reading/*` — có trong Swagger; dữ liệu riêng từng người.
 - **Luyện nghe · Chép chính tả – giao diện mới** (theo thiết kế): thanh tiêu đề gọn có **Hướng dẫn** (5 bước) và **Lưu bài làm**;
   cột **1. Nguồn nghe** với tab YouTube / Podcast / Radio / **TikTok** (trình phát nhúng chính thức, chỉ phát) / Link khác, khối
   **Điều chỉnh tốc độ** 0.5x–**2x** và **Chuyển đến thời gian**, lặp đoạn A–B gọn trong một mục mở/đóng; cột **2. Chép chính tả**

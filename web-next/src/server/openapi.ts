@@ -10,6 +10,8 @@ import { clientActivitySchema, goalsSchema } from "@/features/progress/schema";
 import { ACTIVITY_KINDS } from "@/features/progress/constants";
 import { T_TOPICS } from "@/data/translation/items";
 import { elapsedSchema, translationConfigSchema } from "@/features/translation/schema";
+import { saveWordsSchema, submitSchema } from "@/features/reading/schema";
+import { R_TYPES } from "@/data/reading/passages";
 
 /**
  * Tài liệu OpenAPI 3.1 của REST API (hiển thị bằng Swagger UI ở /api-docs).
@@ -118,6 +120,7 @@ const H = "Trang chủ";
 const PG = "Tiến độ học tập";
 const SE = "Tìm kiếm";
 const TR = "Luyện dịch";
+const RDG = "Đọc hiểu";
 const AD = "Quản trị";
 const A = "Tài khoản";
 
@@ -175,6 +178,11 @@ export function openApiDocument() {
         name: PG,
         description:
           "Thời gian học theo ngày (nhịp ping mỗi phút), chuỗi ngày học, mục tiêu, tiến độ theo HSK / thẻ, lịch sử hoạt động",
+      },
+      {
+        name: RDG,
+        description:
+          "Đọc hiểu với kho bài đọc có sẵn (HSK 1–4; đoạn ngắn, hội thoại, bài đọc): pinyin từng chữ, bản dịch, từ khoá, ngữ pháp, câu hỏi. Đáp án chỉ trả về sau khi nộp; server chấm.",
       },
       {
         name: TR,
@@ -1224,6 +1232,92 @@ export function openApiDocument() {
           example: { kind: "pronunciation", title: "Nghe & Chọn đáp án", correct: 8, total: 10 },
           status: 201,
           data: obj({ recorded: { const: true } }),
+        }),
+      },
+      "/api/v1/reading": {
+        get: op(RDG, {
+          summary: "Tổng quan: trình độ ước lượng, bài đã lưu, lịch sử gần đây",
+          data: obj({ level: int, saved: { type: "array" }, history: { type: "array" } }),
+        }),
+      },
+      "/api/v1/reading/passages": {
+        get: op(RDG, {
+          summary: "Danh sách bài đọc",
+          params: [
+            q("level", { type: "integer", minimum: 1, maximum: 4 }),
+            q("type", { enum: [...R_TYPES] }),
+            q("topic", { enum: [...T_TOPICS] }),
+          ],
+          data: { type: "array", items: { type: "object" } },
+        }),
+      },
+      "/api/v1/reading/pick": {
+        get: op(RDG, {
+          summary:
+            "Chọn bài tự động (ưu tiên bài chưa đọc, gần trình độ; theo từ vựng / ngữ pháp). Không có bài phù hợp → 409",
+          params: [
+            q("level", { type: "integer", minimum: 0, maximum: 4, default: 0 }, "0 = tự động theo trình độ"),
+            q("type", { enum: [...R_TYPES] }),
+            q("topic", { enum: [...T_TOPICS] }),
+            q("source", { enum: ["auto", "vocab", "grammar"], default: "auto" }),
+            q("grammar", { type: "string" }, "id điểm ngữ pháp (khi source=grammar)"),
+          ],
+          data: obj({ id: { type: "string" }, level: int }),
+          errors: [409],
+        }),
+      },
+      "/api/v1/reading/passages/{id}": {
+        get: op(RDG, {
+          summary: "Một bài đọc (không có đáp án) + đã lưu hay chưa",
+          params: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "vd `r101`" }],
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/reading/passages/{id}/submit": {
+        post: op(RDG, {
+          summary: "Nộp bài → kết quả server chấm + đáp án; ghi vào Tiến độ học tập",
+          params: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "vd `r101`" }],
+          body: js(submitSchema),
+          example: { answers: [0, 1, "七"], durationSec: 120 },
+          data: obj({
+            attemptId: { type: "string", format: "uuid" },
+            correct: int,
+            total: int,
+            percent: int,
+            results: { type: "array" },
+          }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/reading/passages/{id}/saved": {
+        put: op(RDG, {
+          summary: "Lưu / bỏ lưu bài đọc",
+          params: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "vd `r101`" }],
+          body: obj({ saved: { type: "boolean" } }),
+          example: { saved: true },
+          data: obj({ saved: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/reading/passages/{id}/words": {
+        post: op(RDG, {
+          summary: "Lưu từ khoá của bài vào Từ vựng (bỏ qua từ đã có; bỏ trống `words` = tất cả)",
+          params: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "vd `r101`" }],
+          body: js(saveWordsSchema),
+          example: { words: ["学生"] },
+          data: obj({
+            added: { type: "array", items: { type: "string" } },
+            skipped: { type: "array", items: { type: "string" } },
+          }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/reading/history": {
+        get: op(RDG, {
+          summary: "Lịch sử đọc hiểu (mới nhất trước)",
+          params: [q("limit", { type: "integer", minimum: 1, maximum: 50, default: 20 })],
+          data: { type: "array", items: { type: "object" } },
         }),
       },
       "/api/v1/translation": {

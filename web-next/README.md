@@ -122,6 +122,9 @@ phát âm; tìm chung trong từ vựng, ngữ pháp, câu của mình + bài h�
 ngữ pháp, lưu câu mẫu vào kho câu của tôi, tạo bài / trả lời (server chấm) / bỏ qua / gợi ý / tính là đúng / chuyển câu / lưu thời
 gian / nộp bài, bài đang làm, lịch sử. Đáp án chỉ trả về sau khi trả lời; bài của người khác → 404.
 
+**Đọc hiểu** (`/api/v1/reading*`): tổng quan (trình độ, bài đã lưu, lịch sử), danh sách bài, chọn bài tự động (theo trình độ /
+từ vựng / ngữ pháp), một bài (không có đáp án), nộp bài (server chấm), lưu / bỏ lưu bài, lưu từ khoá vào Từ vựng, lịch sử.
+
 **Swagger**: [`/api-docs`](https://lingyuchinese.com/api-docs) liệt kê mọi route, bấm _Try it out_ để gọi thử. File OpenAPI 3.1:
 `/api/openapi.json` — nhập được vào Postman, Insomnia hay công cụ sinh code client. Hai trang này khoá bằng **tài khoản riêng**
 (trình duyệt hỏi tên + mật khẩu), đặt ở biến môi trường `API_DOCS_USER` và `API_DOCS_PASSWORD` (≥ 12 ký tự; Vercel → Settings →
