@@ -8,6 +8,7 @@ import {
   Gauge,
   Layers,
   ListOrdered,
+  MapPin,
   MessageSquareText,
   Palette,
   Puzzle,
@@ -34,6 +35,7 @@ export const G_ICON_KEYS = [
   "adverb",
   "time",
   "complement",
+  "preposition",
   "other",
 ] as const;
 export type GrammarIconKey = (typeof G_ICON_KEYS)[number];
@@ -57,6 +59,7 @@ const DEFS: Record<GrammarIconKey, Def> = {
   adverb: { icon: Gauge, tone: "bg-[#E8E9FF] text-[#4F55D8]", pill: "bg-[#E8E9FF] text-[#3F44B8]" },
   time: { icon: Clock, tone: "bg-[#DDF3FB] text-[#0E8DBA]", pill: "bg-[#DDF3FB] text-[#0A6E92]" },
   complement: { icon: Puzzle, tone: "bg-[#F3E6FF] text-[#9A3FD6]", pill: "bg-[#F3E6FF] text-[#7C2DB0]" },
+  preposition: { icon: MapPin, tone: "bg-[#E2F6EA] text-[#16924F]", pill: "bg-[#E2F6EA] text-[#12743F]" },
   other: { icon: Sparkles, tone: "bg-[#EEF2F7] text-[#5B6B82]", pill: "bg-[#EEF2F7] text-[#4A5A70]" },
 };
 
@@ -74,6 +77,7 @@ const RULES: [GrammarIconKey, RegExp][] = [
   ["verb", /dong tu/],
   ["adjective", /tinh tu/],
   ["adverb", /pho tu|都|也|还|就|才/],
+  ["preposition", /gioi tu|在|从|对|给|跟|向/],
   ["structure", /cau truc|是|把|被|有/],
 ];
 

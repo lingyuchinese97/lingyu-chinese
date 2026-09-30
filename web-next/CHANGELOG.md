@@ -6,6 +6,13 @@
 
 ### Added
 
+- **Luyện nghe — “Bài làm của tôi” dạng bảng** (`/listening/exercises`): khung tiêu đề + linh vật, 2 tab + “Tạo bài mới”, tìm / lọc
+  tag / sắp xếp, bảng: #, biểu tượng theo nguồn (YouTube, TikTok, audio, video, không link), tiêu đề, tag màu, kết quả % + thanh,
+  thời gian làm, nút mở. Bấm một bài → **trang chi tiết riêng** `/listening/exercises/[id]` (bài của người khác → 404); link cũ
+  `?id=` tự chuyển sang trang mới. API danh sách trả thêm `sourceKind`.
+- **Ngữ pháp — giao diện gọn theo thiết kế mới**: tiêu đề + “Thêm ngữ pháp mới”, thẻ lọc (số bài) + sắp xếp + “Dạng lưới / Danh sách”
+  cùng một hàng, ô tìm kiếm rộng bên dưới; mỗi thẻ ngữ pháp: tiêu đề, thẻ HSK + nhãn loại, cấu trúc chính, nút mở (lưu / sửa / chia sẻ /
+  xoá ở trang chi tiết). Thêm loại “Giới từ” (`preposition`).
 - **Đọc hiểu — giao diện bài đọc mới** (`/reading/[id]`): thanh trên có HSK, công tắc “Hiện pinyin” / “Hiện bản dịch” (bản dịch
   bật sẵn), “Lưu bài”. Hai cột: bài đọc đánh số từng câu, **dòng pinyin phía trên câu** (từ khoá viết liền), từ khoá tô vàng
   (bấm xem nghĩa, lưu), bản dịch dưới câu, khung “Từ vựng nổi bật trong bài” (xem tất cả, lưu tất cả); cột câu hỏi có thanh tiến độ

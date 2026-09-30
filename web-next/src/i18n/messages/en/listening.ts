@@ -196,6 +196,12 @@ export const listening: Messages["listening"] = {
     saved: "Saved “{word}” to Vocabulary.",
   },
   mine: {
+    backToList: "Back to my exercises",
+    colTitle: "Title",
+    colTag: "Tags",
+    colResult: "Result",
+    colTime: "Done at",
+    colAction: "Actions",
     title: "My exercises",
     sub: "Review, edit and practise your listening – dictation exercises.",
     new: "New exercise",

@@ -298,6 +298,7 @@ export function openApiDocument() {
         ListeningExerciseSummary: obj({
           id: { type: "string", format: "uuid" },
           title: { type: "string" },
+          sourceKind: { enum: ["youtube", "tiktok", "audio", "video", "none"] },
           tags: { type: "array", items: { type: "string" } },
           scoreCorrect: int,
           scoreTotal: int,

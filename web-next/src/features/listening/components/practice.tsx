@@ -290,7 +290,7 @@ export function ListeningPractice({
     });
     setSavedId(r.data);
     toast.success(t("listening.save.saved", { title: v.title.trim() }), {
-      action: { label: t("listening.save.view"), onClick: () => router.push(`/listening/exercises?id=${r.data}`) },
+      action: { label: t("listening.save.view"), onClick: () => router.push(`/listening/exercises/${r.data}`) },
     });
     router.refresh();
     return { ok: true as const };
@@ -703,7 +703,7 @@ export function ListeningPractice({
               <CheckCircle2 className="size-5" aria-hidden="true" />
               <span className="font-semibold">{t("listening.save.savedBanner")}</span>
               <Link
-                href={`/listening/exercises?id=${savedId}`}
+                href={`/listening/exercises/${savedId}`}
                 className="ml-auto font-semibold text-blue-600 underline-offset-2 hover:underline"
               >
                 {t("listening.save.openMine")}

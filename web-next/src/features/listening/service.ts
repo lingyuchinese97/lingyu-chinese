@@ -22,9 +22,14 @@ export class ListeningError extends Error {
 const NOT_FOUND = "Không tìm thấy bài làm này. Có thể nó đã bị xóa.";
 const likeEscape = (s: string) => s.replace(/[\\%_]/g, (c) => "\\" + c);
 
+/** Loại nguồn nghe (để hiện biểu tượng ở danh sách): theo link đã lưu. */
+export type SourceKind = "youtube" | "tiktok" | "audio" | "video" | "none";
+const sourceKindOf = (url: string): SourceKind => (url ? (parseMediaUrl(url)?.kind ?? "none") : "none");
+
 export type ExerciseSummary = {
   id: string;
   title: string;
+  sourceKind: SourceKind;
   tags: string[];
   scoreCorrect: number;
   scoreTotal: number;
@@ -49,6 +54,7 @@ export type Exercise = ExerciseSummary & {
 const summaryCols = {
   id: listeningExercise.id,
   title: listeningExercise.title,
+  contentUrl: listeningExercise.contentUrl,
   scoreCorrect: listeningExercise.scoreCorrect,
   scoreTotal: listeningExercise.scoreTotal,
   scorePercent: listeningExercise.scorePercent,
@@ -127,7 +133,11 @@ export async function listExercises(userId: string, p: ExerciseListParams, pageS
     .limit(pageSize)
     .offset((page - 1) * pageSize);
   const t = await tagsOf(rows.map((r) => r.id));
-  const items: ExerciseSummary[] = rows.map((r) => ({ ...r, tags: t.get(r.id) ?? [] }));
+  const items: ExerciseSummary[] = rows.map(({ contentUrl, ...r }) => ({
+    ...r,
+    sourceKind: sourceKindOf(contentUrl),
+    tags: t.get(r.id) ?? [],
+  }));
   return { items, total, page, pageCount, pageSize, tags };
 }
 export type ExerciseList = Awaited<ReturnType<typeof listExercises>>;
@@ -142,6 +152,7 @@ export async function getExercise(userId: string, id: string): Promise<Exercise>
   return {
     id: row.id,
     title: row.title,
+    sourceKind: sourceKindOf(row.contentUrl),
     tags: (await tagsOf([row.id])).get(row.id) ?? [],
     scoreCorrect: row.scoreCorrect,
     scoreTotal: row.scoreTotal,

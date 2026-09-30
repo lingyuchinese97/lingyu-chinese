@@ -107,6 +107,12 @@ test("API luyện nghe + quản trị: 401/403/404, server chấm lại điểm,
   ).toBe(404);
   expect((await other.delete(`/api/v1/listening/exercises/${ex.id}`)).status()).toBe(404);
   expect((await (await other.get("/api/v1/listening/exercises")).json()).data.total).toBe(0);
+  // Trang chi tiết bài làm của người khác → 404, không lộ nội dung.
+  const sp = await stranger.newPage();
+  await sp.goto(`/listening/exercises/${ex.id}`);
+  await expect(sp.getByRole("heading", { name: "Không tìm thấy trang" })).toBeVisible();
+  await expect(sp.getByText("Hội thoại chào hỏi")).toHaveCount(0);
+  await sp.close();
   expect((await api.get("/api/v1/listening/exercises/not-a-uuid")).status()).toBe(404);
 
   // Sửa → chấm lại.
