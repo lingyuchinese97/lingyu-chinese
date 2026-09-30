@@ -4,7 +4,13 @@ import { ChevronRight, Library, Lightbulb, MessagesSquare } from "lucide-react";
 import { requireUser } from "@/server/session";
 import { getIntlTag, getLocale, getT } from "@/i18n/server";
 import { T_ITEMS } from "@/data/translation/items";
-import { estimateLevel, getActiveTranslation, localGrammar, translationHistory } from "@/features/translation/service";
+import {
+  estimateLevel,
+  getActiveTranslation,
+  localGrammar,
+  myGrammarForTranslation,
+  translationHistory,
+} from "@/features/translation/service";
 import { TranslateSetup } from "@/features/translation/components/translate-setup";
 import { formatDuration } from "@/features/translation/components/format";
 
@@ -18,10 +24,11 @@ export default async function TranslatePage() {
   const t = await getT();
   const tag = await getIntlTag();
   const locale = await getLocale();
-  const [level, active, history] = await Promise.all([
+  const [level, active, history, myGrammar] = await Promise.all([
     estimateLevel(user.id),
     getActiveTranslation(user.id),
     translationHistory(user.id, 5),
+    myGrammarForTranslation(user.id),
   ]);
   const date = new Intl.DateTimeFormat(tag, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   return (
@@ -34,6 +41,7 @@ export default async function TranslatePage() {
         <TranslateSetup
           level={level}
           grammar={localGrammar(locale)}
+          myGrammar={myGrammar}
           active={active ? { done: active.questions.filter((q) => q.answered).length, total: active.total } : null}
         />
         <div className="flex flex-col gap-4">

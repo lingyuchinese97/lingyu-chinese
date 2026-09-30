@@ -5,19 +5,27 @@ import { api } from "@/server/api";
 import { getLocale } from "@/i18n/server";
 import { T_TOPICS } from "@/data/translation/items";
 import { T_COUNTS } from "@/features/translation/schema";
-import { estimateLevel, getActiveTranslation, localGrammar, translationHistory } from "@/features/translation/service";
+import {
+  estimateLevel,
+  getActiveTranslation,
+  localGrammar,
+  myGrammarForTranslation,
+  translationHistory,
+} from "@/features/translation/service";
 
 export const dynamic = "force-dynamic";
 
 export const GET = api(async ({ user }) => {
-  const [level, active, history] = await Promise.all([
+  const [level, active, history, myGrammar] = await Promise.all([
     estimateLevel(user.id),
     getActiveTranslation(user.id),
     translationHistory(user.id, 10),
+    myGrammarForTranslation(user.id),
   ]);
   return {
     level,
     grammar: localGrammar(await getLocale()),
+    myGrammar,
     topics: T_TOPICS,
     counts: T_COUNTS,
     active: active

@@ -2592,6 +2592,1340 @@ export const T_ITEMS: TItem[] = [
       },
     ],
   },
+
+  {
+    id: "p009",
+    type: "paragraph",
+    level: 1,
+    topic: "food",
+    zh: "我很喜欢吃中国菜。我家旁边有一个中国饭馆。我和朋友常常去那儿吃饭。",
+    py: "Wǒ hěn xǐ huan chī Zhōng guó cài. Wǒ jiā páng biān yǒu yí gè Zhōng guó fàn guǎn. Wǒ hé péng you cháng cháng qù nàr chī fàn.",
+    vi: [
+      "Tôi rất thích ăn món Trung Quốc. Bên cạnh nhà tôi có một nhà hàng Trung Quốc. Tôi và bạn thường đến đó ăn cơm.",
+    ],
+    en: [
+      "I really like Chinese food. There is a Chinese restaurant next to my home. My friends and I often eat there.",
+    ],
+    words: [
+      {
+        zh: "中国菜",
+        py: "Zhōng guó cài",
+        vi: "món ăn Trung Quốc",
+        en: "Chinese food",
+      },
+      {
+        zh: "旁边",
+        py: "páng biān",
+        vi: "bên cạnh",
+        en: "next to",
+      },
+      {
+        zh: "饭馆",
+        py: "fàn guǎn",
+        vi: "nhà hàng, quán ăn",
+        en: "restaurant",
+      },
+      {
+        zh: "常常",
+        py: "cháng cháng",
+        vi: "thường, hay",
+        en: "often",
+      },
+      {
+        zh: "那儿",
+        py: "nàr",
+        vi: "ở đó",
+        en: "there",
+      },
+    ],
+    grammar: [
+      {
+        id: "measure",
+        pattern: "一 + 个 + 中国饭馆",
+      },
+      {
+        id: "time-first",
+        pattern: "我和朋友 + 常常 + 去那儿吃饭",
+      },
+    ],
+  },
+  {
+    id: "p010",
+    type: "paragraph",
+    level: 1,
+    topic: "weather",
+    zh: "今天天气不好，很冷。下午下雨了。我不想出去，我想在家看电视。",
+    py: "Jīn tiān tiān qì bù hǎo, hěn lěng. Xià wǔ xià yǔ le. Wǒ bù xiǎng chū qù, wǒ xiǎng zài jiā kàn diàn shì.",
+    vi: [
+      "Hôm nay thời tiết không đẹp, rất lạnh. Buổi chiều trời mưa. Tôi không muốn ra ngoài, tôi muốn ở nhà xem tivi.",
+    ],
+    en: [
+      "The weather is bad today, it is very cold. It rained in the afternoon. I don't want to go out; I want to watch TV at home.",
+    ],
+    words: [
+      {
+        zh: "天气",
+        py: "tiān qì",
+        vi: "thời tiết",
+        en: "weather",
+      },
+      {
+        zh: "下雨",
+        py: "xià yǔ",
+        vi: "mưa",
+        en: "rain",
+      },
+      {
+        zh: "出去",
+        py: "chū qù",
+        vi: "ra ngoài",
+        en: "go out",
+      },
+      {
+        zh: "看电视",
+        py: "kàn diàn shì",
+        vi: "xem tivi",
+        en: "watch TV",
+      },
+    ],
+    grammar: [
+      {
+        id: "xiang-yao",
+        pattern: "我 + 不想 + 出去 / 我 + 想 + 在家看电视",
+      },
+      {
+        id: "zai-place",
+        pattern: "在家 + 看电视",
+      },
+    ],
+  },
+  {
+    id: "p011",
+    type: "paragraph",
+    level: 1,
+    topic: "shopping",
+    zh: "我想买一件衣服。这件衣服很漂亮，多少钱？一百块。太贵了！",
+    py: "Wǒ xiǎng mǎi yí jiàn yī fu. Zhè jiàn yī fu hěn piào liang, duō shǎo qián? Yì bǎi kuài. Tài guì le!",
+    vi: [
+      "Tôi muốn mua một bộ quần áo. Bộ quần áo này rất đẹp, bao nhiêu tiền? Một trăm tệ. Đắt quá!",
+      "Tôi muốn mua một chiếc áo. Chiếc áo này rất đẹp, bao nhiêu tiền? Một trăm tệ. Đắt quá!",
+    ],
+    en: [
+      "I want to buy a piece of clothing. This one is very pretty. How much is it? One hundred yuan. That's too expensive!",
+    ],
+    words: [
+      {
+        zh: "件",
+        py: "jiàn",
+        vi: "(lượng từ cho quần áo)",
+        en: "(measure word for clothes)",
+      },
+      {
+        zh: "衣服",
+        py: "yī fu",
+        vi: "quần áo",
+        en: "clothes",
+      },
+      {
+        zh: "漂亮",
+        py: "piào liang",
+        vi: "đẹp",
+        en: "pretty",
+      },
+      {
+        zh: "块",
+        py: "kuài",
+        vi: "tệ (tiền)",
+        en: "yuan",
+      },
+      {
+        zh: "太…了",
+        py: "tài … le",
+        vi: "quá",
+        en: "too",
+      },
+    ],
+    grammar: [
+      {
+        id: "measure",
+        pattern: "一 + 件 + 衣服 / 这 + 件 + 衣服",
+      },
+      {
+        id: "xiang-yao",
+        pattern: "我 + 想 + 买",
+      },
+    ],
+  },
+  {
+    id: "p012",
+    type: "paragraph",
+    level: 1,
+    topic: "school",
+    zh: "我是大学生。我在北京大学学习汉语。我的老师是中国人，她很好。",
+    py: "Wǒ shì dà xué shēng. Wǒ zài Běi jīng Dà xué xué xí Hàn yǔ. Wǒ de lǎo shī shì Zhōng guó rén, tā hěn hǎo.",
+    vi: [
+      "Tôi là sinh viên đại học. Tôi học tiếng Trung ở Đại học Bắc Kinh. Giáo viên của tôi là người Trung Quốc, cô ấy rất tốt.",
+    ],
+    en: [
+      "I am a university student. I study Chinese at Peking University. My teacher is Chinese, and she is very nice.",
+    ],
+    words: [
+      {
+        zh: "大学生",
+        py: "dà xué shēng",
+        vi: "sinh viên đại học",
+        en: "university student",
+      },
+      {
+        zh: "北京大学",
+        py: "Běi jīng Dà xué",
+        vi: "Đại học Bắc Kinh",
+        en: "Peking University",
+      },
+      {
+        zh: "学习",
+        py: "xué xí",
+        vi: "học",
+        en: "study",
+      },
+      {
+        zh: "老师",
+        py: "lǎo shī",
+        vi: "giáo viên",
+        en: "teacher",
+      },
+    ],
+    grammar: [
+      {
+        id: "shi",
+        pattern: "我 + 是 + 大学生",
+      },
+      {
+        id: "zai-place",
+        pattern: "我 + 在北京大学 + 学习汉语",
+      },
+      {
+        id: "de-poss",
+        pattern: "我 + 的 + 老师",
+      },
+    ],
+  },
+  {
+    id: "p013",
+    type: "paragraph",
+    level: 1,
+    topic: "work",
+    zh: "我爸爸在医院工作，他是医生。他每天都很忙，晚上九点才回家。",
+    py: "Wǒ bà ba zài yī yuàn gōng zuò, tā shì yī shēng. Tā měi tiān dōu hěn máng, wǎn shang jiǔ diǎn cái huí jiā.",
+    vi: ["Bố tôi làm việc ở bệnh viện, ông ấy là bác sĩ. Ngày nào ông ấy cũng rất bận, chín giờ tối mới về nhà."],
+    en: [
+      "My father works at a hospital; he is a doctor. He is busy every day and only gets home at nine in the evening.",
+    ],
+    words: [
+      {
+        zh: "医院",
+        py: "yī yuàn",
+        vi: "bệnh viện",
+        en: "hospital",
+      },
+      {
+        zh: "医生",
+        py: "yī shēng",
+        vi: "bác sĩ",
+        en: "doctor",
+      },
+      {
+        zh: "忙",
+        py: "máng",
+        vi: "bận",
+        en: "busy",
+      },
+      {
+        zh: "才",
+        py: "cái",
+        vi: "mới (muộn)",
+        en: "only then",
+      },
+      {
+        zh: "回家",
+        py: "huí jiā",
+        vi: "về nhà",
+        en: "go home",
+      },
+    ],
+    grammar: [
+      {
+        id: "zai-place",
+        pattern: "我爸爸 + 在医院 + 工作",
+      },
+      {
+        id: "shi",
+        pattern: "他 + 是 + 医生",
+      },
+      {
+        id: "time-first",
+        pattern: "晚上九点 + 才 + 回家",
+      },
+    ],
+  },
+  {
+    id: "p014",
+    type: "paragraph",
+    level: 1,
+    topic: "hobby",
+    zh: "我喜欢看书，也喜欢看电影。星期六我和朋友一起去看电影。",
+    py: "Wǒ xǐ huan kàn shū, yě xǐ huan kàn diàn yǐng. Xīng qī liù wǒ hé péng you yì qǐ qù kàn diàn yǐng.",
+    vi: [
+      "Tôi thích đọc sách, cũng thích xem phim. Thứ bảy tôi cùng bạn đi xem phim.",
+      "Tôi thích đọc sách và cũng thích xem phim. Thứ bảy tôi và bạn cùng đi xem phim.",
+    ],
+    en: [
+      "I like reading and I also like watching movies. On Saturday my friend and I are going to see a movie together.",
+    ],
+    words: [
+      {
+        zh: "看书",
+        py: "kàn shū",
+        vi: "đọc sách",
+        en: "read",
+      },
+      {
+        zh: "也",
+        py: "yě",
+        vi: "cũng",
+        en: "also",
+      },
+      {
+        zh: "看电影",
+        py: "kàn diàn yǐng",
+        vi: "xem phim",
+        en: "watch a movie",
+      },
+      {
+        zh: "星期六",
+        py: "xīng qī liù",
+        vi: "thứ bảy",
+        en: "Saturday",
+      },
+      {
+        zh: "一起",
+        py: "yì qǐ",
+        vi: "cùng nhau",
+        en: "together",
+      },
+    ],
+    grammar: [
+      {
+        id: "time-first",
+        pattern: "星期六 + 我和朋友 + 一起去看电影",
+      },
+    ],
+  },
+  {
+    id: "p015",
+    type: "paragraph",
+    level: 2,
+    topic: "travel",
+    zh: "我去过上海，没去过北京。听说北京很大，也很漂亮。明年我想去北京旅游。",
+    py: "Wǒ qù guo Shàng hǎi, méi qù guo Běi jīng. Tīng shuō Běi jīng hěn dà, yě hěn piào liang. Míng nián wǒ xiǎng qù Běi jīng lǚ yóu.",
+    vi: [
+      "Tôi đã từng đến Thượng Hải, chưa từng đến Bắc Kinh. Nghe nói Bắc Kinh rất lớn, cũng rất đẹp. Năm sau tôi muốn đi du lịch Bắc Kinh.",
+    ],
+    en: [
+      "I have been to Shanghai, but I have never been to Beijing. I hear Beijing is very big and beautiful. Next year I want to travel to Beijing.",
+    ],
+    words: [
+      {
+        zh: "上海",
+        py: "Shàng hǎi",
+        vi: "Thượng Hải",
+        en: "Shanghai",
+      },
+      {
+        zh: "听说",
+        py: "tīng shuō",
+        vi: "nghe nói",
+        en: "I hear that",
+      },
+      {
+        zh: "明年",
+        py: "míng nián",
+        vi: "năm sau",
+        en: "next year",
+      },
+      {
+        zh: "旅游",
+        py: "lǚ yóu",
+        vi: "du lịch",
+        en: "travel",
+      },
+    ],
+    grammar: [
+      {
+        id: "guo",
+        pattern: "我 + 去 + 过 + 上海 / 没 + 去 + 过 + 北京",
+      },
+      {
+        id: "xiang-yao",
+        pattern: "我 + 想 + 去北京旅游",
+      },
+    ],
+  },
+  {
+    id: "p016",
+    type: "paragraph",
+    level: 2,
+    topic: "health",
+    zh: "昨天我生病了，没去上班。医生让我多休息，多喝水。今天我觉得好多了。",
+    py: "Zuó tiān wǒ shēng bìng le, méi qù shàng bān. Yī shēng ràng wǒ duō xiū xi, duō hē shuǐ. Jīn tiān wǒ jué de hǎo duō le.",
+    vi: [
+      "Hôm qua tôi bị ốm, không đi làm. Bác sĩ bảo tôi nghỉ ngơi nhiều, uống nhiều nước. Hôm nay tôi thấy khỏe hơn nhiều rồi.",
+    ],
+    en: [
+      "Yesterday I was sick and didn't go to work. The doctor told me to rest more and drink more water. Today I feel much better.",
+    ],
+    words: [
+      {
+        zh: "生病",
+        py: "shēng bìng",
+        vi: "bị ốm",
+        en: "get sick",
+      },
+      {
+        zh: "上班",
+        py: "shàng bān",
+        vi: "đi làm",
+        en: "go to work",
+      },
+      {
+        zh: "让",
+        py: "ràng",
+        vi: "bảo, để",
+        en: "let, tell",
+      },
+      {
+        zh: "休息",
+        py: "xiū xi",
+        vi: "nghỉ ngơi",
+        en: "rest",
+      },
+      {
+        zh: "觉得",
+        py: "jué de",
+        vi: "cảm thấy",
+        en: "feel",
+      },
+    ],
+    grammar: [
+      {
+        id: "le-done",
+        pattern: "我生病 + 了 / 没 + 去上班",
+      },
+    ],
+  },
+  {
+    id: "p017",
+    type: "paragraph",
+    level: 2,
+    topic: "family",
+    zh: "我姐姐比我大三岁。她唱歌唱得很好，也喜欢跳舞。我们的关系非常好。",
+    py: "Wǒ jiě jie bǐ wǒ dà sān suì. Tā chàng gē chàng de hěn hǎo, yě xǐ huan tiào wǔ. Wǒ men de guān xi fēi cháng hǎo.",
+    vi: ["Chị gái tôi hơn tôi ba tuổi. Chị ấy hát rất hay, cũng thích nhảy múa. Quan hệ của chúng tôi rất tốt."],
+    en: [
+      "My older sister is three years older than me. She sings very well and also likes dancing. We get along very well.",
+    ],
+    words: [
+      {
+        zh: "岁",
+        py: "suì",
+        vi: "tuổi",
+        en: "years old",
+      },
+      {
+        zh: "唱歌",
+        py: "chàng gē",
+        vi: "hát",
+        en: "sing",
+      },
+      {
+        zh: "跳舞",
+        py: "tiào wǔ",
+        vi: "nhảy múa",
+        en: "dance",
+      },
+      {
+        zh: "关系",
+        py: "guān xi",
+        vi: "quan hệ",
+        en: "relationship",
+      },
+      {
+        zh: "非常",
+        py: "fēi cháng",
+        vi: "rất",
+        en: "very",
+      },
+    ],
+    grammar: [
+      {
+        id: "bi",
+        pattern: "我姐姐 + 比 + 我 + 大 + 三岁 (số lượng đứng sau tính từ)",
+      },
+      {
+        id: "de-degree",
+        pattern: "唱歌 + 唱 + 得 + 很好",
+      },
+    ],
+  },
+  {
+    id: "p018",
+    type: "paragraph",
+    level: 2,
+    topic: "daily",
+    zh: "我正在做作业，妈妈叫我去吃饭。我告诉她我快要做完了。",
+    py: "Wǒ zhèng zài zuò zuò yè, mā ma jiào wǒ qù chī fàn. Wǒ gào su tā wǒ kuài yào zuò wán le.",
+    vi: [
+      "Tôi đang làm bài tập thì mẹ gọi tôi đi ăn cơm. Tôi nói với mẹ là tôi sắp làm xong rồi.",
+      "Tôi đang làm bài tập, mẹ gọi tôi đi ăn cơm. Tôi bảo mẹ là tôi sắp làm xong rồi.",
+    ],
+    en: ["I was doing my homework when my mom called me to eat. I told her I was almost finished."],
+    words: [
+      {
+        zh: "正在",
+        py: "zhèng zài",
+        vi: "đang",
+        en: "(in progress)",
+      },
+      {
+        zh: "做作业",
+        py: "zuò zuò yè",
+        vi: "làm bài tập",
+        en: "do homework",
+      },
+      {
+        zh: "叫",
+        py: "jiào",
+        vi: "gọi",
+        en: "call",
+      },
+      {
+        zh: "告诉",
+        py: "gào su",
+        vi: "nói cho biết",
+        en: "tell",
+      },
+      {
+        zh: "做完",
+        py: "zuò wán",
+        vi: "làm xong",
+        en: "finish",
+      },
+    ],
+    grammar: [
+      {
+        id: "zhengzai",
+        pattern: "我 + 正在 + 做作业",
+      },
+      {
+        id: "kuaiyao-le",
+        pattern: "我 + 快要 + 做完 + 了",
+      },
+    ],
+  },
+  {
+    id: "p019",
+    type: "paragraph",
+    level: 2,
+    topic: "work",
+    zh: "我从星期一到星期五上班。每天早上我坐公共汽车去公司。周末我不工作，在家休息。",
+    py: "Wǒ cóng xīng qī yī dào xīng qī wǔ shàng bān. Měi tiān zǎo shang wǒ zuò gōng gòng qì chē qù gōng sī. Zhōu mò wǒ bù gōng zuò, zài jiā xiū xi.",
+    vi: [
+      "Tôi đi làm từ thứ hai đến thứ sáu. Mỗi sáng tôi đi xe buýt đến công ty. Cuối tuần tôi không làm việc, ở nhà nghỉ ngơi.",
+    ],
+    en: [
+      "I work from Monday to Friday. Every morning I take the bus to the office. At weekends I don't work; I rest at home.",
+    ],
+    words: [
+      {
+        zh: "星期一",
+        py: "xīng qī yī",
+        vi: "thứ hai",
+        en: "Monday",
+      },
+      {
+        zh: "星期五",
+        py: "xīng qī wǔ",
+        vi: "thứ sáu",
+        en: "Friday",
+      },
+      {
+        zh: "公共汽车",
+        py: "gōng gòng qì chē",
+        vi: "xe buýt",
+        en: "bus",
+      },
+      {
+        zh: "公司",
+        py: "gōng sī",
+        vi: "công ty",
+        en: "company",
+      },
+      {
+        zh: "周末",
+        py: "zhōu mò",
+        vi: "cuối tuần",
+        en: "weekend",
+      },
+    ],
+    grammar: [
+      {
+        id: "cong-dao",
+        pattern: "我 + 从星期一 + 到星期五 + 上班",
+      },
+      {
+        id: "time-first",
+        pattern: "每天早上 + 我 + 坐公共汽车去公司",
+      },
+    ],
+  },
+  {
+    id: "p020",
+    type: "paragraph",
+    level: 2,
+    topic: "food",
+    zh: "这家饭馆的菜很好吃，但是有点儿贵。我们点了三个菜和两碗米饭。",
+    py: "Zhè jiā fàn guǎn de cài hěn hǎo chī, dàn shì yǒu diǎnr guì. Wǒ men diǎn le sān ge cài hé liǎng wǎn mǐ fàn.",
+    vi: [
+      "Món ăn của nhà hàng này rất ngon nhưng hơi đắt. Chúng tôi đã gọi ba món và hai bát cơm.",
+      "Đồ ăn ở quán này rất ngon nhưng hơi đắt. Chúng tôi gọi ba món và hai bát cơm.",
+    ],
+    en: [
+      "The food in this restaurant is delicious, but a little expensive. We ordered three dishes and two bowls of rice.",
+    ],
+    words: [
+      {
+        zh: "饭馆",
+        py: "fàn guǎn",
+        vi: "nhà hàng",
+        en: "restaurant",
+      },
+      {
+        zh: "好吃",
+        py: "hǎo chī",
+        vi: "ngon",
+        en: "delicious",
+      },
+      {
+        zh: "有点儿",
+        py: "yǒu diǎnr",
+        vi: "hơi, một chút",
+        en: "a little",
+      },
+      {
+        zh: "点",
+        py: "diǎn",
+        vi: "gọi (món)",
+        en: "order",
+      },
+      {
+        zh: "碗",
+        py: "wǎn",
+        vi: "bát",
+        en: "bowl",
+      },
+    ],
+    grammar: [
+      {
+        id: "le-done",
+        pattern: "我们 + 点 + 了 + 三个菜",
+      },
+      {
+        id: "measure",
+        pattern: "两 + 碗 + 米饭 / 这 + 家 + 饭馆",
+      },
+    ],
+  },
+  {
+    id: "p021",
+    type: "paragraph",
+    level: 3,
+    topic: "hobby",
+    zh: "我对画画儿很感兴趣。周末我常常一边听音乐一边画画儿。我的画儿越来越好了。",
+    py: "Wǒ duì huà huàr hěn gǎn xìng qù. Zhōu mò wǒ cháng cháng yì biān tīng yīn yuè yì biān huà huàr. Wǒ de huàr yuè lái yuè hǎo le.",
+    vi: [
+      "Tôi rất hứng thú với vẽ tranh. Cuối tuần tôi thường vừa nghe nhạc vừa vẽ tranh. Tranh của tôi ngày càng đẹp hơn.",
+    ],
+    en: [
+      "I am very interested in painting. At weekends I often listen to music while I paint. My paintings are getting better and better.",
+    ],
+    words: [
+      {
+        zh: "画画儿",
+        py: "huà huàr",
+        vi: "vẽ tranh",
+        en: "draw, paint",
+      },
+      {
+        zh: "感兴趣",
+        py: "gǎn xìng qù",
+        vi: "hứng thú",
+        en: "be interested",
+      },
+      {
+        zh: "一边…一边…",
+        py: "yì biān … yì biān …",
+        vi: "vừa … vừa …",
+        en: "while",
+      },
+      {
+        zh: "画儿",
+        py: "huàr",
+        vi: "bức tranh",
+        en: "painting",
+      },
+    ],
+    grammar: [
+      {
+        id: "dui-ganxingqu",
+        pattern: "我 + 对 + 画画儿 + 很 + 感兴趣",
+      },
+      {
+        id: "yibian",
+        pattern: "一边 + 听音乐 + 一边 + 画画儿",
+      },
+      {
+        id: "yuelaiyue",
+        pattern: "我的画儿 + 越来越 + 好了",
+      },
+    ],
+  },
+  {
+    id: "p022",
+    type: "paragraph",
+    level: 3,
+    topic: "weather",
+    zh: "虽然外面在下雪，但是房间里很暖和。我们一边喝茶一边聊天，非常舒服。",
+    py: "Suī rán wài miàn zài xià xuě, dàn shì fáng jiān li hěn nuǎn huo. Wǒ men yì biān hē chá yì biān liáo tiān, fēi cháng shū fu.",
+    vi: [
+      "Tuy bên ngoài đang có tuyết rơi nhưng trong phòng rất ấm áp. Chúng tôi vừa uống trà vừa trò chuyện, rất dễ chịu.",
+    ],
+    en: [
+      "Although it is snowing outside, it is warm in the room. We chat while drinking tea, and it is very comfortable.",
+    ],
+    words: [
+      {
+        zh: "外面",
+        py: "wài miàn",
+        vi: "bên ngoài",
+        en: "outside",
+      },
+      {
+        zh: "下雪",
+        py: "xià xuě",
+        vi: "tuyết rơi",
+        en: "snow",
+      },
+      {
+        zh: "暖和",
+        py: "nuǎn huo",
+        vi: "ấm áp",
+        en: "warm",
+      },
+      {
+        zh: "聊天",
+        py: "liáo tiān",
+        vi: "trò chuyện",
+        en: "chat",
+      },
+      {
+        zh: "舒服",
+        py: "shū fu",
+        vi: "dễ chịu",
+        en: "comfortable",
+      },
+    ],
+    grammar: [
+      {
+        id: "suiran-danshi",
+        pattern: "虽然 + 外面在下雪，但是 + 房间里很暖和",
+      },
+      {
+        id: "yibian",
+        pattern: "一边 + 喝茶 + 一边 + 聊天",
+      },
+    ],
+  },
+  {
+    id: "p023",
+    type: "paragraph",
+    level: 3,
+    topic: "shopping",
+    zh: "我把新买的手机忘在出租车上了。幸好司机很好，他把手机送回来了。",
+    py: "Wǒ bǎ xīn mǎi de shǒu jī wàng zài chū zū chē shang le. Xìng hǎo sī jī hěn hǎo, tā bǎ shǒu jī sòng huí lai le.",
+    vi: [
+      "Tôi đã để quên chiếc điện thoại mới mua trên taxi. May mà tài xế rất tốt, anh ấy đã mang điện thoại trả lại.",
+    ],
+    en: ["I left my newly bought phone in a taxi. Luckily the driver was very kind and brought the phone back."],
+    words: [
+      {
+        zh: "新买的",
+        py: "xīn mǎi de",
+        vi: "mới mua",
+        en: "newly bought",
+      },
+      {
+        zh: "忘",
+        py: "wàng",
+        vi: "quên",
+        en: "forget",
+      },
+      {
+        zh: "出租车",
+        py: "chū zū chē",
+        vi: "taxi",
+        en: "taxi",
+      },
+      {
+        zh: "幸好",
+        py: "xìng hǎo",
+        vi: "may mà",
+        en: "luckily",
+      },
+      {
+        zh: "司机",
+        py: "sī jī",
+        vi: "tài xế",
+        en: "driver",
+      },
+      {
+        zh: "送回来",
+        py: "sòng huí lai",
+        vi: "mang trả lại",
+        en: "bring back",
+      },
+    ],
+    grammar: [
+      {
+        id: "ba",
+        pattern: "我 + 把 + 新买的手机 + 忘在出租车上 + 了",
+      },
+      {
+        id: "de-poss",
+        pattern: "新买 + 的 + 手机",
+      },
+    ],
+  },
+  {
+    id: "p024",
+    type: "paragraph",
+    level: 3,
+    topic: "school",
+    zh: "除了汉语以外，我还学习英语。如果有时间，我就去图书馆看书。",
+    py: "Chú le Hàn yǔ yǐ wài, wǒ hái xué xí Yīng yǔ. Rú guǒ yǒu shí jiān, wǒ jiù qù tú shū guǎn kàn shū.",
+    vi: ["Ngoài tiếng Trung ra, tôi còn học tiếng Anh. Nếu có thời gian thì tôi đi thư viện đọc sách."],
+    en: ["Besides Chinese, I also study English. If I have time, I go to the library to read."],
+    words: [
+      {
+        zh: "除了…以外",
+        py: "chú le … yǐ wài",
+        vi: "ngoài … ra",
+        en: "besides",
+      },
+      {
+        zh: "还",
+        py: "hái",
+        vi: "còn",
+        en: "also",
+      },
+      {
+        zh: "英语",
+        py: "Yīng yǔ",
+        vi: "tiếng Anh",
+        en: "English",
+      },
+      {
+        zh: "时间",
+        py: "shí jiān",
+        vi: "thời gian",
+        en: "time",
+      },
+      {
+        zh: "图书馆",
+        py: "tú shū guǎn",
+        vi: "thư viện",
+        en: "library",
+      },
+    ],
+    grammar: [
+      {
+        id: "chule",
+        pattern: "除了 + 汉语 + 以外，我 + 还 + 学习英语",
+      },
+      {
+        id: "ruguo-jiu",
+        pattern: "如果 + 有时间，我 + 就 + 去图书馆看书",
+      },
+    ],
+  },
+  {
+    id: "p025",
+    type: "paragraph",
+    level: 3,
+    topic: "health",
+    zh: "医生说我太累了，应该多休息。所以我决定每天早点儿睡觉，少玩儿手机。",
+    py: "Yī shēng shuō wǒ tài lèi le, yīng gāi duō xiū xi. Suǒ yǐ wǒ jué dìng měi tiān zǎo diǎnr shuì jiào, shǎo wánr shǒu jī.",
+    vi: [
+      "Bác sĩ nói tôi mệt quá, nên nghỉ ngơi nhiều hơn. Vì vậy tôi quyết định mỗi ngày đi ngủ sớm hơn một chút, ít chơi điện thoại hơn.",
+    ],
+    en: [
+      "The doctor said I was too tired and should rest more. So I decided to go to bed a bit earlier every day and spend less time on my phone.",
+    ],
+    words: [
+      {
+        zh: "太…了",
+        py: "tài … le",
+        vi: "quá",
+        en: "too",
+      },
+      {
+        zh: "应该",
+        py: "yīng gāi",
+        vi: "nên",
+        en: "should",
+      },
+      {
+        zh: "决定",
+        py: "jué dìng",
+        vi: "quyết định",
+        en: "decide",
+      },
+      {
+        zh: "早点儿",
+        py: "zǎo diǎnr",
+        vi: "sớm một chút",
+        en: "a bit earlier",
+      },
+      {
+        zh: "睡觉",
+        py: "shuì jiào",
+        vi: "đi ngủ",
+        en: "sleep",
+      },
+      {
+        zh: "少",
+        py: "shǎo",
+        vi: "ít",
+        en: "less",
+      },
+    ],
+    grammar: [
+      {
+        id: "hui-neng",
+        pattern: "我 + 应该 + 多休息",
+      },
+      {
+        id: "time-first",
+        pattern: "每天 + 早点儿 + 睡觉",
+      },
+    ],
+  },
+  {
+    id: "p026",
+    type: "paragraph",
+    level: 3,
+    topic: "family",
+    zh: "我的自行车被弟弟骑走了。我只好走路去学校，差点儿迟到了。",
+    py: "Wǒ de zì xíng chē bèi dì di qí zǒu le. Wǒ zhǐ hǎo zǒu lù qù xué xiào, chà diǎnr chí dào le.",
+    vi: ["Chiếc xe đạp của tôi bị em trai đạp đi mất rồi. Tôi đành đi bộ đến trường, suýt nữa thì muộn."],
+    en: ["My younger brother rode off on my bike. I had to walk to school and was almost late."],
+    words: [
+      {
+        zh: "自行车",
+        py: "zì xíng chē",
+        vi: "xe đạp",
+        en: "bicycle",
+      },
+      {
+        zh: "被",
+        py: "bèi",
+        vi: "bị",
+        en: "(passive)",
+      },
+      {
+        zh: "骑走",
+        py: "qí zǒu",
+        vi: "đạp đi mất",
+        en: "ride away",
+      },
+      {
+        zh: "只好",
+        py: "zhǐ hǎo",
+        vi: "đành phải",
+        en: "have to",
+      },
+      {
+        zh: "走路",
+        py: "zǒu lù",
+        vi: "đi bộ",
+        en: "walk",
+      },
+      {
+        zh: "差点儿",
+        py: "chà diǎnr",
+        vi: "suýt nữa",
+        en: "almost",
+      },
+      {
+        zh: "迟到",
+        py: "chí dào",
+        vi: "đến muộn",
+        en: "be late",
+      },
+    ],
+    grammar: [
+      {
+        id: "bei",
+        pattern: "我的自行车 + 被 + 弟弟 + 骑走 + 了",
+      },
+    ],
+  },
+  {
+    id: "p027",
+    type: "paragraph",
+    level: 4,
+    topic: "travel",
+    zh: "这次去云南旅行，我们不但看到了美丽的风景，而且认识了很多新朋友。",
+    py: "Zhè cì qù Yún nán lǚ xíng, wǒ men bú dàn kàn dào le měi lì de fēng jǐng, ér qiě rèn shi le hěn duō xīn péng you.",
+    vi: [
+      "Chuyến du lịch Vân Nam lần này, chúng tôi không những được ngắm phong cảnh đẹp mà còn làm quen được nhiều bạn mới.",
+    ],
+    en: ["On this trip to Yunnan, we not only saw beautiful scenery but also made many new friends."],
+    words: [
+      {
+        zh: "云南",
+        py: "Yún nán",
+        vi: "Vân Nam",
+        en: "Yunnan",
+      },
+      {
+        zh: "不但…而且…",
+        py: "bú dàn … ér qiě …",
+        vi: "không những … mà còn …",
+        en: "not only … but also …",
+      },
+      {
+        zh: "美丽",
+        py: "měi lì",
+        vi: "đẹp",
+        en: "beautiful",
+      },
+      {
+        zh: "风景",
+        py: "fēng jǐng",
+        vi: "phong cảnh",
+        en: "scenery",
+      },
+      {
+        zh: "认识",
+        py: "rèn shi",
+        vi: "quen biết",
+        en: "get to know",
+      },
+    ],
+    grammar: [
+      {
+        id: "le-done",
+        pattern: "看到 + 了 + 美丽的风景 / 认识 + 了 + 很多新朋友",
+      },
+      {
+        id: "de-poss",
+        pattern: "美丽 + 的 + 风景",
+      },
+    ],
+  },
+  {
+    id: "p028",
+    type: "paragraph",
+    level: 4,
+    topic: "work",
+    zh: "只要大家一起努力，这个问题就一定能解决。经理对我们的计划非常满意。",
+    py: "Zhǐ yào dà jiā yì qǐ nǔ lì, zhè ge wèn tí jiù yí dìng néng jiě jué. Jīng lǐ duì wǒ men de jì huà fēi cháng mǎn yì.",
+    vi: [
+      "Chỉ cần mọi người cùng cố gắng thì vấn đề này nhất định sẽ giải quyết được. Giám đốc rất hài lòng với kế hoạch của chúng tôi.",
+    ],
+    en: [
+      "As long as everyone works hard together, this problem can definitely be solved. The manager is very satisfied with our plan.",
+    ],
+    words: [
+      {
+        zh: "只要…就…",
+        py: "zhǐ yào … jiù …",
+        vi: "chỉ cần … thì …",
+        en: "as long as",
+      },
+      {
+        zh: "努力",
+        py: "nǔ lì",
+        vi: "cố gắng",
+        en: "work hard",
+      },
+      {
+        zh: "问题",
+        py: "wèn tí",
+        vi: "vấn đề",
+        en: "problem",
+      },
+      {
+        zh: "解决",
+        py: "jiě jué",
+        vi: "giải quyết",
+        en: "solve",
+      },
+      {
+        zh: "满意",
+        py: "mǎn yì",
+        vi: "hài lòng",
+        en: "satisfied",
+      },
+    ],
+    grammar: [
+      {
+        id: "ruguo-jiu",
+        pattern: "只要 + 大家一起努力，这个问题 + 就 + 一定能解决",
+      },
+      {
+        id: "hui-neng",
+        pattern: "一定 + 能 + 解决",
+      },
+    ],
+  },
+  {
+    id: "p029",
+    type: "paragraph",
+    level: 4,
+    topic: "daily",
+    zh: "为了不迟到，我每天早上六点就起床。虽然有点儿累，但是我已经习惯了。",
+    py: "Wèi le bù chí dào, wǒ měi tiān zǎo shang liù diǎn jiù qǐ chuáng. Suī rán yǒu diǎnr lèi, dàn shì wǒ yǐ jīng xí guàn le.",
+    vi: ["Để không đi muộn, mỗi sáng tôi dậy từ sáu giờ. Tuy hơi mệt nhưng tôi đã quen rồi."],
+    en: ["So as not to be late, I get up at six every morning. Although it is a bit tiring, I am already used to it."],
+    words: [
+      {
+        zh: "为了",
+        py: "wèi le",
+        vi: "để",
+        en: "in order to",
+      },
+      {
+        zh: "迟到",
+        py: "chí dào",
+        vi: "đến muộn",
+        en: "be late",
+      },
+      {
+        zh: "起床",
+        py: "qǐ chuáng",
+        vi: "thức dậy",
+        en: "get up",
+      },
+      {
+        zh: "有点儿",
+        py: "yǒu diǎnr",
+        vi: "hơi",
+        en: "a little",
+      },
+      {
+        zh: "习惯",
+        py: "xí guàn",
+        vi: "quen",
+        en: "be used to",
+      },
+    ],
+    grammar: [
+      {
+        id: "suiran-danshi",
+        pattern: "虽然 + 有点儿累，但是 + 我已经习惯了",
+      },
+      {
+        id: "time-first",
+        pattern: "我 + 每天早上六点 + 就 + 起床",
+      },
+    ],
+  },
+  {
+    id: "p030",
+    type: "paragraph",
+    level: 4,
+    topic: "food",
+    zh: "我妈妈做的饺子特别好吃。每次过年，我们全家都一边包饺子一边聊天。",
+    py: "Wǒ mā ma zuò de jiǎo zi tè bié hǎo chī. Měi cì guò nián, wǒ men quán jiā dōu yì biān bāo jiǎo zi yì biān liáo tiān.",
+    vi: [
+      "Sủi cảo mẹ tôi làm đặc biệt ngon. Mỗi lần đón Tết, cả nhà tôi đều vừa gói sủi cảo vừa trò chuyện.",
+      "Bánh sủi cảo mẹ tôi làm rất ngon. Mỗi dịp Tết, cả nhà tôi đều vừa gói sủi cảo vừa trò chuyện.",
+    ],
+    en: [
+      "The dumplings my mom makes are especially delicious. Every New Year, my whole family chats while making dumplings.",
+    ],
+    words: [
+      {
+        zh: "饺子",
+        py: "jiǎo zi",
+        vi: "sủi cảo",
+        en: "dumplings",
+      },
+      {
+        zh: "特别",
+        py: "tè bié",
+        vi: "đặc biệt",
+        en: "especially",
+      },
+      {
+        zh: "过年",
+        py: "guò nián",
+        vi: "đón Tết",
+        en: "celebrate the New Year",
+      },
+      {
+        zh: "全家",
+        py: "quán jiā",
+        vi: "cả nhà",
+        en: "whole family",
+      },
+      {
+        zh: "包",
+        py: "bāo",
+        vi: "gói",
+        en: "wrap",
+      },
+    ],
+    grammar: [
+      {
+        id: "de-poss",
+        pattern: "我妈妈做 + 的 + 饺子",
+      },
+      {
+        id: "yibian",
+        pattern: "一边 + 包饺子 + 一边 + 聊天",
+      },
+    ],
+  },
+  {
+    id: "p031",
+    type: "paragraph",
+    level: 4,
+    topic: "school",
+    zh: "通过这次考试，我发现自己的听力还不够好。以后我要多听多练，努力提高听力水平。",
+    py: "Tōng guò zhè cì kǎo shì, wǒ fā xiàn zì jǐ de tīng lì hái bú gòu hǎo. Yǐ hòu wǒ yào duō tīng duō liàn, nǔ lì tí gāo tīng lì shuǐ píng.",
+    vi: [
+      "Qua kỳ thi lần này, tôi phát hiện kỹ năng nghe của mình vẫn chưa đủ tốt. Sau này tôi phải nghe nhiều luyện nhiều, cố gắng nâng cao trình độ nghe.",
+    ],
+    en: [
+      "Through this exam I found that my listening is still not good enough. From now on I will listen and practise more and work hard to improve my listening.",
+    ],
+    words: [
+      {
+        zh: "通过",
+        py: "tōng guò",
+        vi: "thông qua",
+        en: "through",
+      },
+      {
+        zh: "考试",
+        py: "kǎo shì",
+        vi: "kỳ thi",
+        en: "exam",
+      },
+      {
+        zh: "发现",
+        py: "fā xiàn",
+        vi: "phát hiện",
+        en: "find",
+      },
+      {
+        zh: "听力",
+        py: "tīng lì",
+        vi: "kỹ năng nghe",
+        en: "listening",
+      },
+      {
+        zh: "提高",
+        py: "tí gāo",
+        vi: "nâng cao",
+        en: "improve",
+      },
+      {
+        zh: "水平",
+        py: "shuǐ píng",
+        vi: "trình độ",
+        en: "level",
+      },
+    ],
+    grammar: [
+      {
+        id: "xiang-yao",
+        pattern: "以后 + 我 + 要 + 多听多练",
+      },
+      {
+        id: "de-poss",
+        pattern: "自己 + 的 + 听力",
+      },
+    ],
+  },
+  {
+    id: "p032",
+    type: "paragraph",
+    level: 4,
+    topic: "hobby",
+    zh: "我越来越喜欢打篮球了。因为打篮球不仅能锻炼身体，还能交到很多朋友。",
+    py: "Wǒ yuè lái yuè xǐ huan dǎ lán qiú le. Yīn wèi dǎ lán qiú bù jǐn néng duàn liàn shēn tǐ, hái néng jiāo dào hěn duō péng you.",
+    vi: [
+      "Tôi ngày càng thích chơi bóng rổ. Vì chơi bóng rổ không chỉ rèn luyện được sức khỏe mà còn kết bạn được với nhiều người.",
+    ],
+    en: [
+      "I like playing basketball more and more, because it not only keeps me fit but also helps me make many friends.",
+    ],
+    words: [
+      {
+        zh: "打篮球",
+        py: "dǎ lán qiú",
+        vi: "chơi bóng rổ",
+        en: "play basketball",
+      },
+      {
+        zh: "不仅…还…",
+        py: "bù jǐn … hái …",
+        vi: "không chỉ … mà còn …",
+        en: "not only … but also …",
+      },
+      {
+        zh: "锻炼",
+        py: "duàn liàn",
+        vi: "rèn luyện",
+        en: "exercise",
+      },
+      {
+        zh: "身体",
+        py: "shēn tǐ",
+        vi: "cơ thể, sức khỏe",
+        en: "body, health",
+      },
+      {
+        zh: "交",
+        py: "jiāo",
+        vi: "kết (bạn)",
+        en: "make (friends)",
+      },
+    ],
+    grammar: [
+      {
+        id: "yuelaiyue",
+        pattern: "我 + 越来越 + 喜欢打篮球了",
+      },
+      {
+        id: "hui-neng",
+        pattern: "不仅 + 能 + 锻炼身体，还 + 能 + 交到很多朋友",
+      },
+    ],
+  },
 ];
 
 export const T_ITEM_BY_ID = new Map(T_ITEMS.map((i) => [i.id, i]));

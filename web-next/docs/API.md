@@ -183,19 +183,19 @@ Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu tr�
 
 Kho câu mẫu là nội dung tĩnh (HSK 1–4). Trong bài làm, đáp án, phân tích và id câu mẫu chỉ có sau khi trả lời / bỏ qua.
 
-| Route                                      | Việc                                                                                                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /translation`                         | `{ level, grammar, topics, counts, active, history }`                                                                                                         |
-| `GET /translation/bank`                    | Kho câu mẫu: `?type=sentence\|paragraph&level=1–4&grammar=&topic=&q=`                                                                                         |
-| `GET /translation/bank/{id}`               | Một câu mẫu (`s001`…, `p001`…); không có → `404`                                                                                                              |
-| `POST /translation/bank/{id}/save`         | Lưu vào Kho câu của tôi → `201 { id }`; đã có → `409`                                                                                                         |
-| `POST /translation/sessions`               | `{ type, direction: to-zh\|from-zh\|mixed, source: auto\|grammar\|vocab, grammarIds, level, topic, count, showPinyin }` → `201`; không có câu phù hợp → `409` |
-| `GET\|DELETE /translation/sessions/active` | Bài đang làm / bỏ bài                                                                                                                                         |
-| `GET /translation/sessions/{id}`           | Một bài của tôi                                                                                                                                               |
-| `POST …/answer` · `…/skip`                 | `{ index, answer?, elapsedSec? }` → bài đã chấm (`similarity` 0–100, `reveal`)                                                                                |
-| `POST …/hint` · `…/override` · `…/move`    | `{ index }` — gợi ý (lần 1 từ khoá, lần 2 cấu trúc) · tính là đúng · chuyển câu                                                                               |
-| `POST …/time` · `…/complete`               | `{ elapsedSec }` lưu thời gian (không giảm, ≤ 6 giờ) · nộp bài (chưa làm hết → `400`)                                                                         |
-| `GET /translation/history?limit=`          | Bài đã nộp, mới nhất trước                                                                                                                                    |
+| Route                                      | Việc                                                                                                                                                                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /translation`                         | `{ level, grammar, myGrammar, topics, counts, active, history }` — `myGrammar`: ngữ pháp của tôi `{ id, title, structure, examples }`                                                                                         |
+| `GET /translation/bank`                    | Kho câu mẫu: `?type=sentence\|paragraph&level=1–4&grammar=&topic=&q=`                                                                                                                                                         |
+| `GET /translation/bank/{id}`               | Một câu mẫu (`s001`…, `p001`…); không có → `404`                                                                                                                                                                              |
+| `POST /translation/bank/{id}/save`         | Lưu vào Kho câu của tôi → `201 { id }`; đã có → `409`                                                                                                                                                                         |
+| `POST /translation/sessions`               | `{ type, direction: to-zh\|from-zh\|mixed, source: auto\|grammar\|vocab, grammarIds, myGrammarIds, level, topic, count, showPinyin }` → `201` (đoạn: `count` 3–5; bài mới ưu tiên câu chưa làm); không có câu phù hợp → `409` |
+| `GET\|DELETE /translation/sessions/active` | Bài đang làm / bỏ bài                                                                                                                                                                                                         |
+| `GET /translation/sessions/{id}`           | Một bài của tôi                                                                                                                                                                                                               |
+| `POST …/answer` · `…/skip`                 | `{ index, answer?, elapsedSec? }` → bài đã chấm (`similarity` 0–100, `reveal`)                                                                                                                                                |
+| `POST …/hint` · `…/override` · `…/move`    | `{ index }` — gợi ý (lần 1 từ khoá, lần 2 cấu trúc) · tính là đúng · chuyển câu                                                                                                                                               |
+| `POST …/time` · `…/complete`               | `{ elapsedSec }` lưu thời gian (không giảm, ≤ 6 giờ) · nộp bài (chưa làm hết → `400`)                                                                                                                                         |
+| `GET /translation/history?limit=`          | Bài đã nộp, mới nhất trước                                                                                                                                                                                                    |
 
 ## Tiến độ học tập `/api/v1/progress`, Tìm kiếm `/api/v1/search`
 

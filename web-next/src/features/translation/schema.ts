@@ -10,7 +10,7 @@ export type TDirection = "to-zh" | "from-zh";
 export const T_SOURCES = ["auto", "grammar", "vocab"] as const;
 export type TSource = (typeof T_SOURCES)[number];
 /** Số câu / đoạn mỗi bài. */
-export const T_COUNTS: Record<TType, readonly number[]> = { sentence: [5, 10, 15, 20], paragraph: [1, 3, 5] };
+export const T_COUNTS: Record<TType, readonly number[]> = { sentence: [5, 10, 15, 20], paragraph: [3, 4, 5] };
 export const T_LEVELS = [1, 2, 3, 4] as const;
 /** Thời gian làm bài tối đa được ghi nhận (giây). */
 export const T_MAX_ELAPSED = 6 * 3600;
@@ -21,6 +21,8 @@ export const translationConfigSchema = z
     direction: z.enum(T_DIRECTIONS).default("to-zh"),
     source: z.enum(T_SOURCES).default("auto"),
     grammarIds: z.array(z.string().max(40)).max(30).default([]),
+    /** Ngữ pháp của chính người dùng (mục Ngữ pháp): câu hỏi lấy từ câu ví dụ họ đã nhập. */
+    myGrammarIds: z.array(z.uuid()).max(30).default([]),
     /** 0 = LingYu tự chọn theo trình độ. */
     level: z.number().int().min(0).max(4).default(0),
     topic: z.enum([...T_TOPICS, ""]).default(""),
@@ -28,7 +30,7 @@ export const translationConfigSchema = z
     showPinyin: z.boolean().default(false),
   })
   .superRefine((c, ctx) => {
-    if (c.source === "grammar" && !c.grammarIds.length)
+    if (c.source === "grammar" && !c.grammarIds.length && !c.myGrammarIds.length)
       ctx.addIssue({ code: "custom", path: ["grammarIds"], message: "Hãy chọn ít nhất một điểm ngữ pháp." });
     if (c.grammarIds.some((id) => !T_GRAMMAR_BY_ID.has(id)))
       ctx.addIssue({ code: "custom", path: ["grammarIds"], message: "Điểm ngữ pháp không tồn tại." });

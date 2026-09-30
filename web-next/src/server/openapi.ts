@@ -1233,6 +1233,7 @@ export function openApiDocument() {
           data: obj({
             level: int,
             grammar: { type: "array" },
+            myGrammar: { type: "array", description: "Ngữ pháp của tôi: `{ id, title, structure, examples }`" },
             topics: { type: "array", items: { enum: [...T_TOPICS] } },
             counts: { type: "object" },
             active: { type: ["object", "null"] },
