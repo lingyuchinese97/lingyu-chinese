@@ -176,6 +176,12 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
 
 42. **API quản trị** (`/api/v1/admin/*`): chỉ admin (403), chỉ trả hồ sơ + số lượng, không trả nội dung học của người dùng.
 
+43. **Thư viện LingYu (từ vựng)**: bảng riêng `library_word` / `library_image` (không thuộc user nào — xoá tài khoản admin không mất nội dung;
+    `created_by` set null). Trạng thái `draft` | `public`; người dùng chỉ thấy public. "Lưu" = chép sang kho Từ vựng của người dùng (không liên
+    kết ngược — admin sửa / xoá không ảnh hưởng bản đã lưu). **Phân tích tự động chỉ dùng dữ liệu có sẵn** (chủ dự án chọn — không thêm từ
+    điển ngoài như CVDICT): nghĩa tiếng Việt từ từ mẫu / bài đọc / luyện dịch, pinyin từ đó + HSK + pinyin-pro, bộ thủ từ bảng 214 bộ;
+    từ ngoài dữ liệu → admin tự nhập. Ảnh minh hoạ do admin tải lên (không tự sinh).
+
 ## Chỗ mơ hồ & cách xử lý
 
 - "Gợi ý pinyin bằng pinyin-pro": khi nhập Hán tự mà ô Pinyin còn trống → hiện nút gợi ý (bấm để điền), không tự ghi đè.

@@ -7,6 +7,7 @@ import {
   GraduationCap,
   Headphones,
   House,
+  Library,
   MessagesSquare,
   Settings,
   ShieldCheck,
@@ -15,6 +16,7 @@ import { GrammarIcon, RadicalIcon, ReviewIcon } from "./icons";
 
 export type NavKey =
   | "home"
+  | "library"
   | "vocabulary"
   | "sentences"
   | "grammar"
@@ -39,6 +41,7 @@ export type NavItem = {
 
 export const NAV: NavItem[] = [
   { key: "home", href: "/home", icon: House, img: "/brand/ui/nav-home.png", group: 1 },
+  { key: "library", href: "/library/vocabulary", icon: Library, group: 1 },
   { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png", group: 1 },
   { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png", group: 1 },
   { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png", group: 1 },

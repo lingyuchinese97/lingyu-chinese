@@ -3,9 +3,10 @@ import type { Messages } from "../vi";
 export const shell: Messages["shell"] = {
   nav: {
     home: "Home",
-    vocabulary: "Vocabulary",
+    library: "LingYu Library",
+    vocabulary: "My vocabulary",
     sentences: "Translation",
-    grammar: "Grammar",
+    grammar: "My grammar",
     radicals: "Radicals",
     listening: "Listening & Speaking",
     pronunciation: "Pronunciation & Tones",
@@ -17,6 +18,8 @@ export const shell: Messages["shell"] = {
     admin: "Admin",
   },
   navShort: {
+    vocabulary: "Vocabulary",
+    grammar: "Grammar",
     progress: "Progress",
   },
   quote: {

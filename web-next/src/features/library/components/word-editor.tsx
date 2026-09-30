@@ -543,10 +543,15 @@ function Rows<T extends Record<string, string>>({
           key={i}
           className={cn(
             "flex gap-2 rounded-[14px] bg-[#F7FAFE] p-2",
-            stacked ? "flex-col sm:flex-row sm:items-start" : "flex-wrap items-center sm:flex-nowrap",
+            stacked ? "flex-col" : "flex-wrap items-center sm:flex-nowrap",
           )}
         >
-          <span className="flex size-7 shrink-0 items-center justify-center self-center rounded-full bg-white text-[13px] font-bold text-text-2">
+          <span
+            className={cn(
+              "flex size-7 shrink-0 items-center justify-center rounded-full bg-white text-[13px] font-bold text-text-2",
+              stacked ? "self-start" : "self-center",
+            )}
+          >
             {i + 1}
           </span>
           {cols.map((c) => (
@@ -569,7 +574,10 @@ function Rows<T extends Record<string, string>>({
             type="button"
             aria-label={`${removeLabel} ${i + 1}`}
             onClick={() => onChange(rows.filter((_, j) => j !== i))}
-            className="flex size-9 shrink-0 items-center justify-center self-center rounded-full text-red hover:bg-red-50"
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-full text-red hover:bg-red-50",
+              stacked ? "self-end" : "self-center",
+            )}
           >
             <Trash2 className="size-[18px]" />
           </button>

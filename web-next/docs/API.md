@@ -245,6 +245,27 @@ Mọi số liệu chỉ của người đang đăng nhập (người khác khôn
 
 Các hoạt động khác (ôn từ, ôn câu, bài học, luyện nghe, thêm từ / ngữ pháp) được server tự ghi khi gọi API tương ứng.
 
+## Thư viện LingYu `/api/v1/library` (người đã đăng nhập)
+
+Nội dung do LingYu (admin) soạn và **public**. Bản nháp không bao giờ trả về cho người dùng (→ `404`).
+
+| Route                           | Mô tả                                                                                                                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /library/words`            | Từ đã public. Query: `hsk` (0 = tất cả, 1–6), `topic`, `q`, `sort` (`order`\|`newest`\|`pinyin`) → `{ items[{ id, hanzi, pinyin, meaningVi, hskLevel, saved }], total, levels, all }` |
+| `GET /library/words/{id}`       | Chi tiết: pinyin, từ loại, nghĩa, ghi chú, bộ thủ / thành phần, mẹo ghi nhớ, liên tưởng, ví dụ, từ liên quan, ngữ pháp, `hasImage`, `saved`                                           |
+| `GET /library/words/{id}/image` | Ảnh minh hoạ (ảnh, không phải JSON)                                                                                                                                                   |
+| `POST /library/words/{id}/save` | Lưu vào Từ vựng của tôi (thẻ “Thư viện LingYu” + HSK); đã có Hán tự đó → bỏ qua → `{ saved, added }`                                                                                  |
+
+Admin (`/api/v1/admin/library`, người thường → `403`):
+
+| Route                                         | Mô tả                                                                                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /admin/library/analyze`                 | `{ input }`: chữ Hán → `analysis` (tự điền từ dữ liệu có sẵn); pinyin / tiếng Việt → `candidates`                                    |
+| `GET\|POST /admin/library/words`              | Danh sách (`q`, `status`, `page`) · thêm `{ word, publish }` → `201 { id }`; trùng Hán tự → `409`; public cần pinyin + nghĩa → `400` |
+| `GET\|PUT\|DELETE /admin/library/words/{id}`  | Xem · sửa `{ word, publish? }` · xoá (kèm ảnh)                                                                                       |
+| `POST /admin/library/words/{id}/status`       | `{ public }` — public / về nháp                                                                                                      |
+| `PUT\|DELETE /admin/library/words/{id}/image` | Ảnh `{ data: base64 }` (JPG / PNG / WebP ≤ 1MB, kiểm tra magic bytes) · xoá ảnh                                                      |
+
 ## Quản trị `/api/v1/admin` (chỉ admin)
 
 Người dùng thường → `403`. Không trả mật khẩu hay nội dung học của người dùng (chỉ số lượng).

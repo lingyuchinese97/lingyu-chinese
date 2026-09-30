@@ -17,7 +17,9 @@ export const GET = api<P>(async ({ user, params }) => {
 export const PUT = api<P>(async ({ user, req, params }) => {
   assertAdmin(user);
   const id = wid(params.id);
-  const { word, publish } = z.object({ word: libWordInputSchema, publish: z.boolean().optional() }).parse(await body(req));
+  const { word, publish } = z
+    .object({ word: libWordInputSchema, publish: z.boolean().optional() })
+    .parse(await body(req));
   await updateWord(id, word, publish);
   revalidatePath("/library/vocabulary");
   return adminGetWord(id);

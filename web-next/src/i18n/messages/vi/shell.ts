@@ -1,9 +1,10 @@
 export const shell = {
   nav: {
     home: "Trang chủ",
-    vocabulary: "Từ vựng",
+    library: "Thư viện LingYu",
+    vocabulary: "Từ vựng của tôi",
     sentences: "Luyện dịch",
-    grammar: "Ngữ pháp",
+    grammar: "Ngữ pháp của tôi",
     radicals: "Bộ thủ",
     listening: "Luyện nghe & Nói",
     pronunciation: "Phát âm & Biến điệu",
@@ -15,6 +16,8 @@ export const shell = {
     admin: "Quản trị",
   },
   navShort: {
+    vocabulary: "Từ vựng",
+    grammar: "Ngữ pháp",
     progress: "Tiến độ",
   },
   quote: {
