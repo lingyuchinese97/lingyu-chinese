@@ -129,6 +129,7 @@
 
 ### Fixed
 
+- Tài liệu API (`/api-docs`): các nhóm route thu gọn sẵn — mở hết ~150 route làm Swagger UI dừng vẽ sau nhóm đầu tiên.
 - Đọc hiểu: tăng tương phản nút “Quay lại” và dòng gợi ý từ khoá (axe color-contrast).
 - Kết quả Ôn dịch câu: mascot không còn đè lên vòng tròn điểm (dùng ảnh nền trong suốt, đặt cạnh vòng tròn).
 

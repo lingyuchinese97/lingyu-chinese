@@ -34,6 +34,8 @@ test.describe("có tài khoản tài liệu", () => {
     await page.goto("/api-docs");
     await expect(page.getByRole("heading", { level: 1, name: /Tài liệu API/ })).toBeVisible();
     await expect(page.getByText("LingYu Chinese API")).toBeVisible();
+    // Các nhóm route thu gọn sẵn → mở nhóm Từ vựng trước.
+    await page.locator("h3.opblock-tag", { hasText: "Từ vựng" }).first().click();
     const stats = page.locator("#operations-Từ_vựng-get_vocab_stats");
     await expect(stats).toBeVisible();
 

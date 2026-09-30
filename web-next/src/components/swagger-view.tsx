@@ -18,7 +18,8 @@ export function SwaggerView({ url }: { url: string }) {
           url,
           domNode: ref.current,
           deepLinking: true,
-          docExpansion: "list",
+          // Thu gọn các nhóm: mở hết (~150 route) làm Swagger UI dừng vẽ giữa chừng. Bấm tên nhóm để mở.
+          docExpansion: "none",
           defaultModelsExpandDepth: 0,
           tryItOutEnabled: false,
           // Gửi kèm cookie phiên (cùng domain).
