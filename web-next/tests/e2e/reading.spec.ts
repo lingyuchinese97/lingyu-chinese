@@ -19,12 +19,17 @@ test("Đọc hiểu: chọn bài → pinyin / bản dịch → xem từ, lưu t�
   const p = R_PASSAGE_BY_ID.get("r102")!;
   await expect(page.getByRole("heading", { level: 1, name: p.title.zh })).toBeVisible();
 
-  // Pinyin trên đầu chữ (mặc định bật), bản dịch bật được.
-  await expect(page.locator("ruby rt").first()).toBeVisible();
-  await page.getByLabel("Hiện pinyin").uncheck();
-  await expect(page.locator("ruby")).toHaveCount(0);
-  await page.getByLabel("Hiện bản dịch").check();
+  // Dòng pinyin trên mỗi câu + bản dịch (mặc định bật), tắt được.
+  await expect(page.locator("[data-pinyin-line]").first()).toBeVisible();
   await expect(page.getByText(p.lines[1]!.vi)).toBeVisible();
+  await page.getByLabel("Hiện pinyin").uncheck();
+  await expect(page.locator("[data-pinyin-line]")).toHaveCount(0);
+  await page.getByLabel("Hiện bản dịch").uncheck();
+  await expect(page.getByText(p.lines[1]!.vi)).toHaveCount(0);
+  await page.getByLabel("Hiện bản dịch").check();
+  await page.getByLabel("Hiện pinyin").check();
+  // Câu hỏi có pinyin + nghĩa phương án; thanh tiến độ đếm câu đã trả lời.
+  await expect(page.getByRole("progressbar", { name: "Số câu đã trả lời" })).toHaveAttribute("aria-valuenow", "0");
 
   // Bấm từ khoá → nghĩa → lưu vào Từ vựng.
   await page.getByRole("button", { name: "Từ “苹果”" }).click();
@@ -42,6 +47,8 @@ test("Đọc hiểu: chọn bài → pinyin / bản dịch → xem từ, lưu t�
   const qs = page.getByRole("region", { name: "Câu hỏi" });
   await qs.getByRole("radiogroup").nth(0).getByRole("radio", { name: /五块/ }).click();
   await qs.getByRole("radiogroup").nth(1).getByRole("radio", { name: /两斤/ }).click();
+  await expect(page.getByRole("progressbar", { name: "Số câu đã trả lời" })).toHaveAttribute("aria-valuenow", "2");
+  await expect(qs.getByRole("radiogroup").nth(0).getByRole("radio", { name: /五块/ })).toContainText("wǔ kuài");
   await qs.getByLabel("Đáp án câu 3").fill("大");
   await qs.getByRole("button", { name: "Nộp bài" }).click();
   const result = page.getByRole("region", { name: "Kết quả" });

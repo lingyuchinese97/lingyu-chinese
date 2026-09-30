@@ -32,6 +32,11 @@ export const reading = {
   open: "Đọc bài “{title}”",
   words: "{count} từ khoá",
   // Đọc
+  passageLabel: "Bài đọc",
+  keyWords: "Từ vựng nổi bật trong bài",
+  showAll: "Xem tất cả",
+  showLess: "Thu gọn",
+  progress: "Số câu đã trả lời",
   back: "Về Đọc hiểu",
   showPinyin: "Hiện pinyin",
   showTranslation: "Hiện bản dịch",
