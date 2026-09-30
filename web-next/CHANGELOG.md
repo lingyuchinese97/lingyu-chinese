@@ -6,6 +6,10 @@
 
 ### Added
 
+- **Trang chủ + menu dùng hình theo thiết kế**: 5 thẻ chức năng có hình minh hoạ (sách HSK, thẻ 词, sổ ngữ pháp, tai nghe,
+  micro), linh vật LY cầm bút trên sách “加油” ở ảnh bìa, ngọn lửa ở thẻ chuỗi ngày học, icon mục tiêu / lịch / tiến độ, icon
+  “Bài học gần đây” có dấu tick xanh; menu bên trái và thanh tab dưới dùng bộ icon xanh theo thiết kế, linh vật vẫy tay ở cuối
+  menu. Hình nằm ở `public/brand/ui/` (cả hình cho Đọc hiểu, Luyện dịch, Ôn tập, Tiến độ, Bộ thủ và bộ icon nhỏ để dùng tiếp).
 - **Luyện dịch với kho câu mẫu có sẵn** (menu “Luyện dịch”, `/translate`):
   - Kho câu mẫu HSK 1–4: 48 câu + 8 đoạn ngắn, 10 chủ đề, 24 điểm ngữ pháp. Mỗi câu có bản dịch vi / en (nhiều cách dịch được
     chấp nhận), cách nói khác, phân tích từ (chữ Hán, pinyin, nghĩa) và giải thích cấu trúc ngữ pháp (công thức + áp vào câu).
