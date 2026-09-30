@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { G_ICON_KEYS } from "./icons";
 
 export const G_LIMITS = {
   title: 120,
@@ -77,6 +78,8 @@ export const grammarInputSchema = z
       .default([])
       .transform((list) => list.filter((e) => e.chinese || e.pinyin || e.vietnamese)),
     tags: z.array(grammarTagName).max(20).default([]),
+    /** Biểu tượng cạnh tiêu đề; "" = tự chọn theo nội dung. */
+    icon: z.enum(["", ...G_ICON_KEYS]).default(""),
   })
   .superRefine((v, ctx) => {
     if (v.examples.length > G_LIMITS.examples)

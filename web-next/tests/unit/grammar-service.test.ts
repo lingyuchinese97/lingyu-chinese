@@ -200,3 +200,20 @@ describe("ngữ pháp — chia sẻ", () => {
     expect(await unreadCount(C.id)).toBe(0);
   });
 });
+
+describe("ngữ pháp — biểu tượng cạnh tiêu đề", () => {
+  it("chọn biểu tượng (lưu / sửa / về tự động), sai khoá bị chặn; tự đoán theo thẻ → tiêu đề → cấu trúc", async () => {
+    const { guessIcon, iconOf } = await import("@/features/grammar/icons");
+    expect(() => input({ title: "x", icon: "rocket" })).toThrow();
+    const id = await g.createGrammar(A.id, input({ title: "Câu cầu khiến", icon: "communication" }));
+    expect((await g.getOwnGrammar(A.id, id))!.icon).toBe("communication");
+    await g.updateGrammar(A.id, id, input({ title: "Câu cầu khiến", icon: "" }));
+    const item = (await g.getOwnGrammar(A.id, id))!;
+    expect(item.icon).toBe("");
+    expect(iconOf(item)).toBe("communication");
+    expect(guessIcon({ title: "Cấu trúc so sánh “比”" })).toBe("compare");
+    expect(guessIcon({ title: "Cách dùng", structure: "什么 + Danh từ" })).toBe("question");
+    expect(guessIcon({ title: "Câu hỏi 吗", tags: [{ name: "Lượng từ" }] })).toBe("measure");
+    expect(guessIcon({ title: "abc" })).toBe("other");
+  });
+});

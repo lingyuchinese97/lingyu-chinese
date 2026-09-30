@@ -14,12 +14,14 @@ import { applyToneInput } from "@/lib/pinyin";
 import { G_LIMITS, grammarInputSchema, structureLines } from "../schema";
 import { createGrammarAction, updateGrammarAction } from "../actions";
 import { TagInput } from "./grammar-dialogs";
+import { G_ICON_KEYS, GrammarBadgeIcon, guessIcon, isIconKey, type GrammarIconKey } from "../icons";
 import { useT } from "@/i18n/client";
 
 type Ex = { key: string; chinese: string; pinyin: string; vietnamese: string };
 type Initial = {
   id: string;
   title: string;
+  icon: string;
   meaning: string;
   structure: string;
   notes: string;
@@ -36,6 +38,9 @@ export function GrammarForm({ initial, allTags }: { initial: Initial | null; all
   const t = useT();
   const editing = !!initial;
   const [title, setTitle] = React.useState(initial?.title ?? "");
+  const [icon, setIcon] = React.useState<"" | GrammarIconKey>(
+    initial?.icon && isIconKey(initial.icon) ? initial.icon : "",
+  );
   const [meaning, setMeaning] = React.useState(initial?.meaning ?? "");
   // Cấu trúc: 1 dòng chính + thêm tối đa 3 dòng (lưu chung một chuỗi, mỗi dòng một cấu trúc).
   const [structures, setStructures] = React.useState<string[]>(() => {
@@ -88,6 +93,7 @@ export function GrammarForm({ initial, allTags }: { initial: Initial | null; all
     setFormErr("");
     const payload = {
       title,
+      icon,
       meaning,
       structure: structures.join("\n"),
       notes,
@@ -167,6 +173,14 @@ export function GrammarForm({ initial, allTags }: { initial: Initial | null; all
           {titleErr ? t.maybe(titleErr) : null}
         </span>
       </div>
+      <IconPicker
+        value={icon}
+        auto={guessIcon({ title, structure: structures.join("\n"), tags: tags.map((name) => ({ name })) })}
+        onChange={(v) => {
+          setIcon(v);
+          setDirty(true);
+        }}
+      />
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="gf-meaning">{t("grammar.form.meaning")}</Label>
         <Textarea
@@ -428,5 +442,50 @@ function IconBtn({
     >
       {children}
     </button>
+  );
+}
+
+/** Chọn biểu tượng hiển thị cạnh tiêu đề: "Tự động" (đoán theo nội dung) hoặc một loại cụ thể. */
+function IconPicker({
+  value,
+  auto,
+  onChange,
+}: {
+  value: "" | GrammarIconKey;
+  auto: GrammarIconKey;
+  onChange: (v: "" | GrammarIconKey) => void;
+}) {
+  const t = useT();
+  const opts: ("" | GrammarIconKey)[] = ["", ...G_ICON_KEYS];
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-1.5 font-semibold text-text">
+        {t("grammar.icon.label")} <span className="font-medium text-text-2">{t("grammar.icon.hint")}</span>
+      </legend>
+      <div role="radiogroup" aria-label={t("grammar.icon.label")} className="flex flex-wrap gap-2">
+        {opts.map((k) => {
+          const on = value === k;
+          const shown = k || auto;
+          return (
+            <button
+              key={k || "auto"}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onChange(k)}
+              className={cn(
+                "flex min-h-11 items-center gap-2 rounded-xl border-[1.5px] py-1 pr-3 pl-1 text-[14px] font-semibold transition-colors outline-none focus-visible:shadow-[var(--focus-ring)]",
+                on
+                  ? "border-blue-600 bg-blue-50 text-blue-700"
+                  : "border-border bg-white text-text-2 hover:border-[#A9D3F8]",
+              )}
+            >
+              <GrammarBadgeIcon k={shown} className="size-9 [&_svg]:size-[18px] [&>span]:text-[14px]" />
+              {k ? t(`grammar.icon.${k}`) : t("grammar.icon.auto", { name: t(`grammar.icon.${auto}`) })}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }

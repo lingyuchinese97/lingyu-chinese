@@ -6,6 +6,12 @@
 
 ### Added
 
+- **Ngữ pháp — giao diện mới** (`/grammar`): ô tìm kiếm + “Thêm ngữ pháp mới” trên cùng, khung tiêu đề có khẩu hiệu và linh vật,
+  thẻ lọc “Tất cả (N)” · từng thẻ (số bài) · “+ Thêm thẻ”, sắp xếp, **dạng lưới / danh sách** (nhớ theo trình duyệt). Mỗi ngữ pháp
+  là một thẻ 2 cột: biểu tượng + nhãn loại, tiêu đề, cấu trúc chính (chữ đỏ), thẻ (HSK tím), lưu, menu “…”, nút mở.
+- **Biểu tượng cho tiêu đề ngữ pháp**: ở form thêm / sửa chọn 1 trong 14 loại (Danh từ, Lượng từ, Số đếm, Trợ từ, Đại từ nghi vấn,
+  Cấu trúc câu, So sánh, Giao tiếp, Động từ, Tính từ, Phó từ, Thời gian, Bổ ngữ, Khác) hoặc “Tự động” (đoán theo thẻ → tiêu đề →
+  cấu trúc). Hiện ở danh sách và trang chi tiết. Cột mới `grammar.icon` (migration `0010_grammar_icon`); API nhận / trả `icon`.
 - **Thêm từ vựng từ ảnh** (`/vocabulary/new`): thẻ Chụp ảnh · Tải ảnh lên · Dán ảnh (Ctrl + V) · Nhập thủ công.
   - Nhận dạng chữ Hán + tiếng Việt **ngay trên trình duyệt** (tesseract.js, file tự host ở `/ocr`, chép từ node_modules lúc build);
     ảnh không tải lên, không lưu. Chỉ tải bộ nhận dạng (~5MB) khi dùng lần đầu, sau đó service worker giữ lại.

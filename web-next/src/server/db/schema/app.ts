@@ -190,6 +190,8 @@ export const grammar = pgTable(
     meaning: text("meaning").notNull().default(""),
     structure: text("structure").notNull().default(""),
     notes: text("notes").notNull().default(""),
+    /** Biểu tượng hiển thị cạnh tiêu đề (khoá trong G_ICONS); "" = tự chọn theo nội dung. */
+    icon: text("icon").notNull().default(""),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

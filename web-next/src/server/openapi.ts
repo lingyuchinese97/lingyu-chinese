@@ -243,7 +243,7 @@ export function openApiDocument() {
         Grammar: {
           type: "object",
           description:
-            "Ngữ pháp: id, title, meaning, structure (mỗi dòng một cấu trúc), notes, examples, tags, isSaved, personalNote (chỉ chủ sở hữu)…",
+            'Ngữ pháp: id, title, icon (biểu tượng cạnh tiêu đề; "" = tự chọn theo nội dung), meaning, structure (mỗi dòng một cấu trúc), notes, examples, tags, isSaved, personalNote (chỉ chủ sở hữu)…',
         },
         Sentence: {
           type: "object",
