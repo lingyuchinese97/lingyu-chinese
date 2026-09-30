@@ -7,6 +7,7 @@ export function NavIcon({ item, className, muted }: { item: NavItem; className?:
   if (item.img)
     return (
       <Image
+        unoptimized
         src={item.img}
         alt=""
         aria-hidden="true"
