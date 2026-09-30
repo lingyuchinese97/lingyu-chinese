@@ -24,6 +24,7 @@ export default defineConfig([
     "playwright-report/**",
     "test-results/**",
     "public/sw.js",
+    "public/ocr/**",
     "public/swe-worker*.js",
   ]),
 ]);

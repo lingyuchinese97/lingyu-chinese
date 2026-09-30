@@ -14,3 +14,4 @@ test-results
 /public/swe-worker*.js
 .pgdata
 dist
+/public/ocr

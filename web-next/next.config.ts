@@ -9,11 +9,12 @@ const isHttps = (process.env.BETTER_AUTH_URL ?? "").startsWith("https://");
  * trình phát nhúng chính thức của YouTube (script iframe_api + khung youtube-nocookie) và file âm thanh / video
  * người dùng dán link (media-src https:) — phát trực tiếp, không tải về, không cache.
  * `'unsafe-inline'` cho script vì Next nhúng dữ liệu RSC bằng script inline (không dùng nonce để trang vẫn cache tĩnh được);
- * `'unsafe-eval'` chỉ bật khi dev (React Refresh).
+ * `'unsafe-eval'` chỉ bật khi dev (React Refresh). `'wasm-unsafe-eval'`: chạy WebAssembly nhận dạng chữ trong ảnh (Thêm từ ảnh,
+ * file tự host ở /ocr) — chỉ cho phép biên dịch WASM, không cho eval JavaScript.
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.youtube.com https://s.ytimg.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
@@ -36,7 +37,7 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    value: "camera=(self), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()",
   },
   ...(isHttps ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }] : []),
 ];

@@ -162,3 +162,31 @@ describe("tag — tạo, đổi tên, xoá", () => {
     expect((await svc.listTags(A)).map((t) => t.id)).toContain(other);
   });
 });
+
+describe("thêm từ từ ảnh — gợi ý + thêm nhiều", () => {
+  it("gợi ý pinyin / nghĩa / bộ thủ / HSK; 'đã có' chỉ tính kho của chính mình; thêm nhiều bỏ qua từ trùng", async () => {
+    const U = await makeUser("ocr");
+    const V = await makeUser("ocr2");
+    await svc.createVocab(V, input({ hanzi: "苹果", pinyin: "píngguǒ", meaningVi: "táo (riêng của V)" }));
+    const s = await svc.suggestWords(U, ["你好", "苹果", "你好", "龘"]);
+    expect(s.map((x) => x.hanzi)).toEqual(["你好", "苹果", "龘"]);
+    expect(s[0]).toMatchObject({ pinyin: "nǐ hǎo", meaningVi: "xin chào", hskLevel: 1, exists: false });
+    expect(s[0]!.radicals.length).toBeGreaterThan(0);
+    expect(s[1]).toMatchObject({ exists: false });
+    expect(s[1]!.meaningVi).not.toContain("riêng của V");
+    expect(s[2]).toMatchObject({ meaningVi: "", hskLevel: null });
+    expect(s[2]!.pinyin).toBeTruthy();
+
+    const r = await svc.createMany(U, [
+      input({ hanzi: "你好", pinyin: "nǐ hǎo", meaningVi: "xin chào", tags: ["Từ ảnh"] }),
+      input({ hanzi: "苹果", pinyin: "píngguǒ", meaningVi: "quả táo" }),
+      input({ hanzi: "你好", pinyin: "nǐ hǎo", meaningVi: "lặp" }),
+    ]);
+    expect(r).toEqual({ added: ["你好", "苹果"], skipped: ["你好"] });
+    expect((await svc.suggestWords(U, ["你好"]))[0]!.exists).toBe(true);
+    expect((await svc.createMany(U, [input({ hanzi: "苹果", meaningVi: "x" })])).skipped).toEqual(["苹果"]);
+    const mine = await svc.listVocab(U, params({ tag: "Từ ảnh" }));
+    expect(mine.items.map((x) => x.hanzi)).toEqual(["你好"]);
+    expect((await svc.listVocab(V, params())).total).toBe(1);
+  });
+});

@@ -79,3 +79,19 @@ export const listParamsSchema = z.object({
 export type ListParams = z.infer<typeof listParamsSchema>;
 
 export const idsSchema = z.array(z.uuid()).min(1, "Chưa chọn từ vựng nào.").max(500);
+
+/** Tra gợi ý cho các từ nhận ra từ ảnh. */
+export const suggestSchema = z.object({
+  words: z
+    .array(z.string().trim().min(1).max(VOCAB.MAX_HANZI))
+    .min(1, "Chưa có từ nào.")
+    .max(VOCAB.MAX_BULK, `Tối đa ${VOCAB.MAX_BULK} từ một lần.`),
+});
+
+/** Thêm nhiều từ một lần (từ ảnh). */
+export const bulkSchema = z.object({
+  items: z
+    .array(vocabInputSchema)
+    .min(1, "Chưa chọn từ vựng nào.")
+    .max(VOCAB.MAX_BULK, `Tối đa ${VOCAB.MAX_BULK} từ một lần.`),
+});

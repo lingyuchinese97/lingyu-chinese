@@ -62,6 +62,8 @@ export const errors: Messages["errors"] = {
   vocabNotFoundDeleted: "Word not found. It may have been deleted.",
   tagNotFoundDeleted: "Tag not found. It may have been deleted.",
   tagDuplicate: "A tag with this name already exists.",
+  noWordsYet: "No words yet.",
+  bulkMax: "At most {max} words at a time.",
   noVocabSelected: "No words selected.",
   selectedGone: "The selected words no longer exist.",
   recipientRequired: "Please enter at least 1 recipient email.",

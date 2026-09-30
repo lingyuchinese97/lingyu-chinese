@@ -7,6 +7,8 @@ export const VOCAB = {
   MAX_PINYIN: 120,
   MAX_MEANING: 200,
   PAGE_SIZE: 8,
+  /** Số từ tối đa nhận từ một ảnh / thêm một lần. */
+  MAX_BULK: 50,
 } as const;
 
 export const IMAGE = {
