@@ -77,15 +77,13 @@ export function ExercisesView({ data, params }: { data: ExerciseList; params: Ex
   }, [q, params.q, go]);
 
   const filtered = !!(params.q || params.tag);
-  const fmt = (d: Date | string) =>
-    new Date(d).toLocaleString(intl, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+  // "30/09/2026 12:35": ngày trước, giờ sau (24h).
+  const fmt = (d: Date | string) => {
+    const x = new Date(d);
+    const date = x.toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "numeric" });
+    const time = x.toLocaleTimeString(intl, { hour: "2-digit", minute: "2-digit", hour12: false });
+    return `${date} ${time}`;
+  };
   const tabs = [
     { key: "practice", href: "/listening", label: t("listening.tabs.practice"), icon: Globe },
     { key: "mine", href: "/listening/exercises", label: t("listening.tabs.mine"), icon: BookOpen },
@@ -218,7 +216,7 @@ export function ExercisesView({ data, params }: { data: ExerciseList; params: Ex
             <>
               <div
                 aria-hidden="true"
-                className="hidden grid-cols-[40px_48px_minmax(0,1fr)_200px_150px_150px_56px] items-center gap-3 rounded-[14px] bg-[#EEF4FC] px-4 py-3 text-[14px] font-semibold text-text-2 lg:grid"
+                className="hidden grid-cols-[40px_48px_minmax(0,1fr)_200px_150px_150px_76px] items-center gap-3 rounded-[14px] bg-[#EEF4FC] px-4 py-3 text-[14px] font-semibold text-text-2 lg:grid"
               >
                 <span className="text-center">#</span>
                 <span />
@@ -236,7 +234,7 @@ export function ExercisesView({ data, params }: { data: ExerciseList; params: Ex
                       <Link
                         href={`/listening/exercises/${it.id}`}
                         aria-label={t("listening.mine.open", { title: it.title })}
-                        className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-[16px] border border-border bg-white px-3.5 py-3 transition-[border-color,box-shadow] outline-none hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] focus-visible:shadow-[var(--focus-ring)] lg:grid-cols-[40px_48px_minmax(0,1fr)_200px_150px_150px_56px] lg:px-4"
+                        className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-[16px] border border-border bg-white px-3.5 py-3 transition-[border-color,box-shadow] outline-none hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] focus-visible:shadow-[var(--focus-ring)] lg:grid-cols-[40px_48px_minmax(0,1fr)_200px_150px_150px_76px] lg:px-4"
                       >
                         <span className="hidden text-center text-text-2 tabular-nums lg:block">
                           {(data.page - 1) * data.pageSize + i + 1}

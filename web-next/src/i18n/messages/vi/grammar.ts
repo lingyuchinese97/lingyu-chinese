@@ -25,7 +25,7 @@ export const grammar = {
   addTagChip: "Thêm thẻ",
   layout: "Kiểu hiển thị",
   layoutGrid: "Dạng lưới",
-  layoutList: "Dạng danh sách",
+  layoutList: "Danh sách",
   openItem: "Mở {title}",
   all: "Tất cả",
   noMatch: "Không có ngữ pháp phù hợp",
