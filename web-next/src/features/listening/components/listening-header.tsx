@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import { BookOpen, Globe, Headphones } from "lucide-react";
-import { LeafDecor } from "@/components/layout/icons";
 import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
-/** Tiêu đề "Luyện nghe & Nói" + 2 tab: Luyện nghe từ các kênh · Bài làm của tôi (là link để quay lại / chia sẻ được). */
-export function ListeningHeader({ tab }: { tab: "practice" | "mine" }) {
+/**
+ * Thanh tiêu đề gọn "Luyện nghe · Chép chính tả" (nút thao tác bên phải) + 2 tab: Luyện nghe từ các kênh · Bài làm của tôi
+ * (là link để quay lại / chia sẻ được).
+ */
+export function ListeningHeader({ tab, actions }: { tab: "practice" | "mine"; actions?: React.ReactNode }) {
   const t = useT();
   const tabs = [
     { key: "practice" as const, href: "/listening", label: t("listening.tabs.practice"), icon: Globe },
@@ -16,41 +18,30 @@ export function ListeningHeader({ tab }: { tab: "practice" | "mine" }) {
     <div className="flex flex-col gap-3">
       <section
         aria-labelledby="ls-title"
-        className="relative flex items-center gap-4 overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F4F9FF_0%,#E9F3FE_60%,#E1EFFD_100%)] px-[18px] py-[18px] md:px-7 md:py-5"
+        className="flex flex-wrap items-center gap-3 rounded-[20px] border border-[#DDEBF8] bg-white/95 px-4 py-3 shadow-card md:px-5"
       >
-        <span className="hidden size-14 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-soft sm:flex">
-          <Headphones className="size-7" />
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+          <Headphones className="size-5" />
         </span>
-        <div className="min-w-0 flex-1">
-          <h1
-            id="ls-title"
-            className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[32px]"
-          >
-            {t("listening.title")}
-            <LeafDecor className="w-10" />
-          </h1>
-          <p className="mt-1 text-[14.5px] text-text-2 md:text-[16px]">{t("listening.subtitle")}</p>
-        </div>
-        <p
-          aria-hidden="true"
-          className="hidden -rotate-6 text-right font-semibold text-blue-600 italic lg:block lg:text-[17px]"
+        <h1
+          id="ls-title"
+          className="min-w-0 flex-1 text-[20px] font-extrabold tracking-tight text-navy-900 md:text-[24px]"
         >
-          {t("listening.bannerLine1")}
-          <br />
-          {t("listening.bannerLine2")}
-        </p>
+          {tab === "practice" ? t("listening.pageTitle") : t("listening.tabs.mine")}
+        </h1>
+        {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
       </section>
-      <nav aria-label={t("listening.tabs.label")} className="grid grid-cols-2 gap-2 md:max-w-[680px]">
+      <nav aria-label={t("listening.tabs.label")} className="flex flex-wrap gap-2">
         {tabs.map((x) => (
           <Link
             key={x.key}
             href={x.href}
             aria-current={tab === x.key ? "page" : undefined}
             className={cn(
-              "flex min-h-12 items-center justify-center gap-2 rounded-[12px] border px-3 text-center text-[15px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5 [&_svg]:shrink-0",
+              "flex min-h-11 items-center justify-center gap-2 rounded-full border px-4 text-center text-[14.5px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px] [&_svg]:shrink-0",
               tab === x.key
                 ? "border-blue-600 bg-blue-600 text-white shadow-cta"
-                : "border-[#DDEBF8] bg-[#EEF6FE] text-blue-700 hover:bg-blue-100",
+                : "border-[#DDEBF8] bg-white text-blue-700 hover:bg-blue-50",
             )}
           >
             <x.icon />

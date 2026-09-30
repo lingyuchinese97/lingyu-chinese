@@ -6,6 +6,14 @@
 
 ### Added
 
+- **Luyện nghe · Chép chính tả – giao diện mới** (theo thiết kế): thanh tiêu đề gọn có **Hướng dẫn** (5 bước) và **Lưu bài làm**;
+  cột **1. Nguồn nghe** với tab YouTube / Podcast / Radio / **TikTok** (trình phát nhúng chính thức, chỉ phát) / Link khác, khối
+  **Điều chỉnh tốc độ** 0.5x–**2x** và **Chuyển đến thời gian**, lặp đoạn A–B gọn trong một mục mở/đóng; cột **2. Chép chính tả**
+  có **Mẹo**, **Mở rộng** (phóng to vùng chép), đáp án tham khảo (“Nhập đáp án”), **Ghi chú**, “Kiểm tra kết quả”, “Lưu bài làm”.
+  Podcast / Radio nhận cả link phát trực tiếp không có đuôi file.
+- **Chữ bôi vàng hiện pinyin + nghĩa**: rê chuột (điện thoại: chạm) vào đoạn bôi vàng → thẻ nhỏ có pinyin và nghĩa — ghi chú bạn đã
+  gắn cho từ đó, nếu chưa có thì lấy nghĩa trong kho Từ vựng của bạn; bấm để ghi / sửa / xoá nghĩa. Ghi chú lưu cùng bài làm và
+  hiện khi rê chuột ở “Bài làm của tôi”. API mới `GET /api/v1/listening/lookup?words=` (chỉ tra kho của chính mình).
 - **Luyện dịch – cải tiến**:
   - Dịch đoạn ngắn: chọn **3, 4 hoặc 5 đoạn**; kho mẫu có thêm 24 đoạn (tổng 32 đoạn, mỗi cấp HSK 1–4 có 8 đoạn).
   - **Làm lại ra câu khác**: bài mới ưu tiên câu / đoạn chưa làm; đã làm hết thì lấy câu làm lâu nhất trước.

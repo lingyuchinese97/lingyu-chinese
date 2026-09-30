@@ -26,7 +26,15 @@ function Formatted({ spans }: { spans: FormattedSpan[] }) {
   return (
     <p lang="zh" className="font-cn text-[19px] leading-[1.9] break-words whitespace-pre-wrap text-text">
       {spans.map((s, i) => (
-        <span key={i} className={cn(s.color === "red" && "text-red", s.highlight && "bg-[#FFF1A8]")}>
+        <span
+          key={i}
+          title={s.highlight && s.note ? s.note : undefined}
+          className={cn(
+            s.color === "red" && "text-red",
+            s.highlight && "bg-[#FFF1A8]",
+            s.note && "cursor-help underline decoration-dotted",
+          )}
+        >
           {s.text}
         </span>
       ))}

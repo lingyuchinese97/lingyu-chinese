@@ -2,7 +2,7 @@
 import { and, asc, count, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import { recordActivity } from "@/features/progress/service";
 import { db } from "@/server/db/client";
-import { listeningExercise, listeningTag, listeningToTag } from "@/server/db/schema";
+import { listeningExercise, listeningTag, listeningToTag, vocab } from "@/server/db/schema";
 import { fold } from "@/lib/fold";
 import { LISTENING } from "@/lib/limits";
 import { parseMediaUrl, type MediaSource } from "@/lib/media-url";
@@ -257,4 +257,28 @@ export async function deleteExercise(userId: string, id: string) {
     .where(and(eq(listeningExercise.id, id), eq(listeningExercise.userId, userId)))
     .returning({ id: listeningExercise.id });
   if (!rows.length) throw new ListeningError("not-found", NOT_FOUND);
+}
+
+// ---------- Tra từ bôi vàng ----------
+
+/**
+ * Tra các từ người dùng bôi vàng: pinyin (tự tạo) + nghĩa trong kho Từ vựng CỦA CHÍNH HỌ (khớp đúng chữ Hán).
+ * Không bao giờ trả từ vựng của người khác.
+ */
+export async function lookupWords(userId: string, words: string[]) {
+  const list = [...new Set(words.map((w) => w.trim()).filter(Boolean))].slice(0, LISTENING.MAX_LOOKUP);
+  if (!list.length) return [];
+  const rows = await db
+    .select({ hanzi: vocab.hanzi, pinyin: vocab.pinyin, meaningVi: vocab.meaningVi })
+    .from(vocab)
+    .where(and(eq(vocab.userId, userId), inArray(vocab.hanzi, list)));
+  const { pinyin } = await import("pinyin-pro");
+  return list.map((w) => {
+    const v = rows.find((r) => r.hanzi === w);
+    return {
+      word: w,
+      pinyin: v?.pinyin || pinyin(w, { toneType: "symbol", nonZh: "consecutive" }),
+      meaning: v?.meaningVi || null,
+    };
+  });
 }

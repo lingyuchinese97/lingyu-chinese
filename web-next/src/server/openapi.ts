@@ -1451,6 +1451,16 @@ export function openApiDocument() {
           errors: [404],
         }),
       },
+      "/api/v1/listening/lookup": {
+        get: op(L, {
+          summary: "Tra từ bôi vàng: pinyin + nghĩa trong kho Từ vựng của tôi (null nếu chưa có)",
+          params: [q("words", { type: "string" }, "Các từ cách nhau bằng dấu phẩy (tối đa 50)")],
+          data: {
+            type: "array",
+            items: obj({ word: { type: "string" }, pinyin: { type: "string" }, meaning: { type: ["string", "null"] } }),
+          },
+        }),
+      },
       "/api/v1/listening/compare": {
         post: op(L, {
           summary: "So sánh bài chép với đáp án (không lưu)",

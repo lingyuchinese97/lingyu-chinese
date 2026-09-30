@@ -2,9 +2,22 @@
  * Nhận diện link nội dung để luyện nghe (dùng cả ở trình duyệt và server). Người dùng không phải chọn "Nguồn".
  * - YouTube (watch, youtu.be, shorts, live, embed, music.youtube): phát bằng trình phát nhúng CHÍNH THỨC của YouTube.
  *   Không tải video/âm thanh, không tách MP3, không cache, không lấy phụ đề.
+ * - TikTok (tiktok.com/@…/video/<id>): trình phát nhúng CHÍNH THỨC của TikTok (player/v1), chỉ phát, không tải video.
  * - Link trực tiếp tới file âm thanh / video (podcast, radio có file .mp3/.m4a…): phát bằng thẻ <audio>/<video> của trình duyệt.
+ * - Link phát trực tiếp không có đuôi file (radio online, podcast feed audio): người dùng chọn tab Podcast / Radio → link được
+ *   gắn đuôi `#lingyu=audio` (`asAudio()`) để luôn phát bằng thẻ <audio>, kể cả khi mở lại bài đã lưu.
  */
-export type MediaSource = { kind: "youtube"; videoId: string; url: string } | { kind: "audio" | "video"; url: string };
+export type MediaSource =
+  | { kind: "youtube"; videoId: string; url: string }
+  | { kind: "tiktok"; videoId: string; url: string }
+  | { kind: "audio" | "video"; url: string };
+
+export const AUDIO_MARK = "#lingyu=audio";
+/** Đánh dấu link là âm thanh (radio / podcast phát trực tiếp). */
+export function asAudio(raw: string) {
+  const t = raw.trim().replace(/#lingyu=audio$/, "");
+  return t ? `${/^[a-z][a-z0-9+.-]*:/i.test(t) ? t : `https://${t}`}${AUDIO_MARK}` : "";
+}
 
 const AUDIO_EXT = /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac)$/i;
 const VIDEO_EXT = /\.(mp4|m4v|webm|mov)$/i;
@@ -30,6 +43,11 @@ export function parseMediaUrl(raw: string): MediaSource | null {
   }
   if (id !== null)
     return YT_ID.test(id) ? { kind: "youtube", videoId: id, url: `https://www.youtube.com/watch?v=${id}` } : null;
+  if (host === "tiktok.com") {
+    const m = u.pathname.match(/^\/(?:@[^/]+\/video|player\/v1|embed(?:\/v2)?)\/(\d{8,25})/);
+    return m ? { kind: "tiktok", videoId: m[1]!, url: `https://www.tiktok.com/player/v1/${m[1]}` } : null;
+  }
+  if (u.hash === AUDIO_MARK) return { kind: "audio", url: u.toString() };
   if (AUDIO_EXT.test(u.pathname)) return { kind: "audio", url: u.toString() };
   if (VIDEO_EXT.test(u.pathname)) return { kind: "video", url: u.toString() };
   return null;

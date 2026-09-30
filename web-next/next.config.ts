@@ -18,7 +18,7 @@ const csp = [
   "img-src 'self' data: blob:",
   "font-src 'self'",
   "media-src 'self' blob: https:",
-  "frame-src https://www.youtube-nocookie.com https://www.youtube.com",
+  "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://www.tiktok.com",
   "connect-src 'self'",
   "worker-src 'self'",
   "manifest-src 'self'",

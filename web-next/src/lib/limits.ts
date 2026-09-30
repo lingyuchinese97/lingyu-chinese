@@ -41,7 +41,11 @@ export const LISTENING = {
   MAX_TAG: 24,
   /** Số đoạn định dạng tối đa trong bài chép (bút đỏ / bôi vàng). */
   MAX_SPANS: 2000,
-  SPEEDS: [0.5, 0.75, 1, 1.25, 1.5] as const,
+  /** Ghi chú (nghĩa) cho một từ bôi vàng. */
+  MAX_NOTE: 200,
+  /** Số từ tra một lần (bôi vàng → pinyin + nghĩa). */
+  MAX_LOOKUP: 50,
+  SPEEDS: [0.5, 0.75, 1, 1.25, 1.5, 2] as const,
   PAGE_SIZE: 20,
 } as const;
 

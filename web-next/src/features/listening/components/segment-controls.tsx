@@ -22,6 +22,7 @@ export function SegmentControls({
   onLoop,
   autoNext,
   onAutoNext,
+  hideSpeed,
 }: {
   duration: number;
   segment: Segment | null;
@@ -33,6 +34,8 @@ export function SegmentControls({
   onLoop: (v: boolean) => void;
   autoNext: boolean;
   onAutoNext: (v: boolean) => void;
+  /** Ẩn phần chọn tốc độ (màn luyện nghe có khối "Điều chỉnh tốc độ" riêng). */
+  hideSpeed?: boolean;
 }) {
   const t = useT();
   const has = duration > 0 && !!segment;
@@ -142,27 +145,29 @@ export function SegmentControls({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="lx-speed" className="text-[15px] font-bold text-navy">
-          {t("listening.speed.label")}
-        </label>
-        <select
-          id="lx-speed"
-          value={speed}
-          onChange={(e) => onSpeed(Number(e.target.value))}
-          className={cn(inputClass, "h-10 w-[92px] cursor-pointer px-3 font-semibold")}
-        >
-          {LISTENING.SPEEDS.map((s) => (
-            <option key={s} value={s}>
-              {s}x
-            </option>
-          ))}
-        </select>
-        <Button type="button" size="sm" variant="ghost" disabled={speed === 1} onClick={() => onSpeed(1)}>
-          <RotateCcw />
-          {t("listening.speed.reset")}
-        </Button>
-      </div>
+      {hideSpeed ? null : (
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="lx-speed" className="text-[15px] font-bold text-navy">
+            {t("listening.speed.label")}
+          </label>
+          <select
+            id="lx-speed"
+            value={speed}
+            onChange={(e) => onSpeed(Number(e.target.value))}
+            className={cn(inputClass, "h-10 w-[92px] cursor-pointer px-3 font-semibold")}
+          >
+            {LISTENING.SPEEDS.map((s) => (
+              <option key={s} value={s}>
+                {s}x
+              </option>
+            ))}
+          </select>
+          <Button type="button" size="sm" variant="ghost" disabled={speed === 1} onClick={() => onSpeed(1)}>
+            <RotateCcw />
+            {t("listening.speed.reset")}
+          </Button>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2.5">
         <Toggle checked={loop} onChange={onLoop} label={t("listening.toggles.loop")} />

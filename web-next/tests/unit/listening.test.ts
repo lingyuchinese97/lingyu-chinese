@@ -2,7 +2,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { pool } from "@/server/db/pool";
 import { exerciseInputSchema, exerciseListSchema } from "@/features/listening/schema";
 import * as svc from "@/features/listening/service";
-import { parseMediaUrl, parseTime, formatTime } from "@/lib/media-url";
+import { asAudio, parseMediaUrl, parseTime, formatTime } from "@/lib/media-url";
+import { normalizeSpans, reformat } from "@/lib/dictation-compare";
+import { createVocab } from "@/features/vocabulary/service";
+import { vocabInputSchema } from "@/features/vocabulary/schema";
 import { cleanupUsers, makeUser } from "./helpers";
 
 const input = (p: Record<string, unknown> = {}) =>
@@ -163,5 +166,44 @@ describe("bài làm luyện nghe", () => {
     await expect(svc.updateExercise(B, mine!.id, input())).rejects.toMatchObject({ code: "not-found" });
     await expect(svc.deleteExercise(B, mine!.id)).rejects.toMatchObject({ code: "not-found" });
     expect((await svc.getExercise(A, mine!.id)).id).toBe(mine!.id);
+  });
+});
+
+describe("nguồn TikTok / Radio, ghi chú từ bôi vàng, tra từ", () => {
+  it("TikTok dùng trình phát chính thức; link phát trực tiếp đánh dấu âm thanh", () => {
+    expect(parseMediaUrl("https://www.tiktok.com/@lingyu/video/7234567890123456789")).toEqual({
+      kind: "tiktok",
+      videoId: "7234567890123456789",
+      url: "https://www.tiktok.com/player/v1/7234567890123456789",
+    });
+    expect(parseMediaUrl("https://www.tiktok.com/@lingyu")).toBeNull();
+    expect(parseMediaUrl("https://radio.example.com/live")).toBeNull();
+    expect(asAudio("radio.example.com/live")).toBe("https://radio.example.com/live#lingyu=audio");
+    expect(parseMediaUrl(asAudio("https://radio.example.com/live"))).toMatchObject({ kind: "audio" });
+    expect(exerciseInputSchema.safeParse({ title: "x", referenceAnswer: "你", playbackSpeed: 2 }).success).toBe(true);
+  });
+
+  it("ghi chú gắn với đoạn bôi vàng: không gộp khác ghi chú, giữ qua chỉnh sửa, bỏ khi không bôi vàng", () => {
+    expect(
+      normalizeSpans([
+        { text: "小雨", highlight: true, note: "mưa nhỏ" },
+        { text: "你好", highlight: true },
+        { text: "的", note: "không bôi vàng thì bỏ" },
+      ]),
+    ).toEqual([{ text: "小雨", highlight: true, note: "mưa nhỏ" }, { text: "你好", highlight: true }, { text: "的" }]);
+    expect(reformat([{ text: "我叫" }, { text: "小雨", highlight: true, note: "tên" }], "我是小雨")).toEqual([
+      { text: "我是" },
+      { text: "小雨", highlight: true, note: "tên" },
+    ]);
+  });
+
+  it("tra từ: pinyin tự tạo + nghĩa chỉ từ kho Từ vựng của chính mình", async () => {
+    await createVocab(A, vocabInputSchema.parse({ hanzi: "小雨", pinyin: "xiǎo yǔ", meaningVi: "mưa nhỏ" }));
+    expect(await svc.lookupWords(A, ["小雨", "你好", "小雨", " "])).toEqual([
+      { word: "小雨", pinyin: "xiǎo yǔ", meaning: "mưa nhỏ" },
+      { word: "你好", pinyin: "nǐ hǎo", meaning: null },
+    ]);
+    expect((await svc.lookupWords(B, ["小雨"]))[0]!.meaning).toBeNull();
+    expect(await svc.lookupWords(A, [])).toEqual([]);
   });
 });
