@@ -148,4 +148,8 @@ export const errors = {
   trDuplicate: "Câu này đã có trong kho câu của bạn.",
   trPickGrammar: "Hãy chọn ít nhất một điểm ngữ pháp.",
   trBadGrammar: "Điểm ngữ pháp không tồn tại.",
+  // Đọc hiểu
+  rdNotFound: "Không tìm thấy bài đọc này.",
+  rdEmpty: "Không có bài đọc nào phù hợp. Hãy đổi lựa chọn.",
+  rdWordNotIn: "Từ này không có trong bài đọc.",
 };

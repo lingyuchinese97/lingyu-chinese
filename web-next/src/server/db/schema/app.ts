@@ -580,3 +580,27 @@ export const translationSession = pgTable(
   },
   (t) => [index("translation_session_user_status_idx").on(t.userId, t.status, t.startedAt)],
 );
+
+// ---------- Đọc hiểu ----------
+/** Một lần làm bài đọc (bài đọc là nội dung tĩnh `src/data/reading`); server chấm, `answers` là bài làm của người dùng. */
+export const readingAttempt = pgTable(
+  "reading_attempt",
+  {
+    id: id(),
+    userId: userRef(),
+    passageId: text("passage_id").notNull(),
+    answers: jsonb("answers").notNull(),
+    correct: integer("correct").notNull().default(0),
+    total: integer("total").notNull().default(0),
+    durationSec: integer("duration_sec").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index("reading_attempt_user_created_idx").on(t.userId, t.createdAt)],
+);
+
+/** Bài đọc người dùng đã lưu để đọc lại. */
+export const readingSaved = pgTable(
+  "reading_saved",
+  { userId: userRef(), passageId: text("passage_id").notNull(), createdAt: createdAt() },
+  (t) => [primaryKey({ columns: [t.userId, t.passageId] })],
+);

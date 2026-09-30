@@ -185,6 +185,21 @@ Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu tr�
 - `topic`: `initial:b`, `final:ang`, `tone:3`, `sandhi:third-two`, `sandhi:third-two:0` (ví dụ thứ 1), `sandhi:general`. Mỗi mục một
   ghi chú. Giới hạn: tiêu đề 100, nội dung 2.000 ký tự, tối đa 500 ghi chú.
 
+## Đọc hiểu `/api/v1/reading`
+
+Bài đọc là nội dung tĩnh (HSK 1–4, id `r101`…). Câu hỏi không kèm đáp án cho tới khi nộp bài.
+
+| Route                                | Việc                                                                                                     |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `GET /reading`                       | `{ level, saved, history }`                                                                              |
+| `GET /reading/passages`              | `?level=1–4&type=short\|dialogue\|article&topic=`                                                        |
+| `GET /reading/pick`                  | `?level=0–4&type=&topic=&source=auto\|vocab\|grammar&grammar=` → `{ id, level }`; không có bài → `409`   |
+| `GET /reading/passages/{id}`         | Bài đọc: `lines[{ s, zh, py, tr }]` (pinyin từng chữ), `words`, `grammar`, `questions`, `saved`          |
+| `POST /reading/passages/{id}/submit` | `{ answers: (số lựa chọn \| chữ điền \| null)[], durationSec }` → `{ correct, total, percent, results }` |
+| `PUT /reading/passages/{id}/saved`   | `{ saved: boolean }`                                                                                     |
+| `POST /reading/passages/{id}/words`  | `{ words?: string[] }` (bỏ trống = tất cả) → `{ added, skipped }` — lưu vào Từ vựng, bỏ qua từ đã có     |
+| `GET /reading/history?limit=`        | Lần đọc gần đây                                                                                          |
+
 ## Luyện dịch `/api/v1/translation`
 
 Kho câu mẫu là nội dung tĩnh (HSK 1–4). Trong bài làm, đáp án, phân tích và id câu mẫu chỉ có sau khi trả lời / bỏ qua.
