@@ -37,7 +37,7 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
         <ArrowLeft className="size-5" aria-hidden="true" />
         {t("listening.mine.backToList")}
       </Link>
-      <Panel role="region" aria-label={t("listening.detail.label")} className="min-w-0">
+      <Panel role="region" aria-label={t("listening.detail.label")} className="min-w-0 max-md:mb-24">
         <ExerciseDetail key={ex.id} initial={ex} allTags={tags.map((x) => x.name)} />
       </Panel>
     </>
