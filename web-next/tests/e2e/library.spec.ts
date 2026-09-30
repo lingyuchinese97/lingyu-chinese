@@ -48,9 +48,14 @@ test("Thư viện LingYu: admin phân tích → lưu nháp (người học khôn
   const id = a.url().split("/").pop()!;
 
   // Nháp: người học không thấy (trang + API).
-  await u.goto("/library/vocabulary");
-  await expect(u.getByText("Chưa có từ vựng nào ở cấp này.")).toBeVisible();
+  const ids = async () =>
+    ((await (await u.request.get("/api/v1/library/words?hsk=0")).json()).data.items as { id: string }[]).map(
+      (x) => x.id,
+    );
+  expect(await ids()).not.toContain(id);
   expect((await u.request.get(`/api/v1/library/words/${id}`)).status()).toBe(404);
+  await u.goto(`/library/vocabulary?w=${id}`);
+  await expect(u.getByRole("article", { name: "学" })).toHaveCount(0);
 
   // Ảnh minh hoạ rồi public.
   await a.getByTestId("lib-image-input").setInputFiles(PNG);
@@ -67,7 +72,8 @@ test("Thư viện LingYu: admin phân tích → lưu nháp (người học khôn
     .click();
   await expect(u).toHaveURL(/\/library\/vocabulary/);
   await expect(u.getByRole("heading", { level: 1, name: "Từ vựng" })).toBeVisible();
-  await expect(u.getByText("HSK 1 (1 từ vựng)")).toBeVisible();
+  await expect(u.getByText(/^HSK 1 \(\d+ từ vựng\)$/)).toBeVisible();
+  await u.getByRole("link", { name: /^\d+\s*学\s*xué/ }).click();
   const detail = u.getByRole("article", { name: "学" });
   await expect(detail.getByText("xué", { exact: true })).toBeVisible();
   await expect(detail.getByText("学校")).toBeVisible();
@@ -79,7 +85,7 @@ test("Thư viện LingYu: admin phân tích → lưu nháp (người học khôn
   const mine = (await (await u.request.get("/api/v1/vocab?q=学")).json()).data.items;
   expect(mine[0]).toMatchObject({ hanzi: "学", pinyin: "xué", meaningVi: "học" });
   await u.getByRole("button", { name: "HSK 2" }).click();
-  await expect(u.getByText("Chưa có từ vựng nào ở cấp này.")).toBeVisible();
+  await expect(u.getByRole("link", { name: /^\d+\s*学\s*xué/ })).toHaveCount(0);
 
   // Về nháp → biến mất.
   await a.goto("/admin/library");
