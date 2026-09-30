@@ -168,8 +168,8 @@ export function openApiDocument() {
     servers: [{ url: "/" }],
     tags: [
       { name: A, description: "Đăng nhập, đăng xuất, ngôn ngữ" },
-      { name: LIB, description: "Nội dung do LingYu soạn và public (từ vựng); lưu vào kho của mình" },
       { name: V, description: "Kho từ vựng của mình, chia sẻ" },
+      { name: LIB, description: "Nội dung do LingYu soạn và public (từ vựng); lưu vào kho của mình" },
       { name: R, description: "Ôn tự chọn và ôn thẻ đến hạn (FSRS)" },
       {
         name: L,
