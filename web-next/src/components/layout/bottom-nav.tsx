@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import type { NavItem, NavKey } from "./nav";
+import { NavIcon } from "./nav-icon";
 
 /** Thanh tab dưới đáy — chỉ hiện trên điện thoại (<768px), ẩn ở màn tập trung. */
 export function BottomNav({ items, active }: { items: NavItem[]; active: NavKey | null }) {
@@ -14,7 +15,6 @@ export function BottomNav({ items, active }: { items: NavItem[]; active: NavKey 
     >
       {items.map((it) => {
         const on = it.key === active;
-        const Icon = it.icon;
         return (
           <Link
             key={it.key}
@@ -26,7 +26,7 @@ export function BottomNav({ items, active }: { items: NavItem[]; active: NavKey 
                 "text-blue-600 before:absolute before:inset-x-[28%] before:top-0 before:h-[3px] before:rounded-b-[3px] before:bg-blue",
             )}
           >
-            <Icon className="size-6" />
+            <NavIcon item={it} muted={!on} className="size-6" />
             <span>{it.key === "progress" ? t("shell.navShort.progress") : t(`shell.nav.${it.key}`)}</span>
           </Link>
         );

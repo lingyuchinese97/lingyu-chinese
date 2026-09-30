@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   AudioLines,
-  BarChart3,
   BookOpen,
   BookOpenText,
   CalendarDays,
@@ -12,9 +11,7 @@ import {
   ChevronRight,
   Clock3,
   Headphones,
-  Languages,
   RefreshCw,
-  Target,
 } from "lucide-react";
 import { GrammarIcon, LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
@@ -50,6 +47,7 @@ function relative(d: Date, now: Date, tag: string, justNow: string) {
 const CARDS = [
   {
     key: "lessons",
+    img: "/brand/ui/card-lessons.png",
     href: "/lessons",
     icon: BookOpenText,
     badge: "HSK",
@@ -61,6 +59,7 @@ const CARDS = [
   },
   {
     key: "vocabulary",
+    img: "/brand/ui/card-vocabulary.png",
     href: "/vocabulary",
     icon: BookOpen,
     badge: "词",
@@ -72,6 +71,7 @@ const CARDS = [
   },
   {
     key: "grammar",
+    img: "/brand/ui/card-grammar.png",
     href: "/grammar",
     icon: GrammarIcon,
     badge: "文",
@@ -83,6 +83,7 @@ const CARDS = [
   },
   {
     key: "pronunciation",
+    img: "/brand/ui/card-pronunciation.png",
     href: "/pronunciation",
     icon: AudioLines,
     badge: "音",
@@ -94,6 +95,7 @@ const CARDS = [
   },
   {
     key: "listening",
+    img: "/brand/ui/card-listening.png",
     href: "/listening",
     icon: Headphones,
     badge: "听",
@@ -104,6 +106,17 @@ const CARDS = [
     btn: "bg-[#7C5CE6]",
   },
 ] as const;
+
+/** Icon theo thiết kế cho "Bài học gần đây" (loại hoạt động → ảnh). */
+const RECENT_IMG: Partial<Record<string, string>> = {
+  lesson: "/brand/ui/recent-hsk.png",
+  vocab_review: "/brand/ui/recent-hsk.png",
+  vocab_add: "/brand/ui/recent-hsk.png",
+  grammar_review: "/brand/ui/recent-grammar.png",
+  grammar_add: "/brand/ui/recent-grammar.png",
+  listening: "/brand/ui/recent-listening.png",
+  pronunciation: "/brand/ui/recent-listening.png",
+};
 
 /** Vòng tiến độ (SVG). */
 function Ring({ value, color, label }: { value: number; color: string; label: string }) {
@@ -158,10 +171,10 @@ export default async function HomePage() {
   const goal = s.goals.minutes_day;
   const goalPct = goal.target ? Math.min(100, Math.round((goal.value / goal.target) * 100)) : 0;
   const stats = [
-    { key: "todayVocab", value: todayStats.vocab, icon: BookOpen, c: "bg-green-50 text-green-700" },
-    { key: "todayGrammar", value: todayStats.grammar, icon: GrammarIcon, c: "bg-blue-50 text-blue-600" },
-    { key: "todayReading", value: todayStats.reading, icon: BookOpenText, c: "bg-red-50 text-rose" },
-    { key: "todayTranslation", value: todayStats.translation, icon: Languages, c: "bg-amber-50 text-[#B35C00]" },
+    { key: "todayVocab", value: todayStats.vocab, img: "/brand/ui/nav-vocabulary.png", c: "bg-green-50" },
+    { key: "todayGrammar", value: todayStats.grammar, img: "/brand/ui/nav-grammar.png", c: "bg-blue-50" },
+    { key: "todayReading", value: todayStats.reading, img: "/brand/ui/nav-reading.png", c: "bg-red-50" },
+    { key: "todayTranslation", value: todayStats.translation, img: "/brand/ui/nav-translation.png", c: "bg-amber-50" },
   ] as const;
   const rings = [
     {
@@ -252,16 +265,14 @@ export default async function HomePage() {
             <p className="absolute top-2 left-0 z-10 hidden w-[125px] -rotate-[10deg] hand text-[19px] leading-[1.25] whitespace-pre-line text-navy xl:block">
               {t("home.quote")}
             </p>
-            <div className="absolute right-0 bottom-1 hidden h-[52px] w-[175px] -rotate-6 rounded-[50%] border-b-[10px] border-[#92BCD9] bg-white shadow-[0_12px_18px_rgba(28,80,130,.15)] xl:block">
-              <BookOpenText className="mx-auto mt-1 size-11 text-[#315A85]" strokeWidth={1.3} />
-            </div>
             <Image
-              src="/brand/lingyu-mascot.png"
+              src="/brand/ui/mascot-write-leaves.png"
               alt=""
-              width={1536}
-              height={1024}
+              width={433}
+              height={385}
               priority
-              className="relative z-0 h-auto w-[175px] translate-x-6 -translate-y-1 drop-shadow-[0_16px_24px_rgba(20,60,110,.16)] xl:w-[230px] xl:translate-x-9 xl:-translate-y-4"
+              sizes="280px"
+              className="relative z-0 h-auto w-[190px] translate-x-4 drop-shadow-[0_16px_24px_rgba(20,60,110,.16)] xl:w-[270px] xl:translate-x-8"
             />
           </div>
 
@@ -271,9 +282,14 @@ export default async function HomePage() {
             className="rounded-[26px] border border-white bg-white/95 p-3.5 shadow-[0_14px_36px_rgba(20,60,110,.10)] md:col-span-2 xl:col-span-1"
           >
             <div className="flex items-center gap-3 rounded-2xl bg-[linear-gradient(135deg,#FFF6E4,#FFFBF2)] px-3.5 py-3">
-              <span aria-hidden="true" className="text-[40px] leading-none">
-                🔥
-              </span>
+              <Image
+                src="/brand/ui/icon-flame.png"
+                alt=""
+                aria-hidden="true"
+                width={60}
+                height={67}
+                className="h-auto w-[46px] shrink-0"
+              />
               <div className="min-w-0">
                 <h2 id="home-streak" className="text-[14.5px] font-bold text-[#C2410C]">
                   {t("home.streakTitle")}
@@ -329,41 +345,20 @@ export default async function HomePage() {
                     c.bg,
                   )}
                 >
-                  <LeafDecor className="pointer-events-none absolute top-3 right-3 w-8 rotate-12 opacity-40" />
-                  <div className="relative flex h-[106px] items-center justify-center overflow-hidden md:h-[124px]">
-                    <span
+                  {/* Hình minh hoạ theo thiết kế (nền pastel + lá trang trí đã có trong ảnh). */}
+                  <div className="relative aspect-[242/118] w-full overflow-hidden">
+                    <Image
+                      src={c.img}
+                      alt=""
                       aria-hidden="true"
-                      className={cn("absolute top-5 size-[100px] rounded-full opacity-70 blur-xl", c.halo)}
+                      fill
+                      sizes="(min-width: 1280px) 20vw, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover object-top transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
                     />
-                    <span
-                      aria-hidden="true"
-                      className="absolute bottom-1 left-5 h-5 w-11 -rotate-[18deg] rounded-[50%] bg-white/70"
-                    />
-                    {(c.key === "vocabulary" || c.key === "grammar" || c.key === "lessons") && (
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "absolute size-[72px] rotate-[-17deg] rounded-[16px] border border-white/80 shadow-[0_8px_18px_rgba(20,60,110,.1)] md:size-[86px]",
-                          c.halo,
-                        )}
-                      />
-                    )}
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "relative flex size-[72px] -rotate-6 items-center justify-center rounded-[20px] border border-white/80 shadow-[0_13px_22px_rgba(20,60,110,.16)] transition-transform group-hover:rotate-0 motion-reduce:transition-none md:size-[86px]",
-                        c.art,
-                      )}
-                    >
-                      <c.icon className="size-10 md:size-12" strokeWidth={1.9} />
-                      <span className="absolute -top-2.5 -right-4 rotate-6 rounded-[10px] bg-white px-1.5 py-0.5 text-[15px] font-extrabold text-blue-700 shadow-soft md:text-[17px]">
-                        <span className={c.badge === "HSK" ? undefined : "hanzi"}>{c.badge}</span>
-                      </span>
-                    </span>
                   </div>
                   <div className="flex flex-1 items-end gap-2 rounded-t-[16px] bg-white/80 px-3.5 pt-3 pb-3.5 md:px-4">
                     <div className="min-w-0 flex-1">
-                      <span className="block text-[16px] leading-tight font-extrabold text-navy-900 md:text-[18px]">
+                      <span className="block text-[16px] leading-tight font-extrabold text-navy-900 md:text-[18px] xl:text-[15.5px] 2xl:text-[18px]">
                         {title}
                       </span>
                       <span className="mt-1 block text-[12.5px] leading-snug text-text-2 md:text-[13.5px]">
@@ -394,7 +389,14 @@ export default async function HomePage() {
           className="rounded-[var(--radius-xl)] border border-border bg-white/95 p-4 shadow-card md:p-5"
         >
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <CalendarDays className="size-6 text-blue-600" aria-hidden="true" />
+            <Image
+              src="/brand/ui/icon-calendar.png"
+              alt=""
+              aria-hidden="true"
+              width={47}
+              height={51}
+              className="h-auto w-6"
+            />
             <h2 id="home-today" className="text-[18px] font-bold text-navy-900">
               {t("home.today")}
             </h2>
@@ -410,7 +412,7 @@ export default async function HomePage() {
                   aria-hidden="true"
                   className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", x.c)}
                 >
-                  <x.icon className="size-6" />
+                  <Image src={x.img} alt="" width={48} height={48} className="size-6 object-contain" />
                 </span>
                 <span className="flex min-w-0 flex-col">
                   <span className="text-[22px] leading-none font-extrabold text-navy-900 tabular-nums">{x.value}</span>
@@ -426,7 +428,14 @@ export default async function HomePage() {
           className="rounded-[var(--radius-xl)] border border-border bg-white/95 p-4 shadow-card md:p-5"
         >
           <div className="mb-3 flex items-center gap-2">
-            <Target className="size-6 text-rose" aria-hidden="true" />
+            <Image
+              src="/brand/ui/icon-target.png"
+              alt=""
+              aria-hidden="true"
+              width={54}
+              height={53}
+              className="size-6"
+            />
             <h2 id="home-goal" className="text-[18px] font-bold text-navy-900">
               {t("home.goalTitle")}
             </h2>
@@ -437,9 +446,9 @@ export default async function HomePage() {
           <div className="flex items-center gap-3 rounded-[16px] bg-[#F7FAFE] px-3.5 py-3">
             <span
               aria-hidden="true"
-              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-50 text-[#E08600]"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-50"
             >
-              <Clock3 className="size-6" />
+              <Image src="/brand/ui/icon-flame.png" alt="" width={60} height={67} className="h-auto w-6" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[14.5px] font-semibold text-navy-900">{t("home.goalMinutes", { n: goal.target })}</p>
@@ -469,7 +478,14 @@ export default async function HomePage() {
           className="rounded-[var(--radius-xl)] border border-border bg-white/95 p-4 shadow-card md:p-5"
         >
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <BarChart3 className="size-6 text-blue-600" aria-hidden="true" />
+            <Image
+              src="/brand/ui/nav-progress.png"
+              alt=""
+              aria-hidden="true"
+              width={45}
+              height={41}
+              className="h-auto w-6"
+            />
             <h2 id="home-progress" className="text-[18px] font-bold text-navy-900">
               {t("home.progress")}
             </h2>
@@ -524,7 +540,19 @@ export default async function HomePage() {
                       href="/progress/history"
                       className="flex items-center gap-3 rounded-xl py-2.5 outline-none hover:bg-[#F7FAFE] focus-visible:shadow-[var(--focus-ring)]"
                     >
-                      <ActivityIcon kind={a.kind} />
+                      {RECENT_IMG[a.kind] ? (
+                        <span
+                          aria-hidden="true"
+                          className="relative flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#F4F8FD]"
+                        >
+                          <Image src={RECENT_IMG[a.kind]!} alt="" width={63} height={50} className="h-auto w-9" />
+                          <span className="absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center rounded-full border-2 border-white bg-green text-white">
+                            <Check className="size-2.5" strokeWidth={4} />
+                          </span>
+                        </span>
+                      ) : (
+                        <ActivityIcon kind={a.kind} />
+                      )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[15px] font-semibold text-navy-900">{line.title}</p>
                         <p className="truncate text-[13px] text-text-2">

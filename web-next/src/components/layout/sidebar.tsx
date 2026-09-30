@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LeafDecor } from "./icons";
+import { NavIcon } from "./nav-icon";
 import { useT } from "@/i18n/client";
 import type { NavItem, NavKey, ShellState } from "./nav";
 
@@ -60,7 +61,6 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
       <nav className="relative z-[1] -mx-1 flex min-h-0 flex-col gap-1 overflow-y-auto px-1 xl:gap-1.5">
         {items.map((n, i) => {
           const on = n.key === active;
-          const Icon = n.icon;
           const divider = i > 0 && items[i - 1]!.group !== n.group;
           return (
             <React.Fragment key={n.key}>
@@ -77,7 +77,7 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
                     "bg-[linear-gradient(90deg,#DDEEFF_0%,#E8F4FF_100%)] font-bold text-blue-600 before:absolute before:inset-y-3 before:-left-[18px] before:w-1 before:rounded-r before:bg-blue lg:before:-left-3 xl:before:-left-[18px]",
                 )}
               >
-                <Icon className={cn("size-6 shrink-0 text-blue-600 xl:size-[26px]", !on && "opacity-85")} />
+                <NavIcon item={n} className="size-6 xl:size-[27px]" />
                 <span className="lg:sr-only xl:not-sr-only">{t(`shell.nav.${n.key}`)}</span>
               </Link>
             </React.Fragment>
@@ -88,13 +88,13 @@ export function Sidebar({ items, active, quote, open, onNavigate }: Props) {
         <LeafDecor className="pointer-events-none absolute top-[-10px] left-1.5 w-10 -rotate-30 opacity-45" />
         <LeafDecor className="pointer-events-none absolute top-5 right-2.5 w-9 rotate-25 opacity-45" />
         <Image
-          src="/brand/lingyu-mascot.png"
+          src="/brand/ui/mascot-wave.png"
           alt=""
-          width={1536}
-          height={1024}
+          width={241}
+          height={246}
           loading="eager"
-          sizes="190px"
-          className="mx-auto mb-1 h-auto w-[130px] xl:w-[190px]"
+          sizes="170px"
+          className="mx-auto mb-1 h-auto w-[120px] xl:w-[170px]"
         />
         {quote && (
           <p className="origin-left -rotate-6 px-3 hand text-lg leading-snug whitespace-pre-line xl:text-[19px]">

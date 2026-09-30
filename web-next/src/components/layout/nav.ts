@@ -32,22 +32,24 @@ export type NavItem = {
   key: NavKey;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Icon ảnh theo thiết kế (`public/brand/ui/nav-*.png`); không có thì dùng `icon`. */
+  img?: string;
   group: 1 | 2 | 3;
 };
 
 export const NAV: NavItem[] = [
-  { key: "home", href: "/home", icon: House, group: 1 },
-  { key: "lessons", href: "/lessons", icon: GraduationCap, group: 1 },
-  { key: "vocabulary", href: "/vocabulary", icon: BookOpen, group: 1 },
-  { key: "grammar", href: "/grammar", icon: GrammarIcon, group: 1 },
-  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, group: 1 },
-  { key: "listening", href: "/listening", icon: Headphones, group: 1 },
-  { key: "reading", href: "/reading", icon: BookOpenText, group: 1 },
-  { key: "sentences", href: "/translate", icon: MessagesSquare, group: 1 },
-  { key: "review", href: "/review/setup", icon: ReviewIcon, group: 1 },
-  { key: "progress", href: "/progress", icon: BarChart3, group: 2 },
-  { key: "radicals", href: "/radicals", icon: RadicalIcon, group: 2 },
-  { key: "settings", href: "/settings", icon: Settings, group: 3 },
+  { key: "home", href: "/home", icon: House, img: "/brand/ui/nav-home.png", group: 1 },
+  { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png", group: 1 },
+  { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png", group: 1 },
+  { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png", group: 1 },
+  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, img: "/brand/ui/nav-pronunciation.png", group: 1 },
+  { key: "listening", href: "/listening", icon: Headphones, img: "/brand/ui/nav-listening.png", group: 1 },
+  { key: "reading", href: "/reading", icon: BookOpenText, img: "/brand/ui/nav-reading.png", group: 1 },
+  { key: "sentences", href: "/translate", icon: MessagesSquare, img: "/brand/ui/nav-translation.png", group: 1 },
+  { key: "review", href: "/review/setup", icon: ReviewIcon, img: "/brand/ui/nav-review.png", group: 1 },
+  { key: "progress", href: "/progress", icon: BarChart3, img: "/brand/ui/nav-progress.png", group: 2 },
+  { key: "radicals", href: "/radicals", icon: RadicalIcon, img: "/brand/ui/nav-radicals.png", group: 2 },
+  { key: "settings", href: "/settings", icon: Settings, img: "/brand/ui/nav-settings.png", group: 3 },
 ];
 export const ADMIN_NAV: NavItem = { key: "admin", href: "/admin", icon: ShieldCheck, group: 3 };
 

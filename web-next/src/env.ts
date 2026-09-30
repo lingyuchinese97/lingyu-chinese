@@ -39,4 +39,3 @@ function load() {
 
 export const env = load();
 export type Env = typeof env;
-
