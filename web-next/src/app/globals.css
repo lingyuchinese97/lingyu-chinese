@@ -177,3 +177,9 @@
   color: #9aaac0;
   pointer-events: none;
 }
+/* Điện thoại: thanh điều hướng dưới cố định — nút / ô nhập được cuộn tới (Tab, focus) không bị che. */
+@media (max-width: 767px) {
+  main :is(button, a, input, textarea, select, [tabindex]) {
+    scroll-margin-bottom: calc(var(--tabbar-h) + var(--safe-b, 0px) + 72px);
+  }
+}
