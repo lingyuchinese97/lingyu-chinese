@@ -4,7 +4,7 @@
  */
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { sentence, translationSession, vocab } from "@/server/db/schema";
+import { grammar, grammarExample, sentence, translationSession, vocab } from "@/server/db/schema";
 import { T_ITEMS, T_ITEM_BY_ID, type TItem } from "@/data/translation/items";
 import { T_GRAMMAR, T_GRAMMAR_BY_ID } from "@/data/translation/grammar";
 import { normalizeChinese, normalizeVietnamese } from "@/lib/sentence-grading";
@@ -25,8 +25,21 @@ export class TranslationError extends Error {
 }
 const GONE = "Bài luyện dịch không còn tồn tại. Hãy tạo bài mới.";
 
+/**
+ * Câu lấy từ ví dụ trong ngữ pháp của chính người dùng (id `u:<id ví dụ>`). Lưu nguyên nội dung vào bài làm để bài cũ
+ * vẫn xem lại được khi ví dụ bị sửa / xoá.
+ */
+export type CustomItem = Omit<TItem, "grammar"> & {
+  custom: true;
+  grammar: [];
+  own: { name: string; structure: string; explain: string };
+};
+type AnyItem = TItem | CustomItem;
+const isCustom = (i: AnyItem): i is CustomItem => "custom" in i;
+
 type Stored = {
   itemId: string;
+  custom?: CustomItem;
   direction: TDirection;
   userAnswer: string | null;
   result: "correct" | "wrong" | "skipped" | null;
@@ -51,17 +64,20 @@ export function localGrammar(l: Locale) {
   }));
 }
 
-function grammarOf(item: TItem, l: Locale) {
+const rawOf = (q: Stored): AnyItem => q.custom ?? T_ITEM_BY_ID.get(q.itemId)!;
+
+function grammarOf(item: AnyItem, l: Locale) {
+  if (isCustom(item)) return [{ id: "own", ...item.own, pattern: item.zh }];
   return item.grammar.map((g) => {
     const d = T_GRAMMAR_BY_ID.get(g.id)!;
     return { id: g.id, name: loc(d.name, l), structure: d.structure, explain: loc(d.explain, l), pattern: g.pattern };
   });
 }
-const wordsOf = (item: TItem, l: Locale) =>
+const wordsOf = (item: AnyItem, l: Locale) =>
   item.words.map((w) => ({ zh: w.zh, py: w.py, meaning: l === "en" ? w.en : w.vi }));
 
 /** Một câu mẫu đầy đủ (kho câu mẫu là nội dung học công khai, không phải dữ liệu riêng). */
-export function localItem(item: TItem, l: Locale) {
+export function localItem(item: AnyItem, l: Locale) {
   const tr = l === "en" ? item.en : item.vi;
   return {
     id: item.id,
@@ -117,7 +133,7 @@ export function similarity(a: string, b: string) {
   return Math.round((200 * prev[y.length]!) / (x.length + y.length));
 }
 
-export function gradeTranslation(item: TItem, direction: TDirection, lang: Locale, answer: string) {
+export function gradeTranslation(item: AnyItem, direction: TDirection, lang: Locale, answer: string) {
   const refs =
     direction === "to-zh"
       ? [item.zh, ...(item.alt ?? [])].map(normalizeChinese)
@@ -149,21 +165,120 @@ export async function estimateLevel(userId: string) {
   return Math.min(level, 4);
 }
 
-async function recentItemIds(userId: string) {
+/** Lần gần nhất đã làm từng câu (id câu → thời điểm), để bài mới / làm lại ưu tiên câu chưa làm, rồi câu làm lâu nhất. */
+async function lastSeen(userId: string) {
   const rows = await db
-    .select({ questions: translationSession.questions })
+    .select({ questions: translationSession.questions, at: translationSession.startedAt })
     .from(translationSession)
     .where(eq(translationSession.userId, userId))
     .orderBy(desc(translationSession.startedAt))
-    .limit(10);
-  return new Set(rows.flatMap((r) => (r.questions as Stored[]).map((q) => q.itemId)));
+    .limit(100);
+  const m = new Map<string, number>();
+  for (const r of rows) for (const q of r.questions as Stored[]) if (!m.has(q.itemId)) m.set(q.itemId, r.at.getTime());
+  return m;
+}
+
+/** Ngữ pháp của tôi (mục Ngữ pháp) để chọn khi luyện dịch: số câu ví dụ dùng được (có nghĩa tiếng Việt). */
+export async function myGrammarForTranslation(userId: string) {
+  const rows = await db
+    .select({ id: grammar.id, title: grammar.title, structure: grammar.structure, updatedAt: grammar.updatedAt })
+    .from(grammar)
+    .where(eq(grammar.userId, userId))
+    .orderBy(desc(grammar.updatedAt));
+  if (!rows.length) return [];
+  const ex = await db
+    .select({ grammarId: grammarExample.grammarId, vietnamese: grammarExample.vietnamese })
+    .from(grammarExample)
+    .where(
+      inArray(
+        grammarExample.grammarId,
+        rows.map((r) => r.id),
+      ),
+    );
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    structure: r.structure.split("\n")[0] ?? "",
+    examples: ex.filter((e) => e.grammarId === r.id && e.vietnamese.trim()).length,
+  }));
+}
+
+const hanOf = (s: string) => [...new Set(s.match(/\p{Script=Han}/gu) ?? [])];
+
+/** Câu hỏi từ ngữ pháp của tôi: câu ví dụ đã nhập; ngữ pháp chưa có ví dụ → câu mẫu hệ thống có đúng các chữ Hán của cấu trúc. */
+async function ownGrammarItems(userId: string, ids: string[], type: TItem["type"]) {
+  if (!ids.length) return { custom: [] as CustomItem[], matched: [] as TItem[] };
+  const gs = await db
+    .select()
+    .from(grammar)
+    .where(and(eq(grammar.userId, userId), inArray(grammar.id, ids)));
+  const ex = gs.length
+    ? await db
+        .select()
+        .from(grammarExample)
+        .where(
+          inArray(
+            grammarExample.grammarId,
+            gs.map((g) => g.id),
+          ),
+        )
+    : [];
+  const mine = await db
+    .select({ hanzi: vocab.hanzi, pinyin: vocab.pinyin, meaningVi: vocab.meaningVi })
+    .from(vocab)
+    .where(eq(vocab.userId, userId));
+  const custom: CustomItem[] = [];
+  const matched: TItem[] = [];
+  for (const g of gs) {
+    const own = {
+      name: g.title,
+      structure: g.structure.split("\n").join(" · "),
+      explain: [g.meaning, g.notes].filter(Boolean).join("\n"),
+    };
+    const usable = ex.filter((e) => e.grammarId === g.id && e.chinese.trim() && e.vietnamese.trim());
+    if (type === "sentence" && usable.length) {
+      for (const e of usable)
+        custom.push({
+          custom: true,
+          id: `u:${e.id}`,
+          type: "sentence",
+          level: 0,
+          topic: "",
+          zh: e.chinese,
+          py: e.pinyin,
+          vi: e.vietnamese
+            .split(/\s\/\s|;/)
+            .map((x) => x.trim())
+            .filter(Boolean),
+          en: e.vietnamese
+            .split(/\s\/\s|;/)
+            .map((x) => x.trim())
+            .filter(Boolean),
+          words: mine
+            .filter((v) => [...v.hanzi].length >= 2 && e.chinese.includes(v.hanzi))
+            .slice(0, 8)
+            .map((v) => ({ zh: v.hanzi, py: v.pinyin, vi: v.meaningVi, en: v.meaningVi })),
+          grammar: [],
+          own,
+        });
+      continue;
+    }
+    const keys = hanOf(g.structure).length ? hanOf(g.structure) : hanOf(g.title);
+    if (keys.length) matched.push(...T_ITEMS.filter((i) => i.type === type && keys.every((k) => i.zh.includes(k))));
+  }
+  return { custom, matched };
 }
 
 export async function pickItems(userId: string, cfg: Omit<TranslationConfig, "lang">) {
-  let pool = T_ITEMS.filter(
+  let pool: AnyItem[] = T_ITEMS.filter(
     (i) => i.type === cfg.type && (!cfg.level || i.level === cfg.level) && (!cfg.topic || i.topic === cfg.topic),
   );
-  if (cfg.source === "grammar") pool = pool.filter((i) => i.grammar.some((g) => cfg.grammarIds.includes(g.id)));
+  if (cfg.source === "grammar") {
+    const sys = (pool as TItem[]).filter((i) => i.grammar.some((g) => cfg.grammarIds.includes(g.id)));
+    const own = await ownGrammarItems(userId, cfg.myGrammarIds ?? [], cfg.type);
+    const ids = new Set<string>();
+    pool = [...own.custom, ...sys, ...own.matched].filter((i) => !ids.has(i.id) && (ids.add(i.id), true));
+  }
   if (cfg.source === "vocab") {
     const mine = (await db.select({ hanzi: vocab.hanzi }).from(vocab).where(eq(vocab.userId, userId))).map(
       (r) => r.hanzi,
@@ -172,12 +287,18 @@ export async function pickItems(userId: string, cfg: Omit<TranslationConfig, "la
     const long = mine.filter((h) => [...h].length >= 2);
     pool = pool.filter((i) => i.words.some((w) => set.has(w.zh)) || long.some((h) => i.zh.includes(h)));
   }
-  const seen = await recentItemIds(userId);
+  const seen = await lastSeen(userId);
   const est = cfg.level ? cfg.level : await estimateLevel(userId);
-  // Ưu tiên câu chưa làm gần đây, rồi câu đúng trình độ (tự chọn: không quá trình độ + 1), rồi ngẫu nhiên.
-  if (!cfg.level) pool = pool.filter((i) => i.level <= est + 1);
-  const scored = shuffle(pool).map((i) => ({ i, k: (seen.has(i.id) ? 10 : 0) + Math.abs(i.level - est) }));
-  scored.sort((a, b) => a.k - b.k);
+  // Tự chọn: không quá trình độ + 1 (câu từ ngữ pháp của tôi không có cấp → luôn giữ).
+  // Chọn theo ngữ pháp là người học tự chọn → không giới hạn cấp.
+  if (!cfg.level && cfg.source !== "grammar") pool = pool.filter((i) => isCustom(i) || i.level <= est + 1);
+  // Câu chưa làm trước; đã làm thì câu làm lâu nhất trước (làm lại → ra câu khác); rồi đúng trình độ; rồi ngẫu nhiên.
+  const scored = shuffle(pool).map((i) => ({
+    i,
+    seen: seen.get(i.id) ?? 0,
+    lv: isCustom(i) ? 0 : Math.abs(i.level - est),
+  }));
+  scored.sort((a, b) => a.seen - b.seen || a.lv - b.lv);
   return { items: scored.slice(0, cfg.count).map((s) => s.i), level: est };
 }
 
@@ -188,6 +309,7 @@ export async function createTranslationSession(userId: string, cfg: TranslationC
   if (!items.length) throw new TranslationError("empty", "Không có câu mẫu nào phù hợp. Hãy đổi lựa chọn.");
   const questions: Stored[] = items.map((i, n) => ({
     itemId: i.id,
+    ...(isCustom(i) ? { custom: i } : {}),
     direction: cfg.direction === "mixed" ? (n % 2 ? "from-zh" : "to-zh") : cfg.direction,
     userAnswer: null,
     result: null,
@@ -221,7 +343,7 @@ function toClient(row: Row) {
     completedAt: row.completedAt?.toISOString() ?? null,
     total: qs.length,
     questions: qs.map((q) => {
-      const item = T_ITEM_BY_ID.get(q.itemId)!;
+      const item = rawOf(q);
       const answered = q.result !== null;
       const toZh = q.direction === "to-zh";
       return {
@@ -299,7 +421,7 @@ export async function translationHistory(userId: string, limit = 10) {
       total: qs.length,
       elapsedSec: r.elapsedSec,
       completedAt: r.completedAt!.toISOString(),
-      first: T_ITEM_BY_ID.get(qs[0]!.itemId)!.zh,
+      first: rawOf(qs[0]!).zh,
     };
   });
 }
@@ -367,7 +489,7 @@ export async function answerTranslation(
     if (!q || q.result !== null) return; // đã chấm → giữ nguyên
     const cfg = row.config as TranslationConfig;
     q.userAnswer = answer.trim();
-    const g = gradeTranslation(T_ITEM_BY_ID.get(q.itemId)!, q.direction, cfg.lang, q.userAnswer);
+    const g = gradeTranslation(rawOf(q), q.direction, cfg.lang, q.userAnswer);
     q.result = g.ok ? "correct" : "wrong";
     q.similarity = g.similarity;
     if (g.ok) c.correct++;
@@ -447,8 +569,34 @@ export async function abandonTranslation(userId: string) {
 
 // ---------- Lưu vào Kho câu của tôi ----------
 
+/** Câu ví dụ trong ngữ pháp của chính mình (`u:<id>`) → dạng câu mẫu; của người khác / không có → null. */
+async function ownExampleItem(userId: string, itemId: string) {
+  const exId = itemId.slice(2);
+  if (!/^[0-9a-f-]{36}$/i.test(exId)) return null;
+  const [r] = await db
+    .select({
+      zh: grammarExample.chinese,
+      py: grammarExample.pinyin,
+      vi: grammarExample.vietnamese,
+      structure: grammar.structure,
+    })
+    .from(grammarExample)
+    .innerJoin(grammar, eq(grammar.id, grammarExample.grammarId))
+    .where(and(eq(grammarExample.id, exId), eq(grammar.userId, userId)))
+    .limit(1);
+  return r ? { zh: r.zh, py: r.py, vi: [r.vi], en: [r.vi], note: r.structure.split("\n")[0] ?? "", level: 0 } : null;
+}
+
 export async function saveItemToBank(userId: string, itemId: string, l: Locale) {
-  const item = T_ITEM_BY_ID.get(itemId);
+  const sys = T_ITEM_BY_ID.get(itemId);
+  const item = sys
+    ? {
+        ...sys,
+        note: sys.grammar.map((g) => T_GRAMMAR_BY_ID.get(g.id)!.structure).join(" · "),
+      }
+    : itemId.startsWith("u:")
+      ? await ownExampleItem(userId, itemId)
+      : null;
   if (!item) throw new TranslationError("not-found", "Không tìm thấy câu mẫu này.");
   const [dup] = await db
     .select({ id: sentence.id })
@@ -456,10 +604,7 @@ export async function saveItemToBank(userId: string, itemId: string, l: Locale) 
     .where(and(eq(sentence.userId, userId), inArray(sentence.chinese, [item.zh])))
     .limit(1);
   if (dup) throw new TranslationError("duplicate", "Câu này đã có trong kho câu của bạn.");
-  const note = item.grammar
-    .map((g) => T_GRAMMAR_BY_ID.get(g.id)!.structure)
-    .join(" · ")
-    .slice(0, 200);
+  const note = item.note.slice(0, 200);
   const id = await createSentence(
     userId,
     sentenceInputSchema.parse({
@@ -467,7 +612,7 @@ export async function saveItemToBank(userId: string, itemId: string, l: Locale) 
       pinyin: item.py.slice(0, 400),
       vietnamese: (l === "en" ? item.en : item.vi)[0]!.slice(0, 300),
       note,
-      tags: [l === "en" ? "Translation" : "Luyện dịch", `HSK${item.level}`],
+      tags: [l === "en" ? "Translation" : "Luyện dịch", ...(item.level ? [`HSK${item.level}`] : [])],
     }),
   );
   return { id };

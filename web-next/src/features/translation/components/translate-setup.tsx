@@ -25,6 +25,7 @@ import { T_COUNTS, T_LEVELS, type TDirectionMode, type TSource, type TType } fro
 import { startTranslationAction } from "../actions";
 
 type Grammar = { id: string; level: number; name: string; structure: string };
+type MyGrammar = { id: string; title: string; structure: string; examples: number };
 
 function Choice({
   on,
@@ -62,10 +63,13 @@ function Choice({
 export function TranslateSetup({
   level,
   grammar,
+  myGrammar = [],
   active,
 }: {
   level: number;
   grammar: Grammar[];
+  /** Ngữ pháp người dùng đã nhập ở mục Ngữ pháp — hiện trước ngữ pháp có sẵn. */
+  myGrammar?: MyGrammar[];
   active: { done: number; total: number } | null;
 }) {
   const t = useT();
@@ -74,6 +78,9 @@ export function TranslateSetup({
   const [direction, setDirection] = React.useState<TDirectionMode>("to-zh");
   const [source, setSource] = React.useState<TSource>("auto");
   const [grammarIds, setGrammarIds] = React.useState<string[]>([]);
+  const [myIds, setMyIds] = React.useState<string[]>([]);
+  const toggleMine = (id: string) => setMyIds((g) => (g.includes(id) ? g.filter((x) => x !== id) : [...g, id]));
+  const chosen = grammarIds.length + myIds.length;
   const [lv, setLv] = React.useState(0);
   const [topic, setTopic] = React.useState("");
   const [count, setCount] = React.useState(10);
@@ -94,6 +101,7 @@ export function TranslateSetup({
       direction,
       source,
       grammarIds: source === "grammar" ? grammarIds : [],
+      myGrammarIds: source === "grammar" ? myIds : [],
       level: lv,
       topic,
       count,
@@ -235,9 +243,50 @@ export function TranslateSetup({
             <p className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
               <span className="font-semibold text-text">{t("translate.grammarPick")}</span>
               <span className="text-[13.5px] text-text-2" aria-live="polite">
-                {t("translate.grammarChosen", { count: grammarIds.length })}
+                {t("translate.grammarChosen", { count: chosen })}
               </span>
             </p>
+            {myGrammar.length ? (
+              <>
+                <p className="mt-1 mb-1.5 text-[13px] font-bold tracking-wide text-blue-700 uppercase">
+                  {t("translate.myGrammar")}
+                </p>
+                <ul
+                  aria-label={t("translate.myGrammar")}
+                  className="mb-3 grid max-h-[260px] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2"
+                >
+                  {myGrammar.map((g) => (
+                    <li key={g.id}>
+                      <label
+                        className={cn(
+                          "flex cursor-pointer items-start gap-2.5 rounded-xl border bg-white px-3 py-2",
+                          myIds.includes(g.id) ? "border-blue-600" : "border-border",
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={myIds.includes(g.id)}
+                          onChange={() => toggleMine(g.id)}
+                          className="mt-1 size-4 accent-blue-600"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-[14.5px] font-semibold text-text">{g.title}</span>
+                          <span className="block text-[13px] text-text-2">
+                            {g.structure ? `${g.structure} · ` : ""}
+                            {g.examples
+                              ? t("translate.myGrammarExamples", { count: g.examples })
+                              : t("translate.myGrammarNoExamples")}
+                          </span>
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mb-1.5 text-[13px] font-bold tracking-wide text-text-3 uppercase">
+                  {t("translate.systemGrammar")}
+                </p>
+              </>
+            ) : null}
             <ul
               aria-label={t("translate.grammarPick")}
               className="grid max-h-[300px] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2"
@@ -297,7 +346,7 @@ export function TranslateSetup({
         variant="primary"
         size="lg"
         className="self-center max-md:w-full md:min-w-[260px]"
-        disabled={busy || (source === "grammar" && !grammarIds.length)}
+        disabled={busy || (source === "grammar" && !chosen)}
         onClick={start}
       >
         {busy ? <Loader2 className="animate-spin" /> : <Play />}

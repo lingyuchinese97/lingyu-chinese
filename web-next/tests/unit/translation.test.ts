@@ -8,6 +8,8 @@ import { history } from "@/features/progress/service";
 import { listSentences } from "@/features/sentences/service";
 import { createVocab } from "@/features/vocabulary/service";
 import { vocabInputSchema } from "@/features/vocabulary/schema";
+import { createGrammar } from "@/features/grammar/service";
+import { grammarInputSchema } from "@/features/grammar/schema";
 import { cleanupUsers, makeUser } from "./helpers";
 
 let A: string;
@@ -173,5 +175,73 @@ describe("bài luyện dịch", () => {
       "Điểm ngữ pháp không tồn tại.",
     );
     expect(() => translationConfigSchema.parse({ count: 50 })).toThrow();
+  });
+});
+
+describe("làm lại ra câu khác, ngữ pháp của tôi, dịch đoạn 3–5 đoạn", () => {
+  it("mỗi cấp HSK có ít nhất 5 đoạn để chọn 3–5 đoạn", () => {
+    for (const lv of [1, 2, 3, 4])
+      expect(T_ITEMS.filter((i) => i.type === "paragraph" && i.level === lv).length).toBeGreaterThanOrEqual(5);
+    expect(() => translationConfigSchema.parse({ type: "paragraph", count: 4 })).not.toThrow();
+  });
+
+  it("làm lại (bài mới cùng lựa chọn) không lặp câu của bài trước khi còn câu chưa làm", async () => {
+    const U = await makeUser("trr");
+    const c = cfg({ type: "paragraph", level: 2, count: 3 });
+    const s1 = await tr.getTranslationSession(U, await tr.createTranslationSession(U, c));
+    const s2 = await tr.getTranslationSession(U, await tr.createTranslationSession(U, c));
+    const zh = (s: typeof s1) => s.questions.map((q) => q.prompt.text);
+    expect(zh(s2).some((t) => zh(s1).includes(t))).toBe(false);
+  });
+
+  it("ngữ pháp của tôi: câu hỏi lấy từ câu ví dụ đã nhập, giải thích dùng cấu trúc của tôi; người khác không dùng được", async () => {
+    const U = await makeUser("trg");
+    const gid = await createGrammar(
+      U,
+      grammarInputSchema.parse({
+        title: "Câu so sánh 比 của tôi",
+        meaning: "A hơn B",
+        structure: "A + 比 + B + tính từ",
+        examples: [
+          { chinese: "猫比狗小。", pinyin: "Māo bǐ gǒu xiǎo.", vietnamese: "Mèo nhỏ hơn chó." },
+          { chinese: "今天比昨天冷。", pinyin: "", vietnamese: "Hôm nay lạnh hơn hôm qua." },
+        ],
+      }),
+    );
+    const empty = await createGrammar(
+      U,
+      grammarInputSchema.parse({ title: "Chữ 把 của tôi", structure: "S + 把 + O + V" }),
+    );
+    const mine = await tr.myGrammarForTranslation(U);
+    expect(mine.find((g) => g.id === gid)).toMatchObject({ examples: 2 });
+    expect(mine.find((g) => g.id === empty)).toMatchObject({ examples: 0 });
+    expect(await tr.myGrammarForTranslation(B)).toEqual([]);
+
+    const id = await tr.createTranslationSession(U, cfg({ source: "grammar", myGrammarIds: [gid], count: 5 }));
+    let s = await tr.getTranslationSession(U, id);
+    expect(s.total).toBe(2);
+    expect(s.questions.map((q) => q.prompt.text).sort()).toEqual(["Hôm nay lạnh hơn hôm qua.", "Mèo nhỏ hơn chó."]);
+    const ans: Record<string, string> = { "Mèo nhỏ hơn chó.": "猫比狗小", "Hôm nay lạnh hơn hôm qua.": "今天比昨天冷" };
+    const i = 0;
+    s = await tr.answerTranslation(U, id, i, ans[s.questions[0]!.prompt.text]!);
+    expect(s.questions[i]!.result).toBe("correct");
+    expect(s.questions[i]!.reveal?.grammar[0]).toMatchObject({
+      name: "Câu so sánh 比 của tôi",
+      structure: "A + 比 + B + tính từ",
+    });
+    // Lưu câu ví dụ của mình vào kho câu.
+    expect((await tr.saveItemToBank(U, s.questions[i]!.reveal!.id, "vi")).id).toBeTruthy();
+    await expect(tr.saveItemToBank(B, s.questions[i]!.reveal!.id, "vi")).rejects.toMatchObject({ code: "not-found" });
+
+    // Ngữ pháp chưa có ví dụ → câu mẫu hệ thống có chữ 把.
+    const p = await tr.pickItems(U, cfg({ source: "grammar", myGrammarIds: [empty], count: 20 }));
+    expect(p.items.length).toBeGreaterThan(0);
+    expect(p.items.every((x) => x.zh.includes("把"))).toBe(true);
+    // Ngữ pháp của người khác → không có câu nào.
+    await expect(tr.createTranslationSession(B, cfg({ source: "grammar", myGrammarIds: [gid] }))).rejects.toMatchObject(
+      {
+        code: "empty",
+      },
+    );
   });
 });

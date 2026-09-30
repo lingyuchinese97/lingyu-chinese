@@ -38,6 +38,10 @@ export const translate: Messages["translate"] = {
     shopping: "Shopping",
   },
   grammarPick: "Grammar points",
+  myGrammar: "My grammar",
+  myGrammarExamples: "{count, plural, one {# example} other {# examples}}",
+  myGrammarNoExamples: "No examples yet — uses sample sentences with the same pattern",
+  systemGrammar: "Built-in grammar",
   grammarChosen:
     "{count, plural, =0 {No grammar point selected} one {# grammar point selected} other {# grammar points selected}}",
   stepCount: "4. How many",

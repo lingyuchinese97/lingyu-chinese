@@ -6,6 +6,12 @@
 
 ### Added
 
+- **Luyện dịch – cải tiến**:
+  - Dịch đoạn ngắn: chọn **3, 4 hoặc 5 đoạn**; kho mẫu có thêm 24 đoạn (tổng 32 đoạn, mỗi cấp HSK 1–4 có 8 đoạn).
+  - **Làm lại ra câu khác**: bài mới ưu tiên câu / đoạn chưa làm; đã làm hết thì lấy câu làm lâu nhất trước.
+  - **Ngữ pháp của tôi** hiện trước “Ngữ pháp có sẵn”: câu hỏi lấy từ câu ví dụ bạn đã nhập trong mục Ngữ pháp, phần giải thích
+    dùng cấu trúc, ý nghĩa và ghi chú của bạn; ngữ pháp chưa có ví dụ thì dùng câu mẫu có cùng chữ Hán trong cấu trúc (vd 把).
+    Lưu được câu ví dụ đó vào Kho câu của tôi. `GET /api/v1/translation` thêm `myGrammar`; tạo bài nhận `myGrammarIds`.
 - **Trang chủ + menu dùng hình theo thiết kế**: 5 thẻ chức năng có hình minh hoạ (sách HSK, thẻ 词, sổ ngữ pháp, tai nghe,
   micro), linh vật LY cầm bút trên sách “加油” ở ảnh bìa, ngọn lửa ở thẻ chuỗi ngày học, icon mục tiêu / lịch / tiến độ, icon
   “Bài học gần đây” có dấu tick xanh; menu bên trái và thanh tab dưới dùng bộ icon xanh theo thiết kế, linh vật vẫy tay ở cuối
