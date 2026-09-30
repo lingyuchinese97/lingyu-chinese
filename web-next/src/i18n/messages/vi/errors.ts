@@ -65,6 +65,8 @@ export const errors = {
   tagChooseOne: "Vui lòng chọn ít nhất 1 tag.",
   vocabNotFound: "Không tìm thấy từ vựng.",
   vocabNotFoundDeleted: "Không tìm thấy từ vựng này. Có thể nó đã bị xóa.",
+  tagNotFoundDeleted: "Không tìm thấy tag này. Có thể nó đã bị xóa.",
+  tagDuplicate: "Đã có tag trùng tên.",
   noVocabSelected: "Chưa chọn từ vựng nào.",
   selectedGone: "Các từ đã chọn không còn tồn tại.",
   // Chia sẻ

@@ -141,3 +141,24 @@ describe("từ vựng — không lộ dữ liệu giữa hai người dùng", ()
     expect((await svc.listTags(B)).some((t) => t.name === "hack")).toBe(false);
   });
 });
+
+describe("tag — tạo, đổi tên, xoá", () => {
+  it("đổi tên (trùng tên → duplicate), xoá tag giữ nguyên từ; người khác không đụng được", async () => {
+    const id = await svc.createVocab(A, input({ hanzi: "飞机", meaningVi: "máy bay", tags: ["Đi lại"] }));
+    const tagId = await svc.createTag(A, "Đi lại");
+    expect(await svc.createTag(A, "đi lại")).toBe(tagId);
+    const other = await svc.createTag(A, "Du lịch");
+    await expect(svc.renameTag(A, tagId, "du LỊCH")).rejects.toMatchObject({ code: "duplicate" });
+    expect(await svc.renameTag(A, tagId, "Giao thông ")).toEqual({ id: tagId, name: "Giao thông", count: 1 });
+    expect((await svc.getVocab(A, id)).tags).toEqual(["Giao thông"]);
+
+    await expect(svc.renameTag(B, tagId, "hack")).rejects.toMatchObject({ code: "not-found" });
+    await expect(svc.deleteTag(B, tagId)).rejects.toMatchObject({ code: "not-found" });
+    expect((await svc.getVocab(A, id)).tags).toEqual(["Giao thông"]);
+
+    expect(await svc.deleteTag(A, tagId)).toEqual({ removed: 1 });
+    await expect(svc.deleteTag(A, tagId)).rejects.toMatchObject({ code: "not-found" });
+    expect((await svc.getVocab(A, id)).tags).toEqual([]);
+    expect((await svc.listTags(A)).map((t) => t.id)).toContain(other);
+  });
+});

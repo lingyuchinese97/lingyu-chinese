@@ -7,6 +7,8 @@ import {
   CheckCircle2,
   Database,
   Eye,
+  LayoutGrid,
+  List,
   MoreHorizontal,
   Pencil,
   PlayCircle,
@@ -30,10 +32,18 @@ import { cn } from "@/lib/utils";
 import { radicalByNum, radicalLabel } from "@/lib/radicals";
 import { SORTS, type ListParams } from "../schema";
 import { useLocale, useT } from "@/i18n/client";
-import type { VocabItem, VocabList } from "../service";
-import { deleteVocabAction, importSampleAction, setStatusAction, toggleFavoriteAction } from "../actions";
+import type { TagCount, VocabItem, VocabList } from "../service";
+import {
+  deleteTagAction,
+  deleteVocabAction,
+  importSampleAction,
+  setStatusAction,
+  toggleFavoriteAction,
+} from "../actions";
 import { startCustomAction } from "@/features/review/actions";
 import { AddTagDialog } from "./add-tag-dialog";
+import { TagCards, TagNameDialog } from "./tag-cards";
+import { SpeakButton } from "@/components/speak-button";
 import { BulkButton, Pager } from "@/components/ui/list-controls";
 import type { ReceivedVocabShare } from "../share-service";
 import {
@@ -46,6 +56,30 @@ import {
 
 /** Ghi chú dài quá 10 ký tự → hiện "…" + nút con mắt để xem đầy đủ (như bản cũ). */
 const NOTE_PREVIEW = 10;
+const VIEW_KEY = "lingyu.vocab.view";
+/** Kiểu hiển thị trên máy tính (danh sách / lưới), nhớ theo trình duyệt. */
+const viewListeners = new Set<() => void>();
+const viewStore = {
+  get(): "list" | "grid" {
+    try {
+      return localStorage.getItem(VIEW_KEY) === "grid" ? "grid" : "list";
+    } catch {
+      return "list";
+    }
+  },
+  set(m: "list" | "grid") {
+    try {
+      localStorage.setItem(VIEW_KEY, m);
+    } catch {
+      /* trình duyệt chặn lưu trữ */
+    }
+    viewListeners.forEach((f) => f());
+  },
+  subscribe(f: () => void) {
+    viewListeners.add(f);
+    return () => void viewListeners.delete(f);
+  },
+};
 const shortNote = (note: string) => {
   const chars = Array.from(note.trim());
   return chars.length > NOTE_PREVIEW ? chars.slice(0, NOTE_PREVIEW).join("").trimEnd() + "…" : chars.join("");
@@ -75,6 +109,10 @@ export function VocabListView({
   const listTop = React.useRef<HTMLDivElement>(null);
   const [shareWords, setShareWords] = React.useState<ShareWord[] | null>(null);
   const [invite, setInvite] = React.useState<ReceivedVocabShare | null>(null);
+  const [tagName, setTagName] = React.useState<"new" | TagCount | null>(null);
+  // Kiểu hiển thị trên máy tính (danh sách / lưới), nhớ theo trình duyệt.
+  const view = React.useSyncExternalStore(viewStore.subscribe, viewStore.get, () => "list" as const);
+  const changeView = viewStore.set;
   // Từ đã thấy ở các trang (để hộp thoại Chia sẻ hiện đúng các từ đã chọn dù chọn qua nhiều trang).
   const seen = React.useRef(new Map<string, VocabItem>());
   React.useEffect(() => {
@@ -137,6 +175,21 @@ export function VocabListView({
     setSelected((s) => new Set([...s].filter((id) => !delIds.includes(id))));
     toast.success(t("vocab.deleted", { count: r.data.removed }));
     refresh();
+  }
+
+  async function doDeleteTag(g: TagCount) {
+    const ok = await confirm({
+      title: t("vocab.deleteTag"),
+      message: t("vocab.deleteTagMessage", { name: g.name, count: g.count }),
+      confirmLabel: t("common.delete"),
+      danger: true,
+    });
+    if (!ok) return;
+    const r = await deleteTagAction(g.id);
+    if (!r.ok) return void toast.error(r.message);
+    toast.success(t("vocab.tagDeleted", { name: g.name }));
+    if (params.tag.toLowerCase() === g.name.toLowerCase()) go({ tag: "", page: 1 });
+    else refresh();
   }
 
   async function doStatus(v: VocabItem) {
@@ -268,24 +321,12 @@ export function VocabListView({
 
   return (
     <>
-      <section
-        aria-labelledby="vl-title"
-        className="relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F4F9FF_0%,#E9F3FE_60%,#E1EFFD_100%)] px-[18px] py-[22px] md:flex-row md:items-center md:gap-6 md:px-8 md:py-7"
-      >
-        <div className="relative z-[1] min-w-0 flex-1">
-          <h1 id="vl-title" className="text-[26px] font-extrabold tracking-tight text-text md:text-[34px]">
-            {t("vocab.listTitle")}
+      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-[26px] font-extrabold tracking-tight text-text md:text-[32px]">
+            {t("vocab.myTitle", { count: data.totalAll })}
           </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("vocab.listSub")}</p>
-        </div>
-        <div aria-hidden="true" className="relative hidden h-[110px] w-[280px] shrink-0 lg:block">
-          <div className="absolute top-1 left-2 flex h-[96px] w-[136px] -rotate-6 flex-col items-center justify-center rounded-2xl border border-[#E1ECF7] bg-white shadow-[0_10px_24px_rgba(34,93,150,.12)]">
-            <span className="hanzi text-[32px] leading-tight font-semibold text-[#1E5FD6]">加油</span>
-            <span className="text-sm font-semibold text-navy">jiā yóu</span>
-          </div>
-          <div className="absolute top-0 right-0 w-[128px] -rotate-[4deg] rounded bg-[#FFF9E8] px-3 py-3.5 text-center hand text-[15px] leading-tight text-[#3B5A86] shadow-[0_8px_18px_rgba(80,60,20,.12)]">
-            <span className="whitespace-pre-line">{t("vocab.note")}</span>
-          </div>
+          <p className="mt-1 text-[15px] text-text-2 md:text-base">{t("vocab.mySub")}</p>
         </div>
         <Button asChild variant="solid" className="shrink-0 max-md:w-full">
           <Link href="/vocabulary/new">
@@ -293,15 +334,28 @@ export function VocabListView({
             {t("vocab.add")}
           </Link>
         </Button>
-      </section>
+      </header>
+
+      <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
+
+      {data.totalAll > 0 ? (
+        <TagCards
+          tags={data.tagCounts}
+          totalAll={data.totalAll}
+          active={params.tag}
+          onPick={(tag) => go({ tag, page: 1 })}
+          onCreate={() => setTagName("new")}
+          onRename={(g) => setTagName(g)}
+          onDelete={doDeleteTag}
+        />
+      ) : null}
 
       <section
         aria-label={t("vocab.title")}
         ref={listTop}
-        className="flex scroll-mt-4 flex-col gap-[18px] rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
+        className="flex scroll-mt-4 flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
-        <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_200px_190px]">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_190px_auto]">
           <label className="relative block">
             <span className="sr-only">{t("vocab.searchLabel")}</span>
             <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
@@ -309,25 +363,10 @@ export function VocabListView({
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={t("vocab.searchPlaceholder")}
+              placeholder={params.tag ? t("vocab.searchInTag", { tag: params.tag }) : t("vocab.searchPlaceholder")}
               autoComplete="off"
               className={cn(inputClass, "pl-11")}
             />
-          </label>
-          <label>
-            <span className="sr-only">{t("vocab.filterTag")}</span>
-            <select
-              value={params.tag}
-              onChange={(e) => go({ tag: e.target.value, page: 1 })}
-              className={cn(inputClass, "cursor-pointer")}
-            >
-              <option value="">{t("vocab.allTags")}</option>
-              {data.tagCounts.map((t) => (
-                <option key={t.id} value={t.name}>
-                  {t.name} ({t.count})
-                </option>
-              ))}
-            </select>
           </label>
           <label>
             <span className="sr-only">{t("vocab.sort")}</span>
@@ -343,28 +382,32 @@ export function VocabListView({
               ))}
             </select>
           </label>
-        </div>
-
-        {data.totalAll > 0 ? (
           <div
             role="group"
-            aria-label={t("vocab.quickFilter")}
-            className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
+            aria-label={t("vocab.viewLabel")}
+            className="hidden items-center gap-1 rounded-[12px] border border-border bg-bg p-1 md:flex"
           >
-            <Chip on={!params.tag} onClick={() => go({ tag: "", page: 1 })}>
-              {t("vocab.allCount", { count: data.totalAll })}
-            </Chip>
-            {data.tagCounts.map((t) => (
-              <Chip
-                key={t.id}
-                on={t.name.toLowerCase() === params.tag.toLowerCase()}
-                onClick={() => go({ tag: t.name, page: 1 })}
-              >
-                {t.name} ({t.count})
-              </Chip>
-            ))}
+            {(["list", "grid"] as const).map((m) => {
+              const Icon = m === "list" ? List : LayoutGrid;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={view === m}
+                  aria-label={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
+                  title={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
+                  onClick={() => changeView(m)}
+                  className={cn(
+                    "inline-flex size-9 items-center justify-center rounded-[9px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
+                    view === m ? "bg-white text-blue-600 shadow-sm" : "text-text-3 hover:text-blue-600",
+                  )}
+                >
+                  <Icon />
+                </button>
+              );
+            })}
           </div>
-        ) : null}
+        </div>
 
         {radical ? (
           <div className="flex flex-wrap items-center gap-2 text-[15px] text-text-2">
@@ -414,7 +457,7 @@ export function VocabListView({
               <div
                 role="toolbar"
                 aria-label={t("vocab.bulkToolbar")}
-                className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-border bg-bg px-3 py-2.5"
+                className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-[14px] border border-border bg-bg px-3 py-2.5"
               >
                 <label className="inline-flex min-w-[150px] cursor-pointer items-center gap-2.5 font-semibold text-text">
                   <input
@@ -428,7 +471,7 @@ export function VocabListView({
                     aria-label={t("vocab.selectAllOnPage")}
                   />
                   <span aria-live="polite">
-                    {selected.size ? t("vocab.selectedCount", { count: selected.size }) : t("vocab.noneSelected")}
+                    {selected.size ? t("vocab.selectedCount", { count: selected.size }) : t("vocab.selectLabel")}
                   </span>
                 </label>
                 {selected.size ? (
@@ -436,7 +479,7 @@ export function VocabListView({
                     {t("vocab.unselect")}
                   </Button>
                 ) : null}
-                <div className="grid w-full grid-cols-2 gap-2 md:ml-auto md:flex md:w-auto">
+                <div className="grid w-full grid-cols-2 gap-2 md:ml-auto md:flex md:w-auto md:flex-wrap">
                   <BulkButton disabled={!selected.size} hint={t("vocab.hintReview")} onClick={doBulkReview}>
                     <PlayCircle />
                     {t("vocab.review")}
@@ -460,18 +503,18 @@ export function VocabListView({
                   <BulkButton
                     disabled={!selected.size}
                     hint={t("vocab.hintMark")}
-                    onClick={() => doBulkStatus("learned")}
-                  >
-                    <CheckCircle2 />
-                    {t("vocab.markLearned")}
-                  </BulkButton>
-                  <BulkButton
-                    disabled={!selected.size}
-                    hint={t("vocab.hintMark")}
                     onClick={() => doBulkStatus("review")}
                   >
                     <RefreshCw />
                     {t("vocab.markReview")}
+                  </BulkButton>
+                  <BulkButton
+                    disabled={!selected.size}
+                    hint={t("vocab.hintMark")}
+                    onClick={() => doBulkStatus("learned")}
+                  >
+                    <CheckCircle2 />
+                    {t("vocab.markLearned")}
                   </BulkButton>
                   <BulkButton
                     danger
@@ -485,86 +528,93 @@ export function VocabListView({
                 </div>
               </div>
 
-              {/* Desktop: bảng */}
-              <div className="hidden overflow-x-auto rounded-md border border-border md:block">
-                <table className="w-full min-w-[900px] border-collapse text-[15.5px]">
-                  <caption className="sr-only">
-                    {t("vocab.caption", { page: data.page, count: data.pageCount })}
-                  </caption>
-                  <thead>
-                    <tr className="bg-[#F3F8FE] text-left [&>th]:px-3 [&>th]:py-3.5 [&>th]:font-semibold [&>th]:whitespace-nowrap">
-                      <th className="w-[52px] text-center">
-                        <span className="sr-only">{t("vocab.colSelect")}</span>
-                      </th>
-                      <th className="w-11">#</th>
-                      <th>{t("vocab.colWord")}</th>
-                      <th>{t("vocab.colPinyin")}</th>
-                      <th>{t("vocab.colMeaning")}</th>
-                      <th>{t("vocab.colNote")}</th>
-                      <th>{t("vocab.colTag")}</th>
-                      <th>{t("vocab.colStatus")}</th>
-                      <th className="w-[1%]">{t("vocab.colActions")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.items.map((v, i) => (
-                      <tr
-                        key={v.id}
-                        className={cn(
-                          "border-t border-[#EDF3F9] hover:bg-[#F9FCFF] [&>td]:px-3 [&>td]:py-2.5 [&>td]:align-middle",
-                          selected.has(v.id) && "bg-[#F1F8FF] hover:bg-[#F1F8FF]",
-                        )}
-                      >
-                        <td className="text-center">
-                          <input
-                            type="checkbox"
-                            className={checkboxClass}
-                            checked={selected.has(v.id)}
-                            onChange={(e) => toggle(v.id, e.target.checked)}
-                            aria-label={t("vocab.selectWord", { word: v.hanzi })}
-                          />
-                        </td>
-                        <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
-                        <td>
-                          <span className="hanzi text-[22px]" lang="zh">
-                            {v.hanzi}
-                          </span>
-                        </td>
-                        <td className="pinyin">{v.pinyin}</td>
-                        <td className="max-w-[240px]">{v.meaningVi}</td>
-                        <td className="w-[170px]">{note(v)}</td>
-                        <td className="max-w-[260px] min-w-[150px]">
-                          <div className="flex flex-wrap gap-1.5">
-                            {v.tags.length ? (
-                              v.tags.map((t) => <Tag key={t} name={t} />)
-                            ) : (
-                              <span className="text-text-3">—</span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <StatusBadge status={v.status} />
-                        </td>
-                        <td className="whitespace-nowrap">
-                          {star(v)}
-                          <Link
-                            href={`/vocabulary/${v.id}/edit`}
-                            className={iconBtn}
-                            aria-label={t("vocab.editWord", { word: v.hanzi })}
-                          >
-                            <Pencil />
-                          </Link>
-                          {rowMenu(v)}
-                        </td>
+              {/* Máy tính, dạng danh sách: bảng */}
+              {view === "list" ? (
+                <div className="hidden overflow-x-auto rounded-[14px] border border-border md:block">
+                  <table className="w-full min-w-[900px] border-collapse text-[15.5px]">
+                    <caption className="sr-only">
+                      {t("vocab.caption", { page: data.page, count: data.pageCount })}
+                    </caption>
+                    <thead>
+                      <tr className="bg-[#F3F8FE] text-left text-[14.5px] text-text-2 [&>th]:px-3 [&>th]:py-3.5 [&>th]:font-semibold [&>th]:whitespace-nowrap">
+                        <th className="w-[52px] text-center">
+                          <span className="sr-only">{t("vocab.colSelect")}</span>
+                        </th>
+                        <th className="w-11">#</th>
+                        <th>{t("vocab.colWord")}</th>
+                        <th>{t("vocab.colPinyin")}</th>
+                        <th>{t("vocab.colMeaning")}</th>
+                        <th>{t("vocab.colNote")}</th>
+                        <th>{t("vocab.colTag")}</th>
+                        <th>{t("vocab.colStatus")}</th>
+                        <th className="w-[1%]">{t("vocab.colActions")}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {data.items.map((v, i) => (
+                        <tr
+                          key={v.id}
+                          className={cn(
+                            "border-t border-[#EDF3F9] hover:bg-[#F9FCFF] [&>td]:px-3 [&>td]:py-2.5 [&>td]:align-middle",
+                            selected.has(v.id) && "bg-[#F1F8FF] hover:bg-[#F1F8FF]",
+                          )}
+                        >
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className={checkboxClass}
+                              checked={selected.has(v.id)}
+                              onChange={(e) => toggle(v.id, e.target.checked)}
+                              aria-label={t("vocab.selectWord", { word: v.hanzi })}
+                            />
+                          </td>
+                          <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
+                          <td>
+                            <span className="hanzi text-[24px] text-[#E0302F]" lang="zh">
+                              {v.hanzi}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="inline-flex items-center gap-1">
+                              <span className="pinyin">{v.pinyin}</span>
+                              <SpeakButton text={v.hanzi} label={t("vocab.listen", { word: v.hanzi })} />
+                            </span>
+                          </td>
+                          <td className="max-w-[240px]">{v.meaningVi}</td>
+                          <td className="w-[170px]">{note(v)}</td>
+                          <td className="max-w-[260px] min-w-[150px]">
+                            <div className="flex flex-wrap gap-1.5">
+                              {v.tags.length ? (
+                                v.tags.map((t) => <Tag key={t} name={t} />)
+                              ) : (
+                                <span className="text-text-3">—</span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <StatusBadge status={v.status} />
+                          </td>
+                          <td className="whitespace-nowrap">
+                            {star(v)}
+                            <Link
+                              href={`/vocabulary/${v.id}/edit`}
+                              className={iconBtn}
+                              aria-label={t("vocab.editWord", { word: v.hanzi })}
+                            >
+                              <Pencil />
+                            </Link>
+                            {rowMenu(v)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
 
-              {/* Điện thoại: thẻ */}
+              {/* Điện thoại (hoặc dạng lưới trên máy tính): thẻ */}
               <ul
-                className="grid gap-2.5 md:hidden"
+                className={cn("grid gap-2.5", view === "list" ? "md:hidden" : "md:grid-cols-2 md:gap-3 xl:grid-cols-4")}
                 aria-label={t("vocab.caption", { page: data.page, count: data.pageCount })}
               >
                 {data.items.map((v) => (
@@ -585,12 +635,15 @@ export function VocabListView({
                       />
                     </div>
                     <div
-                      className="min-w-0 hanzi text-[22px] leading-tight [overflow-wrap:anywhere] [grid-area:word]"
+                      className="min-w-0 hanzi text-[24px] leading-tight [overflow-wrap:anywhere] text-[#E0302F] [grid-area:word]"
                       lang="zh"
                     >
                       {v.hanzi}
                     </div>
-                    <div className="text-[14.5px] pinyin [grid-area:py]">{v.pinyin}</div>
+                    <div className="flex items-center gap-1 text-[14.5px] [grid-area:py]">
+                      <span className="pinyin">{v.pinyin}</span>
+                      <SpeakButton text={v.hanzi} label={t("vocab.listen", { word: v.hanzi })} />
+                    </div>
                     <div className="text-[15px] text-text [grid-area:mean]">{v.meaningVi}</div>
                     <div className="-mt-1.5 -mr-1 flex items-start justify-end [grid-area:act]">
                       {star(v)}
@@ -612,7 +665,13 @@ export function VocabListView({
               </ul>
 
               <div className="mt-4 flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
-                <span className="text-[13.5px] text-text-3">{t("vocab.total", { count: data.total })}</span>
+                <span className="text-[14px] text-text-2">
+                  {t("vocab.showing", {
+                    from: (data.page - 1) * data.pageSize + 1,
+                    to: (data.page - 1) * data.pageSize + data.items.length,
+                  })}{" "}
+                  <span className="font-semibold text-text">{t("vocab.total", { count: data.total })}</span>
+                </span>
                 <Pager
                   page={data.page}
                   count={data.pageCount}
@@ -656,6 +715,15 @@ export function VocabListView({
         onClose={() => setTagFor(null)}
         onDone={refresh}
       />
+      <TagNameDialog
+        target={tagName}
+        onClose={() => setTagName(null)}
+        onDone={(name) => {
+          const renamed = tagName !== "new" && tagName && tagName.name.toLowerCase() === params.tag.toLowerCase();
+          if (renamed) go({ tag: name, page: 1 });
+          else refresh();
+        }}
+      />
       <ShareVocabDialog words={shareWords} onClose={() => setShareWords(null)} />
       <AcceptVocabDialog
         share={invite}
@@ -674,24 +742,6 @@ export function VocabListView({
 
 const iconBtn =
   "inline-flex size-10 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] md:size-9 [&_svg]:size-[22px]";
-
-function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={on}
-      className={cn(
-        "inline-flex min-h-10 shrink-0 items-center rounded-[10px] border-[1.5px] px-4 text-[14.5px] font-medium whitespace-nowrap transition-colors",
-        on
-          ? "border-blue-600 bg-blue-600 font-semibold text-white"
-          : "border-transparent bg-[#EEF5FC] text-text-2 hover:bg-blue-100",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 function EmptyAll({ onSampled }: { onSampled: () => void }) {
   const t = useT();

@@ -84,7 +84,10 @@ function errorResponse(e: unknown, t: Awaited<ReturnType<typeof getT>>) {
     return json({ ok: false, message: t.maybe(e.message) }, e.code === "unauthenticated" ? 401 : 403);
   if (e instanceof ApiError) return json({ ok: false, message: t.maybe(e.message) }, e.status);
   if (e instanceof VocabError)
-    return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
+    return json(
+      { ok: false, message: t.maybe(e.message) },
+      e.code === "not-found" ? 404 : e.code === "duplicate" ? 409 : 400,
+    );
   if (e instanceof ListeningError || e instanceof PronunciationError)
     return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
   if (e instanceof SentenceError || e instanceof LessonError)

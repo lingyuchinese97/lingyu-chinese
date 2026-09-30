@@ -28,6 +28,9 @@ API cho app điện thoại / app khác. Dùng chung logic (service) với giao 
 | `DELETE /vocab/{id}`             | Xoá → `{ removed: 1 }`                                                                                                                      |
 | `POST /vocab/{id}/favorite`      | Bật / tắt yêu thích → `{ isFavorite }`                                                                                                      |
 | `GET /vocab/tags`                | Tag và số từ `[{ id, name, count }]`                                                                                                        |
+| `POST /vocab/tags`               | `{ name }` → tạo tag (đã có tag cùng tên → trả tag đó) `{ id, name, count }`                                                                |
+| `PATCH /vocab/tags/{id}`         | `{ name }` → đổi tên; trùng tên tag khác → 409; tag của người khác → 404                                                                    |
+| `DELETE /vocab/tags/{id}`        | Xoá tag (gỡ khỏi các từ, từ vựng giữ nguyên) → `{ removed: 1 }`                                                                             |
 | `GET /vocab/stats`               | `{ total, learned, needReview, latest }`                                                                                                    |
 | `POST /vocab/sample`             | Thêm bộ từ mẫu → `{ added }`                                                                                                                |
 | `POST /vocab/delete`             | `{ ids }` → `{ removed }`                                                                                                                   |

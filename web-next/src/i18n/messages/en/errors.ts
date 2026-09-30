@@ -60,6 +60,8 @@ export const errors: Messages["errors"] = {
   tagChooseOne: "Please choose at least 1 tag.",
   vocabNotFound: "Word not found.",
   vocabNotFoundDeleted: "Word not found. It may have been deleted.",
+  tagNotFoundDeleted: "Tag not found. It may have been deleted.",
+  tagDuplicate: "A tag with this name already exists.",
   noVocabSelected: "No words selected.",
   selectedGone: "The selected words no longer exist.",
   recipientRequired: "Please enter at least 1 recipient email.",
