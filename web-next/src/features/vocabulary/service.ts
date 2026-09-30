@@ -18,7 +18,7 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export class VocabError extends Error {
   constructor(
-    public code: "not-found" | "validation",
+    public code: "not-found" | "validation" | "duplicate",
     message: string,
   ) {
     super(message);
@@ -311,6 +311,43 @@ export async function addTags(userId: string, ids: string[], names: string[]) {
 export async function createTag(userId: string, name: string) {
   const [id] = await db.transaction((tx) => ensureTags(tx, userId, [name]));
   return id!;
+}
+
+const TAG_NOT_FOUND = "Không tìm thấy tag này. Có thể nó đã bị xóa.";
+const TAG_DUPLICATE = "Đã có tag trùng tên.";
+
+/** Đổi tên tag của mình. Trùng tên (không phân biệt hoa/thường) với tag khác → lỗi "duplicate". */
+export async function renameTag(userId: string, tagId: string, name: string): Promise<TagCount> {
+  const clean = name.trim();
+  const clash = await db
+    .select({ id: vocabTag.id })
+    .from(vocabTag)
+    .where(
+      and(
+        eq(vocabTag.userId, userId),
+        sql`lower(${vocabTag.name}) = ${clean.toLowerCase()}`,
+        sql`${vocabTag.id} <> ${tagId}`,
+      ),
+    );
+  if (clash.length) throw new VocabError("duplicate", TAG_DUPLICATE);
+  const [row] = await db
+    .update(vocabTag)
+    .set({ name: clean })
+    .where(and(eq(vocabTag.userId, userId), eq(vocabTag.id, tagId)))
+    .returning({ id: vocabTag.id, name: vocabTag.name });
+  if (!row) throw new VocabError("not-found", TAG_NOT_FOUND);
+  const [{ n } = { n: 0 }] = await db.select({ n: count() }).from(vocabToTag).where(eq(vocabToTag.tagId, tagId));
+  return { ...row, count: n };
+}
+
+/** Xóa tag của mình: chỉ gỡ tag khỏi các từ, từ vựng vẫn giữ nguyên. */
+export async function deleteTag(userId: string, tagId: string) {
+  const rows = await db
+    .delete(vocabTag)
+    .where(and(eq(vocabTag.userId, userId), eq(vocabTag.id, tagId)))
+    .returning({ id: vocabTag.id });
+  if (!rows.length) throw new VocabError("not-found", TAG_NOT_FOUND);
+  return { removed: 1 };
 }
 
 /** Thêm dữ liệu mẫu; bỏ qua từ đã có (trùng Hán tự). */

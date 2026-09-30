@@ -164,7 +164,7 @@ export function Reader({ passage }: { passage: Passage }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Button asChild variant="muted" size="sm">
+        <Button asChild variant="muted" size="sm" className="text-text-2">
           <Link href="/reading">
             <ArrowLeft />
             {t("reading.back")}
@@ -222,7 +222,7 @@ export function Reader({ passage }: { passage: Passage }) {
               {o.label}
             </label>
           ))}
-          <span className="ml-auto flex items-center gap-1.5 text-[13.5px] text-text-3">
+          <span className="ml-auto flex items-center gap-1.5 text-[13.5px] text-text-2">
             <Lightbulb className="size-4" aria-hidden="true" />
             {t("reading.keyWordsHint")}
           </span>

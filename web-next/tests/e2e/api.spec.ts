@@ -1,5 +1,8 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
+import { resetRateLimit } from "./db";
 import { register } from "./helpers";
+
+test.beforeEach(() => resetRateLimit());
 
 /**
  * REST API /api/v1/vocab và /api/v1/review (cho app khác): quyền truy cập, kiểm tra dữ liệu, luồng CRUD và ôn tập.
@@ -141,5 +144,49 @@ test("REST API từ vựng + ôn tập: 401/404/415/400, CRUD, chia sẻ, làm b
   await api.put("/api/v1/me/locale", { data: { locale: "en" } });
   const en = await (await api.post("/api/v1/vocab", { data: { hanzi: "", pinyin: "a", meaningVi: "b" } })).json();
   expect(en.fieldErrors.hanzi).toBe("Please enter the Chinese characters.");
+  await stranger.close();
+});
+
+test("REST API tag từ vựng: tạo, đổi tên (trùng → 409), xoá giữ từ; người lạ 401, người khác 404", async ({
+  page,
+  browser,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "API chỉ cần chạy một lần");
+  const anon = await browser.newContext();
+  expect((await anon.request.post("/api/v1/vocab/tags", { data: { name: "x" } })).status()).toBe(401);
+  expect((await anon.request.delete(`/api/v1/vocab/tags/${crypto.randomUUID()}`)).status()).toBe(401);
+  await anon.close();
+
+  const stranger = await browser.newContext();
+  await register(await stranger.newPage(), "Người Lạ", "tag-s");
+  await register(page, "Chủ Tag", "tag");
+  const api = page.request;
+
+  expect((await api.post("/api/v1/vocab/tags", { data: { name: "" } })).status()).toBe(400);
+  const made = (await (await api.post("/api/v1/vocab/tags", { data: { name: "Du lịch" } })).json()).data;
+  expect(made).toMatchObject({ name: "Du lịch", count: 0 });
+  await api.post("/api/v1/vocab/tags", { data: { name: "Ẩm thực" } });
+  const w = await api.post("/api/v1/vocab", {
+    data: { hanzi: "飞机", pinyin: "fēijī", meaningVi: "máy bay", tags: ["Du lịch"] },
+  });
+  const wid: string = (await w.json()).data.id;
+
+  const dup = await api.patch(`/api/v1/vocab/tags/${made.id}`, { data: { name: "ẩm THỰC" } });
+  expect(dup.status()).toBe(409);
+  expect((await dup.json()).message).toBe("Đã có tag trùng tên.");
+  const ren = await api.patch(`/api/v1/vocab/tags/${made.id}`, { data: { name: "Đi chơi" } });
+  expect((await ren.json()).data).toEqual({ id: made.id, name: "Đi chơi", count: 1 });
+
+  // Người khác: không đổi tên / xoá được tag của mình.
+  expect((await stranger.request.patch(`/api/v1/vocab/tags/${made.id}`, { data: { name: "hack" } })).status()).toBe(
+    404,
+  );
+  expect((await stranger.request.delete(`/api/v1/vocab/tags/${made.id}`)).status()).toBe(404);
+  expect((await (await stranger.request.get("/api/v1/vocab/tags")).json()).data).toEqual([]);
+  expect((await api.delete("/api/v1/vocab/tags/not-a-uuid")).status()).toBe(404);
+
+  expect((await (await api.delete(`/api/v1/vocab/tags/${made.id}`)).json()).data).toEqual({ removed: 1 });
+  const word = (await (await api.get(`/api/v1/vocab/${wid}`)).json()).data;
+  expect(word).toMatchObject({ hanzi: "飞机", tags: [] });
   await stranger.close();
 });

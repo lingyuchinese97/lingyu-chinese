@@ -35,6 +35,48 @@ test("dữ liệu mẫu, tìm kiếm bỏ dấu, lọc tag, phân trang", async 
   await expect(page).toHaveURL(/page=3/);
 });
 
+test("thẻ tag: tạo, đổi tên, xoá tag (giữ từ); dạng lưới; hiển thị x–y", async ({ page, isMobile }) => {
+  await register(page, "Người Học", "vtag");
+  await page.goto("/vocabulary");
+  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await expect(page.getByRole("heading", { name: "Từ vựng của tôi (24)" })).toBeVisible();
+  await expect(page.getByText("Hiển thị 1–8 trong")).toBeVisible();
+  const cards = page.getByRole("group", { name: "Lọc nhanh theo tag" });
+
+  await cards.getByRole("button", { name: "Tạo tag mới" }).click();
+  await page.getByRole("dialog").getByLabel("Tên tag").fill("Ôn thi");
+  await page.getByRole("dialog").getByRole("button", { name: "Tạo tag" }).click();
+  await expect(page.getByText("Đã tạo tag “Ôn thi”.")).toBeVisible();
+  await expect(cards.getByRole("button", { name: /^Ôn thi\s*0 từ/ })).toBeVisible();
+
+  await cards.getByRole("button", { name: /^Du lịch/ }).click();
+  await expect(page.getByText("2 từ vựng", { exact: true })).toBeVisible();
+  await cards.getByRole("button", { name: "Tùy chọn cho tag Du lịch" }).click();
+  await page.getByRole("menuitem", { name: "Đổi tên tag" }).click();
+  await page.getByRole("dialog").getByLabel("Tên tag").fill("Đi chơi");
+  await page.getByRole("dialog").getByRole("button", { name: "Lưu" }).click();
+  await expect(page.getByText("Đã đổi tên tag thành “Đi chơi”.")).toBeVisible();
+  await expect(page).toHaveURL(/tag=%C4%90i/);
+  await expect(page.getByText("2 từ vựng", { exact: true })).toBeVisible();
+
+  await cards.getByRole("button", { name: "Tùy chọn cho tag Đi chơi" }).click();
+  await page.getByRole("menuitem", { name: "Xóa tag" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Xóa" }).click();
+  await expect(page.getByText("Đã xóa tag “Đi chơi”.")).toBeVisible();
+  await expect(cards.getByRole("button", { name: /^Đi chơi/ })).toHaveCount(0);
+  await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
+
+  if (!isMobile) {
+    await page.getByRole("button", { name: "Dạng lưới" }).click();
+    await expect(page.locator("table")).toHaveCount(0);
+    await expect(page.locator("ul[aria-label^='Danh sách từ vựng'] > li")).toHaveCount(8);
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Dạng lưới" })).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: "Dạng danh sách" }).click();
+    await expect(page.locator("table")).toBeVisible();
+  }
+});
+
 test("thêm từ (pinyin tự thêm dấu, không còn phần ảnh), sửa, xoá", async ({ page, isMobile }) => {
   await register(page, "Người Học", "vf");
   await page.goto("/vocabulary/new");

@@ -447,6 +447,28 @@ export function openApiDocument() {
           summary: "Tag và số từ",
           data: { type: "array", items: obj({ id: { type: "string" }, name: { type: "string" }, count: int }) },
         }),
+        post: op(V, {
+          summary: "Tạo tag (đã có tag cùng tên → trả tag đó)",
+          body: obj({ name: { type: "string", maxLength: 24 } }, ["name"]),
+          example: { name: "Du lịch" },
+          data: obj({ id: { type: "string" }, name: { type: "string" }, count: int }),
+        }),
+      },
+      "/api/v1/vocab/tags/{id}": {
+        patch: op(V, {
+          summary: "Đổi tên tag",
+          params: [pathId("id tag")],
+          body: obj({ name: { type: "string", maxLength: 24 } }, ["name"]),
+          example: { name: "Đi du lịch" },
+          data: obj({ id: { type: "string" }, name: { type: "string" }, count: int }),
+          errors: [404, 409],
+        }),
+        delete: op(V, {
+          summary: "Xoá tag (gỡ khỏi các từ, từ vựng giữ nguyên)",
+          params: [pathId("id tag")],
+          data: obj({ removed: int }),
+          errors: [404],
+        }),
       },
       "/api/v1/vocab/stats": {
         get: op(V, {

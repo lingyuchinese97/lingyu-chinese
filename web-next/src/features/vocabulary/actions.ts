@@ -106,6 +106,40 @@ export async function addTagsAction(ids: string[], tags: string[]): Promise<Acti
   }
 }
 
+export async function createTagAction(name: string): Promise<ActionResult<{ id: string; name: string }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const clean = tagNameSchema.parse(name);
+    const id = await svc.createTag(u.id, clean);
+    revalidatePath("/vocabulary");
+    return { ok: true, data: { id, name: clean } };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function renameTagAction(id: string, name: string): Promise<ActionResult<svc.TagCount>> {
+  try {
+    const u = await currentUserOrThrow();
+    const tag = await svc.renameTag(u.id, z.uuid().parse(id), tagNameSchema.parse(name));
+    revalidatePath("/vocabulary");
+    return { ok: true, data: tag };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function deleteTagAction(id: string): Promise<ActionResult> {
+  try {
+    const u = await currentUserOrThrow();
+    await svc.deleteTag(u.id, z.uuid().parse(id));
+    revalidatePath("/vocabulary");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
 export async function importSampleAction(): Promise<ActionResult<{ added: number }>> {
   try {
     const u = await currentUserOrThrow();

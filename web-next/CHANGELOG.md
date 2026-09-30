@@ -6,6 +6,13 @@
 
 ### Added
 
+- **Từ vựng — giao diện mới** (`/vocabulary`): tiêu đề “Từ vựng của tôi (N)”, **thẻ tag** có biểu tượng theo chủ đề và số từ
+  (bấm để lọc; “…” → đổi tên / xoá tag), thẻ “Tạo tag mới”, tìm trong tag đang chọn, chuyển **dạng danh sách / dạng lưới**
+  (nhớ theo trình duyệt), Hán tự màu đỏ, nút nghe cạnh pinyin, thanh thao tác Ôn tập · Chia sẻ · Thêm tag · Cần ôn · Đã thuộc · Xóa,
+  chân trang “Hiển thị x–y trong N từ vựng”.
+- API tag từ vựng: `POST /api/v1/vocab/tags`, `PATCH` / `DELETE /api/v1/vocab/tags/{id}` (trùng tên → 409, tag người khác → 404;
+  xoá tag không xoá từ).
+
 - **Đọc hiểu** (`/reading`, thay trang “đang hoàn thiện”):
   - Kho 16 bài đọc HSK 1–4 (đoạn ngắn, hội thoại, bài đọc; 10 chủ đề), mỗi bài có pinyin từng chữ, bản dịch vi / en từng câu,
     từ khoá, điểm ngữ pháp, 3 câu hỏi (trắc nghiệm + điền từ).
@@ -122,6 +129,7 @@
 
 ### Fixed
 
+- Đọc hiểu: tăng tương phản nút “Quay lại” và dòng gợi ý từ khoá (axe color-contrast).
 - Kết quả Ôn dịch câu: mascot không còn đè lên vòng tròn điểm (dùng ảnh nền trong suốt, đặt cạnh vòng tròn).
 
 ### Changed

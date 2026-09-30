@@ -94,7 +94,7 @@ Mọi chức năng mới phải có REST API dưới `/api/v1/...` (quy ước �
 | `GET /api/hanzi/[char]`      | Dữ liệu nét viết của một chữ Hán                     |
 | `GET /api/images/[id]`       | Ảnh cũ (chỉ chủ ảnh xem được)                        |
 
-**Từ vựng và Ôn tập** (`/api/v1/vocab/*`, `/api/v1/review/*`): thêm / sửa / xoá / tìm từ, tag, thống kê, thao tác hàng loạt,
+**Từ vựng và Ôn tập** (`/api/v1/vocab/*`, `/api/v1/review/*`): thêm / sửa / xoá / tìm từ, tạo / đổi tên / xoá tag, thống kê, thao tác hàng loạt,
 chia sẻ; tạo bài ôn tự chọn hoặc đến hạn, trả lời, đánh giá Khó/Được/Dễ, nộp bài. Danh sách route, dạng request/response và cách
 đăng nhập từ app khác: [`docs/API.md`](docs/API.md).
 
