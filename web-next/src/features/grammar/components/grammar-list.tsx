@@ -349,16 +349,16 @@ function GrammarCard({ g, onOpen }: { g: GrammarItem; onOpen: () => void }) {
         if ((e.target as HTMLElement).closest("button, a")) return;
         onOpen();
       }}
-      className="flex min-w-0 cursor-pointer items-end gap-3 rounded-2xl border border-border bg-white px-4 py-3.5 transition-[border-color,box-shadow] hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] md:px-5 md:py-4"
+      className="flex min-w-0 cursor-pointer items-start gap-3 rounded-2xl border border-border bg-white px-4 py-3.5 transition-[border-color,box-shadow] hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] md:px-5 md:py-4"
     >
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-        <div className="flex flex-wrap items-start gap-x-3 gap-y-1.5">
-          <h2 className="min-w-0 flex-1 basis-[240px] text-[17px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[18.5px]">
+        <div className="flex flex-col items-start gap-2">
+          <h2 className="min-w-0 text-[17px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[18.5px]">
             <Link href={`/grammar/${g.id}`} className="hover:text-blue-600">
               {g.title}
             </Link>
           </h2>
-          <span className="flex shrink-0 flex-wrap gap-1.5">
+          <span className="flex flex-wrap gap-1.5">
             {hsk.map((tg) => (
               <span
                 key={tg.id}
@@ -374,7 +374,8 @@ function GrammarCard({ g, onOpen }: { g: GrammarItem; onOpen: () => void }) {
         </div>
         {main ? (
           <span
-            className="self-start rounded-[10px] bg-[#FFECEE] px-3.5 py-1.5 hanzi text-[16.5px] font-bold [overflow-wrap:anywhere] text-[#E0302F]"
+            title={main}
+            className="max-w-full self-start truncate rounded-[10px] bg-[#FFECEE] px-3.5 py-1.5 hanzi text-[16.5px] font-bold text-[#E0302F]"
             lang="zh"
           >
             {main}
@@ -391,7 +392,7 @@ function GrammarCard({ g, onOpen }: { g: GrammarItem; onOpen: () => void }) {
         type="button"
         onClick={onOpen}
         aria-label={t("grammar.openItem", { title: g.title })}
-        className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-border text-text-2 outline-none hover:border-[#A9D3F8] hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)]"
+        className="inline-flex size-10 shrink-0 items-center justify-center self-center rounded-full border border-border text-text-2 outline-none hover:border-[#A9D3F8] hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)]"
       >
         <ChevronRight className="size-5" />
       </button>
