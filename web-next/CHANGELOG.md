@@ -6,6 +6,14 @@
 
 ### Added
 
+- **Thêm từ vựng từ ảnh** (`/vocabulary/new`): thẻ Chụp ảnh · Tải ảnh lên · Dán ảnh (Ctrl + V) · Nhập thủ công.
+  - Nhận dạng chữ Hán + tiếng Việt **ngay trên trình duyệt** (tesseract.js, file tự host ở `/ocr`, chép từ node_modules lúc build);
+    ảnh không tải lên, không lưu. Chỉ tải bộ nhận dạng (~5MB) khi dùng lần đầu, sau đó service worker giữ lại.
+  - Bảng kết quả có ô chọn; từ đã có trong kho đánh dấu “Đã có” và bỏ chọn sẵn; pinyin / nghĩa / bộ thủ gợi ý từ dữ liệu có sẵn
+    (từ mẫu, bài đọc, kho luyện dịch, HSK, pinyin-pro). Khung sửa từng từ: Hán tự, pinyin (nghe), nghĩa, bộ thủ, ghi chú, tag.
+  - “Thêm vào danh sách (N)” thêm một lần, bỏ qua từ trùng.
+  - API: `POST /api/v1/vocab/suggest`, `POST /api/v1/vocab/bulk`.
+  - CSP thêm `'wasm-unsafe-eval'` (chỉ biên dịch WebAssembly, không cho eval JS); Permissions-Policy `camera=(self)`.
 - **Từ vựng — giao diện mới** (`/vocabulary`): tiêu đề “Từ vựng của tôi (N)”, **thẻ tag** có biểu tượng theo chủ đề và số từ
   (bấm để lọc; “…” → đổi tên / xoá tag), thẻ “Tạo tag mới”, tìm trong tag đang chọn, chuyển **dạng danh sách / dạng lưới**
   (nhớ theo trình duyệt), Hán tự màu đỏ, nút nghe cạnh pinyin, thanh thao tác Ôn tập · Chia sẻ · Thêm tag · Cần ôn · Đã thuộc · Xóa,
@@ -129,6 +137,7 @@
 
 ### Fixed
 
+- Từ vựng: xoá ô tìm kiếm rồi bấm ngay thẻ tag không còn bị lượt tìm kiếm trễ ghi đè bộ lọc tag.
 - Tài liệu API (`/api-docs`): các nhóm route thu gọn sẵn — mở hết ~150 route làm Swagger UI dừng vẽ sau nhóm đầu tiên.
 - Đọc hiểu: tăng tương phản nút “Quay lại” và dòng gợi ý từ khoá (axe color-contrast).
 - Kết quả Ôn dịch câu: mascot không còn đè lên vòng tròn điểm (dùng ảnh nền trong suốt, đặt cạnh vòng tròn).

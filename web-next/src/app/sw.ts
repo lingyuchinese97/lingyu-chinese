@@ -38,6 +38,14 @@ const serwist = new Serwist({
       }),
     },
     {
+      // Bộ nhận dạng chữ (OCR) tự host — tải một lần khi dùng "Thêm từ ảnh", không precache (~12MB).
+      matcher: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith("/ocr/"),
+      handler: new CacheFirst({
+        cacheName: "ocr",
+        plugins: [new ExpirationPlugin({ maxEntries: 20, maxAgeSeconds: YEAR })],
+      }),
+    },
+    {
       // Chỉ ảnh công khai (logo, mascot, icon) — không bao giờ cache ảnh từ vựng của người dùng.
       matcher: ({ url, sameOrigin }) =>
         sameOrigin &&

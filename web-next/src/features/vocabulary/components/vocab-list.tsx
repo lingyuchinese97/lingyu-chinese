@@ -343,7 +343,7 @@ export function VocabListView({
           tags={data.tagCounts}
           totalAll={data.totalAll}
           active={params.tag}
-          onPick={(tag) => go({ tag, page: 1 })}
+          onPick={(tag) => go({ tag, q, page: 1 })}
           onCreate={() => setTagName("new")}
           onRename={(g) => setTagName(g)}
           onDelete={doDeleteTag}

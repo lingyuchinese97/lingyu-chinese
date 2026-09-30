@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AuthError, currentUserOrThrow } from "@/server/session";
 import { log } from "@/server/log";
-import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "./schema";
+import { bulkSchema, idsSchema, STATUS, suggestSchema, tagNameSchema, vocabInputSchema } from "./schema";
 import * as svc from "./service";
 import * as share from "./share-service";
 
@@ -101,6 +101,28 @@ export async function addTagsAction(ids: string[], tags: string[]): Promise<Acti
     const updated = await svc.addTags(u.id, idsSchema.parse(ids), z.array(tagNameSchema).max(20).parse(tags));
     revalidatePath("/vocabulary");
     return { ok: true, data: { updated } };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function suggestWordsAction(words: string[]): Promise<ActionResult<svc.WordSuggestion[]>> {
+  try {
+    const u = await currentUserOrThrow();
+    return { ok: true, data: await svc.suggestWords(u.id, suggestSchema.parse({ words }).words) };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function createManyAction(
+  items: unknown[],
+): Promise<ActionResult<{ added: string[]; skipped: string[] }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const r = await svc.createMany(u.id, bulkSchema.parse({ items }).items);
+    revalidatePath("/vocabulary");
+    return { ok: true, data: r };
   } catch (e) {
     return fail(e);
   }

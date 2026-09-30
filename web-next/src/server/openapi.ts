@@ -470,6 +470,37 @@ export function openApiDocument() {
           errors: [404],
         }),
       },
+      "/api/v1/vocab/suggest": {
+        post: op(V, {
+          summary: "Gợi ý pinyin / nghĩa / bộ thủ cho các từ (vd nhận ra từ ảnh), đánh dấu từ đã có",
+          description:
+            "Nhận dạng chữ trong ảnh chạy ngay trên trình duyệt / điện thoại (không gửi ảnh lên server); app chỉ gửi danh sách Hán tự.",
+          body: obj({ words: { type: "array", items: { type: "string" }, maxItems: 50 } }),
+          example: { words: ["你好", "苹果"] },
+          data: {
+            type: "array",
+            items: obj({
+              hanzi: { type: "string" },
+              pinyin: { type: "string" },
+              meaningVi: { type: "string" },
+              radicals: { type: "array", items: int },
+              hskLevel: { type: ["integer", "null"] },
+              exists: { type: "boolean" },
+            }),
+          },
+        }),
+      },
+      "/api/v1/vocab/bulk": {
+        post: op(V, {
+          summary: "Thêm nhiều từ một lần (bỏ qua từ đã có)",
+          body: obj({ items: { type: "array", items: ref("VocabInput"), maxItems: 50 } }),
+          example: { items: [{ ...vocabExample }] },
+          data: obj({
+            added: { type: "array", items: { type: "string" } },
+            skipped: { type: "array", items: { type: "string" } },
+          }),
+        }),
+      },
       "/api/v1/vocab/stats": {
         get: op(V, {
           summary: "Thống kê",

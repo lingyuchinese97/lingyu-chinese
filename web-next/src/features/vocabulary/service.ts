@@ -8,7 +8,9 @@ import { db } from "@/server/db/client";
 import { srsCard, vocab, vocabTag, vocabToTag } from "@/server/db/schema";
 import { storage } from "@/server/storage";
 import { fold, foldCompact } from "@/lib/fold";
-import { charsOfRadical } from "@/lib/radicals";
+import { charsOfRadical, radicalsOfText } from "@/lib/radicals";
+import { dictLookup } from "@/lib/builtin-dict";
+import { hskLevelOf, hskPinyinOf } from "@/lib/hsk";
 import { newCardColumns } from "@/lib/srs";
 import { VOCAB } from "@/lib/limits";
 import { SAMPLE_VOCABULARY } from "@/data/sample-vocab";
@@ -348,6 +350,78 @@ export async function deleteTag(userId: string, tagId: string) {
     .returning({ id: vocabTag.id });
   if (!rows.length) throw new VocabError("not-found", TAG_NOT_FOUND);
   return { removed: 1 };
+}
+
+export type WordSuggestion = {
+  hanzi: string;
+  pinyin: string;
+  /** Nghĩa gợi ý từ từ điển có sẵn ("" nếu không có). */
+  meaningVi: string;
+  radicals: number[];
+  hskLevel: number | null;
+  /** Đã có trong kho của mình (trùng Hán tự). */
+  exists: boolean;
+};
+
+/** Gợi ý pinyin / nghĩa / bộ thủ cho các từ nhận ra từ ảnh; đánh dấu từ đã có trong kho của chính mình. */
+export async function suggestWords(userId: string, words: string[]): Promise<WordSuggestion[]> {
+  const list = [...new Set(words.map((w) => w.trim()).filter(Boolean))].slice(0, VOCAB.MAX_BULK);
+  if (!list.length) return [];
+  const mine = new Set(
+    (
+      await db
+        .select({ hanzi: vocab.hanzi })
+        .from(vocab)
+        .where(and(eq(vocab.userId, userId), inArray(vocab.hanzi, list)))
+    ).map((r) => r.hanzi),
+  );
+  const { pinyin } = await import("pinyin-pro");
+  return list.map((w) => {
+    const d = dictLookup(w);
+    return {
+      hanzi: w,
+      pinyin: d?.pinyin || hskPinyinOf(w) || pinyin(w, { toneType: "symbol", nonZh: "consecutive" }),
+      meaningVi: d?.vi ?? "",
+      radicals: [...new Set(radicalsOfText(w).flatMap((x) => (x.radical ? [x.radical.num] : [])))].slice(
+        0,
+        VOCAB.MAX_RADICALS,
+      ),
+      hskLevel: hskLevelOf(w),
+      exists: mine.has(w),
+    };
+  });
+}
+
+/** Thêm nhiều từ một lần; bỏ qua từ đã có (trùng Hán tự) và từ lặp trong danh sách. */
+export async function createMany(userId: string, items: VocabInput[]) {
+  const existing = new Set(
+    (
+      await db
+        .select({ hanzi: vocab.hanzi })
+        .from(vocab)
+        .where(
+          and(
+            eq(vocab.userId, userId),
+            inArray(
+              vocab.hanzi,
+              items.map((i) => i.hanzi),
+            ),
+          ),
+        )
+    ).map((r) => r.hanzi),
+  );
+  const added: string[] = [];
+  const skipped: string[] = [];
+  for (const it of items) {
+    if (existing.has(it.hanzi)) {
+      skipped.push(it.hanzi);
+      continue;
+    }
+    existing.add(it.hanzi);
+    await createVocab(userId, it, null);
+    added.push(it.hanzi);
+  }
+  return { added, skipped };
 }
 
 /** Thêm dữ liệu mẫu; bỏ qua từ đã có (trùng Hán tự). */

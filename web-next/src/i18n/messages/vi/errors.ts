@@ -67,6 +67,8 @@ export const errors = {
   vocabNotFoundDeleted: "Không tìm thấy từ vựng này. Có thể nó đã bị xóa.",
   tagNotFoundDeleted: "Không tìm thấy tag này. Có thể nó đã bị xóa.",
   tagDuplicate: "Đã có tag trùng tên.",
+  noWordsYet: "Chưa có từ nào.",
+  bulkMax: "Tối đa {max} từ một lần.",
   noVocabSelected: "Chưa chọn từ vựng nào.",
   selectedGone: "Các từ đã chọn không còn tồn tại.",
   // Chia sẻ

@@ -12,7 +12,10 @@ test("header bảo mật + manifest + service worker", async ({ request }) => {
   expect(h["x-content-type-options"]).toBe("nosniff");
   expect(h["referrer-policy"]).toBe("strict-origin-when-cross-origin");
   expect(h["x-frame-options"]).toBe("DENY");
-  expect(h["permissions-policy"]).toContain("camera=()");
+  // Camera chỉ cho chính app (chụp ảnh danh sách từ vựng); WASM được biên dịch nhưng không cho eval JavaScript.
+  expect(h["permissions-policy"]).toContain("camera=(self)");
+  expect(h["content-security-policy"]).toContain("'wasm-unsafe-eval'");
+  expect(h["content-security-policy"]).not.toContain("'unsafe-eval'");
   expect(h["x-powered-by"]).toBeUndefined();
 
   const m = await (await request.get("/manifest.webmanifest")).json();
