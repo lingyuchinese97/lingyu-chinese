@@ -7,7 +7,10 @@ import { db } from "@/server/db/client";
 import { readingAttempt, readingSaved, vocab } from "@/server/db/schema";
 import { R_PASSAGES, R_PASSAGE_BY_ID, type RPassage } from "@/data/reading/passages";
 import { T_GRAMMAR_BY_ID } from "@/data/translation/grammar";
+import { customPinyin, pinyin as toPinyin } from "pinyin-pro";
 import { normalizeChinese } from "@/lib/sentence-grading";
+import { dictLookup, dictPinyinMap } from "@/lib/builtin-dict";
+import { hskPinyinOf } from "@/lib/hsk";
 import type { Locale } from "@/i18n/config";
 import { recordActivity } from "@/features/progress/service";
 import { estimateLevel } from "@/features/translation/service";
@@ -58,6 +61,85 @@ function grammarOf(p: RPassage, l: Locale) {
 }
 
 /** Bài đọc để hiển thị (KHÔNG có đáp án câu hỏi). */
+/** Thanh nhẹ / cách đọc hay bị đoán sai; cộng thêm pinyin đã soát của các từ trong dữ liệu có sẵn. */
+const COMMON_PINYIN: Record<string, string> = {
+  哪儿: "nǎr",
+  这儿: "zhèr",
+  那儿: "nàr",
+  早上: "zǎoshang",
+  晚上: "wǎnshang",
+  什么: "shénme",
+  怎么: "zěnme",
+  多少: "duōshao",
+  东西: "dōngxi",
+  学生: "xuésheng",
+  朋友: "péngyou",
+  钥匙: "yàoshi",
+  桌子: "zhuōzi",
+  觉得: "juéde",
+  喜欢: "xǐhuan",
+  衣服: "yīfu",
+  名字: "míngzi",
+  认识: "rènshi",
+  谢谢: "xièxie",
+  他们: "tāmen",
+  她们: "tāmen",
+  我们: "wǒmen",
+  你们: "nǐmen",
+  太贵了: "tài guì le",
+  只读: "zhǐ dú",
+  哪个: "nǎge",
+  睡得: "shuì de",
+  发展得: "fāzhǎn de",
+  个小时: "ge xiǎoshí",
+};
+const PUNCT: Record<string, string> = { "，": ",", "。": ".", "？": "?", "！": "!", "、": ",", "：": ":", "；": ";" };
+/** Viết hoa chữ đầu câu (pinyin câu hỏi). */
+const capFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+let customReady = false;
+function ensureCustomPinyin() {
+  if (customReady) return;
+  customPinyin({ ...dictPinyinMap(), ...COMMON_PINYIN });
+  customReady = true;
+}
+
+/** Pinyin cho câu hỏi / phương án: ưu tiên pinyin đã soát của từ khoá trong bài, rồi HSK, rồi pinyin-pro. */
+function pinyinOf(zh: string, p: RPassage): string {
+  const key = p.words.find((w) => w.zh === zh);
+  if (key) return key.py;
+  const hsk = hskPinyinOf(zh);
+  if (hsk) return hsk;
+  ensureCustomPinyin();
+  // Chỗ trống "＿" làm pinyin-pro tách sai từ → đổi từng phần riêng.
+  if (zh.includes("＿"))
+    return (
+      zh
+        .split(/＿+/)
+        // Phần chỉ còn "了。" sau chỗ trống: trợ từ "le", không phải "liǎo".
+        .map((part) =>
+          /^了[。！？，]?$/.test(part) ? `le${PUNCT[part.slice(1)] ?? ""}` : part ? pinyinOf(part, p) : "",
+        )
+        .join(" ＿ ")
+        .replace(/\s+/g, " ")
+        .replace(/\s+([.,?!;:])/g, "$1")
+        .trim()
+    );
+  return toPinyin(zh, { toneType: "symbol", nonZh: "consecutive" })
+    .replace(
+      /\s*([，。？！、：；])\s*/g,
+      (_, c: string) =>
+        ({ "，": ", ", "。": ". ", "？": "? ", "！": "! ", "、": ", ", "：": ": ", "；": "; " })[c] ?? c,
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function optionInfo(o: string, p: RPassage, l: Locale) {
+  const key = p.words.find((w) => w.zh === o);
+  const d = dictLookup(o);
+  return { py: pinyinOf(o, p), meaning: key ? tr(key, l) : l === "vi" ? (d?.vi ?? null) : null };
+}
+
 export function localPassage(p: RPassage, l: Locale) {
   return {
     ...summaryOf(p, l),
@@ -66,8 +148,16 @@ export function localPassage(p: RPassage, l: Locale) {
     grammar: grammarOf(p, l),
     questions: p.questions.map((q) =>
       q.kind === "choice"
-        ? { kind: q.kind, zh: q.zh, tr: tr(q, l), options: q.options }
-        : { kind: q.kind, zh: q.zh, tr: tr(q, l) },
+        ? {
+            kind: q.kind,
+            zh: q.zh,
+            py: capFirst(pinyinOf(q.zh, p)),
+            tr: tr(q, l),
+            options: q.options,
+            /** Pinyin + nghĩa của từng phương án (nghĩa lấy từ từ khoá bài / từ điển có sẵn; không có → null). */
+            optionInfo: q.options.map((o) => optionInfo(o, p, l)),
+          }
+        : { kind: q.kind, zh: q.zh, py: capFirst(pinyinOf(q.zh, p)), tr: tr(q, l) },
     ),
   };
 }

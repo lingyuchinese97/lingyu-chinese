@@ -53,6 +53,18 @@ describe("kho bài đọc", () => {
       rd.listPassages({ level: 2, type: "dialogue" }, "vi").every((x) => x.level === 2 && x.type === "dialogue"),
     ).toBe(true);
     expect(rd.localPassage(R_PASSAGES[0]!, "en").lines[0]!.tr).toMatch(/Wang Ming/);
+    // Câu hỏi có pinyin; phương án có pinyin + nghĩa (từ khoá bài / từ điển có sẵn) — vẫn không lộ đáp án.
+    const q0 = rd.localPassage(
+      R_PASSAGES.find((x) => x.id === "r101")!,
+      "vi",
+    ).questions[0]!;
+    expect(q0.py).toBe("Wáng míng shì zuò shénme de?");
+    expect(q0.optionInfo?.[1]).toEqual({ py: "lǎoshī", meaning: "giáo viên, thầy giáo, cô giáo" });
+    const fill = rd.localPassage(
+      R_PASSAGES.find((x) => x.id === "r102")!,
+      "vi",
+    ).questions[2]!;
+    expect(fill.py).toBe("Tā juéde píng guǒ tài ＿ le.");
   });
 });
 

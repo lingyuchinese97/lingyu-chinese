@@ -6,6 +6,12 @@
 
 ### Added
 
+- **Đọc hiểu — giao diện bài đọc mới** (`/reading/[id]`): thanh trên có HSK, công tắc “Hiện pinyin” / “Hiện bản dịch” (bản dịch
+  bật sẵn), “Lưu bài”. Hai cột: bài đọc đánh số từng câu, **dòng pinyin phía trên câu** (từ khoá viết liền), từ khoá tô vàng
+  (bấm xem nghĩa, lưu), bản dịch dưới câu, khung “Từ vựng nổi bật trong bài” (xem tất cả, lưu tất cả); cột câu hỏi có thanh tiến độ
+  “x / N”, mỗi câu có pinyin + bản dịch, phương án hiện chữ cái, Hán tự, pinyin và nghĩa.
+- API `GET /api/v1/reading/passages/{id}`: câu hỏi có thêm `py`, phương án có `optionInfo[{ py, meaning }]` (pinyin lấy từ từ khoá
+  bài / từ điển có sẵn đã soát, còn lại pinyin-pro; nghĩa từ từ khoá bài / từ điển có sẵn, không có → `null`).
 - **Ngữ pháp — giao diện mới** (`/grammar`): ô tìm kiếm + “Thêm ngữ pháp mới” trên cùng, khung tiêu đề có khẩu hiệu và linh vật,
   thẻ lọc “Tất cả (N)” · từng thẻ (số bài) · “+ Thêm thẻ”, sắp xếp, **dạng lưới / danh sách** (nhớ theo trình duyệt). Mỗi ngữ pháp
   là một thẻ 2 cột: biểu tượng + nhãn loại, tiêu đề, cấu trúc chính (chữ đỏ), thẻ (HSK tím), lưu, menu “…”, nút mở.
