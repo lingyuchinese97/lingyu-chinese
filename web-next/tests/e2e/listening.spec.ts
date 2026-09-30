@@ -104,13 +104,9 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await expect(url).toHaveValue("");
   await expect(page.locator("audio")).toHaveCount(0);
 
-  // Bài làm của tôi: danh sách (tiêu đề, thẻ, điểm) + chi tiết.
+  // “Xem bài làm” → trang chi tiết riêng.
   await page.getByRole("link", { name: "Mở Bài làm của tôi" }).click();
-  await expect(page).toHaveURL(/\/listening\/exercises\?id=/);
-  const item = page.getByRole("link", { name: "Mở bài “Hội thoại chào hỏi – Bài 1”" });
-  await expect(item).toContainText("5/6");
-  await expect(item).toContainText("83%");
-  await expect(item).toContainText("HSK1");
+  await expect(page).toHaveURL(/\/listening\/exercises\/[0-9a-f-]{36}$/);
   const detail = page.getByRole("region", { name: "Chi tiết bài làm" });
   await expect(detail.getByRole("heading", { name: "Hội thoại chào hỏi – Bài 1" })).toBeVisible();
   await expect(detail.getByText("Đúng 5/6 chữ (83%)")).toBeVisible();
@@ -132,7 +128,14 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await detail.getByRole("button", { name: "Lưu thay đổi" }).click();
   await expect(page.getByText("Đã lưu thay đổi.")).toBeVisible();
   await expect(detail.getByText("Đúng 6/6 chữ (100%)")).toBeVisible();
+
+  // Danh sách: tiêu đề, thẻ, điểm; bấm → chi tiết.
+  await page.getByRole("link", { name: "Về danh sách bài làm" }).click();
+  await expect(page).toHaveURL(/\/listening\/exercises$/);
+  const item = page.getByRole("link", { name: "Mở bài “Hội thoại chào hỏi – Bài 1”" });
+  await expect(item).toContainText("6/6");
   await expect(item).toContainText("100%");
+  await expect(item).toContainText("HSK1");
 
   // Tìm + lọc.
   const search = page.getByRole("searchbox", { name: "Tìm bài làm" });
@@ -143,7 +146,8 @@ test("Luyện nghe: link → đáp án tự nhập → chép → so sánh → s�
   await page.getByRole("button", { name: "Xóa bộ lọc" }).click();
   await expect(item).toBeVisible();
 
-  // Xoá (có xác nhận).
+  // Xoá (có xác nhận) từ trang chi tiết → về danh sách trống.
+  await item.click();
   await page.getByRole("region", { name: "Chi tiết bài làm" }).getByRole("button", { name: "Xóa bài làm" }).click();
   await page.getByRole("dialog", { name: "Xóa bài làm?" }).getByRole("button", { name: "Xóa" }).click();
   await expect(page.getByText("Bạn chưa lưu bài làm nào.")).toBeVisible();

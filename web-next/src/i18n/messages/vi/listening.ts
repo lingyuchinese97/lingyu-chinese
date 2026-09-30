@@ -192,6 +192,12 @@ export const listening = {
     saved: "Đã lưu “{word}” vào Từ vựng.",
   },
   mine: {
+    backToList: "Về danh sách bài làm",
+    colTitle: "Tiêu đề",
+    colTag: "Tag",
+    colResult: "Kết quả",
+    colTime: "Thời gian làm",
+    colAction: "Thao tác",
     title: "Bài làm của tôi",
     sub: "Xem lại, chỉnh sửa và ôn tập các bài luyện nghe – chép chính tả của bạn.",
     new: "Tạo bài mới",

@@ -13,7 +13,7 @@ export const grammar: Messages["grammar"] = {
   viewSaved: "Saved",
   viewShared: "Shared with me",
   searchLabel: "Search grammar",
-  searchPlaceholder: "Search grammar (e.g. 是, 把, comparison, complement...)",
+  searchPlaceholder: "Search grammar (title, pattern, tag...)",
   sort: "Sort",
   sortUpdated: "Recently updated",
   sortNewest: "Newest",
@@ -100,6 +100,7 @@ export const grammar: Messages["grammar"] = {
     adverb: "Adverb",
     time: "Time",
     complement: "Complement",
+    preposition: "Preposition",
     other: "Other",
   },
   form: {

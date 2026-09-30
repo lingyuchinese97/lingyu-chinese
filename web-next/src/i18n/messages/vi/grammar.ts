@@ -11,7 +11,7 @@ export const grammar = {
   viewSaved: "Đã lưu",
   viewShared: "Được chia sẻ",
   searchLabel: "Tìm kiếm ngữ pháp",
-  searchPlaceholder: "Tìm kiếm ngữ pháp (ví dụ: 是, 把, so sánh, bổ ngữ...)",
+  searchPlaceholder: "Tìm kiếm ngữ pháp (tiêu đề, cấu trúc, tag...)",
   sort: "Sắp xếp",
   sortUpdated: "Cập nhật gần nhất",
   sortNewest: "Mới nhất",
@@ -96,6 +96,7 @@ export const grammar = {
     adverb: "Phó từ",
     time: "Thời gian",
     complement: "Bổ ngữ",
+    preposition: "Giới từ",
     other: "Khác",
   },
   form: {

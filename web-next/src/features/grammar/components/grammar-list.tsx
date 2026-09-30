@@ -1,6 +1,5 @@
 "use client";
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -11,7 +10,6 @@ import {
   Eye,
   LayoutGrid,
   List,
-  MoreHorizontal,
   Pencil,
   Plus,
   Search,
@@ -24,22 +22,14 @@ import { Button } from "@/components/ui/button";
 import { Input, inputClass } from "@/components/ui/input";
 import { Tag } from "@/components/ui/badges";
 import { Dialog, DialogActions, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "@/components/ui/menu";
 import { useConfirm } from "@/components/ui/confirm";
 import { toast } from "@/components/ui/toaster";
-import { GrammarIcon, LeafDecor } from "@/components/layout/icons";
+import { GrammarIcon } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { G_LIMITS, G_SORTS, structureLines, type GrammarListParams } from "../schema";
-import { GrammarBadgeIcon, iconOf, pillClass } from "../icons";
+import { iconOf, pillClass } from "../icons";
 import type { GrammarItem, ReceivedShare } from "../service";
-import {
-  createTagAction,
-  deleteGrammarAction,
-  deleteTagAction,
-  importSampleGrammarAction,
-  renameTagAction,
-  setBookmarkAction,
-} from "../actions";
+import { createTagAction, deleteTagAction, importSampleGrammarAction, renameTagAction } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
 
@@ -115,32 +105,6 @@ export function GrammarList({
   }, [q, params.q, go]);
   const refresh = () => startTransition(() => router.refresh());
 
-  async function toggleSave(g: GrammarItem) {
-    const r = await setBookmarkAction(g.id, !g.isSaved);
-    if (!r.ok) return void toast.error(r.message);
-    toast.success(r.data ? t("grammar.savedToast") : t("grammar.unsavedToast"));
-    refresh();
-  }
-  async function remove(g: GrammarItem) {
-    const ok = await confirm({
-      title: t("grammar.deleteTitle"),
-      message: (
-        <>
-          {t("grammar.deleteConfirm")}
-          <br />
-          <strong>{g.title}</strong>
-        </>
-      ),
-      confirmLabel: t("common.delete"),
-      danger: true,
-    });
-    if (!ok) return;
-    const r = await deleteGrammarAction(g.id);
-    if (!r.ok) return void toast.error(r.message || t("grammar.deleteFailed"));
-    toast.success(t("grammar.deleted"));
-    refresh();
-  }
-
   const listMode = params.view !== "shared";
   const views = [
     { key: "all" as const, label: t("grammar.viewAll"), icon: <GrammarIcon />, n: data.totalAll },
@@ -150,70 +114,19 @@ export function GrammarList({
 
   return (
     <>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="relative block min-w-0 flex-1">
-          <span className="sr-only">{t("grammar.searchLabel")}</span>
-          <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t("grammar.searchPlaceholder")}
-            autoComplete="off"
-            className={cn(inputClass, "pl-11")}
-          />
-        </label>
-        <Button asChild variant="solid" className="shrink-0 max-sm:w-full">
+      <section aria-labelledby="gl-title" className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div className="min-w-0 flex-1">
+          <h1 id="gl-title" className="text-[28px] font-extrabold tracking-tight text-navy-900 md:text-[34px]">
+            {t("grammar.title")}
+          </h1>
+          <p className="mt-1 text-[15px] text-text-2 md:text-[16.5px]">{t("grammar.subtitle")}</p>
+        </div>
+        <Button asChild variant="solid" size="lg" className="shrink-0 max-sm:w-full">
           <Link href="/grammar/new">
             <Plus />
             {t("grammar.addNew")}
           </Link>
         </Button>
-      </div>
-
-      <section
-        aria-labelledby="gl-title"
-        className="relative overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F6FAFF_0%,#EDF5FE_55%,#E3F0FD_100%)] px-[18px] py-5 md:px-7 md:py-6"
-      >
-        <LeafDecor
-          aria-hidden
-          className="pointer-events-none absolute top-8 right-[34%] hidden w-7 rotate-12 opacity-60 lg:block"
-        />
-        <LeafDecor
-          aria-hidden
-          className="pointer-events-none absolute right-[15%] bottom-6 hidden w-9 -rotate-[25deg] opacity-70 lg:block"
-        />
-        <div className="relative flex items-center gap-4">
-          <div className="min-w-0 flex-1">
-            <h1
-              id="gl-title"
-              className="flex items-center gap-3 text-[28px] font-extrabold tracking-tight whitespace-nowrap text-navy-900 md:text-[40px]"
-            >
-              {t("grammar.title")}
-              <LeafDecor className="w-9 md:w-10" />
-            </h1>
-            <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{t("grammar.subtitle")}</p>
-          </div>
-          <div aria-hidden="true" className="hidden shrink-0 flex-col items-center xl:flex">
-            <p className="-rotate-[7deg] text-center font-hand text-[22px] leading-tight font-semibold text-blue-700">
-              {t("grammar.slogan1")}
-              <br />
-              {t("grammar.slogan2")}
-            </p>
-            <svg viewBox="0 0 170 24" className="mt-1 w-[170px] -rotate-[7deg] text-blue-600" fill="none">
-              <path d="M2 20 C 50 6, 110 4, 168 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-          <Image
-            src="/brand/ui/mascot-wave.png"
-            alt=""
-            aria-hidden="true"
-            width={512}
-            height={512}
-            unoptimized
-            className="hidden h-auto w-[96px] shrink-0 sm:block md:w-[110px]"
-          />
-        </div>
       </section>
 
       <section
@@ -257,71 +170,88 @@ export function GrammarList({
         </div>
 
         {listMode ? (
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <div
-              role="group"
-              aria-label={t("grammar.filterTag")}
-              className="-mx-4 flex min-w-0 flex-1 [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
-            >
-              <Chip on={!params.tag} onClick={() => go({ tag: "" })}>
-                {t("grammar.allCount", { count: data.totalAll })}
-              </Chip>
-              {tags.map((tg) => (
-                <Chip key={tg.id} on={tg.id === params.tag} onClick={() => go({ tag: tg.id })}>
-                  {tg.name} ({tg.count})
-                </Chip>
-              ))}
-              <button
-                type="button"
-                onClick={() => setTagsOpen(true)}
-                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] border-[#BCD6F5] bg-white px-3.5 text-[14.5px] font-semibold whitespace-nowrap text-blue-600 hover:bg-blue-50"
-              >
-                <Plus className="size-[18px]" />
-                {t("grammar.addTagChip")}
-              </button>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <label className="min-w-0 flex-1 lg:w-[210px] lg:flex-none">
-                <span className="sr-only">{t("grammar.sort")}</span>
-                <select
-                  value={params.sort}
-                  onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
-                  className={cn(inputClass, "cursor-pointer")}
-                >
-                  {G_SORTS.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {t(s.label)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+          <>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <div
                 role="group"
-                aria-label={t("grammar.layout")}
-                className="flex rounded-[12px] border border-border p-1"
+                aria-label={t("grammar.filterTag")}
+                className="-mx-4 flex min-w-0 flex-1 [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
               >
-                {(["grid", "list"] as const).map((m) => {
-                  const Icon = m === "grid" ? LayoutGrid : List;
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      aria-pressed={layout === m}
-                      aria-label={m === "grid" ? t("grammar.layoutGrid") : t("grammar.layoutList")}
-                      title={m === "grid" ? t("grammar.layoutGrid") : t("grammar.layoutList")}
-                      onClick={() => layoutStore.set(m)}
-                      className={cn(
-                        "inline-flex size-9 items-center justify-center rounded-[9px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
-                        layout === m ? "bg-blue-600 text-white" : "text-text-3 hover:text-blue-600",
-                      )}
-                    >
-                      <Icon />
-                    </button>
-                  );
-                })}
+                <Chip on={!params.tag} onClick={() => go({ tag: "" })}>
+                  {t("grammar.allCount", { count: data.totalAll })}
+                </Chip>
+                {tags.map((tg) => (
+                  <Chip key={tg.id} on={tg.id === params.tag} onClick={() => go({ tag: tg.id })}>
+                    {tg.name} ({tg.count})
+                  </Chip>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setTagsOpen(true)}
+                  className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] border-dashed border-[#BCD6F5] bg-white px-3.5 text-[14.5px] font-semibold whitespace-nowrap text-blue-600 hover:bg-blue-50"
+                >
+                  <Plus className="size-[18px]" />
+                  {t("grammar.addTagChip")}
+                </button>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <label className="min-w-0 flex-1 lg:w-[230px] lg:flex-none">
+                  <span className="sr-only">{t("grammar.sort")}</span>
+                  <select
+                    value={params.sort}
+                    onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
+                    className={cn(inputClass, "cursor-pointer")}
+                  >
+                    {G_SORTS.map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {t(s.label)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div
+                  role="group"
+                  aria-label={t("grammar.layout")}
+                  className="flex gap-1 rounded-[14px] border border-border bg-white p-1"
+                >
+                  {(["grid", "list"] as const).map((m) => {
+                    const Icon = m === "grid" ? LayoutGrid : List;
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        aria-pressed={layout === m}
+                        onClick={() => layoutStore.set(m)}
+                        className={cn(
+                          "inline-flex min-h-10 items-center gap-1.5 rounded-[10px] border px-3 text-[14px] font-semibold whitespace-nowrap outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px]",
+                          layout === m
+                            ? "border-blue-600 bg-blue-50 text-blue-700"
+                            : "border-transparent text-text-2 hover:text-blue-600",
+                        )}
+                      >
+                        <Icon aria-hidden="true" />
+                        <span className="max-sm:sr-only">
+                          {m === "grid" ? t("grammar.layoutGrid") : t("grammar.layoutList")}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+            <label className="relative block">
+              <span className="sr-only">{t("grammar.searchLabel")}</span>
+              <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t("grammar.searchPlaceholder")}
+                autoComplete="off"
+                className={cn(inputClass, "pl-12")}
+              />
+            </label>
+          </>
         ) : null}
 
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
@@ -366,16 +296,7 @@ export function GrammarList({
               <p className="mb-3 text-[13.5px] text-text-3">{t("grammar.total", { count: data.total })}</p>
               <div className={cn("grid gap-3.5", layout === "grid" && "lg:grid-cols-2")}>
                 {data.items.map((g) => (
-                  <GrammarCard
-                    key={g.id}
-                    g={g}
-                    compact={layout === "list"}
-                    onOpen={() => router.push(`/grammar/${g.id}`)}
-                    onSave={() => toggleSave(g)}
-                    onShare={() => setShareOf(g)}
-                    onEdit={() => router.push(`/grammar/${g.id}/edit`)}
-                    onDelete={() => remove(g)}
-                  />
+                  <GrammarCard key={g.id} g={g} onOpen={() => router.push(`/grammar/${g.id}`)} />
                 ))}
               </div>
             </>
@@ -417,139 +338,63 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   );
 }
 
-function GrammarCard({
-  g,
-  compact,
-  onOpen,
-  onSave,
-  onShare,
-  onEdit,
-  onDelete,
-}: {
-  g: GrammarItem;
-  compact: boolean;
-  onOpen: () => void;
-  onSave: () => void;
-  onShare: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
+function GrammarCard({ g, onOpen }: { g: GrammarItem; onOpen: () => void }) {
   const t = useT();
   const k = iconOf(g);
   const main = structureLines(g.structure)[0];
-  const btn =
-    "inline-flex size-10 shrink-0 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] md:size-9 [&_svg]:size-5";
+  const hsk = g.tags.filter((tg) => /^hsk/i.test(tg.name));
   return (
     <article
       onClick={(e) => {
         if ((e.target as HTMLElement).closest("button, a")) return;
         onOpen();
       }}
-      className={cn(
-        "flex min-w-0 cursor-pointer gap-3 rounded-2xl border border-border bg-white p-3.5 transition-[border-color,box-shadow] hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] md:gap-4 md:p-4",
-        compact ? "items-center" : "items-start",
-      )}
+      className="flex min-w-0 cursor-pointer items-end gap-3 rounded-2xl border border-border bg-white px-4 py-3.5 transition-[border-color,box-shadow] hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] md:px-5 md:py-4"
     >
-      <div className="flex shrink-0 flex-col items-center gap-1.5 sm:w-[168px] sm:flex-row sm:gap-2">
-        <GrammarBadgeIcon k={k} />
-        <span
-          className={cn(
-            "hidden rounded-full px-2.5 py-1 text-[12.5px] leading-tight font-semibold whitespace-nowrap sm:inline-block",
-            pillClass(k),
-          )}
-        >
-          {t(`grammar.icon.${k}`)}
-        </span>
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <h2 className="text-[17px] leading-snug font-bold [overflow-wrap:anywhere] text-navy md:text-[18px]">
-          <Link href={`/grammar/${g.id}`} className="hover:text-blue-600">
-            {g.title}
-          </Link>
-        </h2>
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+        <div className="flex flex-wrap items-start gap-x-3 gap-y-1.5">
+          <h2 className="min-w-0 flex-1 basis-[240px] text-[17px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[18.5px]">
+            <Link href={`/grammar/${g.id}`} className="hover:text-blue-600">
+              {g.title}
+            </Link>
+          </h2>
+          <span className="flex shrink-0 flex-wrap gap-1.5">
+            {hsk.map((tg) => (
+              <span
+                key={tg.id}
+                className="rounded-[9px] bg-[#F0EAFF] px-2.5 py-1 text-[13px] font-semibold text-[#6B3FD0]"
+              >
+                {tg.name}
+              </span>
+            ))}
+            <span className={cn("rounded-[9px] px-2.5 py-1 text-[13px] font-semibold", pillClass(k))}>
+              {t(`grammar.icon.${k}`)}
+            </span>
+          </span>
+        </div>
         {main ? (
           <span
-            className="self-start rounded-lg bg-[#FFEDEE] px-3 py-1 hanzi text-[15.5px] font-bold [overflow-wrap:anywhere] text-[#E0302F]"
+            className="self-start rounded-[10px] bg-[#FFECEE] px-3.5 py-1.5 hanzi text-[16.5px] font-bold [overflow-wrap:anywhere] text-[#E0302F]"
             lang="zh"
           >
             {main}
           </span>
         ) : null}
-        {!compact && (g.tags.length || g.sourceGrammarId) ? (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {g.tags.map((tg) => (
-              <span
-                key={tg.id}
-                className={cn(
-                  "rounded-[8px] px-2.5 py-0.5 text-[13px] font-semibold",
-                  /^hsk/i.test(tg.name) ? "bg-[#F0EAFF] text-[#6B3FD0]" : "bg-[#F1F4F8] text-text-2",
-                )}
-              >
-                {tg.name}
-              </span>
-            ))}
-            {g.sourceGrammarId ? (
-              <span className="inline-flex items-center gap-1 text-[13px] text-green-700">
-                <Share2 className="size-[14px]" />
-                {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
-              </span>
-            ) : null}
-          </div>
+        {g.sourceGrammarId ? (
+          <span className="inline-flex items-center gap-1 text-[13px] text-green-700">
+            <Share2 className="size-[14px]" />
+            {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
+          </span>
         ) : null}
       </div>
-      <div className={cn("flex shrink-0 gap-1", compact ? "items-center" : "flex-col items-end")}>
-        <div className="flex">
-          <button
-            type="button"
-            onClick={onSave}
-            aria-pressed={g.isSaved}
-            aria-label={
-              g.isSaved ? t("grammar.unsaveItem", { title: g.title }) : t("grammar.saveItem", { title: g.title })
-            }
-            className={cn(btn, g.isSaved && "text-amber")}
-          >
-            <Bookmark className={cn(g.isSaved && "fill-amber")} />
-          </button>
-          <Menu>
-            <MenuTrigger asChild>
-              <button type="button" className={btn} aria-label={t("grammar.actionsFor", { title: g.title })}>
-                <MoreHorizontal />
-              </button>
-            </MenuTrigger>
-            <MenuContent className="w-[210px]">
-              <MenuItem onSelect={onOpen}>
-                <Eye />
-                {t("grammar.view")}
-              </MenuItem>
-              <MenuItem onSelect={onEdit}>
-                <Pencil />
-                {t("grammar.editAction")}
-              </MenuItem>
-              <MenuItem onSelect={onShare}>
-                <Share2 />
-                {t("grammar.share")}
-              </MenuItem>
-              <MenuItem onSelect={onSave}>
-                <Bookmark />
-                {g.isSaved ? t("grammar.unsave") : t("grammar.save")}
-              </MenuItem>
-              <MenuSeparator />
-              <MenuItem danger onSelect={onDelete}>
-                <Trash2 />
-                {t("grammar.delete")}
-              </MenuItem>
-            </MenuContent>
-          </Menu>
-        </div>
-        <button
-          type="button"
-          onClick={onOpen}
-          aria-label={t("grammar.openItem", { title: g.title })}
-          className="hidden size-9 items-center justify-center rounded-full border border-border text-text-2 outline-none hover:border-[#A9D3F8] hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)] sm:inline-flex"
-        >
-          <ChevronRight className="size-5" />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={t("grammar.openItem", { title: g.title })}
+        className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-border text-text-2 outline-none hover:border-[#A9D3F8] hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)]"
+      >
+        <ChevronRight className="size-5" />
+      </button>
     </article>
   );
 }
