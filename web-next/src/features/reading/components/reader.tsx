@@ -83,17 +83,17 @@ const PUNCT: Record<string, string> = {
   "“": "“",
   "”": "”",
 };
-/** Dòng pinyin đặt trên câu: âm tiết từng chữ Hán, dấu câu đổi sang dấu Latin. */
-function pinyinLine(zh: string, py: string) {
-  const syl = py.split(/\s+/).filter(Boolean);
-  let k = 0;
-  let out = "";
-  for (const ch of zh) {
-    if (isHan(ch)) out += (out && !out.endsWith(" ") && !out.endsWith("“") ? " " : "") + (syl[k++] ?? "");
-    else if (PUNCT[ch]) out += PUNCT[ch] + (ch === "“" ? "" : " ");
-    else out += ch;
+/** Dòng pinyin đặt trên câu: âm tiết từng chữ Hán (từ khoá viết liền), dấu câu đổi sang dấu Latin, viết hoa đầu câu. */
+function pinyinLine(zh: string, py: string, words: Word[]) {
+  const parts: string[] = [];
+  for (const sg of segment(zh, py, words)) {
+    const syl = sg.text.filter((c) => c.py).map((c) => c.py);
+    if (syl.length) parts.push(sg.word ? syl.join("") : syl.join(" "));
+    for (const c of sg.text)
+      if (!c.py && PUNCT[c.ch]) parts[parts.length - 1] = (parts[parts.length - 1] ?? "") + PUNCT[c.ch];
   }
-  return out.replace(/\s+/g, " ").trim();
+  const out = parts.join(" ").replace(/\s+/g, " ").trim();
+  return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
 export function Reader({ passage }: { passage: Passage }) {
@@ -263,7 +263,7 @@ export function Reader({ passage }: { passage: Passage }) {
                   {pinyin ? (
                     <p data-pinyin-line lang="zh-Latn" className="text-[14.5px] leading-6 text-text-2">
                       {l.s ? `${l.s}: ` : ""}
-                      {pinyinLine(l.zh, l.py)}
+                      {pinyinLine(l.zh, l.py, passage.words)}
                     </p>
                   ) : null}
                   <p className="hanzi text-[23px] leading-[1.6] font-bold text-navy-900 md:text-[27px]">

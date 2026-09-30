@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { R_PASSAGE_BY_ID } from "../../src/data/reading/passages";
+import { resetRateLimit } from "./db";
 import { register } from "./helpers";
+
+test.beforeEach(() => resetRateLimit());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dữ liệu JSON trả về từ API
 const data = async (r: { json: () => Promise<any> }) => (await r.json()).data;
