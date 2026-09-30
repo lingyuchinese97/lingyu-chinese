@@ -11,6 +11,7 @@ import { ACTIVITY_KINDS } from "@/features/progress/constants";
 import { T_TOPICS } from "@/data/translation/items";
 import { elapsedSchema, translationConfigSchema } from "@/features/translation/schema";
 import { saveWordsSchema, submitSchema } from "@/features/reading/schema";
+import { libWordInputSchema } from "@/features/library/schema";
 import { R_TYPES } from "@/data/reading/passages";
 
 /**
@@ -122,6 +123,7 @@ const SE = "Tìm kiếm";
 const TR = "Luyện dịch";
 const RDG = "Đọc hiểu";
 const AD = "Quản trị";
+const LIB = "Thư viện LingYu";
 const A = "Tài khoản";
 
 const vocabExample = {
@@ -167,6 +169,7 @@ export function openApiDocument() {
     tags: [
       { name: A, description: "Đăng nhập, đăng xuất, ngôn ngữ" },
       { name: V, description: "Kho từ vựng của mình, chia sẻ" },
+      { name: LIB, description: "Nội dung do LingYu soạn và public (từ vựng); lưu vào kho của mình" },
       { name: R, description: "Ôn tự chọn và ôn thẻ đến hạn (FSRS)" },
       {
         name: L,
@@ -244,6 +247,11 @@ export function openApiDocument() {
           type: "object",
           description:
             'Ngữ pháp: id, title, icon (biểu tượng cạnh tiêu đề; "" = tự chọn theo nội dung), meaning, structure (mỗi dòng một cấu trúc), notes, examples, tags, isSaved, personalNote (chỉ chủ sở hữu)…',
+        },
+        LibraryWord: {
+          type: "object",
+          description:
+            "Từ trong Thư viện LingYu: hanzi, pinyin, pos (từ loại), meaningVi, note, hskLevel, topic, components[{ char, pinyin, meaning }], mnemonic, association, related[{ zh, py, vi }], examples[{ zh, py, vi }], grammar[{ structure, explain, example }], hasImage; admin thêm status, publishedAt.",
         },
         Sentence: {
           type: "object",
@@ -734,6 +742,123 @@ export function openApiDocument() {
             content: obj({ vocab: int, sentences: int, grammar: int, listening: int }),
           }),
           errors: [403],
+        }),
+      },
+      "/api/v1/library/words": {
+        get: op(LIB, {
+          summary: "Từ vựng đã public trong Thư viện LingYu (kèm số từ mỗi cấp HSK, `saved` theo kho của mình)",
+          params: [
+            q("hsk", { type: "integer", minimum: 0, maximum: 6, default: 1 }, "0 = tất cả cấp"),
+            q("topic", { enum: ["", ...T_TOPICS] }),
+            q("q", { type: "string" }),
+            q("sort", { enum: ["order", "newest", "pinyin"], default: "order" }),
+          ],
+          data: obj({
+            items: { type: "array", items: { type: "object" } },
+            total: int,
+            levels: { type: "object" },
+            all: int,
+          }),
+        }),
+      },
+      "/api/v1/library/words/{id}": {
+        get: op(LIB, {
+          summary: "Chi tiết một từ đã public (bản nháp → 404)",
+          params: [pathId("id từ")],
+          data: ref("LibraryWord"),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/words/{id}/image": {
+        get: {
+          tags: [LIB],
+          summary: "Ảnh minh hoạ (ảnh, không phải JSON) — chỉ từ đã public",
+          parameters: [pathId("id từ")],
+          responses: { 200: { description: "Ảnh" }, 401: E[401], 404: E[404] },
+        },
+      },
+      "/api/v1/library/words/{id}/save": {
+        post: op(LIB, {
+          summary: "Lưu từ vào Từ vựng của tôi (đã có Hán tự đó → bỏ qua)",
+          params: [pathId("id từ")],
+          data: obj({ saved: { type: "boolean" }, added: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/admin/library/analyze": {
+        post: op(AD, {
+          summary: "Phân tích từ từ dữ liệu có sẵn: chữ Hán → gợi ý đầy đủ; pinyin / tiếng Việt → danh sách từ để chọn",
+          body: obj({ input: { type: "string", maxLength: 40 } }),
+          example: { input: "学" },
+          data: obj({ analysis: { type: ["object", "null"] }, candidates: { type: "array" } }),
+          errors: [403],
+        }),
+      },
+      "/api/v1/admin/library/words": {
+        get: op(AD, {
+          summary: "Tất cả từ trong thư viện (nháp + public)",
+          params: [
+            q("q", { type: "string" }),
+            q("status", { enum: ["all", "draft", "public"] }),
+            q("page", { type: "integer", minimum: 1 }),
+          ],
+          data: obj({ items: { type: "array", items: ref("LibraryWord") }, total: int, page: int, pageCount: int }),
+          errors: [403],
+        }),
+        post: op(AD, {
+          summary: "Thêm từ (publish = true: public ngay, cần pinyin + nghĩa); trùng Hán tự → 409",
+          body: obj({ word: js(libWordInputSchema), publish: { type: "boolean" } }),
+          example: { word: { hanzi: "学", pinyin: "xué", meaningVi: "học", pos: "verb", hskLevel: 1 }, publish: false },
+          status: 201,
+          data: obj({ id: { type: "string", format: "uuid" } }),
+          errors: [403, 409],
+        }),
+      },
+      "/api/v1/admin/library/words/{id}": {
+        get: op(AD, {
+          summary: "Một từ (kể cả nháp)",
+          params: [pathId("id từ")],
+          data: ref("LibraryWord"),
+          errors: [403, 404],
+        }),
+        put: op(AD, {
+          summary: "Sửa toàn bộ (publish: true / false / bỏ trống = giữ trạng thái)",
+          params: [pathId("id từ")],
+          body: obj({ word: js(libWordInputSchema), publish: { type: "boolean" } }, ["word"]),
+          example: { word: { hanzi: "学", pinyin: "xué", meaningVi: "học" } },
+          data: ref("LibraryWord"),
+          errors: [403, 404, 409],
+        }),
+        delete: op(AD, {
+          summary: "Xoá từ (và ảnh)",
+          params: [pathId("id từ")],
+          data: obj({ removed: int }),
+          errors: [403, 404],
+        }),
+      },
+      "/api/v1/admin/library/words/{id}/status": {
+        post: op(AD, {
+          summary: "Public / về nháp",
+          params: [pathId("id từ")],
+          body: obj({ public: { type: "boolean" } }),
+          example: { public: true },
+          data: obj({ status: { enum: ["draft", "public"] } }),
+          errors: [403, 404],
+        }),
+      },
+      "/api/v1/admin/library/words/{id}/image": {
+        put: op(AD, {
+          summary: "Đặt / thay ảnh minh hoạ: { data: base64 } (JPG / PNG / WebP ≤ 1MB)",
+          params: [pathId("id từ")],
+          body: obj({ data: { type: "string", contentEncoding: "base64" } }),
+          data: obj({ hasImage: { type: "boolean" } }),
+          errors: [403, 404],
+        }),
+        delete: op(AD, {
+          summary: "Xoá ảnh minh hoạ",
+          params: [pathId("id từ")],
+          data: obj({ hasImage: { type: "boolean" } }),
+          errors: [403, 404],
         }),
       },
       "/api/v1/admin/users": {

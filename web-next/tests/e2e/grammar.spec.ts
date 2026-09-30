@@ -100,7 +100,7 @@ test("chia sẻ ngữ pháp: người nhận xem trước (không thấy ghi ch�
   await b.getByRole("dialog").getByRole("button", { name: "Chấp nhận" }).click();
   await expect(b.getByText("Đã thêm “Câu so sánh với 比” vào thư viện của bạn.")).toBeVisible();
   await expect(b.getByText(/Nhận từ Người Gửi/)).toBeVisible();
-  await expect(b.getByText("Của tôi")).toBeVisible();
+  await expect(b.getByText("Của tôi", { exact: true })).toBeVisible();
   await expect(b.getByText("GHI CHÚ RIÊNG CỦA A")).toHaveCount(0);
 
   await a.reload();

@@ -6,6 +6,15 @@
 
 ### Added
 
+- **Thư viện LingYu — Từ vựng**:
+  - Người học: mục **Thư viện LingYu** trên menu (`/library/vocabulary`) — HSK 1–6, tìm (chữ Hán / pinyin / nghĩa, không dấu), chủ đề,
+    sắp xếp; danh sách đánh số + chi tiết: chữ lớn, pinyin (nghe), nghĩa, từ loại, ảnh minh hoạ, bộ / thành phần, mẹo ghi nhớ, liên tưởng,
+    ví dụ (nghe), từ / câu quen thuộc, ngữ pháp liên quan. Nút lưu → chép vào **Từ vựng của tôi** (thẻ “Thư viện LingYu” + HSK).
+  - Admin (`/admin/library`): danh sách nháp / public; màn **Thêm từ vựng mới** — nhập chữ Hán, pinyin hoặc tiếng Việt → **Phân tích** tự điền
+    pinyin, nghĩa, HSK, bộ thủ, cách nhớ gợi ý, từ liên quan, ví dụ, ngữ pháp (chỉ từ dữ liệu có sẵn), sửa mọi phần, xem trước, ảnh minh hoạ,
+    **Lưu nháp** / **Lưu và Public** (public cần pinyin + nghĩa), về nháp, xoá.
+  - Menu: “Từ vựng” → “Từ vựng của tôi”, “Ngữ pháp” → “Ngữ pháp của tôi” (thanh dưới điện thoại giữ tên ngắn).
+  - API `/api/v1/library/*` và `/api/v1/admin/library/*`; bảng `library_word`, `library_image` (migration `0011_library_words`).
 - **Luyện nghe — “Bài làm của tôi” dạng bảng** (`/listening/exercises`): khung tiêu đề + linh vật, 2 tab + “Tạo bài mới”, tìm / lọc
   tag / sắp xếp, bảng: #, biểu tượng theo nguồn (YouTube, TikTok, audio, video, không link), tiêu đề, tag màu, kết quả % + thanh,
   thời gian làm, nút mở. Bấm một bài → **trang chi tiết riêng** `/listening/exercises/[id]` (bài của người khác → 404); link cũ

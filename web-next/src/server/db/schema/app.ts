@@ -606,3 +606,54 @@ export const readingSaved = pgTable(
   { userId: userRef(), passageId: text("passage_id").notNull(), createdAt: createdAt() },
   (t) => [primaryKey({ columns: [t.userId, t.passageId] })],
 );
+
+// ---------- Thư viện LingYu (nội dung admin soạn, public cho mọi người) ----------
+/** Ảnh minh hoạ của thư viện: không thuộc người dùng nào (xoá tài khoản admin không làm mất ảnh). */
+export const libraryImage = pgTable("library_image", {
+  id: id(),
+  mime: text("mime").notNull(),
+  data: bytea("data").notNull(),
+  size: integer("size").notNull(),
+  width: integer("width").notNull(),
+  height: integer("height").notNull(),
+  createdAt: createdAt(),
+});
+
+export type LibComponent = { char: string; pinyin: string; meaning: string };
+export type LibRelated = { zh: string; py: string; vi: string };
+export type LibExample = { zh: string; py: string; vi: string };
+export type LibGrammar = { structure: string; explain: string; example: string };
+
+export const libraryWord = pgTable(
+  "library_word",
+  {
+    id: id(),
+    hanzi: text("hanzi").notNull(),
+    pinyin: text("pinyin").notNull().default(""),
+    /** Từ loại (khoá trong LIB_POS); "" = chưa chọn. */
+    pos: text("pos").notNull().default(""),
+    meaningVi: text("meaning_vi").notNull().default(""),
+    note: text("note").notNull().default(""),
+    /** 1–6; null = ngoài HSK. */
+    hskLevel: smallint("hsk_level"),
+    /** Chủ đề (khoá trong T_TOPICS); "" = không có. */
+    topic: text("topic").notNull().default(""),
+    components: jsonb("components").$type<LibComponent[]>().notNull().default([]),
+    mnemonic: text("mnemonic").notNull().default(""),
+    association: text("association").notNull().default(""),
+    related: jsonb("related").$type<LibRelated[]>().notNull().default([]),
+    examples: jsonb("examples").$type<LibExample[]>().notNull().default([]),
+    grammar: jsonb("grammar").$type<LibGrammar[]>().notNull().default([]),
+    imageId: uuid("image_id").references(() => libraryImage.id, { onDelete: "set null" }),
+    /** "draft" (chỉ admin thấy) | "public" (hiện trong Thư viện LingYu). */
+    status: text("status").notNull().default("draft"),
+    createdBy: uuid("created_by").references(() => user.id, { onDelete: "set null" }),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex("library_word_hanzi_uq").on(t.hanzi),
+    index("library_word_status_hsk_idx").on(t.status, t.hskLevel),
+  ],
+);

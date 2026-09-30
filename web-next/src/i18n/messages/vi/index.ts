@@ -7,6 +7,7 @@ import { grammar } from "./grammar";
 import { home } from "./home";
 import { landing } from "./landing";
 import { lessons } from "./lessons";
+import { library } from "./library";
 import { listening } from "./listening";
 import { meta } from "./meta";
 import { notifications } from "./notifications";
@@ -41,6 +42,7 @@ export const vi = {
   api,
   grammar,
   lessons,
+  library,
   listening,
   progress,
   pronunciation,

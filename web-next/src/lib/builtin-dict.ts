@@ -28,3 +28,6 @@ export const dictLookup = (zh: string): DictEntry | null => dict().get(zh.trim()
 /** Toàn bộ mục từ (Hán tự → pinyin đã soát) — dùng làm bảng pinyin tuỳ chỉnh cho pinyin-pro. */
 export const dictPinyinMap = (): Record<string, string> =>
   Object.fromEntries([...dict()].filter(([zh]) => [...zh].length > 1).map(([zh, e]) => [zh, e.pinyin]));
+
+/** Duyệt toàn bộ mục từ: [Hán tự, { pinyin, vi }]. */
+export const dictEntries = (): IterableIterator<[string, DictEntry]> => dict().entries();
