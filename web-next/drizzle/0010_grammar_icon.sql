@@ -1,0 +1,1 @@
+ALTER TABLE "grammar" ADD COLUMN "icon" text DEFAULT '' NOT NULL;

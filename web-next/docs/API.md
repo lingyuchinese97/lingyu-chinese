@@ -138,6 +138,10 @@ dùng (`null` nếu chưa có). Trong `formattedUserAnswer`, đoạn bôi vàng 
 | `POST /grammar/shares/{id}/reject` | Từ chối                                                                                                                                                                      |
 | `POST /grammar/sample`             | Thêm ngữ pháp mẫu → `{ added }`                                                                                                                                              |
 
+Trường `icon` (trong body thêm / sửa và trong kết quả): biểu tượng cạnh tiêu đề — `""` (tự chọn theo thẻ / tiêu đề / cấu trúc) hoặc
+một trong `noun`, `measure`, `number`, `particle`, `question`, `structure`, `compare`, `communication`, `verb`, `adjective`,
+`adverb`, `time`, `complement`, `other`. Giá trị khác → `400`. Bản nhận qua chia sẻ giữ biểu tượng của người gửi.
+
 Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu trúc, tối đa 4), notes?, personalNote?, examples?: [{ chinese, pinyin?, vietnamese? }], tags? }`.
 
 ## Ôn dịch câu `/api/v1/sentences`

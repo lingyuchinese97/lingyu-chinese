@@ -37,6 +37,8 @@ export type GrammarExampleItem = { id: string; chinese: string; pinyin: string; 
 export type GrammarItem = {
   id: string;
   title: string;
+  /** Biểu tượng đã chọn ("" = tự chọn theo nội dung — xem `iconOf`). */
+  icon: string;
   meaning: string;
   structure: string;
   notes: string;
@@ -78,6 +80,7 @@ async function hydrate(
   return rows.map((g) => ({
     id: g.id,
     title: g.title,
+    icon: g.icon,
     meaning: g.meaning,
     structure: g.structure,
     notes: g.notes,
@@ -281,7 +284,14 @@ export async function createGrammar(userId: string, input: GrammarInput) {
   return db.transaction(async (tx) => {
     const [row] = await tx
       .insert(grammar)
-      .values({ userId, title: input.title, meaning: input.meaning, structure: input.structure, notes: input.notes })
+      .values({
+        userId,
+        title: input.title,
+        icon: input.icon,
+        meaning: input.meaning,
+        structure: input.structure,
+        notes: input.notes,
+      })
       .returning({ id: grammar.id });
     await writeChildren(tx, userId, row!.id, input);
     await bumpDaily(tx, userId, "grammar_add");
@@ -295,6 +305,7 @@ export async function updateGrammar(userId: string, id: string, input: GrammarIn
       .update(grammar)
       .set({
         title: input.title,
+        icon: input.icon,
         meaning: input.meaning,
         structure: input.structure,
         notes: input.notes,
@@ -521,6 +532,7 @@ export async function acceptShare(
         sourceGrammarId: src.id,
         sourceOwnerName: owner?.name ?? "",
         title: src.title,
+        icon: src.icon,
         meaning: src.meaning,
         structure: src.structure,
         notes: src.notes,
@@ -574,7 +586,7 @@ export async function importSampleGrammar(userId: string) {
   let added = 0;
   for (const sm of SAMPLE_GRAMMAR) {
     if (existing.has(sm.title.toLowerCase())) continue;
-    await createGrammar(userId, { ...sm, personalNote: "" });
+    await createGrammar(userId, { icon: "", ...sm, personalNote: "" });
     added++;
   }
   return added;

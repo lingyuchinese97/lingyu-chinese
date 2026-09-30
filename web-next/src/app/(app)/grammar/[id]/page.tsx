@@ -13,6 +13,7 @@ import { GrammarError, listGrammarTags, listSent, viewGrammar } from "@/features
 import { OwnerActions, PreviewBar } from "@/features/grammar/components/grammar-detail-actions";
 import { ExampleActions, PersonalNoteCard } from "@/features/grammar/components/grammar-detail-parts";
 import { StructureDetail } from "@/features/grammar/components/structure-box";
+import { GrammarBadgeIcon, iconOf, pillClass } from "@/features/grammar/icons";
 import { getIntlTag, getT } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -92,9 +93,7 @@ export default async function GrammarDetailPage({
           <LeafDecor className="pointer-events-none absolute right-[18%] -bottom-3 hidden w-16 -rotate-12 opacity-40 lg:block" />
           <LeafDecor className="pointer-events-none absolute right-[30%] bottom-2 hidden w-10 rotate-[25deg] opacity-30 lg:block" />
           <div className="relative flex min-w-0 flex-[1_1_360px] items-start gap-4">
-            <span className="hidden size-[76px] shrink-0 items-center justify-center rounded-full bg-[#E4F0FD] text-blue-600 sm:flex">
-              <FileText className="size-9" strokeWidth={1.8} aria-hidden="true" />
-            </span>
+            <GrammarBadgeIcon k={iconOf(g)} className="hidden size-[76px] sm:flex [&_svg]:size-9 [&>span]:scale-125" />
             <div className="min-w-0">
               <h1
                 id="gd-title"
@@ -103,6 +102,9 @@ export default async function GrammarDetailPage({
                 {g.title}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                <span className={cn("rounded-full px-2.5 py-0.5 text-[13px] font-semibold", pillClass(iconOf(g)))}>
+                  {t(`grammar.icon.${iconOf(g)}`)}
+                </span>
                 {g.tags.length ? (
                   <span className="flex flex-wrap gap-1.5">
                     {g.tags.map((tg) => (

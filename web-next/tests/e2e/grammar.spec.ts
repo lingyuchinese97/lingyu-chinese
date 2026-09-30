@@ -8,6 +8,9 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await register(page, "Người Học", "gr");
   await page.goto("/grammar/new");
   await page.getByLabel(/Tiêu đề/).fill("Câu hỏi với 吗");
+  // Biểu tượng: mặc định tự động (đoán “Đại từ nghi vấn” từ 吗), chọn tay “Giao tiếp”.
+  await expect(page.getByRole("radio", { name: "Tự động · Đại từ nghi vấn" })).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("radio", { name: "Giao tiếp", exact: true }).click();
   await page.getByLabel("Ý nghĩa").fill("Tạo câu hỏi có/không");
   await page.getByLabel("Cấu trúc dòng 1", { exact: true }).fill("Chủ ngữ + động từ + 吗？");
   // Thêm 1–3 dòng cấu trúc (tối đa 4 dòng), xoá được.
@@ -31,6 +34,7 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
 
   await expect(page.getByRole("heading", { level: 1, name: "Câu hỏi với 吗" })).toBeVisible();
   await expect(page.getByText("mẹo riêng của tôi")).toBeVisible();
+  await expect(page.getByText("Giao tiếp", { exact: true })).toBeVisible();
   await expect(page.getByText("Chủ ngữ + 不 + động từ + 吗？")).toBeVisible();
   const ex = page.locator("ol li .hanzi");
   await expect(ex.first()).toHaveText("你是学生吗？");
@@ -40,7 +44,7 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await page.goto("/grammar?view=saved");
   await expect(page.getByRole("link", { name: "Câu hỏi với 吗" })).toBeVisible();
   await page.goto("/grammar");
-  await page.getByPlaceholder("Tìm kiếm ngữ pháp...").fill("cau hoi");
+  await page.getByPlaceholder(/Tìm kiếm ngữ pháp/).fill("cau hoi");
   await expect(page).toHaveURL(/q=cau/);
   await expect(
     page.getByRole("region", { name: "Danh sách ngữ pháp" }).getByText("1 ngữ pháp", { exact: true }),

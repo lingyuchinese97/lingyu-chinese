@@ -5,12 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Bookmark,
-  BookOpen,
   Check,
+  ChevronRight,
   Database,
   Eye,
-  FileText,
-  Lightbulb,
+  LayoutGrid,
+  List,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -29,7 +29,8 @@ import { useConfirm } from "@/components/ui/confirm";
 import { toast } from "@/components/ui/toaster";
 import { GrammarIcon, LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
-import { G_LIMITS, G_SORTS, type GrammarListParams } from "../schema";
+import { G_LIMITS, G_SORTS, structureLines, type GrammarListParams } from "../schema";
+import { GrammarBadgeIcon, iconOf, pillClass } from "../icons";
 import type { GrammarItem, ReceivedShare } from "../service";
 import {
   createTagAction,
@@ -39,12 +40,36 @@ import {
   renameTagAction,
   setBookmarkAction,
 } from "../actions";
-import { StructureBox } from "./structure-box";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
 
 type Data = { items: GrammarItem[]; total: number; totalAll: number; savedCount: number };
 type TagRow = { id: string; name: string; count: number };
+
+/** Dạng lưới / danh sách, nhớ theo trình duyệt. */
+const LAYOUT_KEY = "lingyu.grammar.layout";
+const layoutListeners = new Set<() => void>();
+const layoutStore = {
+  get(): "grid" | "list" {
+    try {
+      return localStorage.getItem(LAYOUT_KEY) === "list" ? "list" : "grid";
+    } catch {
+      return "grid";
+    }
+  },
+  set(m: "grid" | "list") {
+    try {
+      localStorage.setItem(LAYOUT_KEY, m);
+    } catch {
+      /* trình duyệt chặn lưu trữ */
+    }
+    layoutListeners.forEach((f) => f());
+  },
+  subscribe(f: () => void) {
+    layoutListeners.add(f);
+    return () => void layoutListeners.delete(f);
+  },
+};
 
 export const fmtDate = (d: Date | string, tag = "vi-VN") =>
   new Date(d).toLocaleDateString(tag, { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -69,6 +94,7 @@ export function GrammarList({
   const [shareOf, setShareOf] = React.useState<GrammarItem | null>(null);
   const [acceptOf, setAcceptOf] = React.useState<PendingShare | null>(null);
   const [tagsOpen, setTagsOpen] = React.useState(false);
+  const layout = React.useSyncExternalStore(layoutStore.subscribe, layoutStore.get, () => "grid" as const);
 
   const go = React.useCallback(
     (patch: Partial<GrammarListParams>) => {
@@ -124,42 +150,52 @@ export function GrammarList({
 
   return (
     <>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label className="relative block min-w-0 flex-1">
+          <span className="sr-only">{t("grammar.searchLabel")}</span>
+          <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("grammar.searchPlaceholder")}
+            autoComplete="off"
+            className={cn(inputClass, "pl-11")}
+          />
+        </label>
+        <Button asChild variant="solid" className="shrink-0 max-sm:w-full">
+          <Link href="/grammar/new">
+            <Plus />
+            {t("grammar.addNew")}
+          </Link>
+        </Button>
+      </div>
+
       <section
         aria-labelledby="gl-title"
         className="relative overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F6FAFF_0%,#EDF5FE_55%,#E3F0FD_100%)] px-[18px] py-5 md:px-7 md:py-6"
       >
-        {/* Lá trang trí */}
         <LeafDecor
           aria-hidden
-          className="pointer-events-none absolute top-[58%] left-[47%] hidden w-9 -rotate-[25deg] opacity-70 2xl:block"
+          className="pointer-events-none absolute top-8 right-[34%] hidden w-7 rotate-12 opacity-60 lg:block"
         />
         <LeafDecor
           aria-hidden
-          className="pointer-events-none absolute bottom-3 left-[55%] hidden w-7 rotate-[35deg] opacity-60 2xl:block"
+          className="pointer-events-none absolute right-[15%] bottom-6 hidden w-9 -rotate-[25deg] opacity-70 lg:block"
         />
-        <LeafDecor
-          aria-hidden
-          className="pointer-events-none absolute top-5 right-[27%] hidden w-7 rotate-12 opacity-60 lg:block"
-        />
-        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center">
-          <div className="flex min-w-0 flex-1 items-start gap-4 md:gap-5">
-            <span className="hidden size-[72px] shrink-0 items-center justify-center rounded-[20px] bg-white text-blue-600 shadow-[0_8px_24px_rgba(21,149,245,.14)] sm:flex md:size-[84px]">
-              <FileText className="size-10 md:size-12" strokeWidth={1.8} aria-hidden="true" />
-            </span>
-            <div className="min-w-0">
-              <h1
-                id="gl-title"
-                className="flex items-center gap-3 text-[28px] font-extrabold tracking-tight whitespace-nowrap text-navy-900 md:text-[40px]"
-              >
-                {t("grammar.title")}
-                <LeafDecor className="w-10 md:w-11" />
-              </h1>
-              <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{t("grammar.subtitle")}</p>
-            </div>
+        <div className="relative flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <h1
+              id="gl-title"
+              className="flex items-center gap-3 text-[28px] font-extrabold tracking-tight whitespace-nowrap text-navy-900 md:text-[40px]"
+            >
+              {t("grammar.title")}
+              <LeafDecor className="w-9 md:w-10" />
+            </h1>
+            <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{t("grammar.subtitle")}</p>
           </div>
-
-          <div aria-hidden="true" className="hidden shrink-0 flex-col items-center 2xl:flex">
-            <p className="-rotate-[7deg] text-center font-hand text-[24px] leading-tight font-semibold text-blue-700">
+          <div aria-hidden="true" className="hidden shrink-0 flex-col items-center xl:flex">
+            <p className="-rotate-[7deg] text-center font-hand text-[22px] leading-tight font-semibold text-blue-700">
               {t("grammar.slogan1")}
               <br />
               {t("grammar.slogan2")}
@@ -168,31 +204,15 @@ export function GrammarList({
               <path d="M2 20 C 50 6, 110 4, 168 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-
-          <div className="flex shrink-0 flex-col items-stretch gap-3 lg:items-end">
-            <Button asChild variant="solid" size="lg" className="max-lg:w-full">
-              <Link href="/grammar/new">
-                <Plus />
-                {t("grammar.addNew")}
-              </Link>
-            </Button>
-            <div aria-hidden="true" className="hidden items-center gap-1 xl:flex">
-              <Image
-                src="/brand/lingyu-wordmark.png"
-                alt=""
-                width={1579}
-                height={550}
-                className="h-auto w-[200px] xl:w-[230px]"
-              />
-              <Image
-                src="/brand/lingyu-mascot.png"
-                alt=""
-                width={1536}
-                height={1024}
-                className="-my-4 h-auto w-[150px] xl:w-[170px]"
-              />
-            </div>
-          </div>
+          <Image
+            src="/brand/ui/mascot-wave.png"
+            alt=""
+            aria-hidden="true"
+            width={512}
+            height={512}
+            unoptimized
+            className="hidden h-auto w-[96px] shrink-0 sm:block md:w-[110px]"
+          />
         </div>
       </section>
 
@@ -203,7 +223,7 @@ export function GrammarList({
         <div
           role="tablist"
           aria-label={t("grammar.viewMode")}
-          className="-mx-1 flex [scrollbar-width:none] gap-2 overflow-x-auto border-b border-border px-1 pb-3"
+          className="-mx-1 flex [scrollbar-width:none] gap-1 overflow-x-auto px-1"
         >
           {views.map((v) => {
             const on = params.view === v.key;
@@ -215,10 +235,8 @@ export function GrammarList({
                 aria-selected={on}
                 onClick={() => go({ view: v.key })}
                 className={cn(
-                  "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[10px] border-[1.5px] px-3.5 font-semibold [&_svg]:size-[18px]",
-                  on
-                    ? "border-blue bg-blue-50 text-blue-600"
-                    : "border-transparent text-text-2 hover:bg-blue-50 hover:text-blue-600",
+                  "inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[14.5px] font-semibold [&_svg]:size-[17px]",
+                  on ? "text-blue-600 underline decoration-2 underline-offset-8" : "text-text-2 hover:text-blue-600",
                 )}
               >
                 {v.icon}
@@ -239,21 +257,31 @@ export function GrammarList({
         </div>
 
         {listMode ? (
-          <>
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto]">
-              <label className="relative block">
-                <span className="sr-only">{t("grammar.searchLabel")}</span>
-                <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
-                <input
-                  type="search"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder={t("grammar.searchPlaceholder")}
-                  autoComplete="off"
-                  className={cn(inputClass, "pl-11")}
-                />
-              </label>
-              <label>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div
+              role="group"
+              aria-label={t("grammar.filterTag")}
+              className="-mx-4 flex min-w-0 flex-1 [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
+            >
+              <Chip on={!params.tag} onClick={() => go({ tag: "" })}>
+                {t("grammar.allCount", { count: data.totalAll })}
+              </Chip>
+              {tags.map((tg) => (
+                <Chip key={tg.id} on={tg.id === params.tag} onClick={() => go({ tag: tg.id })}>
+                  {tg.name} ({tg.count})
+                </Chip>
+              ))}
+              <button
+                type="button"
+                onClick={() => setTagsOpen(true)}
+                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] border-[#BCD6F5] bg-white px-3.5 text-[14.5px] font-semibold whitespace-nowrap text-blue-600 hover:bg-blue-50"
+              >
+                <Plus className="size-[18px]" />
+                {t("grammar.addTagChip")}
+              </button>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <label className="min-w-0 flex-1 lg:w-[210px] lg:flex-none">
                 <span className="sr-only">{t("grammar.sort")}</span>
                 <select
                   value={params.sort}
@@ -267,29 +295,33 @@ export function GrammarList({
                   ))}
                 </select>
               </label>
-              <Button variant="secondary" onClick={() => setTagsOpen(true)}>
-                <TagIcon />
-                {t("grammar.manageTags")}
-              </Button>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="shrink-0 text-sm font-semibold text-text-2 max-md:hidden">{t("grammar.tagsLabel")}</span>
               <div
                 role="group"
-                aria-label={t("grammar.filterTag")}
-                className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
+                aria-label={t("grammar.layout")}
+                className="flex rounded-[12px] border border-border p-1"
               >
-                <Chip on={!params.tag} onClick={() => go({ tag: "" })}>
-                  {t("grammar.all")} <span className="opacity-70">{data.totalAll}</span>
-                </Chip>
-                {tags.map((tg) => (
-                  <Chip key={tg.id} on={tg.id === params.tag} onClick={() => go({ tag: tg.id })}>
-                    {tg.name} <span className="opacity-70">{tg.count}</span>
-                  </Chip>
-                ))}
+                {(["grid", "list"] as const).map((m) => {
+                  const Icon = m === "grid" ? LayoutGrid : List;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-pressed={layout === m}
+                      aria-label={m === "grid" ? t("grammar.layoutGrid") : t("grammar.layoutList")}
+                      title={m === "grid" ? t("grammar.layoutGrid") : t("grammar.layoutList")}
+                      onClick={() => layoutStore.set(m)}
+                      className={cn(
+                        "inline-flex size-9 items-center justify-center rounded-[9px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
+                        layout === m ? "bg-blue-600 text-white" : "text-text-3 hover:text-blue-600",
+                      )}
+                    >
+                      <Icon />
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </>
+          </div>
         ) : null}
 
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
@@ -332,11 +364,12 @@ export function GrammarList({
           ) : (
             <>
               <p className="mb-3 text-[13.5px] text-text-3">{t("grammar.total", { count: data.total })}</p>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,250px),1fr))] gap-4">
+              <div className={cn("grid gap-3.5", layout === "grid" && "lg:grid-cols-2")}>
                 {data.items.map((g) => (
                   <GrammarCard
                     key={g.id}
                     g={g}
+                    compact={layout === "list"}
                     onOpen={() => router.push(`/grammar/${g.id}`)}
                     onSave={() => toggleSave(g)}
                     onShare={() => setShareOf(g)}
@@ -373,9 +406,9 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       onClick={onClick}
       aria-pressed={on}
       className={cn(
-        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[10px] border-[1.5px] px-3.5 text-[14.5px] whitespace-nowrap",
+        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] px-4 text-[14.5px] whitespace-nowrap",
         on
-          ? "border-blue bg-blue-50 font-bold text-blue-600"
+          ? "border-blue-600 bg-blue-600 font-bold text-white"
           : "border-transparent bg-[#EEF5FC] font-medium text-text-2 hover:bg-blue-100",
       )}
     >
@@ -386,6 +419,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 
 function GrammarCard({
   g,
+  compact,
   onOpen,
   onSave,
   onShare,
@@ -393,6 +427,7 @@ function GrammarCard({
   onDelete,
 }: {
   g: GrammarItem;
+  compact: boolean;
   onOpen: () => void;
   onSave: () => void;
   onShare: () => void;
@@ -400,6 +435,8 @@ function GrammarCard({
   onDelete: () => void;
 }) {
   const t = useT();
+  const k = iconOf(g);
+  const main = structureLines(g.structure)[0];
   const btn =
     "inline-flex size-10 shrink-0 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] md:size-9 [&_svg]:size-5";
   return (
@@ -408,94 +445,111 @@ function GrammarCard({
         if ((e.target as HTMLElement).closest("button, a")) return;
         onOpen();
       }}
-      className="flex min-w-0 cursor-pointer flex-col gap-2.5 rounded-lg border border-border bg-white p-[18px] transition-[border-color,box-shadow] hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)]"
+      className={cn(
+        "flex min-w-0 cursor-pointer gap-3 rounded-2xl border border-border bg-white p-3.5 transition-[border-color,box-shadow] hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] md:gap-4 md:p-4",
+        compact ? "items-center" : "items-start",
+      )}
     >
-      <div className="flex items-start gap-1">
-        <h2 className="mt-1.5 min-w-0 flex-1 text-[19px] leading-snug font-bold [overflow-wrap:anywhere] text-navy">
+      <div className="flex shrink-0 flex-col items-center gap-1.5 sm:w-[168px] sm:flex-row sm:gap-2">
+        <GrammarBadgeIcon k={k} />
+        <span
+          className={cn(
+            "hidden rounded-full px-2.5 py-1 text-[12.5px] leading-tight font-semibold whitespace-nowrap sm:inline-block",
+            pillClass(k),
+          )}
+        >
+          {t(`grammar.icon.${k}`)}
+        </span>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <h2 className="text-[17px] leading-snug font-bold [overflow-wrap:anywhere] text-navy md:text-[18px]">
           <Link href={`/grammar/${g.id}`} className="hover:text-blue-600">
             {g.title}
           </Link>
         </h2>
+        {main ? (
+          <span
+            className="self-start rounded-lg bg-[#FFEDEE] px-3 py-1 hanzi text-[15.5px] font-bold [overflow-wrap:anywhere] text-[#E0302F]"
+            lang="zh"
+          >
+            {main}
+          </span>
+        ) : null}
+        {!compact && (g.tags.length || g.sourceGrammarId) ? (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {g.tags.map((tg) => (
+              <span
+                key={tg.id}
+                className={cn(
+                  "rounded-[8px] px-2.5 py-0.5 text-[13px] font-semibold",
+                  /^hsk/i.test(tg.name) ? "bg-[#F0EAFF] text-[#6B3FD0]" : "bg-[#F1F4F8] text-text-2",
+                )}
+              >
+                {tg.name}
+              </span>
+            ))}
+            {g.sourceGrammarId ? (
+              <span className="inline-flex items-center gap-1 text-[13px] text-green-700">
+                <Share2 className="size-[14px]" />
+                {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+      <div className={cn("flex shrink-0 gap-1", compact ? "items-center" : "flex-col items-end")}>
+        <div className="flex">
+          <button
+            type="button"
+            onClick={onSave}
+            aria-pressed={g.isSaved}
+            aria-label={
+              g.isSaved ? t("grammar.unsaveItem", { title: g.title }) : t("grammar.saveItem", { title: g.title })
+            }
+            className={cn(btn, g.isSaved && "text-amber")}
+          >
+            <Bookmark className={cn(g.isSaved && "fill-amber")} />
+          </button>
+          <Menu>
+            <MenuTrigger asChild>
+              <button type="button" className={btn} aria-label={t("grammar.actionsFor", { title: g.title })}>
+                <MoreHorizontal />
+              </button>
+            </MenuTrigger>
+            <MenuContent className="w-[210px]">
+              <MenuItem onSelect={onOpen}>
+                <Eye />
+                {t("grammar.view")}
+              </MenuItem>
+              <MenuItem onSelect={onEdit}>
+                <Pencil />
+                {t("grammar.editAction")}
+              </MenuItem>
+              <MenuItem onSelect={onShare}>
+                <Share2 />
+                {t("grammar.share")}
+              </MenuItem>
+              <MenuItem onSelect={onSave}>
+                <Bookmark />
+                {g.isSaved ? t("grammar.unsave") : t("grammar.save")}
+              </MenuItem>
+              <MenuSeparator />
+              <MenuItem danger onSelect={onDelete}>
+                <Trash2 />
+                {t("grammar.delete")}
+              </MenuItem>
+            </MenuContent>
+          </Menu>
+        </div>
         <button
           type="button"
-          onClick={onSave}
-          aria-pressed={g.isSaved}
-          aria-label={
-            g.isSaved ? t("grammar.unsaveItem", { title: g.title }) : t("grammar.saveItem", { title: g.title })
-          }
-          className={cn(btn, g.isSaved && "text-amber")}
+          onClick={onOpen}
+          aria-label={t("grammar.openItem", { title: g.title })}
+          className="hidden size-9 items-center justify-center rounded-full border border-border text-text-2 outline-none hover:border-[#A9D3F8] hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)] sm:inline-flex"
         >
-          <Bookmark className={cn(g.isSaved && "fill-amber")} />
+          <ChevronRight className="size-5" />
         </button>
-        <Menu>
-          <MenuTrigger asChild>
-            <button type="button" className={btn} aria-label={t("grammar.actionsFor", { title: g.title })}>
-              <MoreHorizontal />
-            </button>
-          </MenuTrigger>
-          <MenuContent className="w-[210px]">
-            <MenuItem onSelect={onOpen}>
-              <Eye />
-              {t("grammar.view")}
-            </MenuItem>
-            <MenuItem onSelect={onEdit}>
-              <Pencil />
-              {t("grammar.editAction")}
-            </MenuItem>
-            <MenuItem onSelect={onShare}>
-              <Share2 />
-              {t("grammar.share")}
-            </MenuItem>
-            <MenuItem onSelect={onSave}>
-              <Bookmark />
-              {g.isSaved ? t("grammar.unsave") : t("grammar.save")}
-            </MenuItem>
-            <MenuSeparator />
-            <MenuItem danger onSelect={onDelete}>
-              <Trash2 />
-              {t("grammar.delete")}
-            </MenuItem>
-          </MenuContent>
-        </Menu>
       </div>
-      <StructureBox structure={g.structure} />
-      {g.meaning ? (
-        <div className="flex items-start gap-3 rounded-xl bg-[#EEF6FF] px-3.5 py-2.5 text-[15.5px]">
-          <span className="inline-flex items-center gap-1.5 border-r-2 border-[#C9E1F8] pr-3 font-semibold whitespace-nowrap text-blue-600">
-            <Lightbulb className="size-5" />
-            {t("grammar.meaning")}
-          </span>
-          <span className="line-clamp-2 min-w-0 [overflow-wrap:anywhere] text-text-2">{g.meaning}</span>
-        </div>
-      ) : null}
-      {g.tags.length ? (
-        <div className="flex flex-wrap gap-1.5">
-          {g.tags.map((tg) => (
-            <span
-              key={tg.id}
-              className="rounded-[9px] bg-[#F0EAFF] px-3 py-1 text-[13.5px] font-semibold text-[#6B3FD0]"
-            >
-              {tg.name}
-            </span>
-          ))}
-        </div>
-      ) : null}
-      {g.examples.length || g.sourceGrammarId ? (
-        <div className="mt-auto flex flex-wrap gap-x-[18px] gap-y-1.5 text-sm text-text-2">
-          {g.examples.length ? (
-            <span className="inline-flex items-center gap-1.5">
-              <BookOpen className="size-[18px]" />
-              {t("grammar.examplesCount", { count: g.examples.length })}
-            </span>
-          ) : null}
-          {g.sourceGrammarId ? (
-            <span className="inline-flex items-center gap-1 text-green-700">
-              <Share2 className="size-[15px]" />
-              {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
     </article>
   );
 }

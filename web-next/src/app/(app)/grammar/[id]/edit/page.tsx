@@ -27,6 +27,7 @@ export default async function EditGrammarPage({ params }: { params: Promise<{ id
         initial={{
           id: g.id,
           title: g.title,
+          icon: g.icon,
           meaning: g.meaning,
           structure: g.structure,
           notes: g.notes,
