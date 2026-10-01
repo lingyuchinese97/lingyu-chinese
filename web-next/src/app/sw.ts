@@ -38,7 +38,7 @@ const serwist = new Serwist({
       }),
     },
     {
-      // Bộ nhận dạng chữ (OCR) tự host — tải một lần khi dùng "Thêm từ ảnh", không precache (~12MB).
+      // Bộ nhận dạng chữ (OCR) tự host — tải một lần khi dùng "Thêm từ ảnh", không precache (~30MB: PaddleOCR + Tesseract).
       matcher: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith("/ocr/"),
       handler: new CacheFirst({
         cacheName: "ocr",

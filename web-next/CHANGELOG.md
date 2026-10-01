@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Thêm từ ảnh — nhận dạng chữ Hán chính xác hơn (PaddleOCR)**: chữ Hán giờ được đọc bằng **PaddleOCR PP-OCRv4** (mô hình ONNX chạy
+  ngay trên trình duyệt bằng onnxruntime-web, tự host ở `/ocr`) thay cho Tesseract — đọc đúng chữ viết tay, ảnh vở ô li, chữ nhỏ (ảnh vở
+  viết tay 公斤: Tesseract ra “从 站”, PaddleOCR ra 公斤). Phần pinyin / nghĩa tiếng Việt trong mỗi vùng chữ được cắt riêng và đọc bằng
+  Tesseract tiếng Việt (giữ dấu); đọc không chắc chắn → để trống, hệ thống gợi ý pinyin / nghĩa từ từ điển. Ảnh vẫn không rời máy. Bỏ dữ liệu
+  Tesseract `chi_sim`. Lần đầu dùng tải ~20MB (sau đó dùng lại từ bộ nhớ đệm).
+
 ### Added
 
 - **Thư viện LingYu — admin tìm từ, tự phân tích + ảnh gợi ý**: ô nhập trên màn **Thêm từ vựng mới** gợi ý ngay khi gõ (chữ Hán: từ bắt
