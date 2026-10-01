@@ -251,7 +251,7 @@ export function openApiDocument() {
         LibraryWord: {
           type: "object",
           description:
-            "Từ trong Thư viện LingYu: hanzi, pinyin, pos (từ loại), meaningVi, note, hskLevel, topic, components[{ char, pinyin, meaning }], mnemonic, association, related[{ zh, py, vi }], examples[{ zh, py, vi }], grammar[{ structure, explain, example }], hasImage; admin thêm status, publishedAt.",
+            "Từ trong Thư viện LingYu: hanzi, pinyin, pos (từ loại), meaningVi, note, hskLevel, topic, components[{ char, pinyin, meaning }], mnemonic, association, related[{ zh, py, vi }], examples[{ zh, py, vi }], grammar[{ structure, explain, example }], hasImage, imageCredit (ghi công khi ảnh lấy từ Wikimedia); admin thêm status, publishedAt.",
         },
         Sentence: {
           type: "object",
@@ -794,6 +794,38 @@ export function openApiDocument() {
           errors: [403],
         }),
       },
+      "/api/v1/admin/library/suggest": {
+        get: op(AD, {
+          summary:
+            "Gợi ý từ khi đang gõ: chữ Hán → từ bắt đầu bằng phần đã gõ; pinyin / tiếng Việt → từ khớp (tối đa 8)",
+          params: [q("q", { type: "string", maxLength: 40 }, "Bắt buộc")],
+          data: obj({
+            candidates: {
+              type: "array",
+              items: obj({
+                hanzi: { type: "string" },
+                pinyin: { type: "string" },
+                meaning: { type: "string" },
+                hsk: { type: ["integer", "null"] },
+              }),
+            },
+          }),
+          errors: [403],
+        }),
+      },
+      "/api/v1/admin/library/image-suggestions": {
+        get: op(AD, {
+          summary: "Ảnh gợi ý từ Wikimedia (Wikidata + Commons, giấy phép tự do) cho một từ chữ Hán",
+          params: [q("q", { type: "string", maxLength: 40 }, "Bắt buộc")],
+          data: obj({
+            items: {
+              type: "array",
+              items: obj({ title: { type: "string" }, thumb: { type: "string" }, credit: { type: "string" } }),
+            },
+          }),
+          errors: [403],
+        }),
+      },
       "/api/v1/admin/library/words": {
         get: op(AD, {
           summary: "Tất cả từ trong thư viện (nháp + public)",
@@ -858,6 +890,16 @@ export function openApiDocument() {
           summary: "Xoá ảnh minh hoạ",
           params: [pathId("id từ")],
           data: obj({ hasImage: { type: "boolean" } }),
+          errors: [403, 404],
+        }),
+      },
+      "/api/v1/admin/library/words/{id}/image/suggested": {
+        put: op(AD, {
+          summary: "Đặt ảnh minh hoạ từ ảnh gợi ý: máy chủ tải từ upload.wikimedia.org, kiểm tra, lưu kèm ghi công",
+          params: [pathId("id từ")],
+          body: obj({ title: { type: "string", pattern: "^File:" } }),
+          example: { title: "File:Red Apple.jpg" },
+          data: obj({ hasImage: { type: "boolean" }, credit: { type: "string" } }),
           errors: [403, 404],
         }),
       },

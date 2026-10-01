@@ -130,6 +130,7 @@ export type Candidate = { hanzi: string; pinyin: string; meaning: string; hsk: n
 
 /** Nhập pinyin hoặc tiếng Việt → danh sách từ gợi ý để chọn (từ điển có sẵn + HSK). */
 export function findCandidates(input: string, limit = 12): Candidate[] {
+  if (/\p{Script=Han}/u.test(input)) return hanziCandidates(input.replace(/[^\p{Script=Han}]/gu, ""), limit);
   const f = fold(input);
   const fc = foldCompact(input);
   if (!f) return [];
@@ -154,6 +155,24 @@ export function findCandidates(input: string, limit = 12): Candidate[] {
       if (foldCompact(py) === fc) add(w, py, dictLookup(w)?.vi ?? "", 10 + lv);
     }
   return out
+    .sort((a, b) => a.score - b.score)
+    .slice(0, limit)
+    .map(({ score: _s, ...c }) => c);
+}
+
+/** Gõ chữ Hán: từ bắt đầu bằng phần đã gõ (từ điển có sẵn + HSK), từ ngắn / khớp đúng lên trước. */
+function hanziCandidates(prefix: string, limit: number): Candidate[] {
+  if (!prefix) return [];
+  const out = new Map<string, Candidate & { score: number }>();
+  const add = (hanzi: string, pinyin: string, meaning: string) => {
+    if (out.has(hanzi)) return;
+    const lv = hskLevelOf(hanzi);
+    out.set(hanzi, { hanzi, pinyin, meaning, hsk: lv && lv <= 6 ? lv : null, score: hanzi.length * 10 + (lv ?? 9) });
+  };
+  for (const [zh, e] of dictEntries()) if (zh.startsWith(prefix)) add(zh, e.pinyin, e.vi);
+  for (const lv of HSK_LEVELS)
+    for (const w of hskWords(lv)) if (w.startsWith(prefix)) add(w, hskPinyinOf(w) ?? "", dictLookup(w)?.vi ?? "");
+  return [...out.values()]
     .sort((a, b) => a.score - b.score)
     .slice(0, limit)
     .map(({ score: _s, ...c }) => c);

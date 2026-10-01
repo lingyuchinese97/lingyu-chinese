@@ -645,6 +645,8 @@ export const libraryWord = pgTable(
     examples: jsonb("examples").$type<LibExample[]>().notNull().default([]),
     grammar: jsonb("grammar").$type<LibGrammar[]>().notNull().default([]),
     imageId: uuid("image_id").references(() => libraryImage.id, { onDelete: "set null" }),
+    /** Ghi công ảnh (tác giả · giấy phép · nguồn) khi ảnh lấy từ gợi ý Wikimedia; rỗng nếu admin tự tải lên. */
+    imageCredit: text("image_credit").notNull().default(""),
     /** "draft" (chỉ admin thấy) | "public" (hiện trong Thư viện LingYu). */
     status: text("status").notNull().default("draft"),
     createdBy: uuid("created_by").references(() => user.id, { onDelete: "set null" }),

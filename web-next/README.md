@@ -99,7 +99,7 @@ chia sẻ; tạo bài ôn tự chọn hoặc đến hạn, trả lời, đánh g
 đăng nhập từ app khác: [`docs/API.md`](docs/API.md).
 
 **Luyện nghe** (`/api/v1/listening/*`): bài làm của tôi (tìm, lọc thẻ, sắp xếp), lưu / xem / sửa / xoá bài làm (server tự so sánh và
-chấm điểm), thẻ, so sánh bài chép với đáp án. **Thư viện LingYu** (`/api/v1/library/*`): từ vựng LingYu public theo HSK, chi tiết, lưu vào kho của mình; admin soạn / phân tích tự động /
+chấm điểm), thẻ, so sánh bài chép với đáp án. **Thư viện LingYu** (`/api/v1/library/*`): từ vựng LingYu public theo HSK, chi tiết, lưu vào kho của mình; admin soạn (gợi ý khi gõ, phân tích tự động, ảnh gợi ý từ Wikimedia) /
 public qua `/api/v1/admin/library/*`. **Quản trị** (`/api/v1/admin/*`, chỉ admin — người thường nhận 403): số liệu tổng
 (tổng số người dùng, admin, bị khoá, mới / hoạt động 7 ngày, tổng nội dung), danh sách người dùng, thông tin một người dùng (hồ sơ +
 số lượng nội dung, không có nội dung học).

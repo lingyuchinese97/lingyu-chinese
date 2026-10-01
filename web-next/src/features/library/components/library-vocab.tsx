@@ -334,12 +334,19 @@ function Detail({
 
       <div className="grid gap-4 md:grid-cols-2">
         {w.hasImage ? (
-          // eslint-disable-next-line @next/next/no-img-element -- ảnh từ API riêng (cần đăng nhập, chỉ từ public)
-          <img
-            src={`/api/v1/library/words/${w.id}/image?v=${w.imageVersion ?? ""}`}
-            alt=""
-            className="h-full max-h-[280px] w-full rounded-[20px] bg-[#FFF8EC] object-contain"
-          />
+          <figure className="flex flex-col gap-1">
+            {/* eslint-disable-next-line @next/next/no-img-element -- ảnh từ API riêng (cần đăng nhập, chỉ từ public) */}
+            <img
+              src={`/api/v1/library/words/${w.id}/image?v=${w.imageVersion ?? ""}`}
+              alt=""
+              className="h-full max-h-[280px] w-full rounded-[20px] bg-[#FFF8EC] object-contain"
+            />
+            {w.imageCredit ? (
+              <figcaption className="text-right text-[12px] text-text-3">
+                {t("library.imageCredit", { credit: w.imageCredit })}
+              </figcaption>
+            ) : null}
+          </figure>
         ) : (
           <div
             aria-hidden="true"
