@@ -185,6 +185,11 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     không cần khoá API, không gửi dữ liệu người dùng. Admin chọn ảnh → máy chủ tải bản 800px chỉ từ `upload.wikimedia.org` (chặn SSRF, ≤ 1MB,
     kiểm tra magic bytes như ảnh tải lên) rồi lưu vào DB kèm ghi công tác giả + giấy phép; người học xem ảnh qua API của app. Chỉ màn admin hiện
     bản thu nhỏ trực tiếp từ Wikimedia (CSP `img-src https://upload.wikimedia.org`). E2E dùng `LIBRARY_IMAGE_SOURCE=fake` (không gọi mạng).
+45. **Nhận dạng chữ trong ảnh (Thêm từ ảnh) dùng PaddleOCR thay Tesseract cho chữ Hán**: Tesseract (chi_sim) đọc sai hẳn chữ viết tay
+    / vở ô li (ảnh thật của chủ dự án: 公斤 → "从 站"), PaddleOCR PP-OCRv4 đọc đúng. Chạy trên trình duyệt (onnxruntime-web, WASM một
+    luồng — không bật COEP), mô hình ONNX từ `@gutenye/ocr-models` tự host ở `/ocr/paddle`; ảnh vẫn không rời máy. Mô hình Paddle không có dấu
+    thanh / dấu tiếng Việt → phần chữ Latin trong mỗi vùng (vị trí lấy từ bước CTC) được cắt ra đọc lại bằng Tesseract `vie`; độ tin cậy
+    thấp (thường là chữ viết tay) → bỏ trống để server gợi ý pinyin / nghĩa từ từ điển. Tải lần đầu ~20MB (gzip nhỏ hơn), service worker lưu lại.
 
 ## Chỗ mơ hồ & cách xử lý
 
