@@ -3,7 +3,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { adminOrThrow, AuthError, currentUserOrThrow } from "@/server/session";
 import { log } from "@/server/log";
-import { analyzeSchema, libWordInputSchema } from "./schema";
+import { analyzeSchema, libWordInputSchema, suggestSchema, suggestedImageSchema } from "./schema";
+import { suggestImages, type ImageSuggestion } from "./image-suggest";
 import { analyzeWord, findCandidates, type Analysis, type Candidate } from "./analyze";
 import * as svc from "./service";
 
@@ -106,6 +107,41 @@ export async function saveLibraryWordToMineAction(id: string): Promise<ActionRes
     revalidatePath("/vocabulary");
     revalidatePath("/library/vocabulary");
     return { ok: true, data: { added: r.added } };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Gợi ý từ khi admin đang gõ (chữ Hán: từ bắt đầu bằng phần đã gõ; pinyin / tiếng Việt: từ khớp). */
+export async function suggestWordsAction(q: string): Promise<ActionResult<{ candidates: Candidate[] }>> {
+  try {
+    await adminOrThrow();
+    return { ok: true, data: { candidates: findCandidates(suggestSchema.parse({ q }).q, 8) } };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function suggestImagesAction(q: string): Promise<ActionResult<{ items: ImageSuggestion[] }>> {
+  try {
+    await adminOrThrow();
+    return { ok: true, data: { items: await suggestImages(suggestSchema.parse({ q }).q) } };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Đặt ảnh minh hoạ từ ảnh gợi ý (máy chủ tự tải từ Wikimedia, kiểm tra như ảnh tải lên, lưu ghi công). */
+export async function setSuggestedImageAction(
+  id: string,
+  title: string,
+): Promise<ActionResult<{ hasImage: boolean; credit: string }>> {
+  try {
+    await adminOrThrow();
+    const wid = z.uuid().parse(id);
+    const r = await svc.setSuggestedImage(wid, suggestedImageSchema.parse({ title }).title);
+    refresh();
+    return { ok: true, data: r };
   } catch (e) {
     return fail(e);
   }

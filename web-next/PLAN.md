@@ -181,6 +181,10 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     kết ngược — admin sửa / xoá không ảnh hưởng bản đã lưu). **Phân tích tự động chỉ dùng dữ liệu có sẵn** (chủ dự án chọn — không thêm từ
     điển ngoài như CVDICT): nghĩa tiếng Việt từ từ mẫu / bài đọc / luyện dịch, pinyin từ đó + HSK + pinyin-pro, bộ thủ từ bảng 214 bộ;
     từ ngoài dữ liệu → admin tự nhập. Ảnh minh hoạ do admin tải lên (không tự sinh).
+44. **Ảnh gợi ý cho Thư viện LingYu**: nguồn Wikimedia (Wikidata P18 theo nhãn tiếng Trung, rồi tìm file trên Commons) — ảnh giấy phép tự do,
+    không cần khoá API, không gửi dữ liệu người dùng. Admin chọn ảnh → máy chủ tải bản 800px chỉ từ `upload.wikimedia.org` (chặn SSRF, ≤ 1MB,
+    kiểm tra magic bytes như ảnh tải lên) rồi lưu vào DB kèm ghi công tác giả + giấy phép; người học xem ảnh qua API của app. Chỉ màn admin hiện
+    bản thu nhỏ trực tiếp từ Wikimedia (CSP `img-src https://upload.wikimedia.org`). E2E dùng `LIBRARY_IMAGE_SOURCE=fake` (không gọi mạng).
 
 ## Chỗ mơ hồ & cách xử lý
 

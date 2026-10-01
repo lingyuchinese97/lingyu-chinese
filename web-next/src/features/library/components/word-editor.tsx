@@ -7,12 +7,14 @@ import {
   ArrowRight,
   BookOpen,
   Eye,
+  ImageIcon,
   ImageUp,
   Lightbulb,
   Loader2,
   Plus,
   Puzzle,
   Save,
+  Search,
   Send,
   Sparkles,
   Trash2,
@@ -30,7 +32,15 @@ import { useT } from "@/i18n/client";
 import { T_TOPICS } from "@/data/translation/items";
 import { LIB_LEVELS, LIB_LIMITS, LIB_POS, type LibWordInput } from "../schema";
 import type { Candidate } from "../analyze";
-import { analyzeAction, saveWordAction, setWordImageAction } from "../actions";
+import type { ImageSuggestion } from "../image-suggest";
+import {
+  analyzeAction,
+  saveWordAction,
+  setSuggestedImageAction,
+  setWordImageAction,
+  suggestImagesAction,
+  suggestWordsAction,
+} from "../actions";
 
 const EMPTY: LibWordInput = {
   hanzi: "",
@@ -53,6 +63,7 @@ type Initial = LibWordInput & {
   status: "draft" | "public";
   hasImage: boolean;
   imageVersion: string | null;
+  imageCredit: string;
 };
 
 const card = "rounded-[var(--radius-xl)] border border-border bg-white p-4 shadow-card md:p-5";
@@ -67,8 +78,57 @@ export function WordEditor({ initial }: { initial: Initial | null }) {
   const [candidates, setCandidates] = React.useState<Candidate[] | null>(null);
   const [busy, setBusy] = React.useState<"analyze" | "draft" | "public" | "image" | null>(null);
   const [error, setError] = React.useState("");
-  const [image, setImage] = React.useState({ has: !!initial?.hasImage, v: initial?.imageVersion ?? "" });
+  const [image, setImage] = React.useState({
+    has: !!initial?.hasImage,
+    v: initial?.imageVersion ?? "",
+    credit: initial?.imageCredit ?? "",
+  });
+  // Gợi ý khi đang gõ (dropdown dưới ô tìm).
+  const [typed, setTyped] = React.useState<Candidate[]>([]);
+  const [open, setOpen] = React.useState(false);
+  const [active, setActive] = React.useState(-1);
+  // Ảnh gợi ý từ Wikimedia; `pending`: ảnh đã chọn cho từ chưa lưu (lưu xong mới tải về).
+  const [pics, setPics] = React.useState<{ for: string; items: ImageSuggestion[] } | null>(null);
+  const [picsBusy, setPicsBusy] = React.useState(false);
+  const [picking, setPicking] = React.useState("");
+  const [pending, setPending] = React.useState<ImageSuggestion | null>(null);
+  const listId = React.useId();
   const set = <K extends keyof LibWordInput>(k: K, v: LibWordInput[K]) => setW((s) => ({ ...s, [k]: v }));
+
+  React.useEffect(() => {
+    const v = input.trim();
+    if (!v || !open) return;
+    let stale = false;
+    const id = setTimeout(async () => {
+      const r = await suggestWordsAction(v);
+      if (stale) return;
+      setTyped(r.ok ? r.data.candidates : []);
+      setActive(-1);
+    }, 250);
+    return () => {
+      stale = true;
+      clearTimeout(id);
+    };
+  }, [input, open]);
+
+  async function findImages(hanzi: string) {
+    const h = hanzi.trim();
+    if (!h) return;
+    setPicsBusy(true);
+    const r = await suggestImagesAction(h);
+    setPicsBusy(false);
+    setPics({ for: h, items: r.ok ? r.data.items : [] });
+  }
+
+  async function pickImage(p: ImageSuggestion) {
+    if (!initial) return void setPending(p);
+    setPicking(p.title);
+    const r = await setSuggestedImageAction(initial.id, p.title);
+    setPicking("");
+    if (!r.ok) return void toast.error(t.maybe(r.message));
+    setImage({ has: true, v: String(Date.now()), credit: r.data.credit });
+    toast.success(t("library.imageSaved"));
+  }
 
   async function analyze(value = input) {
     const v = value.trim();
@@ -96,9 +156,17 @@ export function WordEditor({ initial }: { initial: Initial | null }) {
         } as LibWordInput;
       });
       setCandidates(null);
+      setOpen(false);
       setInput(a.hanzi);
       toast.success(t("library.analyzed", { word: a.hanzi }));
-    } else setCandidates(r.data.candidates);
+      if (!image.has && pics?.for !== a.hanzi) {
+        setPending(null);
+        void findImages(a.hanzi);
+      }
+    } else {
+      setOpen(false);
+      setCandidates(r.data.candidates);
+    }
   }
 
   async function save(publish: boolean) {
@@ -108,6 +176,10 @@ export function WordEditor({ initial }: { initial: Initial | null }) {
     setBusy(null);
     if (!r.ok) return void setError(t.maybe(r.message));
     toast.success(publish ? t("library.savedPublic") : t("library.savedDraft"));
+    if (pending && !initial) {
+      const ir = await setSuggestedImageAction(r.data.id, pending.title);
+      if (!ir.ok) toast.error(t.maybe(ir.message));
+    }
     if (!initial) router.replace(`/admin/library/${r.data.id}`);
     else router.refresh();
   }
@@ -127,11 +199,18 @@ export function WordEditor({ initial }: { initial: Initial | null }) {
     const r = await setWordImageAction(initial.id, f);
     setBusy(null);
     if (!r.ok) return void toast.error(t.maybe(r.message));
-    setImage({ has: r.data.hasImage, v: String(Date.now()) });
+    setImage({ has: r.data.hasImage, v: String(Date.now()), credit: "" });
     toast.success(r.data.hasImage ? t("library.imageSaved") : t("library.imageRemoved"));
   }
 
-  const imgSrc = initial && image.has ? `/api/v1/library/words/${initial.id}/image?v=${image.v}` : null;
+  const imgSrc =
+    initial && image.has ? `/api/v1/library/words/${initial.id}/image?v=${image.v}` : (pending?.thumb ?? null);
+  const imgCredit = initial && image.has ? image.credit : (pending?.credit ?? "");
+  const choose = (c: Candidate) => {
+    setInput(c.hanzi);
+    setOpen(false);
+    void analyze(c.hanzi);
+  };
   const ready = !!w.hanzi.trim();
 
   return (
@@ -192,14 +271,72 @@ export function WordEditor({ initial }: { initial: Initial | null }) {
             >
               <Label htmlFor="we-input">{t("library.inputLabel")}</Label>
               <div className="flex gap-2">
-                <Input
-                  id="we-input"
-                  value={input}
-                  maxLength={40}
-                  onChange={(e) => setInput(e.target.value)}
-                  className="font-cn text-lg"
-                  autoComplete="off"
-                />
+                <div className="relative min-w-0 flex-1">
+                  <Input
+                    id="we-input"
+                    role="combobox"
+                    aria-expanded={open && typed.length > 0}
+                    aria-controls={listId}
+                    aria-autocomplete="list"
+                    aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined}
+                    value={input}
+                    maxLength={40}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      setOpen(!!e.target.value.trim());
+                      if (!e.target.value.trim()) setTyped([]);
+                    }}
+                    onBlur={() => setTimeout(() => setOpen(false), 150)}
+                    onKeyDown={(e) => {
+                      if (!open || !typed.length) return;
+                      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        const d = e.key === "ArrowDown" ? 1 : -1;
+                        setActive((a) => {
+                          const x = a + d;
+                          return x < -1 ? typed.length - 1 : x >= typed.length ? -1 : x;
+                        });
+                      } else if (e.key === "Enter" && active >= 0 && typed[active]) {
+                        e.preventDefault();
+                        choose(typed[active]);
+                      } else if (e.key === "Escape") setOpen(false);
+                    }}
+                    className="font-cn text-lg"
+                    autoComplete="off"
+                  />
+                  {open && typed.length ? (
+                    <ul
+                      id={listId}
+                      role="listbox"
+                      aria-label={t("library.suggestions")}
+                      className="absolute top-full right-0 left-0 z-20 mt-1 max-h-80 overflow-y-auto rounded-[14px] border border-border bg-white p-1 shadow-card"
+                    >
+                      {typed.map((c, i) => (
+                        <li
+                          key={c.hanzi}
+                          id={`${listId}-${i}`}
+                          role="option"
+                          aria-selected={i === active}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => choose(c)}
+                          className={cn(
+                            "flex cursor-pointer items-baseline gap-2 rounded-[10px] px-3 py-2",
+                            i === active ? "bg-blue-50" : "hover:bg-[#F3F8FE]",
+                          )}
+                        >
+                          <span className="hanzi text-[19px] font-bold text-[#E0302F]" lang="zh">
+                            {c.hanzi}
+                          </span>
+                          <span className="text-[14px] text-text-2">{c.pinyin}</span>
+                          <span className="min-w-0 flex-1 truncate text-[14px] text-text">{c.meaning}</span>
+                          {c.hsk ? (
+                            <span className="text-[12.5px] font-semibold text-[#6B3FD0]">HSK {c.hsk}</span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
                 <Button type="submit" variant="solid" disabled={!input.trim() || busy === "analyze"}>
                   {busy === "analyze" ? <Loader2 className="animate-spin" /> : <Sparkles />}
                   {busy === "analyze" ? t("library.analyzing") : t("library.analyze")}
@@ -390,18 +527,46 @@ export function WordEditor({ initial }: { initial: Initial | null }) {
 
             <div className="flex flex-col gap-2">
               <span className="font-semibold text-text">{t("library.image")}</span>
+              <ImageSuggestions
+                hanzi={w.hanzi}
+                data={pics}
+                busy={picsBusy}
+                picking={picking}
+                chosen={pending?.title ?? ""}
+                onFind={() => findImages(w.hanzi)}
+                onPick={pickImage}
+              />
+              {pending && !initial ? (
+                <p className="flex items-center gap-2 text-[13.5px] text-green-700">
+                  {t("library.imagePending")}
+                  <button
+                    type="button"
+                    className="font-semibold text-red hover:underline"
+                    onClick={() => setPending(null)}
+                  >
+                    {t("library.removeImage")}
+                  </button>
+                </p>
+              ) : null}
               <p className="text-[13.5px] text-text-2">
                 {initial ? t("library.imageHint") : t("library.imageAfterSave")}
               </p>
               {initial ? (
                 <div className="flex flex-wrap items-center gap-3">
                   {imgSrc ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- ảnh từ API riêng (cần phiên đăng nhập), không qua tối ưu ảnh
-                    <img
-                      src={imgSrc}
-                      alt={t("library.image")}
-                      className="h-24 w-auto rounded-xl border border-border"
-                    />
+                    <figure className="flex flex-col gap-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- ảnh từ API riêng (cần phiên đăng nhập), không qua tối ưu ảnh */}
+                      <img
+                        src={imgSrc}
+                        alt={t("library.image")}
+                        className="h-24 w-auto rounded-xl border border-border"
+                      />
+                      {imgCredit ? (
+                        <figcaption className="max-w-[220px] truncate text-[12px] text-text-3" title={imgCredit}>
+                          {imgCredit}
+                        </figcaption>
+                      ) : null}
+                    </figure>
                   ) : null}
                   <label className="inline-flex">
                     <input
@@ -433,7 +598,7 @@ export function WordEditor({ initial }: { initial: Initial | null }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
-          <Preview w={w} imgSrc={imgSrc} />
+          <Preview w={w} imgSrc={imgSrc} credit={imgCredit} />
           <section aria-labelledby="we-ex" className={card}>
             <Rows
               title={t("library.examples")}
@@ -587,7 +752,7 @@ function Rows<T extends Record<string, string>>({
   );
 }
 
-function Preview({ w, imgSrc }: { w: LibWordInput; imgSrc: string | null }) {
+function Preview({ w, imgSrc, credit }: { w: LibWordInput; imgSrc: string | null; credit: string }) {
   const t = useT();
   return (
     <section aria-labelledby="we-s3" className={card}>
@@ -630,8 +795,11 @@ function Preview({ w, imgSrc }: { w: LibWordInput; imgSrc: string | null }) {
             </div>
           </div>
           {imgSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element -- ảnh từ API riêng (cần phiên đăng nhập)
-            <img src={imgSrc} alt="" className="max-h-56 w-full rounded-2xl object-contain" />
+            <figure className="flex flex-col gap-1">
+              {/* eslint-disable-next-line @next/next/no-img-element -- ảnh từ API riêng (cần phiên đăng nhập) / bản thu nhỏ Wikimedia */}
+              <img src={imgSrc} alt="" className="max-h-56 w-full rounded-2xl object-contain" />
+              {credit ? <figcaption className="text-right text-[12px] text-text-3">{credit}</figcaption> : null}
+            </figure>
           ) : null}
           {w.components.length ? (
             <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-[#F7FAFE] p-3">
@@ -661,6 +829,85 @@ function Preview({ w, imgSrc }: { w: LibWordInput; imgSrc: string | null }) {
           ) : null}
         </div>
       )}
+    </section>
+  );
+}
+
+/** Lưới ảnh gợi ý (Wikimedia) — bấm một ảnh để chọn làm ảnh minh hoạ. */
+function ImageSuggestions({
+  hanzi,
+  data,
+  busy,
+  picking,
+  chosen,
+  onFind,
+  onPick,
+}: {
+  hanzi: string;
+  data: { for: string; items: ImageSuggestion[] } | null;
+  busy: boolean;
+  picking: string;
+  chosen: string;
+  onFind: () => void;
+  onPick: (p: ImageSuggestion) => void;
+}) {
+  const t = useT();
+  return (
+    <section aria-labelledby="we-pics" className="flex flex-col gap-2 rounded-[14px] bg-[#F7FAFE] p-3">
+      <div className="flex items-center gap-2">
+        <h3 id="we-pics" className="flex items-center gap-2 font-bold text-navy-900">
+          <ImageIcon className="size-5 text-blue-600" aria-hidden="true" />
+          {t("library.suggestImages")}
+        </h3>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="ml-auto"
+          disabled={!hanzi.trim() || busy}
+          onClick={onFind}
+        >
+          {busy ? <Loader2 className="animate-spin" /> : <Search />}
+          {data ? t("library.findImagesAgain") : t("library.findImages")}
+        </Button>
+      </div>
+      <p className="text-[13px] text-text-2">{t("library.suggestImagesHint")}</p>
+      {busy && !data ? (
+        <p className="text-[14px] text-text-2" aria-live="polite">
+          {t("library.searchingImages")}
+        </p>
+      ) : data ? (
+        data.items.length ? (
+          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4" aria-busy={busy || undefined}>
+            {data.items.map((p, i) => (
+              <li key={p.title}>
+                <button
+                  type="button"
+                  onClick={() => onPick(p)}
+                  disabled={!!picking}
+                  aria-pressed={chosen === p.title}
+                  aria-label={t("library.pickImage", { n: i + 1, credit: p.credit })}
+                  title={p.credit}
+                  className={cn(
+                    "relative block aspect-square w-full overflow-hidden rounded-[12px] border-2 bg-white",
+                    chosen === p.title ? "border-blue-600" : "border-transparent hover:border-blue-300",
+                  )}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- bản thu nhỏ Wikimedia, chỉ để admin chọn */}
+                  <img src={p.thumb} alt="" loading="lazy" className="size-full object-cover" />
+                  {picking === p.title ? (
+                    <span className="absolute inset-0 flex items-center justify-center bg-white/70">
+                      <Loader2 className="size-6 animate-spin text-blue-600" />
+                    </span>
+                  ) : null}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[14px] text-text-2">{t("library.noImages", { word: data.for })}</p>
+        )
+      ) : null}
     </section>
   );
 }

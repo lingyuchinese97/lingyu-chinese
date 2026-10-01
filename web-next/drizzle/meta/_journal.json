@@ -85,6 +85,13 @@
       "when": 1790782699748,
       "tag": "0011_library_words",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790816882529,
+      "tag": "0012_library_image_credit",
+      "breakpoints": true
     }
   ]
 }

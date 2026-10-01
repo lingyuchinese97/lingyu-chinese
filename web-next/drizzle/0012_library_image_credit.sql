@@ -1,0 +1,1 @@
+ALTER TABLE "library_word" ADD COLUMN "image_credit" text DEFAULT '' NOT NULL;

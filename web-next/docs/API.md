@@ -258,13 +258,16 @@ Nội dung do LingYu (admin) soạn và **public**. Bản nháp không bao giờ
 
 Admin (`/api/v1/admin/library`, người thường → `403`):
 
-| Route                                         | Mô tả                                                                                                                                |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `POST /admin/library/analyze`                 | `{ input }`: chữ Hán → `analysis` (tự điền từ dữ liệu có sẵn); pinyin / tiếng Việt → `candidates`                                    |
-| `GET\|POST /admin/library/words`              | Danh sách (`q`, `status`, `page`) · thêm `{ word, publish }` → `201 { id }`; trùng Hán tự → `409`; public cần pinyin + nghĩa → `400` |
-| `GET\|PUT\|DELETE /admin/library/words/{id}`  | Xem · sửa `{ word, publish? }` · xoá (kèm ảnh)                                                                                       |
-| `POST /admin/library/words/{id}/status`       | `{ public }` — public / về nháp                                                                                                      |
-| `PUT\|DELETE /admin/library/words/{id}/image` | Ảnh `{ data: base64 }` (JPG / PNG / WebP ≤ 1MB, kiểm tra magic bytes) · xoá ảnh                                                      |
+| Route                                           | Mô tả                                                                                                                                |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /admin/library/analyze`                   | `{ input }`: chữ Hán → `analysis` (tự điền từ dữ liệu có sẵn); pinyin / tiếng Việt → `candidates`                                    |
+| `GET\|POST /admin/library/words`                | Danh sách (`q`, `status`, `page`) · thêm `{ word, publish }` → `201 { id }`; trùng Hán tự → `409`; public cần pinyin + nghĩa → `400` |
+| `GET\|PUT\|DELETE /admin/library/words/{id}`    | Xem · sửa `{ word, publish? }` · xoá (kèm ảnh)                                                                                       |
+| `POST /admin/library/words/{id}/status`         | `{ public }` — public / về nháp                                                                                                      |
+| `PUT\|DELETE /admin/library/words/{id}/image`   | Ảnh `{ data: base64 }` (JPG / PNG / WebP ≤ 1MB, kiểm tra magic bytes) · xoá ảnh                                                      |
+| `GET /admin/library/suggest?q=`                 | Gợi ý khi đang gõ → `{ candidates[{ hanzi, pinyin, meaning, hsk }] }` (chữ Hán: bắt đầu bằng phần đã gõ; pinyin / tiếng Việt: khớp)  |
+| `GET /admin/library/image-suggestions?q=`       | Ảnh gợi ý Wikimedia cho chữ Hán → `{ items[{ title, thumb, credit }] }` (lỗi mạng → danh sách rỗng)                                  |
+| `PUT /admin/library/words/{id}/image/suggested` | `{ title: "File:…" }` — máy chủ tải ảnh từ `upload.wikimedia.org`, lưu kèm ghi công → `{ hasImage, credit }`                         |
 
 ## Quản trị `/api/v1/admin` (chỉ admin)
 

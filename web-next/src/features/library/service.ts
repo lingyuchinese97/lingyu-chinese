@@ -44,6 +44,7 @@ function toWord(r: Row) {
     grammar: r.grammar,
     hasImage: !!r.imageId,
     imageVersion: r.imageId ? r.imageId.slice(0, 8) : null,
+    imageCredit: r.imageId ? r.imageCredit : "",
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
   };
@@ -200,8 +201,8 @@ export function parseLibImage(bytes: Buffer): NewLibImage {
   return { bytes, mime, ...size };
 }
 
-/** Đặt / thay / xoá ảnh minh hoạ (null = xoá). Ảnh cũ bị xoá hẳn. */
-export async function setWordImage(id: string, img: NewLibImage | null) {
+/** Đặt / thay / xoá ảnh minh hoạ (null = xoá). Ảnh cũ bị xoá hẳn. `credit`: ghi công khi ảnh lấy từ Wikimedia. */
+export async function setWordImage(id: string, img: NewLibImage | null, credit = "") {
   return db.transaction(async (tx) => {
     const [cur] = await tx
       .select({ imageId: libraryWord.imageId })
@@ -217,10 +218,21 @@ export async function setWordImage(id: string, img: NewLibImage | null) {
         .returning({ id: libraryImage.id });
       imageId = row!.id;
     }
-    await tx.update(libraryWord).set({ imageId, updatedAt: new Date() }).where(eq(libraryWord.id, id));
+    await tx
+      .update(libraryWord)
+      .set({ imageId, imageCredit: img ? credit.slice(0, 240) : "", updatedAt: new Date() })
+      .where(eq(libraryWord.id, id));
     if (cur.imageId) await tx.delete(libraryImage).where(eq(libraryImage.id, cur.imageId));
     return { hasImage: !!imageId };
   });
+}
+
+/** Ảnh từ gợi ý Wikimedia: tải về, kiểm tra (magic bytes, ≤ 1MB), lưu kèm ghi công. */
+export async function setSuggestedImage(id: string, title: string) {
+  const { downloadSuggestedImage } = await import("./image-suggest");
+  const { bytes, credit } = await downloadSuggestedImage(title);
+  const r = await setWordImage(id, parseLibImage(bytes), credit);
+  return { ...r, credit };
 }
 
 /** Ảnh của một từ: chỉ trả khi từ đã public (hoặc `admin` = true). */

@@ -88,3 +88,12 @@ export const adminLibListSchema = z.object({
 export type AdminLibListParams = z.infer<typeof adminLibListSchema>;
 
 export const analyzeSchema = z.object({ input: z.string().trim().min(1, "Vui lòng nhập từ cần phân tích.").max(40) });
+/** Gợi ý khi admin đang gõ (chữ Hán / pinyin / tiếng Việt) và tìm ảnh gợi ý theo chữ Hán. */
+export const suggestSchema = z.object({ q: z.string().trim().min(1).max(40) });
+/** Chọn một ảnh gợi ý: tên file trên Wikimedia Commons ("File:…"). */
+export const suggestedImageSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .regex(/^File:[^\x00-\x1f|#<>[\]{}]{1,240}$/u, "Ảnh gợi ý không hợp lệ."),
+});

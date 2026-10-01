@@ -16,7 +16,8 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.youtube.com https://s.ytimg.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // Ảnh gợi ý (màn admin Thư viện LingYu) hiện bản thu nhỏ trực tiếp từ Wikimedia; ảnh đã chọn được lưu về DB.
+  "img-src 'self' data: blob: https://upload.wikimedia.org",
   "font-src 'self'",
   "media-src 'self' blob: https:",
   "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://www.tiktok.com",

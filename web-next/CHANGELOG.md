@@ -6,6 +6,13 @@
 
 ### Added
 
+- **Thư viện LingYu — admin tìm từ, tự phân tích + ảnh gợi ý**: ô nhập trên màn **Thêm từ vựng mới** gợi ý ngay khi gõ (chữ Hán: từ bắt
+  đầu bằng phần đã gõ; pinyin / tiếng Việt: từ khớp; kèm HSK), chọn một từ → tự phân tích và tự điền. Sau khi phân tích, hệ thống tự tìm
+  **hình ảnh gợi ý** từ Wikimedia (Wikidata P18 theo nhãn tiếng Trung + Commons; ảnh giấy phép tự do); bấm một ảnh để chọn — từ chưa lưu thì
+  ảnh được lưu cùng lúc lưu từ. Máy chủ tự tải ảnh (chỉ từ `upload.wikimedia.org`, ≤ 1MB, kiểm tra magic bytes) và lưu **ghi công** (tác giả
+  · giấy phép · nguồn), hiện dưới ảnh ở màn người học. Vẫn tự tải ảnh lên được. API `GET /api/v1/admin/library/suggest`,
+  `GET /api/v1/admin/library/image-suggestions`, `PUT /api/v1/admin/library/words/{id}/image/suggested`; từ có thêm `imageCredit`
+  (migration `0012_library_image_credit`). CSP `img-src` thêm `https://upload.wikimedia.org` (chỉ bản thu nhỏ trên màn admin).
 - **Thư viện LingYu — Từ vựng**:
   - Người học: mục **Thư viện LingYu** trên menu (`/library/vocabulary`) — HSK 1–6, tìm (chữ Hán / pinyin / nghĩa, không dấu), chủ đề,
     sắp xếp; danh sách đánh số + chi tiết: chữ lớn, pinyin (nghe), nghĩa, từ loại, ảnh minh hoạ, bộ / thành phần, mẹo ghi nhớ, liên tưởng,

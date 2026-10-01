@@ -37,6 +37,8 @@ export default defineConfig({
       // Tài khoản riêng của trang tài liệu API (chỉ dùng cho test).
       API_DOCS_USER: E2E_DOCS.username,
       API_DOCS_PASSWORD: E2E_DOCS.password,
+      // Ảnh gợi ý Thư viện LingYu: ảnh mẫu, không gọi Wikimedia khi chạy e2e.
+      LIBRARY_IMAGE_SOURCE: "fake",
     },
     url: `${baseURL}/api/health`,
     reuseExistingServer: !process.env.CI,
