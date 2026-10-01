@@ -6,6 +6,10 @@
 
 ### Changed
 
+- **Thêm từ ảnh — hiểu ảnh dạng bảng của giáo trình** ("1. 买 （动） mǎi (mãi) to buy mua"): mỗi dòng ra đúng **chữ Hán · pinyin ·
+  nghĩa tiếng Việt** — bỏ số thứ tự, nhãn từ loại (动 / 名 / 量 / 形 / 助… kể cả khi OCR mất ngoặc), âm Hán Việt và chú thích trong ngoặc,
+  cột tiếng Anh; nghĩa = cột ngoài cùng bên phải, nghĩa xuống dòng trong cột đó được nối lại. Pinyin: bản giữ dấu nếu hợp lệ, không thì
+  bản không dấu (đúng chữ cái) rồi thêm dấu theo từ điển. Kết quả OCR giờ là các ô theo dòng kèm toạ độ (`parseOcrLines`).
 - **Thêm từ ảnh — nhận dạng chữ Hán chính xác hơn (PaddleOCR)**: chữ Hán giờ được đọc bằng **PaddleOCR PP-OCRv4** (mô hình ONNX chạy
   ngay trên trình duyệt bằng onnxruntime-web, tự host ở `/ocr`) thay cho Tesseract — đọc đúng chữ viết tay, ảnh vở ô li, chữ nhỏ (ảnh vở
   viết tay 公斤: Tesseract ra “从 站”, PaddleOCR ra 公斤). Phần pinyin / nghĩa tiếng Việt trong mỗi vùng chữ được cắt riêng và đọc bằng

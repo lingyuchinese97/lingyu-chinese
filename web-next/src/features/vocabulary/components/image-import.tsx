@@ -23,7 +23,7 @@ import { SpeakButton } from "@/components/speak-button";
 import { cn } from "@/lib/utils";
 import { VOCAB } from "@/lib/limits";
 import { applyToneInput, splitTone } from "@/lib/pinyin";
-import { parseOcrText } from "@/lib/ocr-parse";
+import { parseOcrLines } from "@/lib/ocr-parse";
 import { useT } from "@/i18n/client";
 import { vocabInputSchema } from "../schema";
 import { createManyAction, suggestWordsAction } from "../actions";
@@ -87,11 +87,11 @@ export function ImageImport({ source, allTags }: { source: ImageSource; allTags:
       setProgress(0);
       setPhase("load");
       try {
-        const text = await recognizeImage(img, (p) => {
+        const lines = await recognizeImage(img, (p) => {
           setPhase(p.stage);
           setProgress(p.value);
         });
-        const words = parseOcrText(text, VOCAB.MAX_BULK);
+        const words = parseOcrLines(lines, VOCAB.MAX_BULK);
         if (!words.length) {
           setPhase("done");
           return;

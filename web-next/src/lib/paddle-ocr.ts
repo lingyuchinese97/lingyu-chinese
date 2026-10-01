@@ -213,13 +213,17 @@ export function segments(r: RecResult, box: Box, resizedW: number): Segment[] {
   }));
 }
 
+/** Một vùng đã nhận dạng: `text` = bản đọc tốt nhất (phần Latin có dấu), `alt` = bản gốc của Paddle (không dấu). */
+export type RecItem = { box: Box; text: string; alt?: string };
+export type LineCell = { text: string; alt: string; x0: number; x1: number };
+
 /**
- * Ghép các vùng đã nhận dạng thành văn bản nhiều dòng: cùng dòng nếu tâm theo chiều dọc gần nhau (≤ nửa chiều cao),
- * trái → phải; các vùng trên cùng dòng ngăn bằng " | " để bộ tách từ không dính hai từ ở hai ô khác nhau.
+ * Ghép các vùng đã nhận dạng thành dòng: cùng dòng nếu tâm theo chiều dọc gần nhau (≤ nửa chiều cao), trái → phải.
+ * Giữ toạ độ ngang để bộ tách từ nhận ra cột (pinyin, nghĩa) ở ảnh dạng bảng.
  */
-export function joinLines(items: { box: Box; text: string }[]): string {
+export function groupLines(items: RecItem[]): LineCell[][] {
   const sorted = items
-    .filter((i) => i.text.trim())
+    .filter((i) => i.text.trim() || i.alt?.trim())
     .map((i) => ({ ...i, cy: (i.box.y0 + i.box.y1) / 2, h: i.box.y1 - i.box.y0 }))
     .sort((a, b) => a.cy - b.cy);
   const lines: (typeof sorted)[] = [];
@@ -229,12 +233,15 @@ export function joinLines(items: { box: Box; text: string }[]): string {
     if (line && ref && Math.abs(it.cy - ref.cy) <= Math.min(it.h, ref.h) / 2) line.push(it);
     else lines.push([it]);
   }
-  return lines
-    .map((l) =>
-      l
-        .sort((a, b) => a.box.x0 - b.box.x0)
-        .map((i) => i.text.trim())
-        .join(" | "),
-    )
-    .join("\n");
+  return lines.map((l) =>
+    l
+      .sort((a, b) => a.box.x0 - b.box.x0)
+      .map((i) => ({ text: i.text.trim(), alt: (i.alt ?? i.text).trim(), x0: i.box.x0, x1: i.box.x1 })),
+  );
 }
+
+/** Văn bản nhiều dòng; các vùng trên cùng dòng ngăn bằng " | " (để xem / gỡ lỗi). */
+export const joinLines = (items: RecItem[]) =>
+  groupLines(items)
+    .map((l) => l.map((c) => c.text).join(" | "))
+    .join("\n");
