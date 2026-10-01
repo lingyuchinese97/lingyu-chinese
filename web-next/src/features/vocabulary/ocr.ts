@@ -12,12 +12,14 @@ import {
   ctcDecode,
   dbBoxes,
   detInput,
-  joinLines,
+  groupLines,
   parseKeys,
   recInput,
   segments,
   type Box,
+  type LineCell,
   type Pixels,
+  type RecItem,
 } from "@/lib/paddle-ocr";
 
 type Progress = (p: { stage: "load" | "recognize"; value: number }) => void;
@@ -147,7 +149,16 @@ function latinText(d: { text: string; confidence: number } | null, paddle: strin
   return paddleScore >= 0.85 ? trimJunk(paddle) : "";
 }
 
-export async function recognizeImage(img: Blob, onProgress?: Progress): Promise<string> {
+/** Giữ ngoặc ở đầu / cuối đoạn theo bản Paddle khi bản Tesseract làm mất: "）shuiguo" → ") shuǐguǒ". */
+function keepBrackets(paddle: string, read: string) {
+  if (!read) return read;
+  const lead = /^[\s(（)）]*/u.exec(paddle)![0].replace(/\s/g, "");
+  const tail = /[\s(（)）]*$/u.exec(paddle)![0].replace(/\s/g, "");
+  return `${lead && !/^[(（)）]/u.test(read) ? `${lead} ` : ""}${read}${tail && !/[(（)）]$/u.test(read) ? ` ${tail}` : ""}`;
+}
+
+/** Nhận dạng ảnh → các dòng, mỗi dòng gồm các ô (vùng chữ) trái → phải, kèm toạ độ ngang. */
+export async function recognizeImage(img: Blob, onProgress?: Progress): Promise<LineCell[][]> {
   listener = onProgress ?? null;
   try {
     listener?.({ stage: "load", value: 0 });
@@ -166,7 +177,7 @@ export async function recognizeImage(img: Blob, onProgress?: Progress): Promise<
       imgH: px.height,
     }).slice(0, MAX_BOXES);
 
-    const items: { box: Box; text: string }[] = [];
+    const items: RecItem[] = [];
     let tess: Worker | null | undefined;
     for (const [i, box] of boxes.entries()) {
       const ri = recInput(px, box);
@@ -178,18 +189,20 @@ export async function recognizeImage(img: Blob, onProgress?: Progress): Promise<
       if (r.score < 0.5 || !r.text.trim()) continue;
       let text = "";
       for (const sg of segments(r, box, ri.resizedW)) {
-        if (sg.kind === "han" || !sg.text.trim() || sg.x1 - sg.x0 < 6) {
+        // Chữ Hán, hoặc đoạn chỉ có dấu câu / ngoặc / số ("（", "1."): giữ nguyên bản Paddle (Tesseract hay bỏ ngoặc,
+        // mà ngoặc cần để nhận ra nhãn từ loại "（动）").
+        if (sg.kind === "han" || !/\p{L}/u.test(sg.text) || sg.x1 - sg.x0 < 6) {
           text += sg.kind === "han" ? sg.text : ` ${sg.text} `;
           continue;
         }
         tess ??= await getTesseract();
         const d = tess ? (await tess.recognize(crop(canvas, sg.x0, box.y0, sg.x1, box.y1))).data : null;
-        text += ` ${latinText(d, sg.text, r.score)} `;
+        text += ` ${keepBrackets(sg.text, latinText(d, sg.text, r.score))} `;
       }
-      items.push({ box, text: text.replace(/\s+/g, " ").trim() });
+      items.push({ box, text: text.replace(/\s+/g, " ").trim(), alt: r.text });
       listener?.({ stage: "recognize", value: (i + 1) / boxes.length });
     }
-    return joinLines(items);
+    return groupLines(items);
   } finally {
     listener = null;
   }
