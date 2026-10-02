@@ -72,7 +72,7 @@ export async function tagsOf(ids: string[]): Promise<Map<string, string[]>> {
   return map;
 }
 
-/** Tất cả tag của user kèm số từ, nhiều từ trước (như countTags bản cũ). */
+/** Tất cả tag của user kèm số từ, xếp A → Z (số so theo giá trị: "Bài 2" trước "Bài 10"). */
 export async function listTags(userId: string): Promise<TagCount[]> {
   const rows = await db
     .select({ id: vocabTag.id, name: vocabTag.name, count: count(vocabToTag.vocabId) })
@@ -80,7 +80,9 @@ export async function listTags(userId: string): Promise<TagCount[]> {
     .leftJoin(vocabToTag, eq(vocabToTag.tagId, vocabTag.id))
     .where(eq(vocabTag.userId, userId))
     .groupBy(vocabTag.id);
-  return rows.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "vi"));
+  return rows.sort(
+    (a, b) => a.name.localeCompare(b.name, "vi", { numeric: true, sensitivity: "base" }) || a.id.localeCompare(b.id),
+  );
 }
 
 export async function listVocab(userId: string, p: ListParams, pageSize: number = VOCAB.PAGE_SIZE) {
