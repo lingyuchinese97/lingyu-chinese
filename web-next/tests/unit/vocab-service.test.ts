@@ -78,6 +78,13 @@ describe("từ vựng — nghiệp vụ", () => {
     expect(await svc.addTags(A, ids, ["Bài 1"])).toBe(3);
     const tags = await svc.listTags(A);
     expect(tags.find((t) => t.name === "Bài 1")?.count).toBe(3);
+    // Tag xếp A → Z, số theo giá trị ("HSK1_Bài 2" trước "HSK1_Bài 10"), không theo số từ.
+    for (const name of ["HSK1_Bài 10", "HSK1_Bài 2", "hsk1_Bài 1"]) await svc.createTag(A, name);
+    expect((await svc.listTags(A)).map((t) => t.name).filter((n) => n.toLowerCase().startsWith("hsk1_"))).toEqual([
+      "hsk1_Bài 1",
+      "HSK1_Bài 2",
+      "HSK1_Bài 10",
+    ]);
     const st = await svc.vocabStats(A);
     expect(st).toMatchObject({ total: 3, learned: 3, needReview: 0 });
   });

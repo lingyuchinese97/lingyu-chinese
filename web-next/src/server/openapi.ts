@@ -453,7 +453,7 @@ export function openApiDocument() {
       },
       "/api/v1/vocab/tags": {
         get: op(V, {
-          summary: "Tag và số từ",
+          summary: "Tag và số từ, xếp A → Z (số theo giá trị: Bài 2 trước Bài 10)",
           data: { type: "array", items: obj({ id: { type: "string" }, name: { type: "string" }, count: int }) },
         }),
         post: op(V, {
