@@ -4,5 +4,5 @@
  * (xem `features/pronunciation/components/speech.ts`).
  */
 export const SPEECH_RATE = {
-  normal: 0.55,
+  normal: 0.35,
 } as const;

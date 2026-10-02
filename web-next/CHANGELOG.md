@@ -6,6 +6,8 @@
 
 ### Changed
 
+- **Nút loa (Từ vựng, Ngữ pháp, Thư viện LingYu, Ôn dịch câu, Trang chủ) đọc chậm hơn**: tốc độ giọng đọc 0,55 → 0,35
+  (`SPEECH_RATE.normal`; Phát âm & Biến điệu vẫn dùng tốc độ riêng, chỉnh được).
 - **Từ vựng của tôi — thẻ tag xếp A → Z** (trước: nhiều từ trước); số so theo giá trị (“HSK1_Bài 2” trước “HSK1_Bài 10”), không phân biệt
   hoa / thường. Áp dụng cho thẻ tag, bộ lọc nhanh, ô chọn tag và API `GET /api/v1/vocab/tags`.
 - **Thêm từ ảnh — hiểu ảnh dạng bảng của giáo trình** ("1. 买 （动） mǎi (mãi) to buy mua"): mỗi dòng ra đúng **chữ Hán · pinyin ·
