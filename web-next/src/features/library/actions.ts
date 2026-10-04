@@ -3,7 +3,16 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { adminOrThrow, AuthError, currentUserOrThrow } from "@/server/session";
 import { log } from "@/server/log";
-import { analyzeSchema, libWordInputSchema, suggestSchema, suggestedImageSchema } from "./schema";
+import {
+  analyzeSchema,
+  libWordInputSchema,
+  setIdSchema,
+  setWordSchema,
+  suggestSchema,
+  suggestedImageSchema,
+} from "./schema";
+import * as sets from "./sets";
+import { getLocale } from "@/i18n/server";
 import { suggestImages, type ImageSuggestion } from "./image-suggest";
 import { analyzeWord, findCandidates, type Analysis, type Candidate } from "./analyze";
 import * as svc from "./service";
@@ -23,7 +32,7 @@ function fail(e: unknown): Fail {
 }
 const refresh = () => {
   revalidatePath("/admin/library");
-  revalidatePath("/library/vocabulary");
+  revalidatePath("/library/words");
 };
 
 export async function analyzeAction(
@@ -105,7 +114,7 @@ export async function saveLibraryWordToMineAction(id: string): Promise<ActionRes
     const u = await currentUserOrThrow();
     const r = await svc.saveToMyVocab(u.id, z.uuid().parse(id));
     revalidatePath("/vocabulary");
-    revalidatePath("/library/vocabulary");
+    revalidatePath("/library/words");
     return { ok: true, data: { added: r.added } };
   } catch (e) {
     return fail(e);
@@ -141,6 +150,80 @@ export async function setSuggestedImageAction(
     const wid = z.uuid().parse(id);
     const r = await svc.setSuggestedImage(wid, suggestedImageSchema.parse({ title }).title);
     refresh();
+    return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ---------- Bộ từ vựng ----------
+
+const setArgs = (id: string, zh?: string | null) => ({
+  id: setIdSchema.parse(id),
+  zh: zh == null ? null : setWordSchema.parse(zh),
+});
+const refreshSets = (id: string) => {
+  revalidatePath("/library");
+  revalidatePath(`/library/vocabulary/${id}`, "layout");
+};
+
+export async function setWordLearnedAction(
+  id: string,
+  zh: string,
+  on: boolean,
+): Promise<ActionResult<{ learned: boolean; progress: { learned: number; total: number } }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const a = setArgs(id, zh);
+    const r = await sets.setWordLearned(u.id, a.id, a.zh!, on);
+    refreshSets(a.id);
+    return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function setFavoriteAction(
+  id: string,
+  zh: string | null,
+  on: boolean,
+): Promise<ActionResult<{ favorite: boolean }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const a = setArgs(id, zh);
+    const r = await sets.setFavorite(u.id, a.id, a.zh, on);
+    refreshSets(a.id);
+    return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function saveSetAction(
+  id: string,
+  zh: string | null,
+): Promise<ActionResult<{ added: number; skipped: number }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const a = setArgs(id, zh);
+    const r = await sets.saveSetToMyVocab(u.id, a.id, a.zh, await getLocale());
+    revalidatePath("/vocabulary");
+    refreshSets(a.id);
+    return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function setHskLearnedAction(
+  level: number,
+  zh: string,
+  on: boolean,
+): Promise<ActionResult<{ learned: boolean }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const r = await sets.setHskLearned(u.id, z.number().int().parse(level), setWordSchema.parse(zh), on);
+    revalidatePath("/library/vocabulary/hsk");
     return { ok: true, data: r };
   } catch (e) {
     return fail(e);

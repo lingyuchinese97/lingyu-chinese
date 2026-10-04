@@ -190,6 +190,10 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     luồng — không bật COEP), mô hình ONNX từ `@gutenye/ocr-models` tự host ở `/ocr/paddle`; ảnh vẫn không rời máy. Mô hình Paddle không có dấu
     thanh / dấu tiếng Việt → phần chữ Latin trong mỗi vùng (vị trí lấy từ bước CTC) được cắt ra đọc lại bằng Tesseract `vie`; độ tin cậy
     thấp (thường là chữ viết tay) → bỏ trống để server gợi ý pinyin / nghĩa từ từ điển. Tải lần đầu ~20MB (gzip nhỏ hơn), service worker lưu lại.
+46. **Nội dung Thư viện LingYu biên soạn sẵn nằm trong code** (`src/data/library/*.ts`, như kho câu luyện dịch / bài đọc): có review qua PR,
+    có test kiểm tra từng từ (pinyin đúng số âm tiết, câu ví dụ chứa đúng từ), không cần seed DB. Trạng thái của người học (đã học, yêu thích)
+    ở DB, bảng chung `library_learned` / `library_favorite` (`kind` + `itemId` + `key`) để dùng lại cho ngữ pháp / bài nghe / bài đọc sau này.
+    Hình minh hoạ dùng emoji (không tải ảnh ngoài, nhẹ, rõ trên mọi máy). Bộ thủ / từ liên quan / cách nhớ phân tích tự động từ dữ liệu có sẵn.
 
 ## Chỗ mơ hồ & cách xử lý
 

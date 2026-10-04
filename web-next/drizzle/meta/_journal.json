@@ -92,6 +92,13 @@
       "when": 1790816882529,
       "tag": "0012_library_image_credit",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791130163720,
+      "tag": "0013_library_progress",
+      "breakpoints": true
     }
   ]
 }

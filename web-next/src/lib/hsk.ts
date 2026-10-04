@@ -10,11 +10,12 @@ export type HskLevel = (typeof HSK_LEVELS)[number];
 type Tuple = [number, string, string, string, string[]];
 const LEVEL_OF = new Map<string, HskLevel>();
 const PINYIN_OF = new Map<string, string>();
+const POS_OF = new Map<string, string[]>();
 const BY_LEVEL = new Map<HskLevel, string[]>(HSK_LEVELS.map((l) => [l, []]));
 
 for (const row of vocabulary as unknown as (Tuple | Tuple[])[]) {
   const entries: Tuple[] = typeof row[0] === "number" ? [row as Tuple] : (row as Tuple[]);
-  for (const [, lv, word, pinyin] of entries) {
+  for (const [, lv, word, pinyin, pos] of entries) {
     const level = (lv === "7-9" ? 7 : Number(lv)) as HskLevel;
     const prev = LEVEL_OF.get(word);
     if (prev !== undefined && prev <= level) continue;
@@ -25,6 +26,7 @@ for (const row of vocabulary as unknown as (Tuple | Tuple[])[]) {
       );
     LEVEL_OF.set(word, level);
     PINYIN_OF.set(word, pinyin);
+    POS_OF.set(word, pos ?? []);
     BY_LEVEL.get(level)!.push(word);
   }
 }
@@ -33,6 +35,8 @@ for (const row of vocabulary as unknown as (Tuple | Tuple[])[]) {
 export const hskLevelOf = (word: string): HskLevel | null => LEVEL_OF.get(word.trim()) ?? null;
 /** Pinyin theo đề cương HSK. */
 export const hskPinyinOf = (word: string) => PINYIN_OF.get(word.trim()) ?? null;
+/** Từ loại theo đề cương HSK (chữ viết tắt tiếng Trung: 名 动 形 副 代 量 数 助 介 连 叹…). */
+export const hskPosOf = (word: string): readonly string[] => POS_OF.get(word.trim()) ?? [];
 /** Các từ của một cấp. */
 export const hskWords = (level: HskLevel): readonly string[] => BY_LEVEL.get(level) ?? [];
 /** Số từ mỗi cấp. */

@@ -63,7 +63,9 @@ test("Thư viện LingYu: admin phân tích → lưu nháp (người học khôn
     );
   expect(await ids()).not.toContain(id);
   expect((await u.request.get(`/api/v1/library/words/${id}`)).status()).toBe(404);
+  // Link cũ /library/vocabulary?w= chuyển sang /library/words.
   await u.goto(`/library/vocabulary?w=${id}`);
+  await expect(u).toHaveURL(/\/library\/words\?w=/);
   await expect(u.getByRole("article", { name: "学" })).toHaveCount(0);
 
   // Ảnh gợi ý đã được lưu; tự tải ảnh lên thay được; chọn lại ảnh gợi ý khác rồi public.
@@ -84,7 +86,11 @@ test("Thư viện LingYu: admin phân tích → lưu nháp (người học khôn
     .getByRole("complementary", { name: "Điều hướng chính" })
     .getByRole("link", { name: "Thư viện LingYu" })
     .click();
-  await expect(u).toHaveURL(/\/library\/vocabulary/);
+  await expect(u).toHaveURL(/\/library$/);
+  await expect(u.getByRole("heading", { level: 1, name: "Thư viện LingYu" })).toBeVisible();
+  // Từ admin đăng nằm ở mục "Từ vựng LingYu mới đăng" (/library/words).
+  await u.getByRole("link", { name: /Từ vựng LingYu mới đăng/ }).click();
+  await expect(u).toHaveURL(/\/library\/words/);
   await expect(u.getByRole("heading", { level: 1, name: "Từ vựng" })).toBeVisible();
   await expect(u.getByText(/^HSK 1 \(\d+ từ vựng\)$/)).toBeVisible();
   await u.getByRole("link", { name: /^\d+\s*学\s*xué/ }).click();

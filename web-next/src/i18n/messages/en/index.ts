@@ -8,6 +8,7 @@ import { grammar } from "./grammar";
 import { home } from "./home";
 import { landing } from "./landing";
 import { lessons } from "./lessons";
+import { libhub } from "./libhub";
 import { library } from "./library";
 import { listening } from "./listening";
 import { meta } from "./meta";
@@ -42,6 +43,7 @@ export const en: Messages = {
   api,
   grammar,
   lessons,
+  libhub,
   library,
   listening,
   progress,

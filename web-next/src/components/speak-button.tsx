@@ -15,8 +15,11 @@ export function SpeakButton({
   label,
   className,
   children,
+  rate,
 }: {
   text: string;
+  /** Tốc độ đọc (mặc định tốc độ chung của app). */
+  rate?: number;
   label?: string;
   className?: string;
   /** Chữ hiển thị cạnh biểu tượng (vd "Nghe"); không có thì chỉ hiện biểu tượng. */
@@ -41,7 +44,7 @@ export function SpeakButton({
     const u = new SpeechSynthesisUtterance(text);
     u.voice = voice;
     u.lang = voice.lang;
-    u.rate = SPEECH_RATE.normal;
+    u.rate = rate ?? SPEECH_RATE.normal;
     u.onend = u.onerror = () => setSpeaking(false);
     setSpeaking(true);
     synth.speak(u);

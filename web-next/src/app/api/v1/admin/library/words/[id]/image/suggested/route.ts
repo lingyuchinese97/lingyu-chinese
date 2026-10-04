@@ -11,6 +11,6 @@ export const PUT = api<{ id: string }>(async ({ user, req, params }) => {
   assertAdmin(user);
   const { title } = suggestedImageSchema.parse(await body(req));
   const r = await setSuggestedImage(wid(params.id), title);
-  revalidatePath("/library/vocabulary");
+  revalidatePath("/library/words");
   return r;
 });

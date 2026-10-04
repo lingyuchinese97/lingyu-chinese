@@ -26,6 +26,21 @@
 
 ### Added
 
+- **Thư viện LingYu — trang chủ + Bộ từ vựng** (theo design mới):
+  - Trang chủ `/library`: danh mục (Từ vựng; Phát âm, Hội thoại & Nghe, Bài đọc dẫn tới mục hiện có; Ngữ pháp, Mẹo học “Sắp có”), tài liệu
+    nổi bật, mới nhất, hướng dẫn sử dụng, chủ đề phổ biến; ô tìm kiếm + lọc trình độ.
+  - `/library/vocabulary`: **15 bộ từ vựng do LingYu biên soạn** (~200 từ: chữ Hán, pinyin, nghĩa Việt / Anh, từ loại, hình minh hoạ, câu
+    ví dụ có pinyin + dịch) — tìm (cả pinyin không dấu, “HSK 2”), lọc HSK / chủ đề / nhóm (Giao tiếp, Thiết yếu, Bộ thủ, Theo tình huống,
+    Yêu thích), sắp xếp, dạng lưới / danh sách, sao yêu thích.
+  - Chi tiết bộ: tiến độ (vòng x/y), danh sách từ có ví dụ, hiện / ẩn pinyin, lọc (chưa học / đã học / yêu thích), đánh dấu đã học, lưu cả
+    bộ vào Từ vựng của tôi, chia sẻ; **Luyện tập**: “Nghe và chọn nghĩa”, “Ghép từ với hình ảnh” (đúng → đánh dấu đã học).
+  - Chi tiết từ: nghĩa, cách phát âm (từng âm tiết + thanh, phát chậm với tốc độ 0.5–1x), ví dụ câu (tô màu từ), hình, bộ thủ & phân tích,
+    từ liên quan, mẹo ghi nhớ, từ trước / sau, danh sách từ trong bộ.
+  - `/library/vocabulary/hsk`: Từ vựng HSK 1–6 (đề cương HSK 3.0) — pinyin, nghĩa, từ loại, ví dụ, mẹo nhớ, đánh dấu đã học, tiến độ.
+  - Từ vựng do admin đăng chuyển sang `/library/words` (link cũ `/library/vocabulary?w=` tự chuyển); menu “Thư viện LingYu” mở trang chủ.
+  - API `/api/v1/library/home|sets|hsk/*`; bảng `library_learned`, `library_favorite` (migration `0013_library_progress`, xoá theo tài
+    khoản).
+
 - **Thư viện LingYu — admin tìm từ, tự phân tích + ảnh gợi ý**: ô nhập trên màn **Thêm từ vựng mới** gợi ý ngay khi gõ (chữ Hán: từ bắt
   đầu bằng phần đã gõ; pinyin / tiếng Việt: từ khớp; kèm HSK), chọn một từ → tự phân tích và tự điền. Sau khi phân tích, hệ thống tự tìm
   **hình ảnh gợi ý** từ Wikimedia (Wikidata P18 theo nhãn tiếng Trung + Commons; ảnh giấy phép tự do); bấm một ảnh để chọn — từ chưa lưu thì

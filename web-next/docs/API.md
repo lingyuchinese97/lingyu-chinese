@@ -256,6 +256,23 @@ Nội dung do LingYu (admin) soạn và **public**. Bản nháp không bao giờ
 | `GET /library/words/{id}/image` | Ảnh minh hoạ (ảnh, không phải JSON)                                                                                                                                                   |
 | `POST /library/words/{id}/save` | Lưu vào Từ vựng của tôi (thẻ “Thư viện LingYu” + HSK); đã có Hán tự đó → bỏ qua → `{ saved, added }`                                                                                  |
 
+**Bộ từ vựng** biên soạn sẵn (15 bộ theo chủ đề, nội dung trong `src/data/library/vocab-sets.ts`). Đã học / yêu thích là của riêng mỗi người;
+`{word}` là Hán tự mã hoá URL. Bộ / từ không có → `404`.
+
+| Route                                                   | Mô tả                                                                                                                                                            |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /library/home`                                     | Trang chủ Thư viện: số bộ / từ, bộ nổi bật, mới nhất, chủ đề                                                                                                     |
+| `GET /library/sets`                                     | Query `q`, `hsk`, `topic`, `kind` (`all`\|`topic`\|`communication`\|`essential`\|`radical`\|`situation`\|`favorite`), `sort` (`order`\|`newest`\|`name`\|`size`) |
+| `GET /library/sets/{id}`                                | Các từ (pinyin, nghĩa, từ loại, emoji, ví dụ) + `learned` / `favorite` / `saved` của mình                                                                        |
+| `PUT\|DELETE /library/sets/{id}/favorite`               | Yêu thích / bỏ yêu thích bộ                                                                                                                                      |
+| `POST /library/sets/{id}/save`                          | Lưu cả bộ vào Từ vựng của tôi (tag = tên bộ + HSK; từ đã có bỏ qua) → `{ added, skipped }`                                                                       |
+| `GET /library/sets/{id}/words/{word}`                   | Chi tiết từ: âm tiết + thanh, ví dụ, bộ thủ, từ liên quan, cách nhớ, từ trước / sau                                                                              |
+| `PUT\|DELETE /library/sets/{id}/words/{word}/learned`   | Đánh dấu / bỏ đã học → `{ learned, progress: { learned, total } }`                                                                                               |
+| `PUT\|DELETE /library/sets/{id}/words/{word}/favorite`  | Yêu thích / bỏ yêu thích từ                                                                                                                                      |
+| `POST /library/sets/{id}/words/{word}/save`             | Lưu một từ vào Từ vựng của tôi                                                                                                                                   |
+| `GET /library/hsk/{level}`                              | Từ vựng HSK 1–6 (`q`, `page`; 30 từ / trang): pinyin, nghĩa, từ loại, ví dụ, cách nhớ, đã học                                                                    |
+| `PUT\|DELETE /library/hsk/{level}/words/{word}/learned` | Đánh dấu đã học một từ HSK (từ không thuộc cấp → `404`)                                                                                                          |
+
 Admin (`/api/v1/admin/library`, người thường → `403`):
 
 | Route                                           | Mô tả                                                                                                                                |
