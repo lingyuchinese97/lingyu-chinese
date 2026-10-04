@@ -11,6 +11,6 @@ export const POST = api<{ id: string }>(async ({ user, req, params }) => {
   assertAdmin(user);
   const { public: isPublic } = z.object({ public: z.boolean() }).parse(await body(req));
   const r = await setWordStatus(wid(params.id), isPublic);
-  revalidatePath("/library/vocabulary");
+  revalidatePath("/library/words");
   return r;
 });

@@ -1,3 +1,4 @@
+import { LIB_SET_KINDS, LIB_SET_TOPICS } from "@/data/library/vocab-sets";
 import { z } from "zod";
 import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "@/features/vocabulary/schema";
 import { customConfigSchema, dueConfigSchema } from "@/features/review/schema";
@@ -90,6 +91,13 @@ const pathId = (description: string) => ({
   required: true,
   description,
   schema: { type: "string", format: "uuid" },
+});
+const pathStr = (name: string, description: string) => ({
+  name,
+  in: "path",
+  required: true,
+  description,
+  schema: { type: "string" },
 });
 const q = (name: string, schema: Schema, description?: string) => ({
   name,
@@ -742,6 +750,162 @@ export function openApiDocument() {
             content: obj({ vocab: int, sentences: int, grammar: int, listening: int }),
           }),
           errors: [403],
+        }),
+      },
+      "/api/v1/library/home": {
+        get: op(LIB, {
+          summary: "Trang chủ Thư viện: số bộ / số từ, bộ nổi bật, bộ mới nhất, chủ đề",
+          data: obj({
+            sets: int,
+            words: int,
+            featured: { type: "array" },
+            newest: { type: "array" },
+            topics: { type: "array" },
+          }),
+        }),
+      },
+      "/api/v1/library/hsk/{level}": {
+        get: op(LIB, {
+          summary: "Từ vựng HSK một cấp (30 từ / trang): pinyin, nghĩa, từ loại, ví dụ, cách nhớ, đã học (của mình)",
+          params: [
+            { name: "level", in: "path", required: true, schema: { type: "integer", minimum: 1, maximum: 6 } },
+            q("q", { type: "string" }),
+            q("page", { type: "integer", minimum: 1 }),
+          ],
+          data: obj({
+            level: int,
+            items: { type: "array" },
+            total: int,
+            levelTotal: int,
+            learned: int,
+            page: int,
+            pageCount: int,
+          }),
+        }),
+      },
+      "/api/v1/library/hsk/{level}/words/{word}/learned": {
+        put: op(LIB, {
+          summary: "Đánh dấu đã học một từ HSK",
+          params: [
+            { name: "level", in: "path", required: true, schema: { type: "integer", minimum: 1, maximum: 6 } },
+            pathStr("word", "Hán tự (mã hoá URL)"),
+          ],
+          data: obj({ learned: { type: "boolean" } }),
+          errors: [404],
+        }),
+        delete: op(LIB, {
+          summary: "Bỏ đánh dấu đã học một từ HSK",
+          params: [
+            { name: "level", in: "path", required: true, schema: { type: "integer", minimum: 1, maximum: 6 } },
+            pathStr("word", "Hán tự (mã hoá URL)"),
+          ],
+          data: obj({ learned: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/sets": {
+        get: op(LIB, {
+          summary: "Bộ từ vựng LingYu biên soạn (kèm tiến độ đã học + yêu thích của mình)",
+          params: [
+            q("q", { type: "string" }, 'Tên bộ, chữ Hán, pinyin, nghĩa; hoặc "HSK 1"'),
+            q("hsk", { type: "integer", minimum: 0, maximum: 6 }, "0 = tất cả"),
+            q("topic", { enum: ["", ...LIB_SET_TOPICS] }),
+            q("kind", { enum: ["all", ...LIB_SET_KINDS, "favorite"] }),
+            q("sort", { enum: ["order", "newest", "name", "size"] }),
+          ],
+          data: obj({ items: { type: "array" }, total: int, all: int, featured: { type: "array" }, totalWords: int }),
+        }),
+      },
+      "/api/v1/library/sets/{id}": {
+        get: op(LIB, {
+          summary: "Một bộ từ vựng: các từ (pinyin, nghĩa, từ loại, ví dụ) + learned / favorite / saved theo người xem",
+          params: [pathStr("id", "id bộ từ vựng, vd trai-cay")],
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/sets/{id}/favorite": {
+        put: op(LIB, {
+          summary: "Yêu thích bộ",
+          params: [pathStr("id", "id bộ từ vựng, vd trai-cay")],
+          data: obj({ favorite: { type: "boolean" } }),
+          errors: [404],
+        }),
+        delete: op(LIB, {
+          summary: "Bỏ yêu thích bộ",
+          params: [pathStr("id", "id bộ từ vựng, vd trai-cay")],
+          data: obj({ favorite: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/sets/{id}/save": {
+        post: op(LIB, {
+          summary: "Lưu cả bộ vào Từ vựng của tôi (tag = tên bộ + HSK; từ đã có bỏ qua)",
+          params: [pathStr("id", "id bộ từ vựng, vd trai-cay")],
+          data: obj({ added: int, skipped: int }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/sets/{id}/words/{word}": {
+        get: op(LIB, {
+          summary: "Một từ trong bộ: âm tiết + thanh, ví dụ, bộ thủ, từ liên quan, cách nhớ, từ trước / sau",
+          params: [
+            pathStr("id", "id bộ từ vựng, vd trai-cay"),
+            pathStr("word", "Hán tự của từ (mã hoá URL), vd %E8%8B%B9%E6%9E%9C = 苹果"),
+          ],
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/sets/{id}/words/{word}/learned": {
+        put: op(LIB, {
+          summary: "Đánh dấu đã học",
+          params: [
+            pathStr("id", "id bộ từ vựng, vd trai-cay"),
+            pathStr("word", "Hán tự của từ (mã hoá URL), vd %E8%8B%B9%E6%9E%9C = 苹果"),
+          ],
+          data: obj({ learned: { type: "boolean" }, progress: obj({ learned: int, total: int }) }),
+          errors: [404],
+        }),
+        delete: op(LIB, {
+          summary: "Bỏ đánh dấu đã học",
+          params: [
+            pathStr("id", "id bộ từ vựng, vd trai-cay"),
+            pathStr("word", "Hán tự của từ (mã hoá URL), vd %E8%8B%B9%E6%9E%9C = 苹果"),
+          ],
+          data: obj({ learned: { type: "boolean" }, progress: obj({ learned: int, total: int }) }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/sets/{id}/words/{word}/favorite": {
+        put: op(LIB, {
+          summary: "Yêu thích từ",
+          params: [
+            pathStr("id", "id bộ từ vựng, vd trai-cay"),
+            pathStr("word", "Hán tự của từ (mã hoá URL), vd %E8%8B%B9%E6%9E%9C = 苹果"),
+          ],
+          data: obj({ favorite: { type: "boolean" } }),
+          errors: [404],
+        }),
+        delete: op(LIB, {
+          summary: "Bỏ yêu thích từ",
+          params: [
+            pathStr("id", "id bộ từ vựng, vd trai-cay"),
+            pathStr("word", "Hán tự của từ (mã hoá URL), vd %E8%8B%B9%E6%9E%9C = 苹果"),
+          ],
+          data: obj({ favorite: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/sets/{id}/words/{word}/save": {
+        post: op(LIB, {
+          summary: "Lưu một từ vào Từ vựng của tôi",
+          params: [
+            pathStr("id", "id bộ từ vựng, vd trai-cay"),
+            pathStr("word", "Hán tự của từ (mã hoá URL), vd %E8%8B%B9%E6%9E%9C = 苹果"),
+          ],
+          data: obj({ added: int, skipped: int }),
+          errors: [404],
         }),
       },
       "/api/v1/library/words": {

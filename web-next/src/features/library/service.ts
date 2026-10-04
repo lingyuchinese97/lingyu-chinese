@@ -341,3 +341,9 @@ export async function saveToMyVocab(userId: string, id: string) {
   const r = await createMany(userId, [item]);
   return { saved: true, added: r.added.length > 0 };
 }
+
+/** Số từ admin đã public (để hiện lối vào ở trang chủ Thư viện). */
+export async function publicWordCount() {
+  const [r] = await db.select({ n: count() }).from(libraryWord).where(eq(libraryWord.status, "public"));
+  return r?.n ?? 0;
+}

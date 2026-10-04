@@ -1,39 +1,34 @@
 import type { Metadata } from "next";
-import { z } from "zod";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/server/session";
-import { getT } from "@/i18n/server";
-import { libListSchema } from "@/features/library/schema";
-import { getPublicWord, LibraryError, listPublicWords, type PublicWord } from "@/features/library/service";
-import { LibraryVocab } from "@/features/library/components/library-vocab";
+import { getLocale, getT } from "@/i18n/server";
+import { setListSchema } from "@/features/library/schema";
+import { listSets } from "@/features/library/sets";
+import { SetList } from "@/features/library/components/hub/set-list";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  return { title: `${t("library.vocabTitle")} · ${t("library.nav")}` };
+  return { title: `${t("libhub.vocabTitle")} · ${t("libhub.title")}` };
 }
 export const dynamic = "force-dynamic";
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-export default async function LibraryVocabPage({ searchParams }: { searchParams: SP }) {
+/** Thư viện LingYu — các bộ từ vựng. Link cũ `?w=<id>` (từ admin đăng) → /library/words. */
+export default async function LibraryVocabularyPage({ searchParams }: { searchParams: SP }) {
   const user = await requireUser();
   const sp = await searchParams;
-  const params = libListSchema.parse({
+  const w = one(sp.w);
+  if (w) redirect(`/library/words?w=${encodeURIComponent(w)}`);
+  const params = setListSchema.parse({
     q: one(sp.q) ?? "",
-    hsk: one(sp.hsk) ?? 1,
+    hsk: one(sp.hsk) ?? 0,
     topic: one(sp.topic) ?? "",
+    kind: one(sp.kind) ?? "all",
     sort: one(sp.sort) ?? "order",
+    view: one(sp.view) ?? "grid",
   });
-  const data = await listPublicWords(user.id, params);
-  const wanted = z.uuid().safeParse(one(sp.w));
-  const id = wanted.success ? wanted.data : data.items[0]?.id;
-  let selected: PublicWord | null = null;
-  if (id) {
-    try {
-      selected = await getPublicWord(user.id, id);
-    } catch (e) {
-      if (!(e instanceof LibraryError)) throw e;
-    }
-  }
-  return <LibraryVocab data={data} params={params} selected={selected} picked={wanted.success} />;
+  const data = await listSets(user.id, params, await getLocale());
+  return <SetList data={data} params={params} />;
 }

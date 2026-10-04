@@ -659,3 +659,36 @@ export const libraryWord = pgTable(
     index("library_word_status_hsk_idx").on(t.status, t.hskLevel),
   ],
 );
+
+/**
+ * Thư viện LingYu — trạng thái riêng của từng người học với nội dung thư viện (nội dung nằm trong `src/data/library`).
+ * `kind`: loại nội dung ("vocab-set", "vocab-word"…); `itemId`: id bộ / bài; `key`: phần tử trong đó (vd Hán tự của từ) hoặc "".
+ */
+export const libraryLearned = pgTable(
+  "library_learned",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    itemId: text("item_id").notNull(),
+    key: text("key").notNull().default(""),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.kind, t.itemId, t.key] })],
+);
+
+/** Mục yêu thích trong Thư viện LingYu (bộ từ vựng, từ trong bộ…). */
+export const libraryFavorite = pgTable(
+  "library_favorite",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    itemId: text("item_id").notNull(),
+    key: text("key").notNull().default(""),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.kind, t.itemId, t.key] })],
+);

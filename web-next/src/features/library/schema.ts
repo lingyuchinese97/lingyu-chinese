@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LIB_SET_KINDS, LIB_SET_TOPICS } from "@/data/library/vocab-sets";
 import { T_TOPICS } from "@/data/translation/items";
 
 /** Từ loại cho từ trong thư viện (nhãn: `library.pos.<khoá>`). */
@@ -96,4 +97,25 @@ export const suggestedImageSchema = z.object({
     .string()
     .trim()
     .regex(/^File:[^\x00-\x1f|#<>[\]{}]{1,240}$/u, "Ảnh gợi ý không hợp lệ."),
+});
+
+// ---------- Bộ từ vựng (nội dung biên soạn sẵn) ----------
+
+export const LIB_SET_SORTS = ["newest", "order", "name", "size"] as const;
+export const setListSchema = z.object({
+  q: z.string().trim().max(60).catch(""),
+  hsk: z.coerce.number().int().min(0).max(6).catch(0),
+  topic: z.enum([...LIB_SET_TOPICS, ""]).catch(""),
+  kind: z.enum([...LIB_SET_KINDS, "all", "favorite"]).catch("all"),
+  sort: z.enum(LIB_SET_SORTS).catch("order"),
+  view: z.enum(["grid", "list"]).catch("grid"),
+});
+export type SetListParams = z.infer<typeof setListSchema>;
+/** Id bộ từ vựng ("trai-cay") và Hán tự của từ trong bộ (đã giải mã URL). */
+export const setIdSchema = z.string().regex(/^[a-z0-9-]{1,40}$/);
+export const setWordSchema = z.string().trim().min(1).max(12);
+export const hskListSchema = z.object({
+  level: z.coerce.number().int().min(1).max(6).catch(1),
+  q: z.string().trim().max(40).catch(""),
+  page: z.coerce.number().int().min(1).max(1000).catch(1),
 });

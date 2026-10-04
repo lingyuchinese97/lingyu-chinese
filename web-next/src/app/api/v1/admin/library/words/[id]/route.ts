@@ -21,12 +21,12 @@ export const PUT = api<P>(async ({ user, req, params }) => {
     .object({ word: libWordInputSchema, publish: z.boolean().optional() })
     .parse(await body(req));
   await updateWord(id, word, publish);
-  revalidatePath("/library/vocabulary");
+  revalidatePath("/library/words");
   return adminGetWord(id);
 });
 export const DELETE = api<P>(async ({ user, params }) => {
   assertAdmin(user);
   const r = await deleteWord(wid(params.id));
-  revalidatePath("/library/vocabulary");
+  revalidatePath("/library/words");
   return r;
 });

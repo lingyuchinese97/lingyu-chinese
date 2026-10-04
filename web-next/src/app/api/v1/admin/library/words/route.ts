@@ -18,7 +18,7 @@ export const POST = api(
       .object({ word: libWordInputSchema, publish: z.boolean().default(false) })
       .parse(await body(req));
     const id = await createWord(user.id, word, publish);
-    revalidatePath("/library/vocabulary");
+    revalidatePath("/library/words");
     return { id };
   },
   { status: 201 },

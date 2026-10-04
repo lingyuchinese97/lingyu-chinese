@@ -93,7 +93,7 @@ export function LibraryVocab({
         </Link>
         <span aria-hidden="true">/</span>
         <span aria-current="page" className="font-semibold text-navy-900">
-          {t("library.vocabTitle")}
+          {t("libhub.oldWords")}
         </span>
       </nav>
 

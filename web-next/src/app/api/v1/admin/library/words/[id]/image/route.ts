@@ -12,12 +12,12 @@ export const PUT = api<P>(async ({ user, req, params }) => {
   assertAdmin(user);
   const { data } = z.object({ data: z.string().max(1_500_000) }).parse(await body(req));
   const r = await setWordImage(wid(params.id), parseLibImage(Buffer.from(data, "base64")));
-  revalidatePath("/library/vocabulary");
+  revalidatePath("/library/words");
   return r;
 });
 export const DELETE = api<P>(async ({ user, params }) => {
   assertAdmin(user);
   const r = await setWordImage(wid(params.id), null);
-  revalidatePath("/library/vocabulary");
+  revalidatePath("/library/words");
   return r;
 });
