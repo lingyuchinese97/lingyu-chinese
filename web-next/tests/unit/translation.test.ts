@@ -159,6 +159,49 @@ describe("bài luyện dịch", () => {
     expect(p.items.every((i) => i.zh.includes("咖啡"))).toBe(true);
   });
 
+  it("theo từ vựng của tôi: câu quen nhất (ít từ mới nhất) lên trước; mỗi câu ghi rõ từ mới, có pinyin + nghĩa", async () => {
+    const U = await makeUser("trv2");
+    // Đủ để phủ trọn s001 "我每天早上七点起床。" (每天 / 早上 / 七点 / 起床 + 我).
+    for (const [hanzi, pinyin, meaningVi] of [
+      ["我", "wǒ", "tôi"],
+      ["每天", "měi tiān", "mỗi ngày"],
+      ["早上", "zǎo shang", "buổi sáng"],
+      ["七点", "qī diǎn", "bảy giờ"],
+      ["起床", "qǐ chuáng", "thức dậy"],
+      // Có trong vài câu khác (các câu đó còn nhiều từ mới) → phải xếp sau s001.
+      ["咖啡", "kāfēi", "cà phê"],
+    ])
+      await createVocab(U, vocabInputSchema.parse({ hanzi, pinyin, meaningVi }));
+    const p = await tr.pickItems(U, cfg({ source: "vocab", count: 20, level: 1 }));
+    expect(p.items[0]!.id).toBe("s001");
+    const id = await tr.createTranslationSession(
+      U,
+      cfg({ source: "vocab", count: 20, level: 1, direction: "from-zh" }),
+    );
+    const s = await tr.getTranslationSession(U, id);
+    expect(s.questions[0]).toMatchObject({ newWordCount: 0, newWords: [] });
+    const other = s.questions.find((q) => (q.newWordCount ?? 0) > 0)!;
+    expect(other.newWords!.length).toBe(other.newWordCount);
+    for (const w of other.newWords!) {
+      expect(w.zh).toMatch(/\p{Script=Han}/u);
+      expect(w.py).toBeTruthy();
+      // Từ mới không bao giờ là từ đã có trong kho.
+      expect(["我", "每天", "早上", "七点", "起床"]).not.toContain(w.zh);
+    }
+  });
+
+  it("từ mới khi dịch sang tiếng Trung: chỉ báo số từ, danh sách hiện sau khi xem gợi ý (không lộ đáp án)", async () => {
+    const U = await makeUser("trv3");
+    await createVocab(U, vocabInputSchema.parse({ hanzi: "咖啡", pinyin: "kāfēi", meaningVi: "cà phê" }));
+    const id = await tr.createTranslationSession(U, cfg({ source: "vocab", count: 1, direction: "to-zh" }));
+    let q = (await tr.getTranslationSession(U, id)).questions[0]!;
+    expect(q.newWordCount).toBeGreaterThan(0);
+    expect(q.newWords).toBeUndefined();
+    await tr.hintTranslation(U, id, 0);
+    q = (await tr.getTranslationSession(U, id)).questions[0]!;
+    expect(q.newWords!.map((w) => w.zh)).not.toContain("咖啡");
+  });
+
   it("lưu câu mẫu vào Kho câu của tôi (trùng → duplicate); người khác không thấy", async () => {
     const r = await tr.saveItemToBank(A, "s019", "vi");
     expect(r.id).toBeTruthy();

@@ -34,6 +34,7 @@ import {
   skipTranslationAction,
 } from "../actions";
 import { ItemExplain } from "./item-explain";
+import { NewWords } from "./new-words";
 import { formatDuration } from "./format";
 
 export function TranslateSession({ initial }: { initial: ClientTranslationSession }) {
@@ -197,6 +198,8 @@ export function TranslateSession({ initial }: { initial: ClientTranslationSessio
                 {!toZh ? <SpeakButton text={q.prompt.text} label={t("ui.listen", { text: q.prompt.text })} /> : null}
               </div>
             </div>
+
+            <NewWords q={q} key={`nw-${index}`} />
 
             {q.hintWords || q.hintGrammar ? (
               <div className="grid gap-2 rounded-2xl border border-[#F6DE9E] bg-[#FFF9EA] p-3.5 text-[14.5px]">

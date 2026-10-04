@@ -14,6 +14,7 @@ import { recordActivity, vocabByHsk } from "@/features/progress/service";
 import { createSentence } from "@/features/sentences/service";
 import { sentenceInputSchema } from "@/features/sentences/schema";
 import { T_MAX_ELAPSED, type BankQuery, type TDirection, type TranslationConfig } from "./schema";
+import { coverage, newWordsOf, type NewWord } from "./coverage";
 
 export class TranslationError extends Error {
   constructor(
@@ -47,6 +48,8 @@ type Stored = {
   hints: number;
   overridden?: boolean;
   similarity?: number;
+  /** Từ trong câu chưa có trong Từ vựng của tôi (tính lúc tạo bài; bài cũ không có). */
+  newWords?: NewWord[];
 };
 type Row = typeof translationSession.$inferSelect;
 
@@ -269,6 +272,12 @@ async function ownGrammarItems(userId: string, ids: string[], type: TItem["type"
   return { custom, matched };
 }
 
+/** Hán tự các từ trong Từ vựng của tôi. */
+async function knownWords(userId: string) {
+  const rows = await db.select({ hanzi: vocab.hanzi }).from(vocab).where(eq(vocab.userId, userId));
+  return new Set(rows.map((r) => r.hanzi.trim()).filter(Boolean));
+}
+
 export async function pickItems(userId: string, cfg: Omit<TranslationConfig, "lang">) {
   let pool: AnyItem[] = T_ITEMS.filter(
     (i) => i.type === cfg.type && (!cfg.level || i.level === cfg.level) && (!cfg.topic || i.topic === cfg.topic),
@@ -279,13 +288,10 @@ export async function pickItems(userId: string, cfg: Omit<TranslationConfig, "la
     const ids = new Set<string>();
     pool = [...own.custom, ...sys, ...own.matched].filter((i) => !ids.has(i.id) && (ids.add(i.id), true));
   }
+  const mine = await knownWords(userId);
   if (cfg.source === "vocab") {
-    const mine = (await db.select({ hanzi: vocab.hanzi }).from(vocab).where(eq(vocab.userId, userId))).map(
-      (r) => r.hanzi,
-    );
-    const set = new Set(mine);
-    const long = mine.filter((h) => [...h].length >= 2);
-    pool = pool.filter((i) => i.words.some((w) => set.has(w.zh)) || long.some((h) => i.zh.includes(h)));
+    const long = [...mine].filter((h) => [...h].length >= 2);
+    pool = pool.filter((i) => i.words.some((w) => mine.has(w.zh)) || long.some((h) => i.zh.includes(h)));
   }
   const seen = await lastSeen(userId);
   const est = cfg.level ? cfg.level : await estimateLevel(userId);
@@ -293,19 +299,21 @@ export async function pickItems(userId: string, cfg: Omit<TranslationConfig, "la
   // Chọn theo ngữ pháp là người học tự chọn → không giới hạn cấp.
   if (!cfg.level && cfg.source !== "grammar") pool = pool.filter((i) => isCustom(i) || i.level <= est + 1);
   // Câu chưa làm trước; đã làm thì câu làm lâu nhất trước (làm lại → ra câu khác); rồi đúng trình độ; rồi ngẫu nhiên.
+  // Theo Từ vựng của tôi: câu quen nhất trước (ít từ mới nhất; chia nấc 25% để vẫn đổi câu giữa các lần làm).
   const scored = shuffle(pool).map((i) => ({
     i,
     seen: seen.get(i.id) ?? 0,
     lv: isCustom(i) ? 0 : Math.abs(i.level - est),
+    fam: cfg.source === "vocab" ? Math.floor(coverage(i.zh, mine) * 4) : 0,
   }));
-  scored.sort((a, b) => a.seen - b.seen || a.lv - b.lv);
-  return { items: scored.slice(0, cfg.count).map((s) => s.i), level: est };
+  scored.sort((a, b) => b.fam - a.fam || a.seen - b.seen || a.lv - b.lv);
+  return { items: scored.slice(0, cfg.count).map((s) => s.i), level: est, known: mine };
 }
 
 // ---------- Phiên ----------
 
 export async function createTranslationSession(userId: string, cfg: TranslationConfig) {
-  const { items } = await pickItems(userId, cfg);
+  const { items, known } = await pickItems(userId, cfg);
   if (!items.length) throw new TranslationError("empty", "Không có câu mẫu nào phù hợp. Hãy đổi lựa chọn.");
   const questions: Stored[] = items.map((i, n) => ({
     itemId: i.id,
@@ -314,6 +322,7 @@ export async function createTranslationSession(userId: string, cfg: TranslationC
     userAnswer: null,
     result: null,
     hints: 0,
+    newWords: newWordsOf(i, known),
   }));
   await db
     .update(translationSession)
@@ -355,6 +364,12 @@ function toClient(row: Row) {
           : { text: item.zh, ...(cfg.showPinyin ? { py: item.py } : {}) },
         hints: q.hints,
         ...(q.hints >= 1 || answered ? { hintWords: wordsOf(item, l) } : {}),
+        // Từ mới (chưa có trong Từ vựng của tôi): câu tiếng Trung → hiện ngay; dịch sang tiếng Trung → chỉ báo số từ,
+        // danh sách hiện khi xem gợi ý hoặc đã trả lời (để không lộ đáp án).
+        ...(q.newWords ? { newWordCount: q.newWords.length } : {}),
+        ...(q.newWords && (!toZh || q.hints >= 1 || answered)
+          ? { newWords: q.newWords.map((w) => ({ zh: w.zh, py: w.py, meaning: l === "en" ? w.en : w.vi })) }
+          : {}),
         ...(q.hints >= 2 || answered
           ? { hintGrammar: grammarOf(item, l).map(({ name, structure }) => ({ name, structure })) }
           : {}),
