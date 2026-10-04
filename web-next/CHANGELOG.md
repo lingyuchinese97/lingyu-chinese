@@ -6,6 +6,10 @@
 
 ### Changed
 
+- **Luyện dịch theo “Từ vựng của tôi” — ưu tiên câu quen, báo rõ từ mới**: câu có nhiều từ trong kho của bạn nhất (ít từ mới nhất) được
+  chọn trước. Mỗi câu hiện khối **“Từ mới trong câu”** (từ chưa có trong Từ vựng của tôi, kèm pinyin + nghĩa) với nút **+** thêm nhanh vào
+  kho (tag “Luyện dịch”). Dịch sang tiếng Trung: chỉ báo số từ mới, danh sách hiện khi xem gợi ý hoặc đã trả lời (không lộ đáp án). API
+  bài luyện dịch trả thêm `newWordCount`, `newWords`.
 - **Nút loa (Từ vựng, Ngữ pháp, Thư viện LingYu, Ôn dịch câu, Trang chủ) đọc chậm hơn**: tốc độ giọng đọc 0,55 → 0,35
   (`SPEECH_RATE.normal`; Phát âm & Biến điệu vẫn dùng tốc độ riêng, chỉnh được).
 - **Từ vựng của tôi — thẻ tag xếp A → Z** (trước: nhiều từ trước); số so theo giá trị (“HSK1_Bài 2” trước “HSK1_Bài 10”), không phân biệt

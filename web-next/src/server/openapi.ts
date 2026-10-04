@@ -1602,7 +1602,8 @@ export function openApiDocument() {
       },
       "/api/v1/translation/sessions/{id}": {
         get: op(TR, {
-          summary: "Một bài của tôi (đã xong thì có đủ lời giải). Bài của người khác → 404",
+          summary:
+            "Một bài của tôi (đã xong thì có đủ lời giải). Mỗi câu có newWordCount + newWords[{ zh, py, meaning }] (từ chưa có trong Từ vựng của tôi; dịch sang tiếng Trung: danh sách chỉ hiện sau gợi ý / trả lời). Bài của người khác → 404",
           params: [pathId("id bài")],
           data: { type: "object" },
           errors: [404],

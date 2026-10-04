@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { T_ITEMS } from "../../src/data/translation/items";
 import { register } from "./helpers";
+import { resetRateLimit } from "./db";
+
+test.beforeEach(() => resetRateLimit());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const data = async (r: { json: () => Promise<any> }) => (await r.json()).data;
@@ -145,4 +148,33 @@ test("API Luyện dịch: 401, tạo bài, không lộ đáp án, chấm, 404 v�
 
   expect((await api.post("/api/v1/translation/bank/s019/save")).status()).toBe(201);
   expect((await api.post("/api/v1/translation/bank/s019/save")).status()).toBe(409);
+});
+
+test("Luyện dịch theo Từ vựng của tôi: câu quen trước, báo từ mới (pinyin + nghĩa), thêm nhanh vào kho", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "Luồng dữ liệu — chạy một lần");
+  await register(page, "Người Dịch Từ", "trv");
+  for (const [hanzi, pinyin, meaningVi] of [
+    ["我", "wǒ", "tôi"],
+    ["每天", "měi tiān", "mỗi ngày"],
+    ["早上", "zǎo shang", "buổi sáng"],
+    ["咖啡", "kāfēi", "cà phê"],
+  ])
+    await page.request.post("/api/v1/vocab", { data: { hanzi, pinyin, meaningVi } });
+  const r = await page.request.post("/api/v1/translation/sessions", {
+    data: { source: "vocab", direction: "from-zh", count: 5, level: 1 },
+  });
+  expect(r.status()).toBe(201);
+  await page.goto("/translate/session");
+  const box = page.getByRole("region", { name: /^Từ mới trong câu \(\d+\)/ });
+  await expect(box).toBeVisible();
+  // Từ đã có trong kho không bao giờ bị báo là từ mới.
+  for (const w of ["我", "每天", "早上", "咖啡"]) await expect(box.getByText(w, { exact: true })).toHaveCount(0);
+  const add = box.getByRole("button", { name: /^Thêm “.+” vào Từ vựng của tôi$/ }).first();
+  const word = (await add.getAttribute("aria-label"))!.match(/“(.+)”/)![1]!;
+  await add.click();
+  await expect(page.getByText(`Đã thêm “${word}” vào Từ vựng của tôi.`)).toBeVisible();
+  const mine = await data(await page.request.get(`/api/v1/vocab?q=${encodeURIComponent(word)}`));
+  expect(mine.items.find((x: { hanzi: string }) => x.hanzi === word)).toMatchObject({ tags: ["Luyện dịch"] });
 });
