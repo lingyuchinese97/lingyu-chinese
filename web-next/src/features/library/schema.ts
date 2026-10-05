@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LIB_SET_KINDS, LIB_SET_TOPICS } from "@/data/library/vocab-sets";
+import { LIB_GRAMMAR_TOPICS } from "@/data/library/grammar";
 import { T_TOPICS } from "@/data/translation/items";
 
 /** Từ loại cho từ trong thư viện (nhãn: `library.pos.<khoá>`). */
@@ -119,3 +120,16 @@ export const hskListSchema = z.object({
   q: z.string().trim().max(40).catch(""),
   page: z.coerce.number().int().min(1).max(1000).catch(1),
 });
+
+// ---------- Ngữ pháp (bài biên soạn sẵn) ----------
+
+export const LIB_GRAMMAR_SORTS = ["order", "newest", "name"] as const;
+export const grammarListSchema = z.object({
+  q: z.string().trim().max(60).catch(""),
+  hsk: z.coerce.number().int().min(0).max(6).catch(0),
+  topic: z.enum([...LIB_GRAMMAR_TOPICS, ""]).catch(""),
+  status: z.enum(["all", "learned", "todo", "favorite"]).catch("all"),
+  sort: z.enum(LIB_GRAMMAR_SORTS).catch("order"),
+  view: z.enum(["grid", "list"]).catch("grid"),
+});
+export type GrammarListParams = z.infer<typeof grammarListSchema>;

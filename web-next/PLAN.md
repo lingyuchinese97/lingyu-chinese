@@ -194,6 +194,11 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     có test kiểm tra từng từ (pinyin đúng số âm tiết, câu ví dụ chứa đúng từ), không cần seed DB. Trạng thái của người học (đã học, yêu thích)
     ở DB, bảng chung `library_learned` / `library_favorite` (`kind` + `itemId` + `key`) để dùng lại cho ngữ pháp / bài nghe / bài đọc sau này.
     Hình minh hoạ dùng emoji (không tải ảnh ngoài, nhẹ, rõ trên mọi máy). Bộ thủ / từ liên quan / cách nhớ phân tích tự động từ dữ liệu có sẵn.
+47. **Ngữ pháp Thư viện LingYu**: bài biên soạn sẵn (`src/data/library/grammar.ts`, HSK 1–3), cấu trúc lưu theo từng phần có vai trò
+    (`subj` / `key` / `slot` / `end`) để tô màu. Đã học / yêu thích dùng lại `library_learned` / `library_favorite` (`kind = "grammar"`).
+    Bài tập nhanh chấm ở trình duyệt (nội dung công khai, không cần lưu điểm). "Lưu" = chép bài thành một mục trong Ngữ pháp của tôi
+    (tiêu đề "{chữ Hán} – {nghĩa}", tag "Thư viện LingYu" + HSK) để người học viết ghi chú riêng / chia sẻ như bài tự tạo; nhận ra bài đã lưu
+    theo tiêu đề (cả hai ngôn ngữ) nên bấm lại không tạo bản trùng.
 
 ## Chỗ mơ hồ & cách xử lý
 

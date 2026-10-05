@@ -12,6 +12,7 @@ import {
   suggestedImageSchema,
 } from "./schema";
 import * as sets from "./sets";
+import * as libGrammar from "./grammar";
 import { getLocale } from "@/i18n/server";
 import { suggestImages, type ImageSuggestion } from "./image-suggest";
 import { analyzeWord, findCandidates, type Analysis, type Candidate } from "./analyze";
@@ -225,6 +226,50 @@ export async function setHskLearnedAction(
     const r = await sets.setHskLearned(u.id, z.number().int().parse(level), setWordSchema.parse(zh), on);
     revalidatePath("/library/vocabulary/hsk");
     return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ---------- Ngữ pháp (bài biên soạn sẵn) ----------
+
+const refreshGrammar = (id: string) => {
+  revalidatePath("/library/grammar");
+  revalidatePath(`/library/grammar/${id}`);
+};
+
+export async function setGrammarLearnedAction(
+  id: string,
+  on: boolean,
+): Promise<ActionResult<{ learned: boolean; progress: { learned: number; total: number } }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const r = await libGrammar.setLibGrammarLearned(u.id, setIdSchema.parse(id), on);
+    refreshGrammar(id);
+    return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function setGrammarFavoriteAction(id: string, on: boolean): Promise<ActionResult<{ favorite: boolean }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const r = await libGrammar.setLibGrammarFavorite(u.id, setIdSchema.parse(id), on);
+    refreshGrammar(id);
+    return { ok: true, data: r };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function saveGrammarAction(id: string): Promise<ActionResult<{ added: boolean }>> {
+  try {
+    const u = await currentUserOrThrow();
+    const r = await libGrammar.saveLibGrammarToMine(u.id, setIdSchema.parse(id), await getLocale());
+    revalidatePath("/grammar");
+    refreshGrammar(id);
+    return { ok: true, data: { added: r.added } };
   } catch (e) {
     return fail(e);
   }

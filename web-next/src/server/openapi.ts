@@ -1,4 +1,5 @@
 import { LIB_SET_KINDS, LIB_SET_TOPICS } from "@/data/library/vocab-sets";
+import { LIB_GRAMMAR_TOPICS } from "@/data/library/grammar";
 import { z } from "zod";
 import { idsSchema, STATUS, tagNameSchema, vocabInputSchema } from "@/features/vocabulary/schema";
 import { customConfigSchema, dueConfigSchema } from "@/features/review/schema";
@@ -762,6 +763,71 @@ export function openApiDocument() {
             newest: { type: "array" },
             topics: { type: "array" },
           }),
+        }),
+      },
+      "/api/v1/library/grammar": {
+        get: op(LIB, {
+          summary: "Bài ngữ pháp LingYu biên soạn (kèm đã học / yêu thích của mình) + lộ trình HSK + chủ đề",
+          params: [
+            q("q", { type: "string" }, 'Chữ Hán, pinyin, nghĩa, câu ví dụ; hoặc "HSK 2"'),
+            q("hsk", { type: "integer", minimum: 0, maximum: 6 }, "0 = tất cả"),
+            q("topic", { enum: ["", ...LIB_GRAMMAR_TOPICS] }),
+            q("status", { enum: ["all", "learned", "todo", "favorite"] }),
+            q("sort", { enum: ["order", "newest", "name"] }),
+          ],
+          data: obj({
+            items: { type: "array" },
+            total: int,
+            all: int,
+            learned: int,
+            roadmap: { type: "array" },
+            topics: { type: "array" },
+          }),
+        }),
+      },
+      "/api/v1/library/grammar/{id}": {
+        get: op(LIB, {
+          summary:
+            "Một bài ngữ pháp: giới thiệu, cấu trúc, cách dùng, ý nghĩa, lưu ý, ví dụ, bài tập nhanh, bài cùng cấp, bài liên quan",
+          params: [pathStr("id", "id bài ngữ pháp, vd shi-de")],
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/grammar/{id}/learned": {
+        put: op(LIB, {
+          summary: "Đánh dấu đã học bài ngữ pháp",
+          params: [pathStr("id", "id bài ngữ pháp, vd shi-de")],
+          data: obj({ learned: { type: "boolean" }, progress: obj({ learned: int, total: int }) }),
+          errors: [404],
+        }),
+        delete: op(LIB, {
+          summary: "Bỏ đánh dấu đã học bài ngữ pháp",
+          params: [pathStr("id", "id bài ngữ pháp, vd shi-de")],
+          data: obj({ learned: { type: "boolean" }, progress: obj({ learned: int, total: int }) }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/grammar/{id}/favorite": {
+        put: op(LIB, {
+          summary: "Yêu thích bài ngữ pháp",
+          params: [pathStr("id", "id bài ngữ pháp, vd shi-de")],
+          data: obj({ favorite: { type: "boolean" } }),
+          errors: [404],
+        }),
+        delete: op(LIB, {
+          summary: "Bỏ yêu thích bài ngữ pháp",
+          params: [pathStr("id", "id bài ngữ pháp, vd shi-de")],
+          data: obj({ favorite: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/library/grammar/{id}/save": {
+        post: op(LIB, {
+          summary: "Lưu bài vào Ngữ pháp của tôi (tag Thư viện LingYu + HSK); đã lưu rồi → added: false",
+          params: [pathStr("id", "id bài ngữ pháp, vd shi-de")],
+          data: obj({ added: { type: "boolean" }, id: { type: "string" } }, ["added"]),
+          errors: [404],
         }),
       },
       "/api/v1/library/hsk/{level}": {
