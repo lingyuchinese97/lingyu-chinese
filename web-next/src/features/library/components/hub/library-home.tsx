@@ -30,7 +30,7 @@ type Home = {
 const CATS = [
   { key: "all", href: "/library", icon: Library, color: "bg-blue-600 text-white" },
   { key: "vocab", href: "/library/vocabulary", icon: Languages, color: "bg-[#FFE4E8] text-[#E0302F]" },
-  { key: "grammar", href: null, icon: BookOpen, color: "bg-[#FFF1D6] text-[#C27C0E]" },
+  { key: "grammar", href: "/library/grammar", icon: BookOpen, color: "bg-[#FFF1D6] text-[#C27C0E]" },
   { key: "pron", href: "/pronunciation", icon: AudioLines, color: "bg-[#EFE6FF] text-[#7A45E0]" },
   { key: "listen", href: "/listening", icon: Headphones, color: "bg-[#DDF6E6] text-[#1E9E5A]" },
   { key: "reading", href: "/reading", icon: BookOpenText, color: "bg-[#E1EEFF] text-[#2C6FDB]" },

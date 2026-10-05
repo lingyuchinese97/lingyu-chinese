@@ -272,6 +272,11 @@ Nội dung do LingYu (admin) soạn và **public**. Bản nháp không bao giờ
 | `POST /library/sets/{id}/words/{word}/save`             | Lưu một từ vào Từ vựng của tôi                                                                                                                                   |
 | `GET /library/hsk/{level}`                              | Từ vựng HSK 1–6 (`q`, `page`; 30 từ / trang): pinyin, nghĩa, từ loại, ví dụ, cách nhớ, đã học                                                                    |
 | `PUT\|DELETE /library/hsk/{level}/words/{word}/learned` | Đánh dấu đã học một từ HSK (từ không thuộc cấp → `404`)                                                                                                          |
+| `GET /library/grammar`                                  | Bài ngữ pháp: query `q`, `hsk`, `topic`, `status` (`all`\|`learned`\|`todo`\|`favorite`), `sort` (`order`\|`newest`\|`name`) + `roadmap`, `topics`               |
+| `GET /library/grammar/{id}`                             | Một bài: giới thiệu, cấu trúc (từng phần + vai trò), cách dùng, ý nghĩa, lưu ý, ví dụ, `quiz`, bài cùng cấp, bài liên quan                                       |
+| `PUT\|DELETE /library/grammar/{id}/learned`             | Đánh dấu / bỏ đã học → `{ learned, progress }` của cấp HSK                                                                                                       |
+| `PUT\|DELETE /library/grammar/{id}/favorite`            | Yêu thích / bỏ yêu thích bài                                                                                                                                     |
+| `POST /library/grammar/{id}/save`                       | Lưu bài vào Ngữ pháp của tôi (tag Thư viện LingYu + HSK) → `{ added, id? }`; đã lưu → `{ added: false }`                                                         |
 
 Admin (`/api/v1/admin/library`, người thường → `403`):
 

@@ -26,6 +26,18 @@
 
 ### Added
 
+- **Thư viện LingYu — Ngữ pháp** (theo design, nội dung tự biên soạn): 21 bài HSK 1–3 (是, 有, 吗, 呢, 的, 在, 也, 都, 不 / 没, 想, 会,
+  是…的, 了, 过, 比, 因为…所以, 正在, 把, 被, 虽然…但是, 越来越), song ngữ vi / en.
+  - `/library/grammar`: tab HSK (Tất cả, HSK 1–6), tìm theo chữ Hán / pinyin không dấu / nghĩa / “HSK 2”, lọc chủ đề + trạng thái (đã học,
+    chưa học, yêu thích), sắp xếp, chủ đề nổi bật, thẻ bài kèm câu ví dụ (lưới / danh sách); cột phải: lộ trình HSK (đã học x / y),
+    chủ đề phổ biến, tài liệu liên quan.
+  - `/library/grammar/{id}`: chữ Hán lớn + pinyin + nghĩa, Yêu thích / Lưu vào Ngữ pháp của tôi / Chia sẻ, mục lục (Tổng quan, Cấu trúc,
+    Cách dùng, Ví dụ, Lưu ý, Bài tập), cấu trúc tô màu theo vai trò, ví dụ có nút nghe, bài tập nhanh (chọn đáp án → kiểm tra → giải thích,
+    làm lại); cột phải: tiến độ cấp HSK + đánh dấu đã học, danh sách bài cùng cấp, bài liên quan, tài liệu liên quan; bài trước / tiếp.
+  - Trang chủ Thư viện: danh mục Ngữ pháp mở được (bỏ “Sắp có”).
+  - API: `GET /api/v1/library/grammar`, `GET /api/v1/library/grammar/{id}`, `PUT|DELETE …/{id}/learned`, `PUT|DELETE …/{id}/favorite`,
+    `POST …/{id}/save`. Đã học / yêu thích / đã lưu là của riêng từng người (có test).
+
 - **Thư viện LingYu — trang chủ + Bộ từ vựng** (theo design mới):
   - Trang chủ `/library`: danh mục (Từ vựng; Phát âm, Hội thoại & Nghe, Bài đọc dẫn tới mục hiện có; Ngữ pháp, Mẹo học “Sắp có”), tài liệu
     nổi bật, mới nhất, hướng dẫn sử dụng, chủ đề phổ biến; ô tìm kiếm + lọc trình độ.
