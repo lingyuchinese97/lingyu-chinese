@@ -160,52 +160,55 @@ export function Quiz({
       </div>
 
       {q.options.length ? (
-        <div
-          role="radiogroup"
-          aria-label={t("pronunciation.practice.options")}
-          className={cn("grid gap-2.5", q.options.length === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4")}
-        >
-          {q.options.map((o, i) => {
-            const picked = (done?.input ?? choice) === o;
-            const state = done ? (o === q.answer ? "right" : picked ? "wrong" : "") : picked ? "picked" : "";
-            return (
-              <button
-                key={o}
-                type="button"
-                role="radio"
-                aria-checked={picked}
-                disabled={!!done}
-                onClick={() => {
-                  setChoice(o);
-                  setError("");
-                }}
-                className={cn(
-                  "flex min-h-14 items-center gap-2.5 rounded-[14px] border-[1.5px] px-3 text-left outline-none focus-visible:shadow-[var(--focus-ring)] disabled:cursor-default",
-                  state === "" && "border-border bg-white hover:border-[#A9D3F8] hover:bg-[#F7FBFF]",
-                  state === "picked" && "border-blue-600 bg-blue-50",
-                  state === "right" && "border-green bg-green-50",
-                  state === "wrong" && "border-red bg-red-50",
-                )}
-              >
-                <span
-                  aria-hidden="true"
+        // Theo bề rộng khung chứa (không theo màn hình): ở cột hẹp (Luyện tập nhanh) luôn 2 cột cho khỏi vỡ chữ.
+        <div className="@container">
+          <div
+            role="radiogroup"
+            aria-label={t("pronunciation.practice.options")}
+            className={cn("grid gap-2.5", q.options.length === 2 ? "grid-cols-2" : "grid-cols-2 @2xl:grid-cols-4")}
+          >
+            {q.options.map((o, i) => {
+              const picked = (done?.input ?? choice) === o;
+              const state = done ? (o === q.answer ? "right" : picked ? "wrong" : "") : picked ? "picked" : "";
+              return (
+                <button
+                  key={o}
+                  type="button"
+                  role="radio"
+                  aria-checked={picked}
+                  disabled={!!done}
+                  onClick={() => {
+                    setChoice(o);
+                    setError("");
+                  }}
                   className={cn(
-                    "flex size-8 shrink-0 items-center justify-center rounded-full text-[14px] font-bold",
-                    state === "right"
-                      ? "bg-green text-white"
-                      : state === "wrong"
-                        ? "bg-red text-white"
-                        : state === "picked"
-                          ? "bg-blue-600 text-white"
-                          : "bg-blue-50 text-blue-700",
+                    "flex min-h-14 items-center gap-2.5 rounded-[14px] border-[1.5px] px-3 text-left outline-none focus-visible:shadow-[var(--focus-ring)] disabled:cursor-default",
+                    state === "" && "border-border bg-white hover:border-[#A9D3F8] hover:bg-[#F7FBFF]",
+                    state === "picked" && "border-blue-600 bg-blue-50",
+                    state === "right" && "border-green bg-green-50",
+                    state === "wrong" && "border-red bg-red-50",
                   )}
                 >
-                  {String.fromCharCode(65 + i)}
-                </span>
-                <span className="text-[19px] font-semibold text-navy-900">{o}</span>
-              </button>
-            );
-          })}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "flex size-8 shrink-0 items-center justify-center rounded-full text-[14px] font-bold",
+                      state === "right"
+                        ? "bg-green text-white"
+                        : state === "wrong"
+                          ? "bg-red text-white"
+                          : state === "picked"
+                            ? "bg-blue-600 text-white"
+                            : "bg-blue-50 text-blue-700",
+                    )}
+                  >
+                    {String.fromCharCode(65 + i)}
+                  </span>
+                  <span className="min-w-0 text-[18px] font-semibold break-words text-navy-900">{o}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       ) : q.mode === "listen-type" ? (
         <div className="flex flex-col gap-1.5">
@@ -309,7 +312,7 @@ export function Quiz({
     { k: "left", v: total - answered, c: "text-text-2 bg-[#EEF4FB]" },
   ] as const;
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
       {main}
       <div className="flex flex-col gap-4">
         <PCard aria-labelledby="pq-hint">

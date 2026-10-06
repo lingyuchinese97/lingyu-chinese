@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { sceneOf } from "@/data/reading/scenes";
+import { Cover } from "@/features/library/components/hub/parts";
 import Image from "next/image";
 import Link from "next/link";
 import { BookmarkCheck, ChevronRight, History, Library } from "lucide-react";
@@ -67,7 +69,7 @@ export default async function ReadingPage() {
           </div>
         </div>
       </header>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <ReadingSetup level={level} grammar={grammar} />
         <div className="flex flex-col gap-4">
           <section
@@ -130,19 +132,22 @@ export default async function ReadingPage() {
               <Link
                 href={`/reading/${p.id}`}
                 aria-label={t("reading.open", { title: p.title })}
-                className="flex h-full flex-col gap-1 rounded-2xl border border-border p-3.5 outline-none hover:border-[#A9D3F8] hover:bg-[#F8FBFF] focus-visible:shadow-[var(--focus-ring)]"
+                className="flex h-full flex-col overflow-hidden rounded-2xl border border-border outline-none hover:border-[#A9D3F8] hover:bg-[#F8FBFF] focus-visible:shadow-[var(--focus-ring)]"
               >
-                <span className="flex flex-wrap gap-1.5 text-[12px] font-semibold">
-                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-700">HSK {p.level}</span>
-                  <span className="rounded-full bg-[#F3EEFF] px-2 py-0.5 text-[#6B46C1]">
-                    {t(`reading.types.${p.type}`)}
+                <Cover emoji={sceneOf(p.id).main} tone={sceneOf(p.id).tone} size="md" className="h-[96px] w-full" />
+                <span className="flex flex-1 flex-col gap-1 p-3.5">
+                  <span className="flex flex-wrap gap-1.5 text-[12px] font-semibold">
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-700">HSK {p.level}</span>
+                    <span className="rounded-full bg-[#F3EEFF] px-2 py-0.5 text-[#6B46C1]">
+                      {t(`reading.types.${p.type}`)}
+                    </span>
                   </span>
+                  <span lang="zh" className="hanzi text-[18px] font-bold text-navy-900">
+                    {p.title}
+                  </span>
+                  <span className="text-[13.5px] text-text-2">{p.titleTr}</span>
+                  <span className="mt-auto text-[12.5px] text-text-3">{t("reading.words", { count: p.words })}</span>
                 </span>
-                <span lang="zh" className="hanzi text-[18px] font-bold text-navy-900">
-                  {p.title}
-                </span>
-                <span className="text-[13.5px] text-text-2">{p.titleTr}</span>
-                <span className="mt-auto text-[12.5px] text-text-3">{t("reading.words", { count: p.words })}</span>
               </Link>
             </li>
           ))}

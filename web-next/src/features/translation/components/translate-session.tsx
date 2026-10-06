@@ -115,7 +115,7 @@ export function TranslateSession({ initial }: { initial: ClientTranslationSessio
   const status = (x: (typeof s.questions)[number]) => (x.result ?? "todo") as "todo" | "correct" | "wrong" | "skipped";
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="flex min-w-0 flex-col gap-4">
         <header className="flex flex-wrap items-center gap-3 rounded-[var(--radius-xl)] border border-border bg-white px-4 py-3 shadow-card">
           <Button asChild variant="muted" size="sm">

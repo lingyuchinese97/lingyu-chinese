@@ -74,7 +74,7 @@ export default async function ProgressPage() {
 
   return (
     <>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <p className="flex items-center rounded-[18px] border border-[#DDEBF8] bg-white px-5 py-4 text-[15px] font-semibold text-blue-700 shadow-soft">
           {started ? t("progress.cheer1") : t("progress.cheerStart1")}
           <br className="hidden sm:block" /> {started ? t("progress.cheer2") : t("progress.cheerStart2")}

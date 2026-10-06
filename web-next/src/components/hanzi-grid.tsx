@@ -6,8 +6,12 @@ import { cn } from "@/lib/utils";
  * chữ trong ô vẽ bằng CSS `content`, không lặp chữ trong DOM.
  */
 export function HanziGrid({ text, size = 96, className }: { text: string; size?: number; className?: string }) {
+  // Các ô liền nhau như một hàng vở tập viết (viền chung giữa hai ô).
   return (
-    <span lang="zh" className={cn("inline-flex flex-wrap gap-1.5 align-middle", className)}>
+    <span
+      lang="zh"
+      className={cn("inline-flex flex-wrap align-middle [&>[aria-hidden]+[aria-hidden]]:-ml-[2px]", className)}
+    >
       <span className="sr-only">{text}</span>
       {[...text].map((c, i) =>
         /\s/.test(c) ? null : (

@@ -23,7 +23,7 @@ export function TonesView({ notes: initialNotes }: { notes: Record<string, strin
   };
   const main = TONES.filter((x) => x.tone !== 5);
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
       <section aria-labelledby="tn-h" className="flex min-w-0 flex-col gap-3">
         <h2 id="tn-h" className="sr-only">
           {t("pronunciation.tones.heading")}

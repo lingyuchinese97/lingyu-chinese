@@ -28,6 +28,8 @@ import { useConfirm } from "@/components/ui/confirm";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import type { LocalPassage } from "../service";
+import { sceneOf } from "@/data/reading/scenes";
+import { Cover } from "@/features/library/components/hub/parts";
 import { pickPassageAction, saveWordsAction, setSavedAction, submitReadingAction } from "../actions";
 
 type Passage = LocalPassage & { saved: boolean };
@@ -173,6 +175,7 @@ export function Reader({ passage }: { passage: Passage }) {
   };
 
   const answered = answers.filter((a) => a !== null && a !== "").length;
+  const scene = sceneOf(passage.id);
   const [allWords, setAllWords] = React.useState(false);
   const shownWords = allWords ? passage.words : passage.words.slice(0, 6);
   const openCard = (w: Word, el: HTMLElement) => {
@@ -229,7 +232,36 @@ export function Reader({ passage }: { passage: Passage }) {
         </div>
       </div>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      {/* Kiểu sách giáo khoa: tranh · bài đọc · câu hỏi (màn rộng 3 cột; hẹp hơn: tranh + bài, câu hỏi bên dưới). */}
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[220px_minmax(0,1fr)] min-[85rem]:grid-cols-[240px_minmax(0,1.1fr)_minmax(0,1fr)]">
+        <aside aria-label={t("reading.illustration")} className="flex flex-col gap-3 lg:sticky lg:top-4">
+          <figure className="overflow-hidden rounded-[var(--radius-xl)] border border-border bg-white shadow-card">
+            <Cover
+              emoji={scene.main}
+              tone={scene.tone}
+              size="lg"
+              className="relative h-[180px] w-full text-[96px] lg:h-[220px]"
+            />
+            {scene.extras.length ? (
+              <div
+                aria-hidden="true"
+                className="flex justify-center gap-3 border-t border-border bg-white px-3 py-2.5 text-[34px]"
+              >
+                {scene.extras.map((e, i) => (
+                  <span key={i} className="drop-shadow-[0_4px_6px_rgba(16,42,84,0.12)]">
+                    {e}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            <figcaption className="border-t border-border px-3 py-2.5 text-center">
+              <span lang="zh" className="block hanzi text-[18px] font-bold text-navy-900">
+                {passage.title}
+              </span>
+              <span className="block text-[13.5px] text-text-2">{passage.titleTr}</span>
+            </figcaption>
+          </figure>
+        </aside>
         <article
           aria-labelledby="rd-title"
           className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white p-4 shadow-card md:p-5"
@@ -253,11 +285,15 @@ export function Reader({ passage }: { passage: Passage }) {
           <ol className="flex flex-col gap-5 rounded-[18px] bg-[#F5F8FD] px-3 py-4 md:px-5 md:py-5" lang="zh">
             {passage.lines.map((l, i) => (
               <li key={i} className="flex items-start gap-3">
+                {/* Tranh nhỏ của câu (kiểu sách giáo khoa) + số thứ tự câu */}
                 <span
-                  className="mt-[calc(var(--py-h)+6px)] flex size-7 shrink-0 items-center justify-center rounded-full bg-white text-[13px] font-bold text-text-2 shadow-sm [--py-h:0px] data-[py=on]:[--py-h:24px]"
+                  className="relative mt-[calc(var(--py-h)+2px)] flex size-14 shrink-0 items-center justify-center rounded-[16px] border border-border bg-white text-[30px] shadow-sm [--py-h:0px] data-[py=on]:[--py-h:24px] md:size-16 md:text-[34px]"
                   data-py={pinyin ? "on" : "off"}
                 >
-                  {i + 1}
+                  <span aria-hidden="true">{scene.lines[i] ?? scene.main}</span>
+                  <span className="absolute -top-2 -left-2 flex size-6 items-center justify-center rounded-full bg-blue-600 text-[12px] font-bold text-white shadow">
+                    {i + 1}
+                  </span>
                 </span>
                 <div className="min-w-0 flex-1">
                   {pinyin ? (
@@ -336,7 +372,7 @@ export function Reader({ passage }: { passage: Passage }) {
 
         <section
           aria-labelledby="rd-q"
-          className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white p-4 shadow-card md:p-5"
+          className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white p-4 shadow-card md:p-5 lg:col-span-2 min-[85rem]:col-span-1"
         >
           <div className="flex flex-wrap items-center gap-3">
             <h2 id="rd-q" className="flex items-center gap-2 text-[20px] font-extrabold text-navy-900">
@@ -371,7 +407,7 @@ export function Reader({ passage }: { passage: Passage }) {
                 <li
                   key={i}
                   className={cn(
-                    "rounded-2xl border p-3.5 md:p-4",
+                    "@container rounded-2xl border p-3.5 md:p-4",
                     r
                       ? r.correct
                         ? "border-green-100 bg-green-50/60"
@@ -392,7 +428,7 @@ export function Reader({ passage }: { passage: Passage }) {
                     <div
                       role="radiogroup"
                       aria-label={`${t("reading.questionN", { n: i + 1 })}: ${t("reading.choose")}`}
-                      className="grid gap-2 sm:grid-cols-2"
+                      className="grid gap-2 @lg:grid-cols-2"
                     >
                       {q.options!.map((o, j) => {
                         const on = answers[i] === j;

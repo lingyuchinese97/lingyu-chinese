@@ -34,6 +34,7 @@ export const reading: Messages["reading"] = {
   libraryCount: "{count, plural, one {# passage} other {# passages}}",
   open: "Read “{title}”",
   words: "{count, plural, one {# key word} other {# key words}}",
+  illustration: "Illustration",
   passageLabel: "Passage",
   keyWords: "Key words in this text",
   showAll: "See all",
