@@ -6,6 +6,15 @@
 
 ### Changed
 
+- **Đọc hiểu kiểu sách giáo khoa**: trang bài đọc chia 3 phần — **tranh minh hoạ** của bài (cột trái), **bài đọc** (giữa, mỗi câu có
+  tranh nhỏ bên cạnh + số câu), **câu hỏi** (cột phải); màn hẹp hơn: tranh + bài, câu hỏi bên dưới; điện thoại xếp dọc. Kho bài đọc có
+  ảnh bìa cho từng bài. Tranh vẽ bằng emoji trên nền màu (`src/data/reading/scenes.ts`), không tải ảnh ngoài.
+- **Từ vựng của tôi — gọn hơn + nút con mắt xem chi tiết**: các ô 米字格 của một từ nối liền thành một hàng (như vở tập viết), nhỏ
+  hơn trong bảng / thẻ; nút **con mắt** mở hộp chi tiết: chữ Hán trong ô 米字格, pinyin + nghe, nghĩa, ghi chú, tag, ảnh, **cách viết từng
+  chữ** (xem nét viết / luyện viết), nút sửa.
+- **Sửa lỗi giao diện**: Luyện tập nhanh (Biến điệu) — 4 đáp án không còn bị vỡ chữ trong cột hẹp (chia cột theo bề rộng khung, không
+  theo màn hình); Luyện dịch — câu dài trong Lịch sử luyện dịch không còn tràn khung trên điện thoại (cũng chặn lỗi này ở Trang chủ,
+  Đọc hiểu, Tiến độ, Phát âm).
 - **Chữ Hán ở Từ vựng hiện trong ô 米字格**: viền đỏ, nét đứt đỏ theo chữ thập + hai đường chéo, cả chữ màu đỏ — ở Từ vựng của tôi
   (bảng + thẻ), chi tiết từ trong Thư viện, từ vựng LingYu public. Khung tập viết (bộ thủ, chi tiết từ) cũng đổi sang ô 米字格 và nét
   đỏ toàn bộ chữ; chi tiết từ trong Thư viện có thêm mục **Cách viết (thứ tự nét)**.

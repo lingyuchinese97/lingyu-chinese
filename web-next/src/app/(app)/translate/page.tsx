@@ -37,14 +37,14 @@ export default async function TranslatePage() {
         <h1 className="text-[26px] font-extrabold text-navy-900 md:text-[30px]">{t("translate.title")}</h1>
         <p className="text-[15.5px] text-text-2">{t("translate.subtitle")}</p>
       </header>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <TranslateSetup
           level={level}
           grammar={localGrammar(locale)}
           myGrammar={myGrammar}
           active={active ? { done: active.questions.filter((q) => q.answered).length, total: active.total } : null}
         />
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <nav aria-label={t("translate.bankLink")} className="grid gap-2">
             {[
               {

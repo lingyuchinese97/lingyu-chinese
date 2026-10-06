@@ -84,7 +84,7 @@ export function SoundBrowser({
 
   const shown = groups.filter((g) => filter === "all" || g.id === filter);
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
       <div className="flex min-w-0 flex-col gap-4">
         {filterable ? (
           <div role="group" aria-label={t("pronunciation.sound.filterLabel")} className="flex flex-wrap gap-2">

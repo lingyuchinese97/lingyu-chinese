@@ -19,6 +19,13 @@ test("dữ liệu mẫu, tìm kiếm bỏ dấu, lọc tag, phân trang", async 
   await expect(page).toHaveURL(/q=nihao/);
   await expect(page.getByText("1 từ vựng", { exact: true })).toBeVisible();
   await expect(results(page, isMobile).getByText("你好", { exact: true })).toBeVisible();
+  // Nút con mắt: xem chi tiết (ô 米字格, nghĩa, cách viết).
+  await results(page, isMobile).getByRole("button", { name: "Xem chi tiết 你好" }).click();
+  const detail = page.getByRole("dialog", { name: "Chi tiết: 你好" });
+  await expect(detail.getByText("xin chào")).toBeVisible();
+  await expect(detail.getByRole("heading", { name: "Cách viết (thứ tự nét)" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(detail).toBeHidden();
 
   await page.getByPlaceholder(/Tìm kiếm từ vựng/).fill("");
   await page

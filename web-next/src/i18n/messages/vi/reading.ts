@@ -32,6 +32,7 @@ export const reading = {
   open: "Đọc bài “{title}”",
   words: "{count} từ khoá",
   // Đọc
+  illustration: "Tranh minh hoạ",
   passageLabel: "Bài đọc",
   keyWords: "Từ vựng nổi bật trong bài",
   showAll: "Xem tất cả",

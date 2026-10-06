@@ -386,7 +386,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------- Học tập hôm nay + Mục tiêu ---------- */}
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section
           aria-labelledby="home-today"
           className="rounded-[var(--radius-xl)] border border-border bg-white/95 p-4 shadow-card md:p-5"
@@ -477,7 +477,7 @@ export default async function HomePage() {
       </div>
 
       {/* ---------- Tiến độ học tập + Bài học gần đây ---------- */}
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section
           aria-labelledby="home-progress"
           className="rounded-[var(--radius-xl)] border border-border bg-white/95 p-4 shadow-card md:p-5"

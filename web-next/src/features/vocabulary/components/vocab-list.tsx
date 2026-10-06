@@ -1,5 +1,6 @@
 "use client";
 import { HanziGrid } from "@/components/hanzi-grid";
+import { WordDetailDialog } from "./word-detail-dialog";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -99,6 +100,7 @@ export function VocabListView({
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [q, setQ] = React.useState(params.q);
   const [noteOf, setNoteOf] = React.useState<VocabItem | null>(null);
+  const [detailOf, setDetailOf] = React.useState<VocabItem | null>(null);
   const [tagFor, setTagFor] = React.useState<string[] | null>(null);
   const [favs, setFavs] = React.useState<Record<string, boolean>>({});
   const listTop = React.useRef<HTMLDivElement>(null);
@@ -279,6 +281,17 @@ export function VocabListView({
         </MenuItem>
       </MenuContent>
     </Menu>
+  );
+  const eye = (v: VocabItem) => (
+    <button
+      type="button"
+      className={iconBtn}
+      onClick={() => setDetailOf(v)}
+      aria-label={t("vocab.viewDetail", { word: v.hanzi })}
+      title={t("vocab.viewDetail", { word: v.hanzi })}
+    >
+      <Eye />
+    </button>
   );
   const star = (v: VocabItem) => {
     const on = favs[v.id] ?? v.isFavorite;
@@ -565,7 +578,7 @@ export function VocabListView({
                           </td>
                           <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
                           <td>
-                            <HanziGrid text={v.hanzi} size={44} />
+                            <HanziGrid text={v.hanzi} size={38} />
                           </td>
                           <td>
                             <span className="inline-flex items-center gap-1">
@@ -588,6 +601,7 @@ export function VocabListView({
                             <StatusBadge status={v.status} />
                           </td>
                           <td className="whitespace-nowrap">
+                            {eye(v)}
                             {star(v)}
                             <Link
                               href={`/vocabulary/${v.id}/edit`}
@@ -628,7 +642,7 @@ export function VocabListView({
                       />
                     </div>
                     <div className="min-w-0 [grid-area:word]">
-                      <HanziGrid text={v.hanzi} size={48} />
+                      <HanziGrid text={v.hanzi} size={40} />
                     </div>
                     <div className="flex items-center gap-1 text-[14.5px] [grid-area:py]">
                       <span className="pinyin">{v.pinyin}</span>
@@ -636,6 +650,7 @@ export function VocabListView({
                     </div>
                     <div className="text-[15px] text-text [grid-area:mean]">{v.meaningVi}</div>
                     <div className="-mt-1.5 -mr-1 flex items-start justify-end [grid-area:act]">
+                      {eye(v)}
                       {star(v)}
                       {rowMenu(v)}
                     </div>
@@ -676,6 +691,7 @@ export function VocabListView({
         </div>
       </section>
 
+      <WordDetailDialog word={detailOf} onClose={() => setDetailOf(null)} />
       <Dialog open={!!noteOf} onOpenChange={(o) => !o && setNoteOf(null)}>
         {noteOf ? (
           <DialogContent title={t("vocab.noteTitle")} icon={<Eye />} wide>
