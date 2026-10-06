@@ -5,14 +5,15 @@ import { z } from "zod";
 import { AlertTriangle, FileText, Layers, Lightbulb, Lock, PenLine, Share2 } from "lucide-react";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Tag } from "@/components/ui/badges";
 import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { GrammarError, listGrammarTags, listSent, viewGrammar } from "@/features/grammar/service";
 import { OwnerActions, PreviewBar } from "@/features/grammar/components/grammar-detail-actions";
-import { ExampleActions, PersonalNoteCard } from "@/features/grammar/components/grammar-detail-parts";
-import { StructureDetail } from "@/features/grammar/components/structure-box";
+import { ExampleActions, PersonalNoteCard, RubySentence } from "@/features/grammar/components/grammar-detail-parts";
+import { StructureTabs } from "@/features/grammar/components/structure-box";
+import { tagTone } from "@/features/grammar/tag-tones";
+import { hskOfTag } from "@/features/grammar/schema";
 import { GrammarBadgeIcon, iconOf, pillClass } from "@/features/grammar/icons";
 import { getIntlTag, getT } from "@/i18n/server";
 
@@ -74,8 +75,12 @@ export default async function GrammarDetailPage({
   const preview = view.mode === "preview";
   const [sent, myTags] = await Promise.all([
     preview ? Promise.resolve([]) : listSent(user.id, g.id),
-    preview ? listGrammarTags(user.id) : Promise.resolve([]),
+    listGrammarTags(user.id),
   ]);
+  // Màu thẻ giống danh sách (theo thứ tự các thẻ không phải HSK của tôi).
+  const toneOf = new Map(myTags.filter((x) => hskOfTag(x.name) === null).map((x, i) => [x.name, i]));
+  const hskTags = g.tags.filter((x) => hskOfTag(x.name) !== null);
+  const catTags = g.tags.filter((x) => hskOfTag(x.name) === null);
   const notes = lines(g.notes);
   const empty = <p className="text-text-3">{t("grammar.detail.empty")}</p>;
 
@@ -102,18 +107,33 @@ export default async function GrammarDetailPage({
                 {g.title}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                <span className={cn("rounded-full px-2.5 py-0.5 text-[13px] font-semibold", pillClass(iconOf(g)))}>
-                  {t(`grammar.icon.${iconOf(g)}`)}
+                <span className="flex flex-wrap gap-1.5">
+                  {hskTags.map((tg) => (
+                    <span
+                      key={tg.id}
+                      className="rounded-[9px] bg-[#F0EAFF] px-2.5 py-1 text-[13px] font-semibold text-[#6B3FD0]"
+                    >
+                      {tg.name}
+                    </span>
+                  ))}
+                  {catTags.length ? (
+                    catTags.map((tg) => (
+                      <span
+                        key={tg.id}
+                        className={cn(
+                          "rounded-[9px] border px-2.5 py-1 text-[13px] font-semibold",
+                          tagTone(toneOf.get(tg.name) ?? 0),
+                        )}
+                      >
+                        {tg.name}
+                      </span>
+                    ))
+                  ) : (
+                    <span className={cn("rounded-[9px] px-2.5 py-1 text-[13px] font-semibold", pillClass(iconOf(g)))}>
+                      {t(`grammar.icon.${iconOf(g)}`)}
+                    </span>
+                  )}
                 </span>
-                {g.tags.length ? (
-                  <span className="flex flex-wrap gap-1.5">
-                    {g.tags.map((tg) => (
-                      <Tag key={tg.id} name={tg.name} />
-                    ))}
-                  </span>
-                ) : (
-                  <span className="text-sm text-text-3">{t("grammar.detail.noTags")}</span>
-                )}
                 <span className="text-[14px] text-text-3">
                   {t("grammar.detail.created", { date: fmt(g.createdAt, tag) })} ·{" "}
                   {t("grammar.detail.updated", { date: fmt(g.updatedAt, tag) })}
@@ -137,7 +157,7 @@ export default async function GrammarDetailPage({
         </Card>
 
         <Card tone="amber" icon={<Layers />} title={t("grammar.detail.structure")}>
-          {g.structure ? <StructureDetail structure={g.structure} /> : empty}
+          {g.structure ? <StructureTabs structure={g.structure} /> : empty}
         </Card>
 
         <Card
@@ -159,13 +179,10 @@ export default async function GrammarDetailPage({
                   >
                     {i + 1}
                   </span>
-                  <div className="min-w-0 flex-1">
+                  <div className="grid min-w-0 flex-1 gap-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-center">
                     <span className="sr-only">{t("grammar.form.example", { n: i + 1 })}: </span>
-                    <div className="hanzi text-[24px] leading-snug font-bold text-navy-900" lang="zh">
-                      {e.chinese}
-                    </div>
-                    {e.pinyin ? <div className="text-[16px] pinyin">{e.pinyin}</div> : null}
-                    {e.vietnamese ? <div className="text-text-2">{e.vietnamese}</div> : null}
+                    <RubySentence chinese={e.chinese} pinyin={e.pinyin} />
+                    {e.vietnamese ? <div className="text-[15.5px] text-text-2">{e.vietnamese}</div> : null}
                   </div>
                   <ExampleActions
                     n={i + 1}
@@ -181,7 +198,7 @@ export default async function GrammarDetailPage({
           )}
         </Card>
 
-        <Card tone="blue" icon={<AlertTriangle />} title={t("grammar.detail.notes")}>
+        <Card tone="red" icon={<AlertTriangle />} title={t("grammar.detail.notes")}>
           {notes.length ? (
             <ul className="grid list-disc gap-1.5 pl-6 text-text marker:text-blue">
               {notes.map((n, i) => (
@@ -227,6 +244,7 @@ const TONES = {
     icon: "bg-[#FFE6A8] text-[#E07A00]",
   },
   green: { box: "border-[#CFEFDF] bg-[#F1FBF6]", icon: "bg-[#D8F4E6] text-green-700" },
+  red: { box: "border-[#FFD3DA] bg-[#FFF3F5]", icon: "bg-[#FFE1E6] text-[#E0302F]" },
   white: { box: "border-border bg-white", icon: "bg-blue-50 text-blue-600" },
 } as const;
 

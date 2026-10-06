@@ -35,9 +35,14 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await expect(page.getByRole("heading", { level: 1, name: "Câu hỏi với 吗" })).toBeVisible();
   await expect(page.getByText("mẹo riêng của tôi")).toBeVisible();
   await expect(page.getByText("Giao tiếp", { exact: true })).toBeVisible();
-  await expect(page.getByText("Chủ ngữ + 不 + động từ + 吗？")).toBeVisible();
-  const ex = page.locator("ol li .hanzi");
-  await expect(ex.first()).toHaveText("你是学生吗？");
+  // Cấu trúc: mỗi dòng là một tab; công thức tách thành từng ô theo dấu "+".
+  const tabs = page.getByRole("tablist", { name: "Cấu trúc" });
+  await expect(tabs.getByRole("tab")).toHaveCount(2);
+  await tabs.getByRole("tab", { name: /Dạng 2/ }).click();
+  const panel = page.getByRole("tabpanel");
+  for (const part of ["Chủ ngữ", "不", "động từ", "吗？"])
+    await expect(panel.getByText(part, { exact: true }).first()).toBeVisible();
+  await expect(page.locator("ol li").getByText("你是学生吗？", { exact: true }).first()).toBeAttached();
   await page.getByRole("button", { name: "Lưu", exact: true }).click();
   await expect(page.getByText("Đã lưu vào mục Đã lưu.")).toBeVisible();
 

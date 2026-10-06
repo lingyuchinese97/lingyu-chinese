@@ -121,22 +121,22 @@ dùng (`null` nếu chưa có). Trong `formattedUserAnswer`, đoạn bôi vàng 
 
 ## Ngữ pháp `/api/v1/grammar`
 
-| Route                              | Việc                                                                                                                                                                         |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /grammar`                     | Danh sách. Query: `q`, `tag` (id thẻ), `sort` (`updated`\|`newest`\|`oldest`\|`az`\|`za`), `view` (`all`\|`saved`)                                                           |
-| `POST /grammar`                    | Thêm → `201` ngữ pháp                                                                                                                                                        |
-| `GET /grammar/{id}`                | Chủ sở hữu → `{ mode: "owner", grammar }` (có `personalNote`); người nhận có lời mời đang chờ (`?share=`) → `mode: "preview"` (không có ghi chú cá nhân); người khác → `404` |
-| `PUT /grammar/{id}` · `DELETE`     | Sửa toàn bộ · xoá                                                                                                                                                            |
-| `PUT /grammar/{id}/note`           | Ghi chú cá nhân `{ content }` (riêng tư, không bao giờ chia sẻ; rỗng = xoá)                                                                                                  |
-| `PUT /grammar/{id}/bookmark`       | Lưu / bỏ lưu `{ saved }`                                                                                                                                                     |
-| `GET\|POST /grammar/{id}/shares`   | Đã gửi cho ai · chia sẻ `{ emails }`                                                                                                                                         |
-| `GET\|POST /grammar/tags`          | Thẻ + số bài · tạo `{ name }` (trùng → `409`)                                                                                                                                |
-| `PUT\|DELETE /grammar/tags/{id}`   | Đổi tên · xoá thẻ                                                                                                                                                            |
-| `GET /grammar/shares/received`     | Lời mời đang chờ tôi                                                                                                                                                         |
-| `GET /grammar/shares/{id}/tags`    | Thẻ của người gửi                                                                                                                                                            |
-| `POST /grammar/shares/{id}/accept` | `{ keepTags?, extraTags? }` → bản riêng `{ id, title }`; đã trả lời → `409`                                                                                                  |
-| `POST /grammar/shares/{id}/reject` | Từ chối                                                                                                                                                                      |
-| `POST /grammar/sample`             | Thêm ngữ pháp mẫu → `{ added }` _(cũ — dữ liệu thử; ứng dụng không còn nút này, nội dung LingYu nằm ở Thư viện)_                                                             |
+| Route                              | Việc                                                                                                                                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /grammar`                     | Danh sách. Query: `q`, `tag` (id thẻ), `sort` (`updated`\|`newest`\|`oldest`\|`az`\|`za`), `view` (`all`\|`saved`), `hsk` (`1`–`6`\|`other`, theo thẻ HSK) → thêm `hskCounts` |
+| `POST /grammar`                    | Thêm → `201` ngữ pháp                                                                                                                                                         |
+| `GET /grammar/{id}`                | Chủ sở hữu → `{ mode: "owner", grammar }` (có `personalNote`); người nhận có lời mời đang chờ (`?share=`) → `mode: "preview"` (không có ghi chú cá nhân); người khác → `404`  |
+| `PUT /grammar/{id}` · `DELETE`     | Sửa toàn bộ · xoá                                                                                                                                                             |
+| `PUT /grammar/{id}/note`           | Ghi chú cá nhân `{ content }` (riêng tư, không bao giờ chia sẻ; rỗng = xoá)                                                                                                   |
+| `PUT /grammar/{id}/bookmark`       | Lưu / bỏ lưu `{ saved }`                                                                                                                                                      |
+| `GET\|POST /grammar/{id}/shares`   | Đã gửi cho ai · chia sẻ `{ emails }`                                                                                                                                          |
+| `GET\|POST /grammar/tags`          | Thẻ + số bài · tạo `{ name }` (trùng → `409`)                                                                                                                                 |
+| `PUT\|DELETE /grammar/tags/{id}`   | Đổi tên · xoá thẻ                                                                                                                                                             |
+| `GET /grammar/shares/received`     | Lời mời đang chờ tôi                                                                                                                                                          |
+| `GET /grammar/shares/{id}/tags`    | Thẻ của người gửi                                                                                                                                                             |
+| `POST /grammar/shares/{id}/accept` | `{ keepTags?, extraTags? }` → bản riêng `{ id, title }`; đã trả lời → `409`                                                                                                   |
+| `POST /grammar/shares/{id}/reject` | Từ chối                                                                                                                                                                       |
+| `POST /grammar/sample`             | Thêm ngữ pháp mẫu → `{ added }` _(cũ — dữ liệu thử; ứng dụng không còn nút này, nội dung LingYu nằm ở Thư viện)_                                                              |
 
 Trường `icon` (trong body thêm / sửa và trong kết quả): biểu tượng cạnh tiêu đề — `""` (tự chọn theo thẻ / tiêu đề / cấu trúc) hoặc
 một trong `noun`, `measure`, `number`, `particle`, `question`, `structure`, `compare`, `communication`, `verb`, `adjective`,

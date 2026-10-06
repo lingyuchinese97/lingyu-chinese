@@ -19,7 +19,7 @@ import { fold } from "@/lib/fold";
 import { cleanEmails, resolveRecipient, type ShareResult } from "@/features/sharing/recipient";
 import { SAMPLE_GRAMMAR } from "@/data/sample-grammar";
 import { notify } from "@/features/notifications/service";
-import type { GrammarInput, GrammarListParams } from "./schema";
+import { hskOfTag, type GrammarInput, type GrammarListParams } from "./schema";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -117,6 +117,14 @@ export async function listGrammar(userId: string, p: GrammarListParams) {
   const totalAll = items.length;
   const savedCount = items.filter((g) => g.isSaved).length;
   if (p.view === "saved") items = items.filter((g) => g.isSaved);
+  // Số bài theo cấp HSK (theo thẻ) — trước khi lọc HSK, sau khi lọc đã lưu.
+  const levelOf = (g: GrammarItem) => {
+    const lv = g.tags.map((t) => hskOfTag(t.name)).filter((x): x is number => x !== null);
+    return lv.length ? Math.min(...lv) : null;
+  };
+  const hskCounts: Record<string, number> = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, other: 0 };
+  for (const g of items) hskCounts[String(levelOf(g) ?? "other")]!++;
+  if (p.hsk) items = items.filter((g) => String(levelOf(g) ?? "other") === p.hsk);
   if (p.tag) items = items.filter((g) => g.tags.some((t) => t.id === p.tag));
   const needle = fold(p.q);
   if (needle) {
@@ -144,7 +152,7 @@ export async function listGrammar(userId: string, p: GrammarListParams) {
     za: (a, b) => collator.compare(b.title, a.title),
   };
   items.sort(by[p.sort]);
-  return { items, total: items.length, totalAll, savedCount };
+  return { items, total: items.length, totalAll, savedCount, hskCounts };
 }
 
 export async function getOwnGrammar(userId: string, id: string) {

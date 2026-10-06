@@ -6,6 +6,13 @@
 
 ### Changed
 
+- **Ngữ pháp của tôi — thiết kế mới**:
+  - Danh sách: tab **HSK** (Tất cả, HSK 1–6, Khác — lấy theo thẻ "HSK1", "HSK 2", "HSK3_Bài 1"…, kèm số bài), ô tìm + chuyển lưới /
+    danh sách cùng hàng, chip thẻ nhiều màu (thẻ HSK không lặp lại ở đây), sắp xếp; thẻ bài đánh số, nhãn HSK + thẻ, công thức (chữ đỏ),
+    một dòng nghĩa; lưới 3 cột trên màn rộng. API `GET /api/v1/grammar` nhận thêm `hsk`, trả thêm `hskCounts`.
+  - Chi tiết: nhãn HSK + thẻ màu ở đầu trang; **Cấu trúc** chia tab theo từng dòng (dòng "Tên: công thức" → tên tab), công thức tách
+    theo dấu "+" thành ô màu theo vai trò (Chủ ngữ, Khi nào, Ở đâu, Động từ, Tân ngữ, Danh từ, Tính từ, chữ Hán = từ khoá) có nhãn bên
+    dưới; **Ví dụ** hiện pinyin ngay dưới từng từ, nghĩa bên cạnh; **Lưu ý** trên nền đỏ nhạt.
 - **Đọc hiểu kiểu sách giáo khoa**: trang bài đọc chia 3 phần — **tranh minh hoạ** của bài (cột trái), **bài đọc** (giữa, mỗi câu có
   tranh nhỏ bên cạnh + số câu), **câu hỏi** (cột phải); màn hẹp hơn: tranh + bài, câu hỏi bên dưới; điện thoại xếp dọc. Kho bài đọc có
   ảnh bìa cho từng bài. Tranh vẽ bằng emoji trên nền màu (`src/data/reading/scenes.ts`), không tải ảnh ngoài.
