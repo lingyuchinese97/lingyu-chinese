@@ -199,6 +199,11 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     Bài tập nhanh chấm ở trình duyệt (nội dung công khai, không cần lưu điểm). "Lưu" = chép bài thành một mục trong Ngữ pháp của tôi
     (tiêu đề "{chữ Hán} – {nghĩa}", tag "Thư viện LingYu" + HSK) để người học viết ghi chú riêng / chia sẻ như bài tự tạo; nhận ra bài đã lưu
     theo tiêu đề (cả hai ngôn ngữ) nên bấm lại không tạo bản trùng.
+48. **Nội dung LingYu ở Thư viện, bản sao ở kho của người học**: Phát âm & Biến điệu chuyển vào `/library/pronunciation`
+    (link cũ `/pronunciation/*` chuyển hướng 308; ghi chú phát âm vẫn là của riêng mỗi người). Bỏ nút "Dùng dữ liệu mẫu" ở Từ vựng /
+    Ngữ pháp / Kho câu / Cài đặt — thay bằng liên kết sang Thư viện (kho câu → Luyện dịch). Người học bấm **Lưu** để chép bài / từ vào
+    kho của mình (Ngữ pháp của tôi, Từ vựng của tôi), sau đó sửa / thêm tag tự do; bài gốc của LingYu không đổi. API `…/sample` giữ lại
+    (đánh dấu deprecated) cho app khác và dữ liệu test.
 
 ## Chỗ mơ hồ & cách xử lý
 

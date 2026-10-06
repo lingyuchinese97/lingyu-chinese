@@ -35,3 +35,10 @@ export const practiceQuerySchema = z.object({
   mode: z.enum(PRACTICE_MODES, { error: "Chế độ luyện tập không hợp lệ." }),
   count: z.coerce.number().int().min(PRACTICE_COUNT.MIN).max(PRACTICE_COUNT.MAX).catch(PRACTICE_COUNT.DEFAULT),
 });
+
+/** Lưu từ ví dụ của một âm vào Từ vựng của tôi: loại âm ("initials" / "finals" trên URL), ký hiệu, chữ Hán (bỏ trống = cả âm). */
+export const soundKindSchema = z
+  .enum(["initials", "finals"])
+  .transform((k) => (k === "initials" ? "initial" : "final"));
+export const soundSymbolSchema = z.string().regex(/^[a-zü]{1,5}$/);
+export const soundSaveSchema = z.object({ hanzi: z.string().trim().min(1).max(12).nullable().default(null) });

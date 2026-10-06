@@ -1,14 +1,14 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
 test("cài đặt: đổi tên, đổi mật khẩu, xuất / nhập dữ liệu, xoá tài khoản", async ({ page }) => {
   const email = await register(page, "Người Học", "st");
   await page.goto("/vocabulary");
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "vocab");
   await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
 
   await page.goto("/settings");

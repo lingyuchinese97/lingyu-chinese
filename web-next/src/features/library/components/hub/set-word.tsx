@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,6 +32,7 @@ const TABS = ["overview", "examples", "radicals", "related", "mnemonic", "practi
 /** Chi tiết một từ trong bộ: nghĩa, phát âm (âm tiết + thanh, nghe chậm), ví dụ, hình, bộ thủ, từ liên quan, cách nhớ. */
 export function SetWordView({ data }: { data: SetWordDetail }) {
   const t = useT();
+  const router = useRouter();
   const w = data.word;
   const [learned, setLearned] = React.useState(w.learned);
   const [fav, setFav] = React.useState(w.favorite);
@@ -64,7 +66,9 @@ export function SetWordView({ data }: { data: SetWordDetail }) {
     setBusy(null);
     if (!r.ok) return void toast.error(t.maybe(r.message));
     setSaved(true);
-    toast.success(r.data.added ? t("libhub.savedWord", { word: w.zh }) : t("libhub.alreadySaved", { word: w.zh }));
+    toast.success(r.data.added ? t("libhub.savedWord", { word: w.zh }) : t("libhub.alreadySaved", { word: w.zh }), {
+      action: { label: t("libhub.openMine"), onClick: () => router.push(`/vocabulary?q=${encodeURIComponent(w.zh)}`) },
+    });
   }
 
   const toneText = data.syllables.map((s) => `${s.syl} – ${t(`libhub.tones.${s.tone || "t5"}`)}`);

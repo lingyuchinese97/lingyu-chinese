@@ -85,7 +85,7 @@ export function TonesView({ notes: initialNotes }: { notes: Record<string, strin
                       {t("pronunciation.sound.listen")}
                     </SpeakBtn>
                     <Button asChild variant="secondary" size="sm">
-                      <Link href="/pronunciation/practice?mode=listen-choose">
+                      <Link href="/library/pronunciation/practice?mode=listen-choose">
                         <Mic />
                         {t("pronunciation.tones.read")}
                       </Link>

@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
 import { PRON_DEFAULT_SPEED, PRON_SPEEDS, setPronSpeed, usePronSpeed } from "./speech";
 
 export const PRON_TABS = [
-  { key: "overview", href: "/pronunciation", icon: LayoutGrid },
-  { key: "initials", href: "/pronunciation/initials", icon: BookOpen },
-  { key: "finals", href: "/pronunciation/finals", icon: Layers },
-  { key: "tones", href: "/pronunciation/tones", icon: Music },
-  { key: "sandhi", href: "/pronunciation/sandhi", icon: Waves },
-  { key: "practice", href: "/pronunciation/practice", icon: Target },
-  { key: "notes", href: "/pronunciation/notes", icon: NotebookPen },
+  { key: "overview", href: "/library/pronunciation", icon: LayoutGrid },
+  { key: "initials", href: "/library/pronunciation/initials", icon: BookOpen },
+  { key: "finals", href: "/library/pronunciation/finals", icon: Layers },
+  { key: "tones", href: "/library/pronunciation/tones", icon: Music },
+  { key: "sandhi", href: "/library/pronunciation/sandhi", icon: Waves },
+  { key: "practice", href: "/library/pronunciation/practice", icon: Target },
+  { key: "notes", href: "/library/pronunciation/notes", icon: NotebookPen },
 ] as const;
 
 /** Tiêu đề module + thanh tab (link, nên quay lại / chia sẻ được). Tab đang mở lấy theo đường dẫn. */

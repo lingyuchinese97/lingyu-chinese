@@ -57,6 +57,12 @@ export const pronunciation: Messages["pronunciation"] = {
     detail: "Details of {symbol}",
     filterLabel: "Filter finals",
     all: "All",
+    saveAll: "Save all to Vocabulary",
+    allSaved: "Saved to Vocabulary",
+    saveOne: "Save “{hanzi}” to My vocabulary",
+    inMine: "“{hanzi}” is already in My vocabulary",
+    saved: "Saved {added} words to My vocabulary ({skipped} already there). Edit them or add tags in My vocabulary.",
+    openMine: "Open",
   },
   note: {
     title: "Note: {label}",

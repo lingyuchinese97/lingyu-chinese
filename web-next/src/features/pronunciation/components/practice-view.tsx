@@ -35,7 +35,7 @@ export function PracticeView({ mode, questions: initial }: { mode: PracticeMode;
               return (
                 <li key={m}>
                   <Link
-                    href={`/pronunciation/practice?mode=${m}`}
+                    href={`/library/pronunciation/practice?mode=${m}`}
                     aria-current={m === mode ? "page" : undefined}
                     className={cn(
                       "flex h-full items-center gap-2.5 rounded-[12px] border px-2.5 py-2 outline-none focus-visible:shadow-[var(--focus-ring)] sm:gap-3 sm:px-3",

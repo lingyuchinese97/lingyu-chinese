@@ -84,7 +84,7 @@ const CARDS = [
   {
     key: "pronunciation",
     img: "/brand/ui/card-pronunciation.png",
-    href: "/pronunciation",
+    href: "/library/pronunciation",
     icon: AudioLines,
     badge: "音",
     bg: "bg-[linear-gradient(160deg,#DDF6EA_0%,#F1FBF6_100%)]",

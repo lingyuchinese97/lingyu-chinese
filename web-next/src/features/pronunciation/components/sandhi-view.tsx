@@ -160,7 +160,7 @@ export function SandhiView({
               </div>
             ))}
             <Link
-              href="/pronunciation/practice?mode=sandhi"
+              href="/library/pronunciation/practice?mode=sandhi"
               className="flex items-center gap-2 rounded-[12px] border border-dashed border-[#A9D3F8] px-3 py-2 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)]"
             >
               <Target className="size-5 shrink-0 text-blue-600" aria-hidden="true" />
@@ -316,7 +316,7 @@ export function SandhiView({
             )}
             {mine.length ? (
               <Link
-                href="/pronunciation/notes"
+                href="/library/pronunciation/notes"
                 className="mt-2 inline-block text-[14px] font-semibold text-blue-600 hover:underline"
               >
                 {t("pronunciation.tabs.notes")} →

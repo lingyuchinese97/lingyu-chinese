@@ -57,6 +57,13 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "2mb",
     },
   },
+  // Phát âm & Biến điệu chuyển vào Thư viện LingYu — link cũ vẫn mở được.
+  async redirects() {
+    return [
+      { source: "/pronunciation", destination: "/library/pronunciation", permanent: true },
+      { source: "/pronunciation/:path*", destination: "/library/pronunciation/:path*", permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

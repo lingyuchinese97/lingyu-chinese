@@ -45,7 +45,7 @@ export const sentences = {
   statusChanged: "Đã chuyển {count} câu sang {status}.",
   emptyTitle: "Chưa có câu nào",
   emptyDesc: "Thêm câu tiếng Trung và nghĩa tiếng Việt để luyện dịch mỗi ngày.",
-  sampleAdded: "Đã thêm {count} câu mẫu.",
+  fromLibrary: "Luyện dịch với câu của LingYu",
   form: {
     needChinese: "Nhập câu tiếng Trung trước khi tạo Pinyin.",
     saved: "Đã lưu thay đổi.",

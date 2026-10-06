@@ -526,7 +526,15 @@ export function openApiDocument() {
         }),
       },
       "/api/v1/vocab/sample": {
-        post: op(V, { summary: "Thêm bộ từ mẫu (bỏ qua từ đã có)", data: obj({ added: int }) }),
+        post: {
+          ...op(V, {
+            summary: "Thêm bộ từ mẫu (bỏ qua từ đã có)",
+            description:
+              "Dữ liệu thử cho kho của mình. Ứng dụng không còn dùng: nội dung LingYu nằm ở Thư viện (`/api/v1/library/*`), người học lưu bản sao vào kho rồi sửa / thêm tag.",
+            data: obj({ added: int }),
+          }),
+          deprecated: true,
+        },
       },
       "/api/v1/vocab/delete": {
         post: op(V, {
@@ -1388,7 +1396,15 @@ export function openApiDocument() {
         }),
       },
       "/api/v1/grammar/sample": {
-        post: op(G, { summary: "Thêm bộ ngữ pháp mẫu", data: obj({ added: int }) }),
+        post: {
+          ...op(G, {
+            summary: "Thêm bộ ngữ pháp mẫu",
+            description:
+              "Dữ liệu thử cho kho của mình. Ứng dụng không còn dùng: nội dung LingYu nằm ở Thư viện (`/api/v1/library/*`), người học lưu bản sao vào kho rồi sửa / thêm tag.",
+            data: obj({ added: int }),
+          }),
+          deprecated: true,
+        },
       },
 
       "/api/v1/sentences": {
@@ -1475,7 +1491,15 @@ export function openApiDocument() {
         }),
       },
       "/api/v1/sentences/sample": {
-        post: op(S, { summary: "Thêm bộ câu mẫu", data: obj({ added: int }) }),
+        post: {
+          ...op(S, {
+            summary: "Thêm bộ câu mẫu",
+            description:
+              "Dữ liệu thử cho kho của mình. Ứng dụng không còn dùng: nội dung LingYu nằm ở Thư viện (`/api/v1/library/*`), người học lưu bản sao vào kho rồi sửa / thêm tag.",
+            data: obj({ added: int }),
+          }),
+          deprecated: true,
+        },
       },
       "/api/v1/sentences/review/pool": {
         get: op(S, {
@@ -1934,6 +1958,22 @@ export function openApiDocument() {
         }),
       },
 
+      "/api/v1/pronunciation/sounds/{kind}/{symbol}/save": {
+        post: op(P, {
+          summary:
+            "Lưu từ ví dụ của một thanh mẫu / vận mẫu vào Từ vựng của tôi (tag Phát âm + tên âm; từ đã có bỏ qua)",
+          description:
+            "Thân request có thể bỏ trống (= lưu mọi ví dụ của âm). Bản sao trong Từ vựng của tôi sửa / thêm tag tự do.",
+          params: [
+            { name: "kind", in: "path", required: true, schema: { enum: ["initials", "finals"] } },
+            pathStr("symbol", "Ký hiệu âm, vd b, zh, ang, üe"),
+          ],
+          body: obj({ hanzi: { type: ["string", "null"], maxLength: 12 } }, []),
+          example: { hanzi: "爸爸" },
+          data: obj({ added: int, skipped: int }),
+          errors: [404],
+        }),
+      },
       "/api/v1/pronunciation": {
         get: op(P, {
           summary: "Nội dung bài học: thanh mẫu, vận mẫu, thanh điệu, quy tắc biến điệu (chữ có sẵn vi / en)",

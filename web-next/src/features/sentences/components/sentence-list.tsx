@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CheckCircle2,
-  Database,
+  Library,
   MoreHorizontal,
   Pencil,
   PlayCircle,
@@ -31,7 +31,6 @@ import { FAV_TAG, type SentenceListParams } from "../schema";
 import type { SentenceItem, SentenceList } from "../service";
 import {
   deleteSentencesAction,
-  importSampleSentencesAction,
   setSentenceStatusAction,
   startSentenceReviewAction,
   toggleSentenceFavoriteAction,
@@ -245,7 +244,7 @@ export function SentenceListView({ data, params }: { data: SentenceList; params:
 
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
           {data.totalAll === 0 ? (
-            <EmptyAll onSampled={refresh} />
+            <EmptyAll />
           ) : data.total === 0 ? (
             <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
               <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
@@ -462,9 +461,8 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   );
 }
 
-function EmptyAll({ onSampled }: { onSampled: () => void }) {
+function EmptyAll() {
   const t = useT();
-  const [busy, setBusy] = React.useState(false);
   return (
     <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
       <Image src="/brand/lingyu-mascot.png" alt="" width={180} height={120} className="h-auto w-[180px]" />
@@ -477,20 +475,11 @@ function EmptyAll({ onSampled }: { onSampled: () => void }) {
             {t("sentences.add")}
           </Link>
         </Button>
-        <Button
-          variant="secondary"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            const r = await importSampleSentencesAction();
-            setBusy(false);
-            if (!r.ok) return void toast.error(r.message);
-            toast.success(t("sentences.sampleAdded", { count: r.data }));
-            onSampled();
-          }}
-        >
-          <Database />
-          {busy ? t("vocab.sampleAdding") : t("vocab.useSample")}
+        <Button asChild variant="secondary">
+          <Link href="/translate">
+            <Library />
+            {t("sentences.fromLibrary")}
+          </Link>
         </Button>
       </div>
     </div>

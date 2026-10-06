@@ -110,7 +110,7 @@ gọi được qua API — thêm / sửa / xoá / tìm, thẻ, lưu, chia sẻ v
 và bài ôn dịch câu, đánh dấu bộ thủ đã thuộc, nội dung bài học và nộp bài (server tự chấm), chuông thông báo, hồ sơ, đổi mật khẩu,
 xoá tài khoản, xuất / nhập dữ liệu, số liệu Trang chủ.
 
-**Phát âm** (`/api/v1/pronunciation*`): nội dung bài học (thanh mẫu, vận mẫu, thanh điệu, quy tắc biến điệu, chữ có sẵn vi / en),
+**Phát âm** (`/api/v1/pronunciation*`, giao diện ở Thư viện LingYu `/library/pronunciation`): nội dung bài học (thanh mẫu, vận mẫu, thanh điệu, quy tắc biến điệu, chữ có sẵn vi / en),
 tạo bài tự luyện theo chế độ (câu hỏi kèm đáp án, không lưu điểm), ghi chú phát âm của tôi (thêm / sửa / xoá; ghi chú gắn mục qua
 `topic`; người khác → 404).
 

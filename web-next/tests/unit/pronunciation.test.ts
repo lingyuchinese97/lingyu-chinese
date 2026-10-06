@@ -164,8 +164,8 @@ describe("nội dung", () => {
       vi: "Hai thanh 3 liên tiếp · 你好",
       en: "Two third tones · 你好",
     });
-    expect(topicHref("initial:zh")).toBe("/pronunciation/initials?s=zh");
-    expect(topicHref("sandhi:bu:1")).toBe("/pronunciation/sandhi?rule=bu");
+    expect(topicHref("initial:zh")).toBe("/library/pronunciation/initials?s=zh");
+    expect(topicHref("sandhi:bu:1")).toBe("/library/pronunciation/sandhi?rule=bu");
   });
 });
 

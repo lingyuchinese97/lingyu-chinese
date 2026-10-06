@@ -20,7 +20,7 @@ export default async function PronunciationPage() {
   const cards = [
     {
       key: "initials",
-      href: "/pronunciation/initials",
+      href: "/library/pronunciation/initials",
       icon: BookOpen,
       tone: "bg-blue-50 text-blue-600",
       chip: "bg-blue-50 text-blue-700",
@@ -30,7 +30,7 @@ export default async function PronunciationPage() {
     },
     {
       key: "finals",
-      href: "/pronunciation/finals",
+      href: "/library/pronunciation/finals",
       icon: Layers,
       tone: "bg-green-50 text-green-700",
       chip: "bg-green-50 text-green-700",
@@ -40,7 +40,7 @@ export default async function PronunciationPage() {
     },
     {
       key: "tones",
-      href: "/pronunciation/tones",
+      href: "/library/pronunciation/tones",
       icon: Music,
       tone: "bg-amber-50 text-amber",
       chip: "bg-amber-50 text-[#8A5300]",
@@ -50,7 +50,7 @@ export default async function PronunciationPage() {
     },
     {
       key: "sandhi",
-      href: "/pronunciation/sandhi",
+      href: "/library/pronunciation/sandhi",
       icon: Waves,
       tone: "bg-red-50 text-red",
       chip: "bg-red-50 text-red",
@@ -115,13 +115,13 @@ export default async function PronunciationPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link href="/pronunciation/practice">
+            <Link href="/library/pronunciation/practice">
               <Target />
               {t("pronunciation.overview.startPractice")}
             </Link>
           </Button>
           <Button asChild variant="secondary">
-            <Link href="/pronunciation/notes">
+            <Link href="/library/pronunciation/notes">
               <NotebookPen />
               {t("pronunciation.overview.openNotes")}
               <span className="rounded-full bg-blue-50 px-2 text-[13px]">

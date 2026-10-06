@@ -9,7 +9,7 @@ test("Phát âm: tổng quan → thanh mẫu (ghi chú riêng) → vận mẫu (
 }) => {
   test.setTimeout(120_000);
   await register(page, "Người Phát Âm", "pron");
-  await page.goto("/pronunciation");
+  await page.goto("/library/pronunciation");
   await expect(page.getByRole("heading", { level: 1, name: "Phát âm & Biến điệu" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Tổng quan" })).toHaveAttribute("aria-current", "page");
   await expect(page.getByText("21 thanh mẫu")).toBeVisible();

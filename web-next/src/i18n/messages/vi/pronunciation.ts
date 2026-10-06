@@ -54,6 +54,13 @@ export const pronunciation = {
     detail: "Chi tiết âm {symbol}",
     filterLabel: "Lọc vận mẫu",
     all: "Tất cả",
+    saveAll: "Lưu cả âm vào Từ vựng",
+    allSaved: "Đã lưu vào Từ vựng",
+    saveOne: "Lưu “{hanzi}” vào Từ vựng của tôi",
+    inMine: "“{hanzi}” đã có trong Từ vựng của tôi",
+    saved:
+      "Đã lưu {added} từ vào Từ vựng của tôi (bỏ qua {skipped} từ đã có). Vào Từ vựng của tôi để sửa hoặc thêm tag.",
+    openMine: "Mở",
   },
   note: {
     title: "Ghi chú: {label}",

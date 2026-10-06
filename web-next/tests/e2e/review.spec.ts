@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { SAMPLE_VOCABULARY } from "../../src/data/sample-vocab";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
@@ -11,7 +11,7 @@ const byMeaning = new Map(SAMPLE_VOCABULARY.map((w) => [w.meaningVi, w]));
 async function withSample(page: Page) {
   await register(page, "Người Ôn", "rv");
   await page.goto("/vocabulary");
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "vocab");
   await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
 }
 

@@ -162,17 +162,6 @@ export async function deleteTagAction(id: string): Promise<ActionResult> {
   }
 }
 
-export async function importSampleAction(): Promise<ActionResult<{ added: number }>> {
-  try {
-    const u = await currentUserOrThrow();
-    const added = await svc.importSample(u.id);
-    revalidatePath("/vocabulary");
-    return { ok: true, data: { added } };
-  } catch (e) {
-    return fail(e);
-  }
-}
-
 // ---------- Chia sẻ ----------
 
 const emailsSchema = z.array(z.string().max(254)).max(50);

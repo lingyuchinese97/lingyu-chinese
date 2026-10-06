@@ -49,9 +49,9 @@ export const isTopic = (topic: string) => topicLabel(topic) !== null;
 /** Trang chứa mục (để mở lại từ "Ghi chú của tôi"). */
 export function topicHref(topic: string) {
   const [kind, a] = topic.split(":");
-  if (kind === "initial") return `/pronunciation/initials?s=${encodeURIComponent(a ?? "")}`;
-  if (kind === "final") return `/pronunciation/finals?s=${encodeURIComponent(a ?? "")}`;
-  if (kind === "tone") return "/pronunciation/tones";
-  if (kind === "sandhi" && a && a !== "general") return `/pronunciation/sandhi?rule=${a}`;
-  return "/pronunciation/sandhi";
+  if (kind === "initial") return `/library/pronunciation/initials?s=${encodeURIComponent(a ?? "")}`;
+  if (kind === "final") return `/library/pronunciation/finals?s=${encodeURIComponent(a ?? "")}`;
+  if (kind === "tone") return "/library/pronunciation/tones";
+  if (kind === "sandhi" && a && a !== "general") return `/library/pronunciation/sandhi?rule=${a}`;
+  return "/library/pronunciation/sandhi";
 }

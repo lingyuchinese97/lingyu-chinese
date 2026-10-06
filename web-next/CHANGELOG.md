@@ -6,6 +6,18 @@
 
 ### Changed
 
+- **Nội dung của LingYu nằm ở Thư viện LingYu; bản của bạn nằm ở kho của bạn**:
+  - **Phát âm & Biến điệu** chuyển vào Thư viện: `/library/pronunciation/*` (breadcrumb Thư viện / Phát âm). Link cũ `/pronunciation/*`
+    tự chuyển sang địa chỉ mới; mục Phát âm bỏ khỏi thanh bên (vào từ Thư viện). Ghi chú phát âm vẫn là của riêng bạn.
+  - **Lưu từ ví dụ phát âm vào Từ vựng của tôi**: mỗi từ ví dụ của thanh mẫu / vận mẫu có nút lưu, và nút **Lưu cả âm** — bản sao mang tag
+    “Phát âm” + “Thanh mẫu b” / “Vận mẫu ang”, sửa nghĩa / thêm tag thoải mái trong Từ vựng của tôi. API
+    `POST /api/v1/pronunciation/sounds/{initials|finals}/{symbol}/save`.
+  - **Bỏ “Dùng dữ liệu mẫu”** ở Từ vựng của tôi, Ngữ pháp của tôi, Kho câu và Cài đặt: thay bằng liên kết **Lấy từ Thư viện LingYu**
+    (kho câu → Luyện dịch với câu của LingYu). API `…/sample` vẫn chạy (đánh dấu deprecated).
+  - **Sau khi lưu có lối tắt sửa / thêm tag**: lưu bài ngữ pháp → nút thành **Đã lưu · Sửa / thêm tag** (mở bản sao trong Ngữ pháp của tôi);
+    lưu bộ / từ vựng → thông báo có nút mở đúng nhóm trong Từ vựng của tôi. API bài ngữ pháp trả thêm `savedId`; lưu lại bài đã lưu trả
+    `{ added: false, id }`.
+
 - **Luyện dịch theo “Từ vựng của tôi” — ưu tiên câu quen, báo rõ từ mới**: câu có nhiều từ trong kho của bạn nhất (ít từ mới nhất) được
   chọn trước. Mỗi câu hiện khối **“Từ mới trong câu”** (từ chưa có trong Từ vựng của tôi, kèm pinyin + nghĩa) với nút **+** thêm nhanh vào
   kho (tag “Luyện dịch”). Dịch sang tiếng Trung: chỉ báo số từ mới, danh sách hiện khi xem gợi ý hoặc đã trả lời (không lộ đáp án). API

@@ -34,15 +34,21 @@ async function mine(userId: string, table: typeof libraryLearned | typeof librar
 }
 /** Tiêu đề khi lưu vào Ngữ pháp của tôi — cả hai ngôn ngữ để nhận ra bài đã lưu dù đổi ngôn ngữ. */
 const titleOf = (g: LibGrammar, l: Locale) => `${g.zh} – ${tr(g.name, l)}`.slice(0, 120);
-async function savedIds(userId: string, points: LibGrammar[]) {
+/** Bài đã lưu → id bản sao trong Ngữ pháp của tôi (để mở sửa / thêm tag). */
+async function savedCopies(userId: string, points: LibGrammar[]) {
   const titles = points.flatMap((g) => [titleOf(g, "vi"), titleOf(g, "en")]);
-  if (!titles.length) return new Set<string>();
+  if (!titles.length) return new Map<string, string>();
   const rows = await db
-    .select({ title: grammar.title })
+    .select({ id: grammar.id, title: grammar.title })
     .from(grammar)
     .where(and(eq(grammar.userId, userId), inArray(grammar.title, titles)));
-  const have = new Set(rows.map((r) => r.title));
-  return new Set(points.filter((g) => have.has(titleOf(g, "vi")) || have.has(titleOf(g, "en"))).map((g) => g.id));
+  const byTitle = new Map(rows.map((r) => [r.title, r.id]));
+  const out = new Map<string, string>();
+  for (const g of points) {
+    const id = byTitle.get(titleOf(g, "vi")) ?? byTitle.get(titleOf(g, "en"));
+    if (id) out.set(g.id, id);
+  }
+  return out;
 }
 
 function card(g: LibGrammar, l: Locale, learned: Set<string>, fav: Set<string>) {
@@ -124,12 +130,14 @@ export async function getLibGrammar(userId: string, id: string, l: Locale) {
   const [learned, fav, saved] = await Promise.all([
     mine(userId, libraryLearned),
     mine(userId, libraryFavorite),
-    savedIds(userId, [g]),
+    savedCopies(userId, [g]),
   ]);
   const level = LIB_GRAMMAR.filter((x) => x.hsk === g.hsk).sort((a, b) => a.no - b.no);
   return {
     ...card(g, l, learned, fav),
     saved: saved.has(g.id),
+    /** Id bản sao trong Ngữ pháp của tôi (null = chưa lưu). */
+    savedId: saved.get(g.id) ?? null,
     intro: tr(g.intro, l),
     structure: g.structure.map((s) => ({ zh: s.zh, kind: s.kind, label: tr(s.label, l) })),
     usage: g.usage.map((x) => tr(x, l)),
@@ -185,7 +193,8 @@ export async function setLibGrammarFavorite(userId: string, id: string, on: bool
 /** Lưu bài vào Ngữ pháp của tôi (tag "Thư viện LingYu" + HSK). Đã lưu rồi thì không tạo bản trùng. */
 export async function saveLibGrammarToMine(userId: string, id: string, l: Locale) {
   const g = pointOf(id);
-  if ((await savedIds(userId, [g])).has(g.id)) return { added: false };
+  const have = (await savedCopies(userId, [g])).get(g.id);
+  if (have) return { added: false, id: have };
   const input = grammarInputSchema.parse({
     title: titleOf(g, l),
     meaning: [tr(g.summary, l), ...g.meaning.map((x) => tr(x, l))].join("\n"),

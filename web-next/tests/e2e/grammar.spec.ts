@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
@@ -70,8 +70,7 @@ test("chia sẻ ngữ pháp: người nhận xem trước (không thấy ghi ch�
   const a = await (await browser.newContext()).newPage();
   await register(a, "Người Gửi", "ga");
   await a.goto("/grammar");
-  await a.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
-  await expect(a.getByText("Đã thêm 3 ngữ pháp mẫu.")).toBeVisible();
+  await seedSample(a, "grammar");
   await a.getByRole("link", { name: "Câu so sánh với 比" }).click();
   await a.getByRole("link", { name: "Chỉnh sửa" }).click();
   await a.getByLabel(/Ghi chú cá nhân/).fill("GHI CHÚ RIÊNG CỦA A");
@@ -113,7 +112,7 @@ test("người không được mời không xem được ngữ pháp của ngư�
   const a = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
   await register(a, "Chủ", "gx");
   await a.goto("/grammar");
-  await a.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(a, "grammar");
   await a.getByRole("link", { name: "Phủ định với 不" }).click();
   await expect(a).toHaveURL(/\/grammar\/[0-9a-f-]{36}$/);
   const url = a.url();

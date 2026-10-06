@@ -93,9 +93,7 @@ export const vocab = {
   reviewFailed: "Không thể tạo bài ôn tập.",
   emptyTitle: "Chưa có từ vựng nào",
   emptyDesc: "Thêm từ vựng đầu tiên để bắt đầu xây dựng kho từ của riêng bạn.",
-  sampleAdded: "Đã thêm {count} từ vựng mẫu.",
-  sampleAdding: "Đang thêm...",
-  useSample: "Dùng dữ liệu mẫu",
+  fromLibrary: "Lấy từ Thư viện LingYu",
   form: {
     editSub: "Cập nhật thông tin cho từ vựng của bạn.",
     newSub: "Điền thông tin để thêm từ vựng vào danh sách của bạn.",

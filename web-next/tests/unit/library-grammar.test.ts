@@ -4,8 +4,11 @@ import { LIB_GRAMMAR, LIB_GRAMMAR_BY_ID } from "@/data/library/grammar";
 import { grammarListSchema } from "@/features/library/schema";
 import * as g from "@/features/library/grammar";
 import { LibraryError } from "@/features/library/service";
-import { listGrammar } from "@/features/grammar/service";
-import { grammarListSchema as myGrammarListSchema } from "@/features/grammar/schema";
+import { getOwnGrammar, listGrammar, updateGrammar } from "@/features/grammar/service";
+import {
+  grammarInputSchema as myGrammarInputSchema,
+  grammarListSchema as myGrammarListSchema,
+} from "@/features/grammar/schema";
 import { cleanupUsers, makeUser } from "./helpers";
 
 const p = (x: Record<string, unknown> = {}) => grammarListSchema.parse(x);
@@ -100,8 +103,9 @@ describe("ngữ pháp Thư viện: lọc, đã học, yêu thích, lưu", () => 
   it("lưu vào Ngữ pháp của tôi: chỉ vào kho người bấm, tag Thư viện + HSK, bấm lại không trùng (kể cả đổi ngôn ngữ)", async () => {
     const r = await g.saveLibGrammarToMine(A, "ba", "vi");
     expect(r.added).toBe(true);
-    expect(await g.saveLibGrammarToMine(A, "ba", "vi")).toEqual({ added: false });
-    expect(await g.saveLibGrammarToMine(A, "ba", "en")).toEqual({ added: false });
+    // Đã lưu → trả lại id bản sao (để mở sửa / thêm tag), không tạo bản trùng.
+    expect(await g.saveLibGrammarToMine(A, "ba", "vi")).toEqual({ added: false, id: r.id });
+    expect(await g.saveLibGrammarToMine(A, "ba", "en")).toEqual({ added: false, id: r.id });
     const mine = (await listGrammar(A, myGrammarListSchema.parse({}))).items;
     expect(mine).toHaveLength(1);
     expect(mine[0]!.title).toBe(`把 – ${LIB_GRAMMAR_BY_ID.get("ba")!.name.vi}`);
@@ -109,7 +113,34 @@ describe("ngữ pháp Thư viện: lọc, đã học, yêu thích, lưu", () => 
     expect(mine[0]!.examples).toHaveLength(LIB_GRAMMAR_BY_ID.get("ba")!.examples.length);
     expect(mine[0]!.tags.map((t) => t.name)).toEqual(expect.arrayContaining(["Thư viện LingYu", "HSK3"]));
     expect((await listGrammar(B, myGrammarListSchema.parse({}))).total).toBe(0);
-    expect((await g.getLibGrammar(A, "ba", "vi")).saved).toBe(true);
-    expect((await g.getLibGrammar(B, "ba", "vi")).saved).toBe(false);
+    expect(await g.getLibGrammar(A, "ba", "vi")).toMatchObject({ saved: true, savedId: r.id });
+    expect(await g.getLibGrammar(B, "ba", "vi")).toMatchObject({ saved: false, savedId: null });
+  });
+
+  it("bản sao là của người học: sửa / thêm tag trong Ngữ pháp của tôi không đổi bài gốc của Thư viện", async () => {
+    const r = await g.saveLibGrammarToMine(B, "bei", "vi");
+    const own = (await getOwnGrammar(B, r.id))!;
+    await updateGrammar(
+      B,
+      r.id,
+      myGrammarInputSchema.parse({
+        title: own.title,
+        meaning: "Ghi nhớ riêng của tôi",
+        structure: own.structure,
+        notes: own.notes,
+        examples: own.examples,
+        tags: [...own.tags.map((t) => t.name), "Câu bị động", "Ôn thi"],
+      }),
+    );
+    const mine = (await getOwnGrammar(B, r.id))!;
+    expect(mine.meaning).toBe("Ghi nhớ riêng của tôi");
+    expect(mine.tags.map((t) => t.name)).toEqual(
+      expect.arrayContaining(["Thư viện LingYu", "HSK3", "Câu bị động", "Ôn thi"]),
+    );
+    // Bài gốc vẫn như cũ; vẫn nhận ra là đã lưu (theo tiêu đề).
+    const lib = await g.getLibGrammar(B, "bei", "vi");
+    expect(lib.summary).toBe(LIB_GRAMMAR_BY_ID.get("bei")!.summary.vi);
+    expect(lib.savedId).toBe(r.id);
+    expect(await getOwnGrammar(A, r.id)).toBeNull();
   });
 });

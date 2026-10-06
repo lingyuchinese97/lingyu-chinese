@@ -100,6 +100,7 @@ export const libhub = {
   start: "Bắt đầu học",
   continue: "Tiếp tục học",
   saveSet: "Lưu bộ từ vựng",
+  openMine: "Sửa / thêm tag",
   savedSet: "Đã lưu {added} từ vào Từ vựng của tôi ({skipped} từ đã có).",
   share: "Chia sẻ",
   copied: "Đã sao chép liên kết.",

@@ -1,4 +1,4 @@
-// Dữ liệu mẫu — CHỈ nạp khi người dùng bấm "Dùng dữ liệu mẫu" (chép từ web/src/services/api/sampleData.js).
+// Dữ liệu mẫu — CHỈ nạp qua API POST /api/v1/…/sample (dữ liệu thử; nội dung LingYu cho người học nằm ở Thư viện) (chép từ web/src/services/api/sampleData.js).
 export type SampleWord = {
   hanzi: string;
   pinyin: string;

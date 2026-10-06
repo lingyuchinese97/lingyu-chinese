@@ -1,6 +1,5 @@
 import type { Messages } from "@/i18n/messages/vi";
 import {
-  AudioLines,
   BarChart3,
   BookOpen,
   BookOpenText,
@@ -45,7 +44,6 @@ export const NAV: NavItem[] = [
   { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png", group: 1 },
   { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png", group: 1 },
   { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png", group: 1 },
-  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, img: "/brand/ui/nav-pronunciation.png", group: 1 },
   { key: "listening", href: "/listening", icon: Headphones, img: "/brand/ui/nav-listening.png", group: 1 },
   { key: "reading", href: "/reading", icon: BookOpenText, img: "/brand/ui/nav-reading.png", group: 1 },
   { key: "sentences", href: "/translate", icon: MessagesSquare, img: "/brand/ui/nav-translation.png", group: 1 },
@@ -97,5 +95,7 @@ export function shellState(pathname: string): ShellState {
     (first === "lessons" && seg.length === 3 && seg[2] !== "result");
   if (first === "review" && seg[1] === "session") return { nav, quote: "shell.quote.reviewSession", focus };
   if (first === "review" && seg[1] === "result") return { nav, quote: "shell.quote.reviewResult", focus };
+  // Phát âm & Biến điệu nằm trong Thư viện LingYu (nội dung LingYu biên soạn).
+  if (first === "library" && seg[1] === "pronunciation") return { nav, quote: QUOTES.pronunciation ?? null, focus };
   return { nav, quote: (nav && QUOTES[nav]) ?? null, focus };
 }

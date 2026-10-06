@@ -3,6 +3,7 @@ import { requireUser } from "@/server/session";
 import { getT } from "@/i18n/server";
 import { INITIAL_GROUPS, INITIALS } from "@/data/pronunciation";
 import { topicNotes } from "@/features/pronunciation/service";
+import { savedSoundExamples } from "@/features/pronunciation/save";
 import { SoundBrowser } from "@/features/pronunciation/components/sound-browser";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,6 +23,7 @@ export default async function Page({ searchParams }: { searchParams: SP }) {
       groups={INITIAL_GROUPS}
       items={INITIALS}
       notes={await topicNotes(user.id)}
+      saved={await savedSoundExamples(user.id, "initial")}
       selected={typeof s === "string" ? s : undefined}
     />
   );

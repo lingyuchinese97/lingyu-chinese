@@ -100,6 +100,7 @@ export const libhub = {
   start: "Start learning",
   continue: "Continue",
   saveSet: "Save set",
+  openMine: "Edit / add tags",
   savedSet: "Saved {added} words to My vocabulary ({skipped} already there).",
   share: "Share",
   copied: "Link copied.",

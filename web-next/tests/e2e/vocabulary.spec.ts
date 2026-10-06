@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
@@ -12,7 +12,7 @@ test("dữ liệu mẫu, tìm kiếm bỏ dấu, lọc tag, phân trang", async 
   await register(page, "Người Học", "vl");
   await page.goto("/vocabulary");
   await expect(page.getByRole("heading", { name: "Chưa có từ vựng nào" })).toBeVisible();
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "vocab");
   await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
 
   await page.getByPlaceholder(/Tìm kiếm từ vựng/).fill("nihao");
@@ -38,7 +38,7 @@ test("dữ liệu mẫu, tìm kiếm bỏ dấu, lọc tag, phân trang", async 
 test("thẻ tag: tạo, đổi tên, xoá tag (giữ từ); dạng lưới; hiển thị x–y", async ({ page, isMobile }) => {
   await register(page, "Người Học", "vtag");
   await page.goto("/vocabulary");
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "vocab");
   await expect(page.getByRole("heading", { name: "Từ vựng của tôi (24)" })).toBeVisible();
   await expect(page.getByText("Hiển thị 1–8 trong")).toBeVisible();
   const cards = page.getByRole("group", { name: "Lọc nhanh theo tag" });

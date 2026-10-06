@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
@@ -35,10 +35,10 @@ test("a11y (axe): không có lỗi serious/critical ở các trang chính", asyn
 
   await register(page, "Người Học", "a11y");
   await page.goto("/vocabulary");
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "vocab");
   await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
   await page.goto("/sentences");
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "sentences");
   await expect(page.getByText("12 câu", { exact: true })).toBeVisible();
   for (const path of [
     "/home",
@@ -55,14 +55,14 @@ test("a11y (axe): không có lỗi serious/critical ở các trang chính", asyn
     "/lessons",
     "/lessons/bai1",
     "/lessons/bai1/blending",
-    "/pronunciation",
-    "/pronunciation/initials",
-    "/pronunciation/finals",
-    "/pronunciation/tones",
-    "/pronunciation/sandhi",
-    "/pronunciation/practice",
-    "/pronunciation/practice?mode=listen-type",
-    "/pronunciation/notes",
+    "/library/pronunciation",
+    "/library/pronunciation/initials",
+    "/library/pronunciation/finals",
+    "/library/pronunciation/tones",
+    "/library/pronunciation/sandhi",
+    "/library/pronunciation/practice",
+    "/library/pronunciation/practice?mode=listen-type",
+    "/library/pronunciation/notes",
     "/translate",
     "/translate/bank",
     "/progress",
