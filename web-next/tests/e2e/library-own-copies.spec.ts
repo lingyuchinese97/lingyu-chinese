@@ -27,9 +27,12 @@ test("Phát âm: bài của LingYu ở Thư viện; mục Phát âm & Biến đi
   await expect(detail.getByRole("button", { name: "Đã lưu vào Phát âm của tôi" })).toBeDisabled();
 
   // Thanh bên vẫn có Phát âm & Biến điệu → kho của tôi.
+  // (Trên điện thoại thanh bên nằm trong menu ☰ — chỉ kiểm tra link rồi mở thẳng.)
   await page.goto("/home");
-  await page.getByRole("link", { name: "Phát âm & Biến điệu" }).first().click();
-  await expect(page).toHaveURL(/\/pronunciation$/);
+  await expect(
+    page.getByRole("complementary", { name: "Điều hướng chính" }).getByRole("link", { name: "Phát âm & Biến điệu" }),
+  ).toHaveAttribute("href", "/pronunciation");
+  await page.goto("/pronunciation");
   await expect(page.getByRole("heading", { level: 1, name: /Phát âm & Biến điệu của tôi/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Từ & âm của tôi \(2\)/ })).toBeVisible();
   await expect(page.getByRole("region", { name: "爸爸" }).getByRole("link", { name: "Thanh mẫu b" })).toBeVisible();
