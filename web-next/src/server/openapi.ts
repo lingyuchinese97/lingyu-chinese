@@ -1253,8 +1253,19 @@ export function openApiDocument() {
             q("tag", { type: "string", format: "uuid" }, "id thẻ"),
             q("sort", { enum: ["updated", "newest", "oldest", "az", "za"] }),
             q("view", { enum: ["all", "saved"] }),
+            q(
+              "hsk",
+              { enum: ["", "1", "2", "3", "4", "5", "6", "other"] },
+              "Cấp HSK theo thẻ (HSK1, HSK 2, HSK3_Bài 1…); other = không có thẻ HSK",
+            ),
           ],
-          data: obj({ items: { type: "array", items: ref("Grammar") }, total: int, totalAll: int, savedCount: int }),
+          data: obj({
+            items: { type: "array", items: ref("Grammar") },
+            total: int,
+            totalAll: int,
+            savedCount: int,
+            hskCounts: { type: "object", additionalProperties: int, description: "Số bài theo cấp: 1–6, other" },
+          }),
         }),
         post: op(G, {
           summary: "Thêm ngữ pháp",

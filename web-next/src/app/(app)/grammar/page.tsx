@@ -21,6 +21,7 @@ export default async function GrammarPage({ searchParams }: { searchParams: SP }
     tag: one(sp.tag) ?? "",
     sort: one(sp.sort) ?? "updated",
     view: one(sp.view) ?? "all",
+    hsk: one(sp.hsk) ?? "",
   });
   // Thẻ không còn tồn tại → bỏ lọc.
   const params = { ...parsed, tag: tags.some((t) => t.id === parsed.tag) ? parsed.tag : "" };

@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/toaster";
 import { SpeakButton } from "@/components/speak-button";
 import { useT } from "@/i18n/client";
 import { G_LIMITS } from "../schema";
+import { alignPinyin } from "../align";
 import { savePersonalNoteAction } from "../actions";
 
 async function copy(text: string, ok: string, fail: string) {
@@ -156,5 +157,35 @@ export function PersonalNoteCard({ grammarId, initial }: { grammarId: string; in
         </Button>
       ) : null}
     </div>
+  );
+}
+
+/** Câu ví dụ: mỗi từ có pinyin ngay bên dưới (như thiết kế); không ghép được thì câu + pinyin hai dòng. */
+export function RubySentence({ chinese, pinyin }: { chinese: string; pinyin: string }) {
+  const parts = pinyin ? alignPinyin(chinese, pinyin) : null;
+  if (!parts)
+    return (
+      <div>
+        <div className="hanzi text-[22px] leading-snug font-bold text-navy-900" lang="zh">
+          {chinese}
+        </div>
+        {pinyin ? <div className="text-[15px] pinyin">{pinyin}</div> : null}
+      </div>
+    );
+  return (
+    <p className="flex flex-wrap items-end gap-x-3 gap-y-1.5">
+      <span className="sr-only" lang="zh">
+        {chinese}
+      </span>
+      {parts.map((p, i) => (
+        <span key={i} aria-hidden="true" className="inline-flex flex-col items-start">
+          <span lang="zh" className="hanzi text-[22px] leading-tight font-bold text-navy-900">
+            {p.zh}
+          </span>
+          <span className="text-[14px] leading-tight pinyin">{p.py}</span>
+        </span>
+      ))}
+      <span className="sr-only">{pinyin}</span>
+    </p>
   );
 }

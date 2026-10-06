@@ -4,7 +4,7 @@ import { db } from "@/server/db/client";
 import { pool } from "@/server/db/pool";
 import { user } from "@/server/db/schema";
 import * as g from "@/features/grammar/service";
-import { grammarInputSchema, grammarListSchema, parseEmails } from "@/features/grammar/schema";
+import { hskOfTag, grammarInputSchema, grammarListSchema, parseEmails } from "@/features/grammar/schema";
 import { listNotifications, markRead, unreadCount } from "@/features/notifications/service";
 import { splitStructure } from "@/features/grammar/components/structure-box";
 import { cleanupUsers, makeUser } from "./helpers";
@@ -128,6 +128,21 @@ describe("ngữ pháp — CRUD", () => {
   it("dữ liệu mẫu bỏ qua bài trùng tiêu đề", async () => {
     expect(await g.importSampleGrammar(C.id)).toBe(3);
     expect(await g.importSampleGrammar(C.id)).toBe(0);
+  });
+
+  it("lọc theo cấp HSK lấy từ thẻ (HSK1, HSK 2, HSK3_Bài 1); không có thẻ HSK → Khác; đếm số bài mỗi cấp", async () => {
+    await g.createGrammar(C.id, input({ title: "Bài HSK3", tags: ["HSK3_Bài 1"] }));
+    await g.createGrammar(C.id, input({ title: "Không cấp", tags: ["Tự học"] }));
+    const all = await g.listGrammar(C.id, params());
+    expect(all.hskCounts).toMatchObject({ "1": 2, "2": 1, "3": 1, other: 1 });
+    expect(
+      (await g.listGrammar(C.id, params({ hsk: "1" }))).items.every((x) => x.tags.some((t) => t.name === "HSK1")),
+    ).toBe(true);
+    expect((await g.listGrammar(C.id, params({ hsk: "3" }))).items.map((x) => x.title)).toEqual(["Bài HSK3"]);
+    expect((await g.listGrammar(C.id, params({ hsk: "other" }))).items.map((x) => x.title)).toEqual(["Không cấp"]);
+    expect(hskOfTag("HSK 2")).toBe(2);
+    expect(hskOfTag("hsk12")).toBeNull();
+    expect(hskOfTag("Câu hỏi")).toBeNull();
   });
 });
 

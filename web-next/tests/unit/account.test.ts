@@ -182,7 +182,7 @@ describe("xuất / nhập dữ liệu", () => {
     expect(bv.find((v) => v.hanzi === "水")!.meaningVi).toBe("của B");
     expect(bv.find((v) => v.hanzi === "假")!.imageId).toBeNull();
     expect(await db.select().from(srsCard).where(eq(srsCard.userId, B.id))).toHaveLength(3);
-    const bg = await g.listGrammar(B.id, { q: "", tag: "", sort: "updated", view: "all" });
+    const bg = await g.listGrammar(B.id, { q: "", tag: "", sort: "updated", view: "all", hsk: "" });
     expect(bg.items[0]!.title).toBe("Câu hỏi với 吗");
     expect((await g.getOwnGrammar(B.id, bg.items[0]!.id))!.personalNote).toBe("ghi chú riêng");
 
