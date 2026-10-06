@@ -50,11 +50,11 @@ test("thẻ tag: tạo, đổi tên, xoá tag (giữ từ); dạng lưới; hi�
   await expect(page.getByText("Hiển thị 1–8 trong")).toBeVisible();
   const cards = page.getByRole("group", { name: "Lọc nhanh theo tag" });
 
-  await cards.getByRole("button", { name: "Tạo tag mới" }).click();
+  await cards.getByRole("button", { name: "Thêm tag" }).click();
   await page.getByRole("dialog").getByLabel("Tên tag").fill("Ôn thi");
   await page.getByRole("dialog").getByRole("button", { name: "Tạo tag" }).click();
   await expect(page.getByText("Đã tạo tag “Ôn thi”.")).toBeVisible();
-  await expect(cards.getByRole("button", { name: /^Ôn thi\s*0 từ/ })).toBeVisible();
+  await expect(cards.getByRole("button", { name: /^Ôn thi\s*0$/ })).toBeVisible();
 
   await cards.getByRole("button", { name: /^Du lịch/ }).click();
   await expect(page.getByText("2 từ vựng", { exact: true })).toBeVisible();
@@ -148,7 +148,9 @@ test("người khác không xem được từ vựng của mình; API ảnh cũ 
   await a.getByRole("button", { name: "Lưu từ vựng" }).click();
   await expect(a).toHaveURL(/\/vocabulary$/);
   await expect(a.getByText("Đã thêm “秘密” vào danh sách.")).toBeVisible();
-  const editLink = a.getByRole("link", { name: "Sửa 秘密" });
+  // Sửa nằm trong hộp chi tiết (nút con mắt) và menu "…" của dòng.
+  await a.getByRole("button", { name: "Xem chi tiết 秘密" }).click();
+  const editLink = a.getByRole("dialog").getByRole("link", { name: "Sửa 秘密" });
   await expect(editLink).toBeVisible();
   const editHref = await editLink.getAttribute("href");
   // Ảnh cũ (tạo trước khi bỏ chức năng) vẫn được bảo vệ: id bất kỳ → người khác 404, chưa đăng nhập 401.

@@ -1,12 +1,14 @@
 "use client";
-import { HanziGrid } from "@/components/hanzi-grid";
 import { WordDetailDialog } from "./word-detail-dialog";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ArrowUpDown,
+  Check,
   CheckCircle2,
+  Filter,
   Library,
   Eye,
   LayoutGrid,
@@ -32,13 +34,13 @@ import { useConfirm } from "@/components/ui/confirm";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { radicalByNum, radicalLabel } from "@/lib/radicals";
-import { SORTS, type ListParams } from "../schema";
+import { PAGE_SIZES, SORTS, type ListParams } from "../schema";
 import { useLocale, useT } from "@/i18n/client";
 import type { TagCount, VocabItem, VocabList } from "../service";
 import { deleteTagAction, deleteVocabAction, setStatusAction, toggleFavoriteAction } from "../actions";
 import { startCustomAction } from "@/features/review/actions";
 import { AddTagDialog } from "./add-tag-dialog";
-import { TagCards, TagNameDialog } from "./tag-cards";
+import { HskCards, TagChips, TagNameDialog } from "./tag-cards";
 import { SpeakButton } from "@/components/speak-button";
 import { BulkButton, Pager } from "@/components/ui/list-controls";
 import type { ReceivedVocabShare } from "../share-service";
@@ -125,6 +127,10 @@ export function VocabListView({
       if (next.radical) sp.set("radical", String(next.radical));
       if (next.sort !== "newest") sp.set("sort", next.sort);
       if (next.page > 1) sp.set("page", String(next.page));
+      if (next.hsk) sp.set("hsk", next.hsk);
+      if (next.status) sp.set("status", next.status);
+      if (next.fav) sp.set("fav", "1");
+      if (next.size !== 8) sp.set("size", String(next.size));
       if (!opts.keepSelection) setSelected(new Set());
       startTransition(() => router.replace(`${pathname}${sp.size ? `?${sp}` : ""}`, { scroll: false }));
     },
@@ -285,7 +291,7 @@ export function VocabListView({
   const eye = (v: VocabItem) => (
     <button
       type="button"
-      className={iconBtn}
+      className={cn(iconBtn, "bg-[#EAF4FF] hover:bg-[#DCEBFF]")}
       onClick={() => setDetailOf(v)}
       aria-label={t("vocab.viewDetail", { word: v.hanzi })}
       title={t("vocab.viewDetail", { word: v.hanzi })}
@@ -347,14 +353,11 @@ export function VocabListView({
       <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
 
       {data.totalAll > 0 ? (
-        <TagCards
-          tags={data.tagCounts}
+        <HskCards
+          counts={data.hskCounts}
           totalAll={data.totalAll}
-          active={params.tag}
-          onPick={(tag) => go({ tag, q, page: 1 })}
-          onCreate={() => setTagName("new")}
-          onRename={(g) => setTagName(g)}
-          onDelete={doDeleteTag}
+          active={params.hsk}
+          onPick={(hsk) => go({ hsk, page: 1 })}
         />
       ) : null}
 
@@ -363,7 +366,7 @@ export function VocabListView({
         ref={listTop}
         className="flex scroll-mt-4 flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_190px_auto]">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_190px_auto_auto]">
           <label className="relative block">
             <span className="sr-only">{t("vocab.searchLabel")}</span>
             <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
@@ -390,6 +393,40 @@ export function VocabListView({
               ))}
             </select>
           </label>
+          <Menu>
+            <MenuTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border px-4 font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
+                  params.status || params.fav
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-border bg-white text-blue-600 hover:bg-blue-50",
+                )}
+              >
+                <Filter />
+                {t("vocab.filter")}
+                {params.status || params.fav ? (
+                  <span className="rounded-full bg-blue-600 px-1.5 text-[12px] text-white">
+                    {(params.status ? 1 : 0) + (params.fav ? 1 : 0)}
+                  </span>
+                ) : null}
+              </button>
+            </MenuTrigger>
+            <MenuContent align="end" className="w-[230px]">
+              {(["", "learned", "review"] as const).map((st) => (
+                <MenuItem key={st || "all"} onSelect={() => go({ status: st, page: 1 })}>
+                  {params.status === st ? <Check /> : <span className="size-5" />}
+                  {st ? t(`ui.${st}`) : t("vocab.allStatus")}
+                </MenuItem>
+              ))}
+              <MenuSeparator />
+              <MenuItem onSelect={() => go({ fav: !params.fav, page: 1 })}>
+                {params.fav ? <Check /> : <Star />}
+                {t("vocab.onlyFavorite")}
+              </MenuItem>
+            </MenuContent>
+          </Menu>
           <div
             role="group"
             aria-label={t("vocab.viewLabel")}
@@ -416,6 +453,17 @@ export function VocabListView({
             })}
           </div>
         </div>
+
+        {data.totalAll > 0 ? (
+          <TagChips
+            tags={data.tagCounts}
+            active={params.tag}
+            onPick={(tag) => go({ tag, q, page: 1 })}
+            onCreate={() => setTagName("new")}
+            onRename={(g) => setTagName(g)}
+            onDelete={doDeleteTag}
+          />
+        ) : null}
 
         {radical ? (
           <div className="flex flex-wrap items-center gap-2 text-[15px] text-text-2">
@@ -550,12 +598,21 @@ export function VocabListView({
                         </th>
                         <th className="w-11">#</th>
                         <th>{t("vocab.colWord")}</th>
-                        <th>{t("vocab.colPinyin")}</th>
+                        <th aria-sort={params.sort === "pinyin" ? "ascending" : undefined}>
+                          <button
+                            type="button"
+                            onClick={() => go({ sort: params.sort === "pinyin" ? "newest" : "pinyin", page: 1 })}
+                            className="inline-flex items-center gap-1 rounded-md outline-none hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)]"
+                          >
+                            {t("vocab.colPinyin")}
+                            <ArrowUpDown className={cn("size-4", params.sort === "pinyin" && "text-blue-600")} />
+                          </button>
+                        </th>
                         <th>{t("vocab.colMeaning")}</th>
-                        <th>{t("vocab.colNote")}</th>
                         <th>{t("vocab.colTag")}</th>
                         <th>{t("vocab.colStatus")}</th>
-                        <th className="w-[1%]">{t("vocab.colActions")}</th>
+                        <th>{t("vocab.colNote")}</th>
+                        <th className="w-[1%] text-center">{t("vocab.colView")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -578,7 +635,7 @@ export function VocabListView({
                           </td>
                           <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
                           <td>
-                            <HanziGrid text={v.hanzi} size={38} />
+                            <WordChip text={v.hanzi} />
                           </td>
                           <td>
                             <span className="inline-flex items-center gap-1">
@@ -587,7 +644,6 @@ export function VocabListView({
                             </span>
                           </td>
                           <td className="max-w-[240px]">{v.meaningVi}</td>
-                          <td className="w-[170px]">{note(v)}</td>
                           <td className="max-w-[260px] min-w-[150px]">
                             <div className="flex flex-wrap gap-1.5">
                               {v.tags.length ? (
@@ -600,17 +656,13 @@ export function VocabListView({
                           <td>
                             <StatusBadge status={v.status} />
                           </td>
+                          <td className="w-[150px]">{note(v)}</td>
                           <td className="whitespace-nowrap">
-                            {eye(v)}
-                            {star(v)}
-                            <Link
-                              href={`/vocabulary/${v.id}/edit`}
-                              className={iconBtn}
-                              aria-label={t("vocab.editWord", { word: v.hanzi })}
-                            >
-                              <Pencil />
-                            </Link>
-                            {rowMenu(v)}
+                            <span className="inline-flex items-center gap-0.5">
+                              {eye(v)}
+                              {star(v)}
+                              {rowMenu(v)}
+                            </span>
                           </td>
                         </tr>
                       ))}
@@ -642,7 +694,7 @@ export function VocabListView({
                       />
                     </div>
                     <div className="min-w-0 [grid-area:word]">
-                      <HanziGrid text={v.hanzi} size={40} />
+                      <WordChip text={v.hanzi} />
                     </div>
                     <div className="flex items-center gap-1 text-[14.5px] [grid-area:py]">
                       <span className="pinyin">{v.pinyin}</span>
@@ -677,14 +729,30 @@ export function VocabListView({
                   })}{" "}
                   <span className="font-semibold text-text">{t("vocab.total", { count: data.total })}</span>
                 </span>
-                <Pager
-                  page={data.page}
-                  count={data.pageCount}
-                  onGo={(p) => {
-                    go({ page: p }, { keepSelection: true });
-                    listTop.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <Pager
+                    page={data.page}
+                    count={data.pageCount}
+                    onGo={(p) => {
+                      go({ page: p }, { keepSelection: true });
+                      listTop.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                  />
+                  <label>
+                    <span className="sr-only">{t("vocab.perPageLabel")}</span>
+                    <select
+                      value={params.size}
+                      onChange={(e) => go({ size: Number(e.target.value), page: 1 }, { keepSelection: true })}
+                      className={cn(inputClass, "h-[42px] w-[130px] cursor-pointer py-0")}
+                    >
+                      {PAGE_SIZES.map((n) => (
+                        <option key={n} value={n}>
+                          {t("vocab.perPage", { n })}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
               </div>
             </>
           )}
@@ -771,5 +839,17 @@ function EmptyAll() {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Ô chữ Hán trong bảng (theo thiết kế): nền xanh nhạt, chữ đậm; bấm con mắt để xem ô 米字格 + cách viết. */
+function WordChip({ text }: { text: string }) {
+  return (
+    <span
+      lang="zh"
+      className="inline-flex min-h-11 items-center rounded-[10px] border border-[#DCE9F8] bg-[#F1F7FE] px-3 py-1 hanzi text-[22px] leading-tight font-bold tracking-[0.12em] whitespace-nowrap text-navy-900 max-md:[overflow-wrap:anywhere] max-md:whitespace-normal"
+    >
+      {text}
+    </span>
   );
 }

@@ -6,6 +6,11 @@
 
 ### Changed
 
+- **Từ vựng của tôi — thiết kế mới**: hàng thẻ **HSK** (Tất cả, HSK1–6, Khác — theo tag "HSK1", "HSK 2", "HSK3_Bài 1"…, nhiều tag
+  HSK → cấp nhỏ nhất) kèm số từ; ô tìm + sắp xếp + nút **Lọc** (trạng thái Đã thuộc / Cần ôn, chỉ từ yêu thích); hàng chip tag nhiều màu
+  (bấm để lọc, "…" đổi tên / xoá, + Thêm tag); bảng theo thiết kế: ô chữ Hán nền xanh nhạt, cột Pinyin bấm để sắp xếp, Tag, Trạng thái có
+  biểu tượng, Ghi chú, cột **Xem** (con mắt mở chi tiết + ô 米字格 + cách viết); chọn **số từ mỗi trang** (8 / 10 / 20 / 50). API
+  `GET /api/v1/vocab` nhận thêm `hsk`, `status`, `fav`, trả thêm `hskCounts`.
 - **Ngữ pháp của tôi — thiết kế mới**:
   - Danh sách: tab **HSK** (Tất cả, HSK 1–6, Khác — lấy theo thẻ "HSK1", "HSK 2", "HSK3_Bài 1"…, kèm số bài), ô tìm + chuyển lưới /
     danh sách cùng hàng, chip thẻ nhiều màu (thẻ HSK không lặp lại ở đây), sắp xếp; thẻ bài đánh số, nhãn HSK + thẻ, công thức (chữ đỏ),

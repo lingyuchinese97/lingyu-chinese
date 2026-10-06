@@ -1,3 +1,4 @@
+import { listParamsSchema } from "@/features/vocabulary/schema";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/server/session";
@@ -28,7 +29,7 @@ export default async function RadicalPage({ params }: { params: P }) {
   if (!r) notFound();
   const [known, vocab] = await Promise.all([
     isKnown(user.id, r.num),
-    listVocab(user.id, { q: "", tag: "", radical: r.num, sort: "newest", page: 1 }, 12),
+    listVocab(user.id, listParamsSchema.parse({ radical: r.num }), 12),
   ]);
   const chars = radicalExamples(r.num);
   const near = (n: number) => {

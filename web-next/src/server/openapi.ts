@@ -421,6 +421,13 @@ export function openApiDocument() {
             q("sort", { enum: ["newest", "oldest", "pinyin", "favorite"] }),
             q("page", { type: "integer", minimum: 1 }),
             q("pageSize", { type: "integer", minimum: 1, maximum: 100, default: 20 }),
+            q(
+              "hsk",
+              { enum: ["", "1", "2", "3", "4", "5", "6", "other"] },
+              "Cấp HSK theo tag (HSK1, HSK 2, HSK3_Bài 1…; nhiều tag HSK → cấp nhỏ nhất); other = không có tag HSK",
+            ),
+            q("status", { enum: ["", "learned", "review"] }),
+            q("fav", { type: "string", enum: ["1"] }, "1 = chỉ từ yêu thích"),
           ],
           data: obj({
             items: { type: "array", items: ref("Vocab") },
@@ -430,6 +437,7 @@ export function openApiDocument() {
             pageSize: int,
             totalAll: int,
             tagCounts: { type: "array", items: { type: "object" } },
+            hskCounts: { type: "object", additionalProperties: int, description: "Số từ theo cấp: 1–6, other" },
           }),
         }),
         post: op(V, {
