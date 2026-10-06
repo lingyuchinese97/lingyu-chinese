@@ -1,6 +1,9 @@
 "use client";
 import * as React from "react";
-import { Lightbulb, ListChecks, NotebookPen } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { BookmarkPlus, Lightbulb, ListChecks, Loader2, NotebookPen } from "lucide-react";
+import { toast } from "@/components/ui/toaster";
+import { saveFromLibraryAction } from "../actions";
 import { useLocale, useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import type { SoundGroup, SoundItem } from "@/data/pronunciation";
@@ -8,6 +11,7 @@ import { PCard, PTitle } from "./pron-header";
 import { SpeakBtn } from "./speak-btn";
 import { useL } from "./speech";
 import { TopicNoteButton } from "./topic-note";
+import { SaveToMine } from "./save-to-mine";
 
 const GROUP_TONE = [
   "bg-blue-50 text-blue-700",
@@ -27,6 +31,7 @@ export function SoundBrowser({
   groups,
   items,
   notes: initialNotes,
+  saved: initialSaved = [],
   selected: initialSelected,
   filterable,
 }: {
@@ -34,10 +39,13 @@ export function SoundBrowser({
   groups: SoundGroup[];
   items: SoundItem[];
   notes: Record<string, string>;
+  /** Chữ Hán đã có trong Phát âm của tôi. */
+  saved?: string[];
   selected?: string;
   filterable?: boolean;
 }) {
   const t = useT();
+  const router = useRouter();
   const l = useL();
   const locale = useLocale();
   const [selected, setSelected] = React.useState(
@@ -45,10 +53,25 @@ export function SoundBrowser({
   );
   const [filter, setFilter] = React.useState<string>("all");
   const [notes, setNotes] = React.useState(initialNotes);
+  const [saved, setSaved] = React.useState(() => new Set(initialSaved));
+  const [saving, setSaving] = React.useState<string | null>(null);
   const detailRef = React.useRef<HTMLDivElement>(null);
   const item = items.find((i) => i.symbol === selected)!;
   const topic = `${kind}:${item.symbol}`;
   const name = t(kind === "initial" ? "pronunciation.tabs.initials" : "pronunciation.tabs.finals");
+
+  /** Lưu một ví dụ (hoặc cả âm khi `hanzi` = null) vào Phát âm của tôi — bản sao để sửa / thêm tag. */
+  async function save(hanzi: string | null) {
+    setSaving(hanzi ?? "*");
+    const r = await saveFromLibraryAction(topic, hanzi);
+    setSaving(null);
+    if (!r.ok) return void toast.error(r.message);
+    setSaved((x) => new Set([...x, ...(hanzi ? [hanzi] : item.examples.map((e) => e.hanzi))]));
+    toast.success(t("pronunciation.sound.saved", { added: r.data.added, skipped: r.data.skipped }), {
+      action: { label: t("pronunciation.sound.openMine"), onClick: () => router.push("/pronunciation") },
+    });
+  }
+  const allSaved = item.examples.every((e) => saved.has(e.hanzi));
 
   function pick(symbol: string) {
     setSelected(symbol);
@@ -207,9 +230,20 @@ export function SoundBrowser({
           </section>
 
           <section aria-labelledby="sd-ex">
-            <h3 id="sd-ex" className="mb-2 text-[15px] font-bold text-navy-900">
-              {t("pronunciation.sound.examples")}
-            </h3>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <h3 id="sd-ex" className="text-[15px] font-bold text-navy-900">
+                {t("pronunciation.sound.examples")}
+              </h3>
+              <button
+                type="button"
+                onClick={() => save(null)}
+                disabled={!!saving || allSaved}
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-[13px] font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-60"
+              >
+                {saving === "*" ? <Loader2 className="size-4 animate-spin" /> : <BookmarkPlus className="size-4" />}
+                {allSaved ? t("pronunciation.sound.allSaved") : t("pronunciation.sound.saveAll")}
+              </button>
+            </div>
             <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               {item.examples.map((e) => (
                 <li
@@ -224,6 +258,12 @@ export function SoundBrowser({
                     <div className="text-[13.5px] text-text-2">{l(e.meaning)}</div>
                   </div>
                   <SpeakBtn text={e.hanzi} label={t("ui.listen", { text: e.hanzi })} size="sm" />
+                  <SaveToMine
+                    topic={topic}
+                    hanzi={e.hanzi}
+                    saved={saved.has(e.hanzi)}
+                    onSaved={() => setSaved((x) => new Set([...x, e.hanzi]))}
+                  />
                 </li>
               ))}
             </ul>

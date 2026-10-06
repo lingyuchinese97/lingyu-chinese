@@ -32,9 +32,10 @@ export function StrokeWriter({ char, size = 200, className }: { char: string; si
         height: size,
         padding: 8,
         showOutline: true,
-        strokeColor: "#073b8c",
-        radicalColor: "#d71920",
-        outlineColor: "#dceaf6",
+        // Cả chữ màu đỏ trên ô 米字格 (như vở tập viết).
+        strokeColor: "#e0302f",
+        radicalColor: "#e0302f",
+        outlineColor: "#fbdada",
         highlightColor: "#1595f5",
         drawingColor: "#0b7be0",
         strokeAnimationSpeed: 1,
@@ -76,14 +77,13 @@ export function StrokeWriter({ char, size = 200, className }: { char: string; si
 
   return (
     <div className={cn("flex flex-col items-center gap-3", className)}>
-      <div
-        className="relative rounded-3xl border-2 border-dashed border-[#A9D3F8] bg-blue-50"
-        style={{ width: size + 4, height: size + 4 }}
-      >
-        {/* Lưới ô chữ điền */}
-        <svg aria-hidden="true" className="pointer-events-none absolute inset-0 size-full text-[#C9E2F8]">
-          <line x1="0" y1="50%" x2="100%" y2="50%" stroke="currentColor" strokeDasharray="4 4" />
-          <line x1="50%" y1="0" x2="50%" y2="100%" stroke="currentColor" strokeDasharray="4 4" />
+      <div className="relative border-2 border-[#E0302F] bg-white" style={{ width: size + 4, height: size + 4 }}>
+        {/* Lưới 米字格: chữ thập + hai đường chéo, nét đứt đỏ */}
+        <svg aria-hidden="true" className="pointer-events-none absolute inset-0 size-full text-[#F07C7C]">
+          <line x1="0" y1="50%" x2="100%" y2="50%" stroke="currentColor" strokeDasharray="5 4" />
+          <line x1="50%" y1="0" x2="50%" y2="100%" stroke="currentColor" strokeDasharray="5 4" />
+          <line x1="0" y1="0" x2="100%" y2="100%" stroke="currentColor" strokeDasharray="5 4" />
+          <line x1="100%" y1="0" x2="0" y2="100%" stroke="currentColor" strokeDasharray="5 4" />
         </svg>
         <div
           ref={box}
@@ -93,7 +93,7 @@ export function StrokeWriter({ char, size = 200, className }: { char: string; si
         />
         {state === "missing" ? (
           <span
-            className="absolute inset-0 flex items-center justify-center hanzi text-navy"
+            className="absolute inset-0 flex items-center justify-center hanzi text-[#E0302F]"
             style={{ fontSize: size * 0.65 }}
             lang="zh"
           >

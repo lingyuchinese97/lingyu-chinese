@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BookmarkPlus, ChevronRight, Headphones, Languages, Loader2, Play, Search, Share2, Star } from "lucide-react";
 import { SpeakButton } from "@/components/speak-button";
 import { toast } from "@/components/ui/toaster";
@@ -19,6 +20,7 @@ type Filter = "all" | "new" | "learned" | "favorite";
 /** Chi tiết bộ từ vựng: đầu trang + tiến độ, tab Danh sách / Luyện tập, cột phải (nội dung bộ, tài liệu, bộ liên quan). */
 export function SetDetailView({ data, initialTab }: { data: SetDetail; initialTab: "list" | "practice" }) {
   const t = useT();
+  const router = useRouter();
   const [tab, setTab] = React.useState(initialTab);
   const [words, setWords] = React.useState(data.words);
   const [q, setQ] = React.useState("");
@@ -51,7 +53,13 @@ export function SetDetailView({ data, initialTab }: { data: SetDetail; initialTa
     setSaving(false);
     if (!r.ok) return void toast.error(t.maybe(r.message));
     setWords((ws) => ws.map((w) => ({ ...w, saved: true })));
-    toast.success(t("libhub.savedSet", { added: r.data.added, skipped: r.data.skipped }));
+    // Bản sao trong Từ vựng của tôi mang tag = tên bộ → mở đúng nhóm đó để sửa / thêm tag.
+    toast.success(t("libhub.savedSet", { added: r.data.added, skipped: r.data.skipped }), {
+      action: {
+        label: t("libhub.openMine"),
+        onClick: () => router.push(`/vocabulary?tag=${encodeURIComponent(data.title.slice(0, 30))}`),
+      },
+    });
   }
   async function share() {
     const url = window.location.href.split("?")[0]!;

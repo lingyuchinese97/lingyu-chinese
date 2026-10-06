@@ -1,4 +1,4 @@
-// Ngữ pháp mẫu — CHỈ nạp khi người dùng bấm "Dùng dữ liệu mẫu" (chép từ web/src/services/api/grammarSamples.js).
+// Ngữ pháp mẫu — CHỈ nạp qua API POST /api/v1/…/sample (dữ liệu thử; nội dung LingYu cho người học nằm ở Thư viện) (chép từ web/src/services/api/grammarSamples.js).
 export const SAMPLE_GRAMMAR = [
   {
     title: "Câu hỏi với 吗",

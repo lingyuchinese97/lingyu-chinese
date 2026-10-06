@@ -6,7 +6,7 @@ import {
   Bookmark,
   Check,
   ChevronRight,
-  Database,
+  Library,
   Eye,
   LayoutGrid,
   List,
@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { G_LIMITS, G_SORTS, structureLines, type GrammarListParams } from "../schema";
 import { iconOf, pillClass } from "../icons";
 import type { GrammarItem, ReceivedShare } from "../service";
-import { createTagAction, deleteTagAction, importSampleGrammarAction, renameTagAction } from "../actions";
+import { createTagAction, deleteTagAction, renameTagAction } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
 
@@ -264,7 +264,7 @@ export function GrammarList({
               }}
             />
           ) : data.totalAll === 0 ? (
-            <EmptyAll onDone={refresh} />
+            <EmptyAll />
           ) : data.total === 0 ? (
             <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
               <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
@@ -466,9 +466,8 @@ function Received({
   );
 }
 
-function EmptyAll({ onDone }: { onDone: () => void }) {
+function EmptyAll() {
   const t = useT();
-  const [busy, setBusy] = React.useState(false);
   return (
     <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
       <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
@@ -483,20 +482,11 @@ function EmptyAll({ onDone }: { onDone: () => void }) {
             {t("grammar.addNew")}
           </Link>
         </Button>
-        <Button
-          variant="secondary"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            const r = await importSampleGrammarAction();
-            setBusy(false);
-            if (!r.ok) return void toast.error(r.message);
-            toast.success(t("grammar.sampleAdded", { count: r.data }));
-            onDone();
-          }}
-        >
-          <Database />
-          {busy ? t("vocab.sampleAdding") : t("vocab.useSample")}
+        <Button asChild variant="secondary">
+          <Link href="/library/grammar">
+            <Library />
+            {t("grammar.fromLibrary")}
+          </Link>
         </Button>
       </div>
     </div>

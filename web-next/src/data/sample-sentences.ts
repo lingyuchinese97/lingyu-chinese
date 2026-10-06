@@ -1,4 +1,4 @@
-// Câu mẫu cho "Ôn dịch câu" — CHỈ nạp khi người dùng bấm "Dùng dữ liệu mẫu".
+// Câu mẫu cho "Ôn dịch câu" — CHỈ nạp qua API POST /api/v1/…/sample (dữ liệu thử; nội dung LingYu cho người học nằm ở Thư viện).
 export const SAMPLE_SENTENCES: {
   chinese: string;
   pinyin: string;

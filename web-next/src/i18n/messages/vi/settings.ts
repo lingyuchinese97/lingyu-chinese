@@ -29,11 +29,9 @@ export const settings = {
   importDone: "Đã nhập xong:",
   importReport:
     "Từ vựng: thêm {va}, bỏ qua {vs} · Ngữ pháp: thêm {ga}, bỏ qua {gs} · Câu: thêm {sa}, bỏ qua {ss} · Bài luyện nghe: thêm {la}, bỏ qua {ls} · Ghi chú phát âm: thêm {pa}, bỏ qua {ps} · Ảnh: {img} · Bộ thủ đã thuộc: {rad} · Tiến độ bài học: {les}",
-  sample: "Dữ liệu mẫu",
-  sampleDesc: "Thêm các từ vựng HSK mẫu để thử tính năng ôn tập.",
-  sampleAdd: "Thêm dữ liệu mẫu",
-  sampleAdded: "Đã thêm {count} từ vựng mẫu.",
-  sampleHave: "Bạn đã có đủ các từ vựng mẫu.",
+  library: "Thư viện LingYu",
+  libraryDesc: "Từ vựng, ngữ pháp, phát âm do LingYu biên soạn — lưu bản sao vào kho của bạn để sửa, thêm tag.",
+  libraryOpen: "Mở Thư viện",
   deleteAccount: "Xóa tài khoản",
   deleteForever: "Xóa vĩnh viễn tài khoản",
   deleteDesc:

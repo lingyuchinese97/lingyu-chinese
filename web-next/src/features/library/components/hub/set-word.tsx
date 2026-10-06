@@ -1,8 +1,12 @@
 "use client";
+import { HanziGrid } from "@/components/hanzi-grid";
+import { StrokeWriter } from "@/features/radicals/components/stroke-writer";
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  PenLine,
   ArrowRight,
   Bookmark,
   BookOpen,
@@ -31,6 +35,7 @@ const TABS = ["overview", "examples", "radicals", "related", "mnemonic", "practi
 /** Chi tiết một từ trong bộ: nghĩa, phát âm (âm tiết + thanh, nghe chậm), ví dụ, hình, bộ thủ, từ liên quan, cách nhớ. */
 export function SetWordView({ data }: { data: SetWordDetail }) {
   const t = useT();
+  const router = useRouter();
   const w = data.word;
   const [learned, setLearned] = React.useState(w.learned);
   const [fav, setFav] = React.useState(w.favorite);
@@ -64,7 +69,9 @@ export function SetWordView({ data }: { data: SetWordDetail }) {
     setBusy(null);
     if (!r.ok) return void toast.error(t.maybe(r.message));
     setSaved(true);
-    toast.success(r.data.added ? t("libhub.savedWord", { word: w.zh }) : t("libhub.alreadySaved", { word: w.zh }));
+    toast.success(r.data.added ? t("libhub.savedWord", { word: w.zh }) : t("libhub.alreadySaved", { word: w.zh }), {
+      action: { label: t("libhub.openMine"), onClick: () => router.push(`/vocabulary?q=${encodeURIComponent(w.zh)}`) },
+    });
   }
 
   const toneText = data.syllables.map((s) => `${s.syl} – ${t(`libhub.tones.${s.tone || "t5"}`)}`);
@@ -115,8 +122,8 @@ export function SetWordView({ data }: { data: SetWordDetail }) {
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h1 lang="zh" className="hanzi text-[48px] leading-none font-bold text-navy-900">
-                  {w.zh}
+                <h1>
+                  <HanziGrid text={w.zh} size={72} />
                 </h1>
                 <SpeakButton text={w.zh} label={t("ui.listen", { text: w.zh })} className="size-10" />
               </div>
@@ -223,6 +230,17 @@ export function SetWordView({ data }: { data: SetWordDetail }) {
                     <li key={x}>{x}</li>
                   ))}
                 </ul>
+              </section>
+              <section id="w-write" aria-labelledby="w-wr" className={cn(card, "scroll-mt-24 p-4")}>
+                <h2 id="w-wr" className="mb-3 flex items-center gap-2 font-bold text-navy-900">
+                  <PenLine className="size-5 text-[#E0302F]" aria-hidden="true" />
+                  {t("libhub.writeTitle")}
+                </h2>
+                <div className="flex flex-wrap justify-center gap-6 sm:justify-start">
+                  {[...new Set([...w.zh])].map((c) => (
+                    <StrokeWriter key={c} char={c} size={160} />
+                  ))}
+                </div>
               </section>
               <section id="w-examples" aria-labelledby="w-ex" className={cn(card, "scroll-mt-24 p-4")}>
                 <h2 id="w-ex" className="mb-2 flex items-center gap-2 font-bold text-navy-900">

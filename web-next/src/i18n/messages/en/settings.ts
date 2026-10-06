@@ -33,11 +33,10 @@ export const settings: Messages["settings"] = {
   importDone: "Import complete:",
   importReport:
     "Words: {va} added, {vs} skipped · Grammar: {ga} added, {gs} skipped · Sentences: {sa} added, {ss} skipped · Listening exercises: {la} added, {ls} skipped · Pronunciation notes: {pa} added, {ps} skipped · Images: {img} · Learned radicals: {rad} · Lesson progress: {les}",
-  sample: "Sample data",
-  sampleDesc: "Add sample HSK words to try out reviews.",
-  sampleAdd: "Add sample data",
-  sampleAdded: "Added {count, plural, one {# sample word} other {# sample words}}.",
-  sampleHave: "You already have all the sample words.",
+  library: "LingYu Library",
+  libraryDesc:
+    "Vocabulary, grammar and pronunciation written by LingYu — save copies to your own lists to edit and tag.",
+  libraryOpen: "Open the Library",
   deleteAccount: "Delete account",
   deleteForever: "Permanently delete account",
   deleteDesc:

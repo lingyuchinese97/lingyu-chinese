@@ -62,7 +62,7 @@ export const grammar: Messages["grammar"] = {
   sourceDeleted: "The original grammar point was deleted",
   emptyTitle: "No grammar points yet",
   emptyDesc: "Create your first grammar point, or use the sample data to try it out.",
-  sampleAdded: "Added {count, plural, one {# sample grammar point} other {# sample grammar points}}.",
+  fromLibrary: "Browse the LingYu Library",
   tags: {
     created: "Created tag “{name}”.",
     renamed: "Tag renamed.",

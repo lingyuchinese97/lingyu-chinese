@@ -199,6 +199,13 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     Bài tập nhanh chấm ở trình duyệt (nội dung công khai, không cần lưu điểm). "Lưu" = chép bài thành một mục trong Ngữ pháp của tôi
     (tiêu đề "{chữ Hán} – {nghĩa}", tag "Thư viện LingYu" + HSK) để người học viết ghi chú riêng / chia sẻ như bài tự tạo; nhận ra bài đã lưu
     theo tiêu đề (cả hai ngôn ngữ) nên bấm lại không tạo bản trùng.
+48. **Nội dung LingYu ở Thư viện, bản sao ở kho của người học**: bài học Phát âm & Biến điệu chuyển vào `/library/pronunciation`
+    (link cũ chuyển hướng 308). Mục "Phát âm & Biến điệu" trên thanh bên (`/pronunciation`) là kho riêng: bảng `pronunciation_item`
+    (chữ Hán, pinyin, nghĩa, ghi chú, tag `text[]`, `source` = mục Thư viện gốc) + ghi chú phát âm. Bỏ nút "Dùng dữ liệu mẫu" ở Từ vựng /
+    Ngữ pháp / Kho câu / Cài đặt — thay bằng liên kết sang Thư viện. Người học bấm **Lưu** để chép vào kho (Từ vựng / Ngữ pháp / Phát âm
+    của tôi) rồi sửa / thêm tag tự do; bài gốc không đổi. API `…/sample` giữ lại (deprecated) cho app khác và dữ liệu test.
+49. **Chữ Hán ở Từ vựng hiện trong ô 米字格** (component `HanziGrid`: viền đỏ, nét đứt chéo + chữ thập, chữ đỏ) theo yêu cầu chủ dự án;
+    khung tập viết hanzi-writer cũng dùng ô 米字格 và tô đỏ cả chữ.
 
 ## Chỗ mơ hồ & cách xử lý
 

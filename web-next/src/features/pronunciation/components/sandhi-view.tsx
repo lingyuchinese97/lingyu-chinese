@@ -27,6 +27,7 @@ import { Quiz } from "./quiz";
 import { SpeakBtn } from "./speak-btn";
 import { useL } from "./speech";
 import { saveTopicNote, TopicNoteButton } from "./topic-note";
+import { SaveToMine } from "./save-to-mine";
 
 /**
  * Biến điệu: giải thích, danh sách quy tắc, chi tiết quy tắc (công thức, ví dụ trước → sau, ghi chú từng ví dụ),
@@ -35,10 +36,13 @@ import { saveTopicNote, TopicNoteButton } from "./topic-note";
 export function SandhiView({
   rule: initialRule,
   notes: initialNotes,
+  saved: initialSaved = [],
   quick,
 }: {
   rule?: string;
   notes: PronunciationNote[];
+  /** Chữ Hán đã có trong Phát âm của tôi. */
+  saved?: string[];
   quick: PracticeQuestion[];
 }) {
   const t = useT();
@@ -49,6 +53,7 @@ export function SandhiView({
   );
   const [exIndex, setExIndex] = React.useState(0);
   const [notes, setNotes] = React.useState(initialNotes);
+  const [saved, setSaved] = React.useState(() => new Set(initialSaved));
   const [questions, setQuestions] = React.useState(quick);
   const [round, setRound] = React.useState(0);
   const [adding, setAdding] = React.useState(false);
@@ -160,7 +165,7 @@ export function SandhiView({
               </div>
             ))}
             <Link
-              href="/pronunciation/practice?mode=sandhi"
+              href="/library/pronunciation/practice?mode=sandhi"
               className="flex items-center gap-2 rounded-[12px] border border-dashed border-[#A9D3F8] px-3 py-2 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)]"
             >
               <Target className="size-5 shrink-0 text-blue-600" aria-hidden="true" />
@@ -222,6 +227,12 @@ export function SandhiView({
                     </button>
                     <div className="flex shrink-0 items-center gap-2">
                       <SpeakBtn text={e.hanzi} label={t("ui.listen", { text: e.hanzi })} size="sm" />
+                      <SaveToMine
+                        topic={`sandhi:${rule.id}`}
+                        hanzi={e.hanzi}
+                        saved={saved.has(e.hanzi)}
+                        onSaved={() => setSaved((x) => new Set([...x, e.hanzi]))}
+                      />
                       <TopicNoteButton
                         compact
                         topic={topic}

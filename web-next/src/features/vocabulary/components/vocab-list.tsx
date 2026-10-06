@@ -1,11 +1,12 @@
 "use client";
+import { HanziGrid } from "@/components/hanzi-grid";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CheckCircle2,
-  Database,
+  Library,
   Eye,
   LayoutGrid,
   List,
@@ -33,13 +34,7 @@ import { radicalByNum, radicalLabel } from "@/lib/radicals";
 import { SORTS, type ListParams } from "../schema";
 import { useLocale, useT } from "@/i18n/client";
 import type { TagCount, VocabItem, VocabList } from "../service";
-import {
-  deleteTagAction,
-  deleteVocabAction,
-  importSampleAction,
-  setStatusAction,
-  toggleFavoriteAction,
-} from "../actions";
+import { deleteTagAction, deleteVocabAction, setStatusAction, toggleFavoriteAction } from "../actions";
 import { startCustomAction } from "@/features/review/actions";
 import { AddTagDialog } from "./add-tag-dialog";
 import { TagCards, TagNameDialog } from "./tag-cards";
@@ -430,7 +425,7 @@ export function VocabListView({
 
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
           {data.totalAll === 0 ? (
-            <EmptyAll onSampled={refresh} />
+            <EmptyAll />
           ) : data.total === 0 ? (
             <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
               <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
@@ -570,9 +565,7 @@ export function VocabListView({
                           </td>
                           <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
                           <td>
-                            <span className="hanzi text-[24px] text-[#E0302F]" lang="zh">
-                              {v.hanzi}
-                            </span>
+                            <HanziGrid text={v.hanzi} size={44} />
                           </td>
                           <td>
                             <span className="inline-flex items-center gap-1">
@@ -634,11 +627,8 @@ export function VocabListView({
                         aria-label={t("vocab.selectWord", { word: v.hanzi })}
                       />
                     </div>
-                    <div
-                      className="min-w-0 hanzi text-[24px] leading-tight [overflow-wrap:anywhere] text-[#E0302F] [grid-area:word]"
-                      lang="zh"
-                    >
-                      {v.hanzi}
+                    <div className="min-w-0 [grid-area:word]">
+                      <HanziGrid text={v.hanzi} size={48} />
                     </div>
                     <div className="flex items-center gap-1 text-[14.5px] [grid-area:py]">
                       <span className="pinyin">{v.pinyin}</span>
@@ -743,9 +733,8 @@ export function VocabListView({
 const iconBtn =
   "inline-flex size-10 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] md:size-9 [&_svg]:size-[22px]";
 
-function EmptyAll({ onSampled }: { onSampled: () => void }) {
+function EmptyAll() {
   const t = useT();
-  const [busy, setBusy] = React.useState(false);
   return (
     <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
       <Image src="/brand/lingyu-mascot.png" alt="" width={180} height={120} className="h-auto w-[180px]" />
@@ -758,20 +747,11 @@ function EmptyAll({ onSampled }: { onSampled: () => void }) {
             {t("vocab.add")}
           </Link>
         </Button>
-        <Button
-          variant="secondary"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            const r = await importSampleAction();
-            setBusy(false);
-            if (!r.ok) return void toast.error(r.message);
-            toast.success(t("vocab.sampleAdded", { count: r.data.added }));
-            onSampled();
-          }}
-        >
-          <Database />
-          {busy ? t("vocab.sampleAdding") : t("vocab.useSample")}
+        <Button asChild variant="secondary">
+          <Link href="/library/vocabulary">
+            <Library />
+            {t("vocab.fromLibrary")}
+          </Link>
         </Button>
       </div>
     </div>

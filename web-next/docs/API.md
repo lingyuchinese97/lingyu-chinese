@@ -34,7 +34,7 @@ API cho app điện thoại / app khác. Dùng chung logic (service) với giao 
 | `POST /vocab/suggest`            | `{ words: string[] }` (≤ 50) → `[{ hanzi, pinyin, meaningVi, radicals, hskLevel, exists }]` — gợi ý cho từ nhận ra từ ảnh; `exists` chỉ theo kho của mình |
 | `POST /vocab/bulk`               | `{ items: VocabInput[] }` (≤ 50) → `{ added, skipped }` — thêm nhiều từ, bỏ qua từ đã có                                                                  |
 | `GET /vocab/stats`               | `{ total, learned, needReview, latest }`                                                                                                                  |
-| `POST /vocab/sample`             | Thêm bộ từ mẫu → `{ added }`                                                                                                                              |
+| `POST /vocab/sample`             | Thêm bộ từ mẫu → `{ added }` _(cũ — dữ liệu thử; ứng dụng không còn nút này, nội dung LingYu nằm ở Thư viện)_                                             |
 | `POST /vocab/delete`             | `{ ids }` → `{ removed }`                                                                                                                                 |
 | `POST /vocab/status`             | `{ ids, status: "learned"\|"review" }` → `{ updated }`                                                                                                    |
 | `POST /vocab/add-tags`           | `{ ids, tags }` → `{ updated }`                                                                                                                           |
@@ -136,7 +136,7 @@ dùng (`null` nếu chưa có). Trong `formattedUserAnswer`, đoạn bôi vàng 
 | `GET /grammar/shares/{id}/tags`    | Thẻ của người gửi                                                                                                                                                            |
 | `POST /grammar/shares/{id}/accept` | `{ keepTags?, extraTags? }` → bản riêng `{ id, title }`; đã trả lời → `409`                                                                                                  |
 | `POST /grammar/shares/{id}/reject` | Từ chối                                                                                                                                                                      |
-| `POST /grammar/sample`             | Thêm ngữ pháp mẫu → `{ added }`                                                                                                                                              |
+| `POST /grammar/sample`             | Thêm ngữ pháp mẫu → `{ added }` _(cũ — dữ liệu thử; ứng dụng không còn nút này, nội dung LingYu nằm ở Thư viện)_                                                             |
 
 Trường `icon` (trong body thêm / sửa và trong kết quả): biểu tượng cạnh tiêu đề — `""` (tự chọn theo thẻ / tiêu đề / cấu trúc) hoặc
 một trong `noun`, `measure`, `number`, `particle`, `question`, `structure`, `compare`, `communication`, `verb`, `adjective`,
@@ -179,15 +179,19 @@ Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu tr�
 
 ## Phát âm `/api/v1/pronunciation`
 
-| Route                              | Việc                                                                                                                                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /pronunciation`               | Nội dung: `initials`, `finals` (nhóm + âm), `tones`, `sandhi` (quy tắc + ví dụ). Chữ có sẵn `vi` / `en`                                          |
-| `GET /pronunciation/practice`      | Tạo bài tự luyện. Query: `mode` (bắt buộc), `count` (1–20, mặc định 10) → `{ mode, questions }`                                                  |
-| `GET /pronunciation/notes`         | Ghi chú phát âm của tôi (mới sửa trước)                                                                                                          |
-| `POST /pronunciation/notes`        | Không `topic` → ghi chú tự do (`title`, `content` bắt buộc) → `201`. Có `topic` → lưu ghi chú mục đó → `200` (nội dung rỗng = xoá, `data: null`) |
-| `GET /pronunciation/notes/{id}`    | Một ghi chú                                                                                                                                      |
-| `PUT /pronunciation/notes/{id}`    | Sửa `{ title?, content }`                                                                                                                        |
-| `DELETE /pronunciation/notes/{id}` | Xoá → `{ deleted: true }`                                                                                                                        |
+| Route                                        | Việc                                                                                                                                                  |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /pronunciation`                         | Nội dung: `initials`, `finals` (nhóm + âm), `tones`, `sandhi` (quy tắc + ví dụ). Chữ có sẵn `vi` / `en`                                               |
+| `GET /pronunciation/practice`                | Tạo bài tự luyện. Query: `mode` (bắt buộc), `count` (1–20, mặc định 10) → `{ mode, questions }`                                                       |
+| `GET /pronunciation/notes`                   | Ghi chú phát âm của tôi (mới sửa trước)                                                                                                               |
+| `POST /pronunciation/notes`                  | Không `topic` → ghi chú tự do (`title`, `content` bắt buộc) → `201`. Có `topic` → lưu ghi chú mục đó → `200` (nội dung rỗng = xoá, `data: null`)      |
+| `GET /pronunciation/notes/{id}`              | Một ghi chú                                                                                                                                           |
+| `PUT /pronunciation/notes/{id}`              | Sửa `{ title?, content }`                                                                                                                             |
+| `DELETE /pronunciation/notes/{id}`           | Xoá → `{ deleted: true }`                                                                                                                             |
+| `GET /pronunciation/items`                   | Phát âm của tôi. Query `q`, `tag`, `from` (`all`\|`library`\|`mine`), `sort` (`updated`\|`newest`\|`az`) → `{ items, total, all, fromLibrary, tags }` |
+| `POST /pronunciation/items`                  | Thêm `{ hanzi, pinyin?, meaning?, note?, tags? }` (pinyin trống → tự điền) → `201`; trùng chữ Hán + pinyin → `409`                                    |
+| `GET\|PUT\|DELETE /pronunciation/items/{id}` | Một mục của mình: xem / sửa, thêm tag / xoá (người khác → `404`)                                                                                      |
+| `POST /pronunciation/items/from-library`     | Lưu từ ví dụ của mục Thư viện `{ topic: "initial:b"\|"final:ang"\|"tone:3"\|"sandhi:bu", hanzi? }` → `{ added, skipped }`                             |
 
 - `mode`: `listen-choose` · `listen-type` · `speak-compare` · `pairs` · `read-words` · `sandhi`. Bài tự luyện không lưu điểm nên
   câu hỏi có kèm `answer`; chấm pinyin gõ tay chấp nhận số thanh (`ba1` ≡ `bā`, `lv4` ≡ `lǜ`). `speak` là chữ Hán để máy đọc.

@@ -21,3 +21,13 @@ export const PNG_2x2 = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==",
   "base64",
 );
+
+/**
+ * Nạp dữ liệu thử vào kho của người đang đăng nhập (qua API — màn hình không còn nút "Dùng dữ liệu mẫu",
+ * nội dung LingYu nằm ở Thư viện) rồi tải lại trang hiện tại.
+ */
+export async function seedSample(page: Page, kind: "vocab" | "grammar" | "sentences") {
+  const r = await page.request.post(`/api/v1/${kind}/sample`);
+  expect(r.ok()).toBe(true);
+  await page.reload();
+}

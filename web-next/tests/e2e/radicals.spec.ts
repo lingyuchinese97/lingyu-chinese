@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
 test("bộ thủ: tìm kiếm, lọc số nét, đánh dấu đã thuộc, chi tiết có nét viết và từ vựng của mình", async ({ page }) => {
   await register(page, "Người Học", "rd");
   await page.goto("/vocabulary");
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "vocab");
   await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
 
   await page.goto("/radicals");

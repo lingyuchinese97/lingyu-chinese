@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/server/session";
 import { getT } from "@/i18n/server";
-import { INITIAL_GROUPS, INITIALS } from "@/data/pronunciation";
+import { FINAL_GROUPS, FINALS } from "@/data/pronunciation";
 import { topicNotes } from "@/features/pronunciation/service";
+import { savedFromLibrary } from "@/features/pronunciation/items";
 import { SoundBrowser } from "@/features/pronunciation/components/sound-browser";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  return { title: `${t("pronunciation.tabs.initials")} · ${t("pronunciation.title")}` };
+  return { title: `${t("pronunciation.tabs.finals")} · ${t("pronunciation.title")}` };
 }
 export const dynamic = "force-dynamic";
 
@@ -18,11 +19,13 @@ export default async function Page({ searchParams }: { searchParams: SP }) {
   const s = (await searchParams).s;
   return (
     <SoundBrowser
-      kind="initial"
-      groups={INITIAL_GROUPS}
-      items={INITIALS}
+      kind="final"
+      groups={FINAL_GROUPS}
+      items={FINALS}
       notes={await topicNotes(user.id)}
+      saved={await savedFromLibrary(user.id)}
       selected={typeof s === "string" ? s : undefined}
+      filterable
     />
   );
 }

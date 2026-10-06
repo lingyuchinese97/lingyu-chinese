@@ -97,5 +97,7 @@ export function shellState(pathname: string): ShellState {
     (first === "lessons" && seg.length === 3 && seg[2] !== "result");
   if (first === "review" && seg[1] === "session") return { nav, quote: "shell.quote.reviewSession", focus };
   if (first === "review" && seg[1] === "result") return { nav, quote: "shell.quote.reviewResult", focus };
+  // Phát âm & Biến điệu nằm trong Thư viện LingYu (nội dung LingYu biên soạn).
+  if (first === "library" && seg[1] === "pronunciation") return { nav, quote: QUOTES.pronunciation ?? null, focus };
   return { nav, quote: (nav && QUOTES[nav]) ?? null, focus };
 }

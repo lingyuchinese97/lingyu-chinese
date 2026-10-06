@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
@@ -46,7 +46,7 @@ test("ôn dịch câu: thêm câu (tạo pinyin), dữ liệu mẫu, tìm kiếm
   // Trên điện thoại chồng toast nằm ngay trên thanh tab, che nút của màn trống → chờ toast tự tắt rồi mới bấm.
   await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 15_000 });
 
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "sentences");
   await expect(page.getByText("12 câu", { exact: true })).toBeVisible();
   await page.getByPlaceholder(/Tìm kiếm câu/).fill("hoc tieng trung");
   await expect(page.getByText("1 câu", { exact: true })).toBeVisible();
@@ -63,7 +63,7 @@ test("ôn dịch câu: Việt → Trung, gợi ý, đúng / sai / bỏ qua, tín
 }) => {
   await register(page, "Người Học", "sr");
   await page.goto("/sentences");
-  await page.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(page, "sentences");
   await expect(page.getByText("12 câu", { exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Bắt đầu ôn" }).click();

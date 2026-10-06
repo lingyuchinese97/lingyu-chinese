@@ -116,7 +116,7 @@ export async function saveLibraryWordToMineAction(id: string): Promise<ActionRes
     const r = await svc.saveToMyVocab(u.id, z.uuid().parse(id));
     revalidatePath("/vocabulary");
     revalidatePath("/library/words");
-    return { ok: true, data: { added: r.added } };
+    return { ok: true, data: r };
   } catch (e) {
     return fail(e);
   }
@@ -263,13 +263,13 @@ export async function setGrammarFavoriteAction(id: string, on: boolean): Promise
   }
 }
 
-export async function saveGrammarAction(id: string): Promise<ActionResult<{ added: boolean }>> {
+export async function saveGrammarAction(id: string): Promise<ActionResult<{ added: boolean; id: string }>> {
   try {
     const u = await currentUserOrThrow();
     const r = await libGrammar.saveLibGrammarToMine(u.id, setIdSchema.parse(id), await getLocale());
     revalidatePath("/grammar");
     refreshGrammar(id);
-    return { ok: true, data: { added: r.added } };
+    return { ok: true, data: r };
   } catch (e) {
     return fail(e);
   }

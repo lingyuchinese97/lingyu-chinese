@@ -47,7 +47,7 @@ export const sentences: Messages["sentences"] = {
   statusChanged: "Moved {count, plural, one {# sentence} other {# sentences}} to {status}.",
   emptyTitle: "No sentences yet",
   emptyDesc: "Add Chinese sentences with their Vietnamese meaning to practise translating every day.",
-  sampleAdded: "Added {count, plural, one {# sample sentence} other {# sample sentences}}.",
+  fromLibrary: "Practice with LingYu sentences",
   form: {
     needChinese: "Enter the Chinese sentence before generating pinyin.",
     saved: "Changes saved.",

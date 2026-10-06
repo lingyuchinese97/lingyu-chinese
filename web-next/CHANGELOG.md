@@ -6,6 +6,24 @@
 
 ### Changed
 
+- **Chữ Hán ở Từ vựng hiện trong ô 米字格**: viền đỏ, nét đứt đỏ theo chữ thập + hai đường chéo, cả chữ màu đỏ — ở Từ vựng của tôi
+  (bảng + thẻ), chi tiết từ trong Thư viện, từ vựng LingYu public. Khung tập viết (bộ thủ, chi tiết từ) cũng đổi sang ô 米字格 và nét
+  đỏ toàn bộ chữ; chi tiết từ trong Thư viện có thêm mục **Cách viết (thứ tự nét)**.
+- **Nội dung của LingYu nằm ở Thư viện LingYu; bản của bạn nằm ở kho của bạn**:
+  - **Bài học Phát âm & Biến điệu của LingYu nằm ở Thư viện**: `/library/pronunciation/*` (breadcrumb Thư viện / Phát âm). Link cũ
+    `/pronunciation/initials|finals|tones|sandhi|practice` tự chuyển sang địa chỉ mới.
+  - **Mục “Phát âm & Biến điệu” trên thanh bên giữ nguyên — là kho của bạn** (`/pronunciation`): **Từ & âm của tôi** (tự nhập chữ Hán /
+    âm tiết — pinyin bỏ trống thì tự điền —, nghĩa, ghi chú, tag; tìm theo pinyin không dấu, lọc tag / nguồn) và **Ghi chú của tôi**
+    (`/pronunciation/notes`). Ở Thư viện, mỗi từ ví dụ của thanh mẫu / vận mẫu / biến điệu có nút **Lưu vào Phát âm của tôi** (và **Lưu cả
+    âm**): bản sao mang tag “Thư viện LingYu” + tên mục, sửa / thêm tag tự do; bài gốc không đổi. Bảng mới `pronunciation_item`
+    (migration `0014`), có trong xuất / nhập dữ liệu. API `GET|POST /api/v1/pronunciation/items`, `GET|PUT|DELETE …/items/{id}`,
+    `POST …/items/from-library`.
+  - **Bỏ “Dùng dữ liệu mẫu”** ở Từ vựng của tôi, Ngữ pháp của tôi, Kho câu và Cài đặt: thay bằng liên kết **Lấy từ Thư viện LingYu**
+    (kho câu → Luyện dịch với câu của LingYu). API `…/sample` vẫn chạy (đánh dấu deprecated).
+  - **Sau khi lưu có lối tắt sửa / thêm tag**: lưu bài ngữ pháp → nút thành **Đã lưu · Sửa / thêm tag** (mở bản sao trong Ngữ pháp của tôi);
+    lưu bộ / từ vựng → thông báo có nút mở đúng nhóm trong Từ vựng của tôi. API bài ngữ pháp trả thêm `savedId`; lưu lại bài đã lưu trả
+    `{ added: false, id }`.
+
 - **Luyện dịch theo “Từ vựng của tôi” — ưu tiên câu quen, báo rõ từ mới**: câu có nhiều từ trong kho của bạn nhất (ít từ mới nhất) được
   chọn trước. Mỗi câu hiện khối **“Từ mới trong câu”** (từ chưa có trong Từ vựng của tôi, kèm pinyin + nghĩa) với nút **+** thêm nhanh vào
   kho (tag “Luyện dịch”). Dịch sang tiếng Trung: chỉ báo số từ mới, danh sách hiện khi xem gợi ý hoặc đã trả lời (không lộ đáp án). API

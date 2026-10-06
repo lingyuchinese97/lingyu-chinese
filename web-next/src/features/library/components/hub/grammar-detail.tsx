@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookmarkCheck,
   BookmarkPlus,
@@ -159,7 +160,9 @@ export function GrammarDetailView({ data }: { data: LibGrammarDetail }) {
   const t = useT();
   const [learned, setLearned] = React.useState(data.learned);
   const [progress, setProgress] = React.useState(data.progress);
-  const [saved, setSaved] = React.useState(data.saved);
+  const router = useRouter();
+  const [savedId, setSavedId] = React.useState(data.savedId);
+  const saved = !!savedId;
   const [busy, setBusy] = React.useState<"" | "learn" | "save">("");
 
   async function toggleLearned() {
@@ -175,8 +178,11 @@ export function GrammarDetailView({ data }: { data: LibGrammarDetail }) {
     const r = await saveGrammarAction(data.id);
     setBusy("");
     if (!r.ok) return void toast.error(t.maybe(r.message));
-    setSaved(true);
-    toast.success(r.data.added ? t("libgram.savedToast") : t("libgram.alreadySaved"));
+    setSavedId(r.data.id);
+    const id = r.data.id;
+    toast.success(r.data.added ? t("libgram.savedToast") : t("libgram.alreadySaved"), {
+      action: { label: t("libgram.editMine"), onClick: () => router.push(`/grammar/${id}/edit`) },
+    });
   }
   async function share() {
     const url = window.location.href.split("?")[0]!;
@@ -236,16 +242,21 @@ export function GrammarDetailView({ data }: { data: LibGrammarDetail }) {
               <p className="mt-1 text-[15px] text-text-2">{data.summary}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <GrammarFav id={data.id} name={data.zh} on={data.favorite} withText />
-                <button type="button" onClick={save} disabled={busy === "save" || saved} className={btn}>
-                  {busy === "save" ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : saved ? (
-                    <BookmarkCheck className="size-4 text-[#22C08A]" />
-                  ) : (
-                    <BookmarkPlus className="size-4" />
-                  )}
-                  {saved ? t("libgram.saved") : t("libgram.save")}
-                </button>
+                {savedId ? (
+                  <Link href={`/grammar/${savedId}/edit`} className={btn}>
+                    <BookmarkCheck className="size-4 text-[#22C08A]" aria-hidden="true" />
+                    {t("libgram.savedEdit")}
+                  </Link>
+                ) : (
+                  <button type="button" onClick={save} disabled={busy === "save"} className={btn}>
+                    {busy === "save" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <BookmarkPlus className="size-4" />
+                    )}
+                    {t("libgram.save")}
+                  </button>
+                )}
                 <button type="button" onClick={share} className={btn}>
                   <Share2 className="size-4" />
                   {t("libgram.share")}
@@ -513,7 +524,10 @@ export function GrammarDetailView({ data }: { data: LibGrammarDetail }) {
               </li>
               {saved ? (
                 <li>
-                  <Link href="/grammar" className="flex items-center gap-3 rounded-[12px] px-2 py-2 hover:bg-blue-50">
+                  <Link
+                    href={`/grammar/${savedId}`}
+                    className="flex items-center gap-3 rounded-[12px] px-2 py-2 hover:bg-blue-50"
+                  >
                     <span aria-hidden="true" className="text-[22px]">
                       📒
                     </span>

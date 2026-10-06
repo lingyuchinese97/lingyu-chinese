@@ -57,4 +57,11 @@ export const PRONUNCIATION = {
   MAX_TEXT: 2000,
   /** Số ghi chú tối đa của một người. */
   MAX_NOTES: 500,
+  /** "Phát âm của tôi": số mục tối đa, độ dài các trường, tag. */
+  MAX_ITEMS: 2000,
+  MAX_HANZI: 40,
+  MAX_PINYIN: 120,
+  MAX_MEANING: 300,
+  MAX_TAGS: 10,
+  MAX_TAG: 24,
 } as const;

@@ -177,7 +177,7 @@ export function GrammarList({ data, params }: { data: LibGrammarList; params: Gr
     { href: "/library/vocabulary", icon: Languages, title: "docVocab", color: "bg-[#FFE4E8] text-[#E0302F]" },
     { href: "/grammar", icon: BookMarked, title: "docMine", color: "bg-[#FFF1D6] text-[#C27C0E]" },
     { href: "/translate", icon: Languages, title: "docTranslate", color: "bg-[#E1EEFF] text-[#2C6FDB]" },
-    { href: "/pronunciation", icon: AudioLines, title: "docPron", color: "bg-[#EFE6FF] text-[#7A45E0]" },
+    { href: "/library/pronunciation", icon: AudioLines, title: "docPron", color: "bg-[#EFE6FF] text-[#7A45E0]" },
   ] as const;
 
   return (

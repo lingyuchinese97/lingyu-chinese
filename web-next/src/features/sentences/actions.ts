@@ -45,7 +45,6 @@ export const toggleSentenceFavoriteAction = async (id: string) =>
   run((uid) => svc.toggleSentenceFavorite(uid, uuid(id)), true);
 export const setSentenceStatusAction = async (list: string[], status: string) =>
   run((uid) => svc.setSentenceStatus(uid, ids(list), z.enum(["review", "learned"]).parse(status)), true);
-export const importSampleSentencesAction = async () => run((uid) => svc.importSampleSentences(uid), true);
 
 // ---------- Ôn dịch câu ----------
 export const countSentencePoolAction = async (tags: string[]) =>

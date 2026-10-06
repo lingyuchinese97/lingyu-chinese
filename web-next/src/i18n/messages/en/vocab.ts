@@ -96,9 +96,7 @@ export const vocab: Messages["vocab"] = {
   reviewFailed: "Couldn't create the review.",
   emptyTitle: "No words yet",
   emptyDesc: "Add your first word to start building your own word bank.",
-  sampleAdded: "Added {count, plural, one {# sample word} other {# sample words}}.",
-  sampleAdding: "Adding...",
-  useSample: "Use sample data",
+  fromLibrary: "Browse the LingYu Library",
   form: {
     editSub: "Update the details of your word.",
     newSub: "Fill in the details to add a word to your list.",

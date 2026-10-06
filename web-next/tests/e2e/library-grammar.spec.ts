@@ -44,7 +44,11 @@ test("Thư viện LingYu: Ngữ pháp → HSK 2 → 是 … 的 → bài tập n
   await expect(page.getByRole("button", { name: "Đã yêu thích" })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Lưu vào Ngữ pháp của tôi" }).click();
   await expect(page.getByText("Đã lưu vào Ngữ pháp của tôi.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Đã lưu" })).toBeDisabled();
+  // Đã lưu → nút thành lối tắt sửa / thêm tag bản sao trong Ngữ pháp của tôi.
+  await expect(page.getByRole("link", { name: "Đã lưu · Sửa / thêm tag" })).toHaveAttribute(
+    "href",
+    /^\/grammar\/[0-9a-f-]{36}\/edit$/,
+  );
 
   // Danh sách: lọc Đã học chỉ còn bài này; bài nằm trong Ngữ pháp của tôi.
   await page.goto("/library/grammar?status=learned");
@@ -75,8 +79,13 @@ test("API Thư viện (ngữ pháp): 401 khi chưa đăng nhập; 404 bài khôn
   const r = await api.put("/api/v1/library/grammar/bi/learned");
   expect((await r.json()).data).toMatchObject({ learned: true, progress: { learned: 1 } });
   expect((await api.put("/api/v1/library/grammar/bi/favorite")).status()).toBe(200);
-  expect((await (await api.post("/api/v1/library/grammar/bi/save")).json()).data.added).toBe(true);
-  expect((await (await api.post("/api/v1/library/grammar/bi/save")).json()).data).toEqual({ added: false });
+  const saved = (await (await api.post("/api/v1/library/grammar/bi/save")).json()).data;
+  expect(saved.added).toBe(true);
+  expect((await (await api.post("/api/v1/library/grammar/bi/save")).json()).data).toEqual({
+    added: false,
+    id: saved.id,
+  });
+  expect((await (await api.get("/api/v1/library/grammar/bi")).json()).data.savedId).toBe(saved.id);
   const list = (await (await api.get("/api/v1/library/grammar?status=favorite")).json()).data;
   expect(list.items.map((g: { id: string }) => g.id)).toEqual(["bi"]);
 

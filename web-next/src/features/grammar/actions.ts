@@ -70,5 +70,4 @@ export const acceptShareAction = async (shareId: string, opts: { keepTags: boole
     }),
   );
 export const rejectShareAction = async (shareId: string) => run((u) => svc.rejectShare(u, uuid(shareId)));
-export const importSampleGrammarAction = async () => run((u) => svc.importSampleGrammar(u.id));
 export const listSentAction = async (id: string) => run((u) => svc.listSent(u.id, uuid(id)));

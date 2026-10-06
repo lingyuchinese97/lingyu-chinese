@@ -55,8 +55,8 @@ test("âm thanh: đọc đúng chữ hiển thị, giọng Phổ thông (không 
 
   // Mọi thanh mẫu + vận mẫu: nút Nghe hiện đúng chữ + pinyin của dữ liệu, và máy đọc đúng chữ đó.
   for (const [path, items] of [
-    ["/pronunciation/initials", INITIALS],
-    ["/pronunciation/finals", FINALS],
+    ["/library/pronunciation/initials", INITIALS],
+    ["/library/pronunciation/finals", FINALS],
   ] as const) {
     await page.goto(path);
     for (const x of items) {
@@ -94,7 +94,7 @@ test("âm thanh: đọc đúng chữ hiển thị, giọng Phổ thông (không 
   await page.getByLabel("Tốc độ đọc").selectOption("0.3");
 
   // Thanh điệu: đọc đúng chữ của thẻ.
-  await page.goto("/pronunciation/tones");
+  await page.goto("/library/pronunciation/tones");
   await page
     .getByRole("listitem")
     .filter({ has: page.getByRole("heading", { name: /^Thanh 3/ }) })
@@ -103,7 +103,7 @@ test("âm thanh: đọc đúng chữ hiển thị, giọng Phổ thông (không 
   expect(await spoken(page)).toEqual([{ text: "马", rate: 0.3, voice: "zh-CN" }]);
 
   // Biến điệu: trước = đọc từng chữ tách rời (chậm hơn), sau = đọc cả từ.
-  await page.goto("/pronunciation/sandhi");
+  await page.goto("/library/pronunciation/sandhi");
   const first = SANDHI_RULES[0]!.examples[0]!;
   await page.getByRole("button", { name: "Nghe từng chữ (trước biến điệu)" }).click();
   expect(await spoken(page)).toEqual([...first.hanzi].map((c) => ({ text: c, rate: r(0.3, 0.85), voice: "zh-CN" })));
@@ -111,7 +111,7 @@ test("âm thanh: đọc đúng chữ hiển thị, giọng Phổ thông (không 
   expect(await spoken(page)).toEqual([{ text: first.hanzi, rate: 0.3, voice: "zh-CN" }]);
 
   // Luyện tập: nút Nghe + Nghe chậm; sau khi trả lời, chữ hiện ra đúng là chữ vừa đọc.
-  await page.goto("/pronunciation/practice");
+  await page.goto("/library/pronunciation/practice");
   await page.getByRole("button", { name: "Nghe câu 1" }).click();
   const [played] = await spoken(page);
   expect(played).toMatchObject({ rate: 0.3, voice: "zh-CN" });
@@ -126,10 +126,10 @@ test("âm thanh: máy chỉ có giọng Quảng Đông → ẩn nút Nghe (khôn
   test.skip(info.project.name !== "desktop", "Kiểm tra âm thanh chỉ cần chạy một lần");
   await fakeSpeech(page, [{ lang: "zh-HK", name: "Sin-ji" }]);
   await register(page, "Người Nghe HK", "praud-hk");
-  await page.goto("/pronunciation/initials");
+  await page.goto("/library/pronunciation/initials");
   await expect(page.getByRole("region", { name: "Chi tiết âm b" })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Nghe\s*波/ })).toHaveCount(0);
-  await page.goto("/pronunciation/practice");
+  await page.goto("/library/pronunciation/practice");
   await expect(page.getByText("Thiết bị chưa có giọng đọc tiếng Trung")).toBeVisible();
   expect(await spoken(page)).toEqual([]);
 });

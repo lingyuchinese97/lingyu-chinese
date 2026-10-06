@@ -59,7 +59,7 @@ export const grammar = {
   sourceDeleted: "Ngữ pháp gốc đã bị xóa",
   emptyTitle: "Chưa có ngữ pháp nào",
   emptyDesc: "Tạo điểm ngữ pháp đầu tiên của bạn, hoặc dùng dữ liệu mẫu để xem thử.",
-  sampleAdded: "Đã thêm {count} ngữ pháp mẫu.",
+  fromLibrary: "Lấy từ Thư viện LingYu",
   tags: {
     created: "Đã tạo thẻ “{name}”.",
     renamed: "Đã đổi tên thẻ.",

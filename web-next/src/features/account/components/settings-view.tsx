@@ -1,13 +1,14 @@
 "use client";
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Database,
   Download,
   KeyRound,
   Loader2,
   LogOut,
-  Plus,
+  Library,
   Languages,
   Trash2,
   Upload,
@@ -22,7 +23,6 @@ import { toast } from "@/components/ui/toaster";
 import { LeafDecor } from "@/components/layout/icons";
 import { authClient } from "@/lib/auth-client";
 import { MIN_PASSWORD } from "@/lib/auth-rules";
-import { importSampleAction } from "@/features/vocabulary/actions";
 import { changePasswordAction, deleteAccountAction, updateNameAction } from "../actions";
 import type { ImportReport } from "../transfer";
 import { useT } from "@/i18n/client";
@@ -255,7 +255,7 @@ function DataCard() {
   const router = useRouter();
   const t = useT();
   const file = React.useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = React.useState<"" | "import" | "sample">("");
+  const [busy, setBusy] = React.useState<"" | "import">("");
   const [report, setReport] = React.useState<ImportReport | null>(null);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -278,13 +278,6 @@ function DataCard() {
     } finally {
       setBusy("");
     }
-  }
-  async function sample() {
-    setBusy("sample");
-    const r = await importSampleAction();
-    setBusy("");
-    if (!r.ok) return void toast.error(r.message);
-    toast.success(r.data.added ? t("settings.sampleAdded", { count: r.data.added }) : t("settings.sampleHave"));
   }
 
   return (
@@ -332,10 +325,12 @@ function DataCard() {
           })}
         </div>
       ) : null}
-      <Row title={t("settings.sample")} desc={t("settings.sampleDesc")}>
-        <Button variant="secondary" onClick={sample} disabled={!!busy}>
-          {busy === "sample" ? <Loader2 className="animate-spin" /> : <Plus />}
-          {t("settings.sampleAdd")}
+      <Row title={t("settings.library")} desc={t("settings.libraryDesc")}>
+        <Button asChild variant="secondary">
+          <Link href="/library">
+            <Library />
+            {t("settings.libraryOpen")}
+          </Link>
         </Button>
       </Row>
     </Card>

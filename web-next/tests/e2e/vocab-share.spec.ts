@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { resetRateLimit } from "./db";
-import { register } from "./helpers";
+import { register, seedSample } from "./helpers";
 
 test.beforeEach(() => resetRateLimit());
 
@@ -14,7 +14,7 @@ test("chia sẻ từ vựng: chọn nhiều từ → gửi email → người nh
   const a = await (await browser.newContext(desktop)).newPage();
   await register(a, "Người Gửi", "vsa");
   await a.goto("/vocabulary");
-  await a.getByRole("button", { name: "Dùng dữ liệu mẫu" }).click();
+  await seedSample(a, "vocab");
   await expect(a.getByText("24 từ vựng", { exact: true })).toBeVisible();
   await expect(a.getByRole("button", { name: "Chia sẻ", exact: true })).toBeDisabled();
   const table = a.locator("table");

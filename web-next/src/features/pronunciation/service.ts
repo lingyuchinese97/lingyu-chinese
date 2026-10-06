@@ -8,7 +8,7 @@ import type { NoteInput, NoteUpdate } from "./schema";
 
 export class PronunciationError extends Error {
   constructor(
-    public code: "not-found" | "validation",
+    public code: "not-found" | "validation" | "duplicate",
     message: string,
   ) {
     super(message);
