@@ -105,7 +105,7 @@ export function Reader({ passage }: { passage: Passage }) {
   const [pinyin, setPinyin] = React.useState(true);
   const [showTr, setShowTr] = React.useState(true);
   const [saved, setSaved] = React.useState(passage.saved);
-  const [card, setCard] = React.useState<{ word: Word; x: number; y: number } | null>(null);
+  const [card, setCard] = React.useState<{ word: Word; x: number; y: number; above: boolean } | null>(null);
   const [answers, setAnswers] = React.useState<(number | string | null)[]>(() => passage.questions.map(() => null));
   const [result, setResult] = React.useState<Result | null>(null);
   const [busy, setBusy] = React.useState<string | null>(null);
@@ -180,7 +180,9 @@ export function Reader({ passage }: { passage: Passage }) {
   const shownWords = allWords ? passage.words : passage.words.slice(0, 6);
   const openCard = (w: Word, el: HTMLElement) => {
     const r = el.getBoundingClientRect();
-    setCard({ word: w, x: r.left + r.width / 2, y: r.bottom });
+    // Không đủ chỗ phía dưới (thanh tab dưới đáy trên điện thoại) → mở thẻ phía trên chữ.
+    const above = window.innerHeight - r.bottom < 260;
+    setCard({ word: w, x: r.left + r.width / 2, y: above ? r.top : r.bottom, above });
   };
 
   return (
@@ -535,8 +537,14 @@ export function Reader({ passage }: { passage: Passage }) {
         <div
           role="dialog"
           aria-label={t("reading.wordCard", { word: card.word.zh })}
-          style={{ left: Math.min(Math.max(card.x, 150), window.innerWidth - 150), top: card.y + 8 }}
-          className="fixed z-[70] w-[280px] -translate-x-1/2 rounded-[16px] border border-[#F6DE9E] bg-white p-3.5 shadow-card"
+          style={{
+            left: Math.min(Math.max(card.x, 150), window.innerWidth - 150),
+            top: card.above ? card.y - 8 : card.y + 8,
+          }}
+          className={cn(
+            "fixed z-[70] w-[280px] -translate-x-1/2 rounded-[16px] border border-[#F6DE9E] bg-white p-3.5 shadow-card",
+            card.above && "-translate-y-full",
+          )}
         >
           <div className="flex items-start gap-2">
             <p lang="zh" className="min-w-0 flex-1 hanzi text-[24px] leading-tight font-bold text-navy-900">
