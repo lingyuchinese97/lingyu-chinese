@@ -14,6 +14,7 @@ import { hskLevelOf, hskPinyinOf } from "@/lib/hsk";
 import { newCardColumns } from "@/lib/srs";
 import { VOCAB } from "@/lib/limits";
 import { SAMPLE_VOCABULARY } from "@/data/sample-vocab";
+import { hskOfTag } from "@/lib/hsk-tag";
 import { cleanTags, type ListParams, type VocabInput, type VocabStatus } from "./schema";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -85,6 +86,29 @@ export async function listTags(userId: string): Promise<TagCount[]> {
   );
 }
 
+/** Số từ theo cấp HSK (theo tag; cấp nhỏ nhất nếu có nhiều tag HSK) + "other" = không có tag HSK. */
+async function hskCountsOf(userId: string, hskTags: { id: string; lv: number }[]) {
+  const out: Record<string, number> = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, other: 0 };
+  const [{ n } = { n: 0 }] = await db.select({ n: count() }).from(vocab).where(eq(vocab.userId, userId));
+  if (!hskTags.length) {
+    out.other = n;
+    return out;
+  }
+  const lvOf = new Map(hskTags.map((t) => [t.id, t.lv]));
+  const rows = await db
+    .select({ vocabId: vocabToTag.vocabId, tagId: vocabToTag.tagId })
+    .from(vocabToTag)
+    .where(inArray(vocabToTag.tagId, [...lvOf.keys()]));
+  const min = new Map<string, number>();
+  for (const r of rows) {
+    const lv = lvOf.get(r.tagId)!;
+    min.set(r.vocabId, Math.min(min.get(r.vocabId) ?? 9, lv));
+  }
+  for (const lv of min.values()) out[String(lv)]!++;
+  out.other = n - min.size;
+  return out;
+}
+
 export async function listVocab(userId: string, p: ListParams, pageSize: number = VOCAB.PAGE_SIZE) {
   const tagCounts = await listTags(userId);
   const conds: SQL[] = [eq(vocab.userId, userId)];
@@ -108,6 +132,23 @@ export async function listVocab(userId: string, p: ListParams, pageSize: number 
       )!,
     );
   }
+  // Cấp HSK theo tag: cấp của từ = cấp nhỏ nhất trong các tag HSK của nó.
+  const hskTags = tagCounts
+    .map((t) => ({ id: t.id, lv: hskOfTag(t.name) }))
+    .filter((t): t is { id: string; lv: number } => t.lv !== null);
+  const hasTagIn = (ids: string[]) =>
+    ids.length
+      ? sql`exists (select 1 from ${vocabToTag} where ${vocabToTag.vocabId} = ${vocab.id} and ${inArray(vocabToTag.tagId, ids)})`
+      : sql`false`;
+  if (p.hsk === "other") conds.push(sql`not ${hasTagIn(hskTags.map((t) => t.id))}`);
+  else if (p.hsk) {
+    const lv = Number(p.hsk);
+    conds.push(hasTagIn(hskTags.filter((t) => t.lv === lv).map((t) => t.id)));
+    const lower = hskTags.filter((t) => t.lv < lv).map((t) => t.id);
+    if (lower.length) conds.push(sql`not ${hasTagIn(lower)}`);
+  }
+  if (p.status) conds.push(eq(vocab.status, p.status));
+  if (p.fav) conds.push(eq(vocab.isFavorite, true));
   const q = p.q.trim();
   if (q) {
     const fq = fold(q);
@@ -146,7 +187,16 @@ export async function listVocab(userId: string, p: ListParams, pageSize: number 
     .offset((page - 1) * pageSize);
   const tags = await tagsOf(rows.map((r) => r.id));
   const items: VocabItem[] = rows.map((r) => ({ ...r, tags: tags.get(r.id) ?? [] }));
-  return { items, total, page, pageCount, pageSize, totalAll, tagCounts };
+  return {
+    items,
+    total,
+    page,
+    pageCount,
+    pageSize,
+    totalAll,
+    tagCounts,
+    hskCounts: await hskCountsOf(userId, hskTags),
+  };
 }
 export type VocabList = Awaited<ReturnType<typeof listVocab>>;
 

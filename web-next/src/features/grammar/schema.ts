@@ -98,11 +98,7 @@ export const grammarListSchema = z.object({
   /** Cấp HSK lấy từ thẻ "HSK1" / "HSK 2" / "HSK3_Bài 1"…; "other" = không có thẻ HSK; "" = tất cả. */
   hsk: z.enum(["", "1", "2", "3", "4", "5", "6", "other"]).catch(""),
 });
-/** Cấp HSK của một thẻ (tên bắt đầu bằng HSK + số 1–6), không phải thẻ HSK → null. */
-export const hskOfTag = (name: string) => {
-  const m = /^hsk\s*_?([1-6])(?!\d)/i.exec(name.trim());
-  return m ? Number(m[1]) : null;
-};
+export { hskOfTag } from "@/lib/hsk-tag";
 export type GrammarListParams = z.infer<typeof grammarListSchema>;
 
 /** Tách chuỗi nhiều email (dấu phẩy, chấm phẩy, khoảng trắng, xuống dòng), bỏ trùng. */

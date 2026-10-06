@@ -89,6 +89,33 @@ describe("từ vựng — nghiệp vụ", () => {
     expect(st).toMatchObject({ total: 3, learned: 3, needReview: 0 });
   });
 
+  it("lọc theo cấp HSK (tag HSK1 / HSK 2 / HSK3_Bài 1, cấp nhỏ nhất), trạng thái, yêu thích; đếm theo cấp; số từ mỗi trang", async () => {
+    const C = await makeUser("hskv");
+    await svc.createVocab(C, input({ hanzi: "一", tags: ["HSK1", "HSK 2"] }));
+    await svc.createVocab(C, input({ hanzi: "二", tags: ["HSK 2"] }));
+    await svc.createVocab(C, input({ hanzi: "三", tags: ["HSK3_Bài 1"] }));
+    await svc.createVocab(C, input({ hanzi: "四", tags: ["Tự thêm"] }));
+    const all = await svc.listVocab(C, params());
+    expect(all.hskCounts).toMatchObject({ "1": 1, "2": 1, "3": 1, other: 1 });
+    const hz = async (p: Record<string, unknown>) =>
+      (await svc.listVocab(C, params(p))).items.map((x) => x.hanzi).sort();
+    expect(await hz({ hsk: "1" })).toEqual(["一"]);
+    expect(await hz({ hsk: "2" })).toEqual(["二"]);
+    expect(await hz({ hsk: "3" })).toEqual(["三"]);
+    expect(await hz({ hsk: "other" })).toEqual(["四"]);
+    const two = all.items.find((x) => x.hanzi === "二")!;
+    await svc.setStatus(C, [two.id], "learned");
+    await svc.toggleFavorite(C, two.id);
+    expect(await hz({ status: "learned" })).toEqual(["二"]);
+    expect(await hz({ status: "review" })).toEqual(["一", "三", "四"]);
+    expect(await hz({ fav: "1" })).toEqual(["二"]);
+    expect(params({ fav: "false" }).fav).toBe(false);
+    expect((await svc.listVocab(C, params(), 2)).items).toHaveLength(2);
+    expect(params({ size: 7 }).size).toBe(8);
+    // Không lộ sang người khác.
+    expect((await svc.listVocab(B, params({ hsk: "1" }))).items.some((x) => x.hanzi === "一")).toBe(false);
+  });
+
   it("ảnh: lưu, đổi ảnh xoá ảnh cũ, xoá từ xoá ảnh", async () => {
     const id = await svc.createVocab(A, input({ hanzi: "茶", pinyin: "chá", meaningVi: "trà" }), {
       bytes: PNG,

@@ -32,6 +32,7 @@ import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "@/compo
 import { toast } from "@/components/ui/toaster";
 import { fold } from "@/lib/fold";
 import { cn } from "@/lib/utils";
+import { tagColors } from "@/lib/tag-style";
 import { VOCAB } from "@/lib/limits";
 import { useT } from "@/i18n/client";
 import type { TagCount } from "../service";
@@ -155,6 +156,145 @@ export function TagCards({
   );
 }
 
+const HSK_COLORS = [
+  "bg-[#E3EEFF] text-blue-600",
+  "bg-[#E6F7EE] text-[#1F9D55]",
+  "bg-[#FFF3D6] text-[#C27C0E]",
+  "bg-[#E6F1FF] text-[#2C6FDB]",
+  "bg-[#FFEBDD] text-[#E0632F]",
+  "bg-[#F1EAFF] text-[#7A45E0]",
+  "bg-[#FFE6EA] text-[#E0305A]",
+  "bg-[#EEF2F7] text-[#5B6B80]",
+];
+
+/** Hàng thẻ cấp HSK (theo tag HSK của từ): Tất cả · HSK1–6 · Khác, kèm số từ; bấm để lọc. */
+export function HskCards({
+  counts,
+  totalAll,
+  active,
+  onPick,
+}: {
+  counts: Record<string, number>;
+  totalAll: number;
+  active: string;
+  onPick: (hsk: "" | "1" | "2" | "3" | "4" | "5" | "6" | "other") => void;
+}) {
+  const t = useT();
+  const items = [
+    { k: "" as const, name: t("vocab.allTagsCard"), n: totalAll, icon: Layers },
+    ...(["1", "2", "3", "4", "5", "6"] as const).map((k) => ({
+      k,
+      name: `HSK${k}`,
+      n: counts[k] ?? 0,
+      icon: BookOpen,
+    })),
+    { k: "other" as const, name: t("vocab.hskOther"), n: counts.other ?? 0, icon: Layers },
+  ];
+  return (
+    <div
+      role="group"
+      aria-label={t("vocab.hskFilter")}
+      className="-mx-4 flex [scrollbar-width:none] gap-3 overflow-x-auto rounded-[var(--radius-xl)] px-4 pt-0.5 pb-1.5 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:border md:border-border md:bg-white/92 md:p-3 md:shadow-card xl:grid-cols-8"
+    >
+      {items.map((it, i) => (
+        <Card
+          key={it.k || "all"}
+          on={active === it.k}
+          icon={it.icon}
+          color={HSK_COLORS[i]!}
+          name={it.name}
+          count={t("vocab.tagWords", { count: it.n })}
+          onClick={() => onPick(it.k)}
+          compact
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Hàng chip tag: Tất cả · từng tag (bấm để lọc; "…" đổi tên / xoá) · Thêm tag. */
+export function TagChips({
+  tags,
+  active,
+  onPick,
+  onCreate,
+  onRename,
+  onDelete,
+}: {
+  tags: TagCount[];
+  active: string;
+  onPick: (name: string) => void;
+  onCreate: () => void;
+  onRename: (t: TagCount) => void;
+  onDelete: (t: TagCount) => void;
+}) {
+  const t = useT();
+  const chip = (on: boolean) =>
+    cn(
+      "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] px-3.5 text-[14.5px] font-semibold whitespace-nowrap outline-none focus-visible:shadow-[var(--focus-ring)]",
+      on ? "border-blue-600 bg-blue-600 text-white" : "border-border bg-white text-text hover:bg-blue-50",
+    );
+  return (
+    <div
+      role="group"
+      aria-label={t("vocab.quickFilter")}
+      className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
+    >
+      <button type="button" aria-pressed={!active} onClick={() => onPick("")} className={chip(!active)}>
+        {t("vocab.allTagsCard")}
+      </button>
+      {tags.map((g) => {
+        const on = g.name.toLowerCase() === active.toLowerCase();
+        return (
+          <span key={g.id} className="inline-flex shrink-0 items-center">
+            <button
+              type="button"
+              aria-pressed={on}
+              onClick={() => onPick(on ? "" : g.name)}
+              className={cn(chip(on), "rounded-r-none border-r-0 pr-2.5")}
+              style={on ? undefined : tagColors(g.name)}
+            >
+              {g.name}
+              <span className="text-[12.5px] font-normal">{g.count}</span>
+            </button>
+            <Menu>
+              <MenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={t("vocab.tagMenu", { name: g.name })}
+                  className={cn(chip(on), "rounded-l-none px-1.5 [&_svg]:size-4")}
+                  style={on ? undefined : tagColors(g.name)}
+                >
+                  <MoreHorizontal />
+                </button>
+              </MenuTrigger>
+              <MenuContent className="w-[200px]">
+                <MenuItem onSelect={() => onRename(g)}>
+                  <Pencil />
+                  {t("vocab.renameTag")}
+                </MenuItem>
+                <MenuSeparator />
+                <MenuItem danger onSelect={() => onDelete(g)}>
+                  <Trash2 />
+                  {t("vocab.deleteTag")}
+                </MenuItem>
+              </MenuContent>
+            </Menu>
+          </span>
+        );
+      })}
+      <button
+        type="button"
+        onClick={onCreate}
+        className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] border-dashed border-[#BCD6F5] bg-white px-3.5 text-[14.5px] font-semibold whitespace-nowrap text-blue-600 hover:bg-blue-50"
+      >
+        <Plus className="size-[18px]" />
+        {t("vocab.addTagChip")}
+      </button>
+    </div>
+  );
+}
+
 function Card({
   on,
   icon: Icon,
@@ -163,6 +303,7 @@ function Card({
   count,
   onClick,
   menu,
+  compact,
 }: {
   on: boolean;
   icon: LucideIcon;
@@ -171,23 +312,32 @@ function Card({
   count: string;
   onClick: () => void;
   menu?: React.ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <div className="relative w-[168px] shrink-0 md:w-auto">
+    <div className={cn("relative shrink-0 md:w-auto", compact ? "w-[140px]" : "w-[168px]")}>
       <button
         type="button"
         onClick={onClick}
         aria-pressed={on}
         className={cn(
-          "flex min-h-[76px] w-full items-center gap-3 rounded-2xl border-[1.5px] bg-white py-3 pr-9 pl-3 text-left shadow-[0_4px_14px_rgba(34,93,150,.06)] transition-colors outline-none focus-visible:shadow-[var(--focus-ring)]",
+          "flex w-full items-center gap-3 rounded-2xl border-[1.5px] bg-white py-3 pl-3 text-left",
+          compact ? "min-h-[60px] gap-2 pr-2 pl-2.5" : "min-h-[76px] pr-9",
+          "shadow-[0_4px_14px_rgba(34,93,150,.06)] transition-colors outline-none focus-visible:shadow-[var(--focus-ring)]",
           on ? "border-blue-600 bg-[#F2F8FF]" : "border-border hover:border-[#BCD6F5]",
         )}
       >
-        <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-xl [&_svg]:size-[22px]", color)}>
+        <span
+          className={cn(
+            "flex shrink-0 items-center justify-center rounded-xl",
+            compact ? "size-9 [&_svg]:size-5" : "size-11 [&_svg]:size-[22px]",
+            color,
+          )}
+        >
           <Icon aria-hidden="true" />
         </span>
         <span className="min-w-0">
-          <span className="block truncate font-bold text-text">{name}</span>
+          <span className={cn("block font-bold text-text", compact ? "whitespace-nowrap" : "truncate")}>{name}</span>
           <span className="block text-[13.5px] text-text-2">{count}</span>
         </span>
       </button>

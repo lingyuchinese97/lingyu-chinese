@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { HSK_FILTERS } from "@/lib/hsk-tag";
 import { VOCAB } from "@/lib/limits";
 
 export const STATUS = ["learned", "review"] as const;
@@ -75,7 +76,17 @@ export const listParamsSchema = z.object({
   radical: z.coerce.number().int().min(0).max(214).catch(0),
   sort: z.enum(["newest", "oldest", "pinyin", "favorite"]).catch("newest"),
   page: z.coerce.number().int().min(1).max(100000).catch(1),
+  /** Cấp HSK theo tag (HSK1, HSK 2, HSK3_Bài 1…); "other" = không có tag HSK. */
+  hsk: z.enum(HSK_FILTERS).catch(""),
+  status: z.enum(["", ...STATUS]).catch(""),
+  fav: z.preprocess((v) => v === true || v === "1" || v === "true", z.boolean()).catch(false),
+  /** Số từ mỗi trang (giao diện web). */
+  size: z.coerce
+    .number()
+    .refine((n) => PAGE_SIZES.includes(n as 8))
+    .catch(8),
 });
+export const PAGE_SIZES = [8, 10, 20, 50] as const;
 export type ListParams = z.infer<typeof listParamsSchema>;
 
 export const idsSchema = z.array(z.uuid()).min(1, "Chưa chọn từ vựng nào.").max(500);

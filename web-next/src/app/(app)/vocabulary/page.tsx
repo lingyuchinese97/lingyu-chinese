@@ -22,7 +22,11 @@ export default async function VocabularyPage({ searchParams }: { searchParams: S
     radical: one(sp.radical) ?? 0,
     sort: one(sp.sort) ?? "newest",
     page: one(sp.page) ?? 1,
+    hsk: one(sp.hsk) ?? "",
+    status: one(sp.status) ?? "",
+    fav: one(sp.fav) ?? "",
+    size: one(sp.size) ?? 8,
   });
-  const [data, received] = await Promise.all([listVocab(user.id, params), listReceivedVocab(user.id)]);
+  const [data, received] = await Promise.all([listVocab(user.id, params, params.size), listReceivedVocab(user.id)]);
   return <VocabListView data={data} params={{ ...params, page: data.page }} received={received} />;
 }
