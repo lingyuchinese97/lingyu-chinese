@@ -121,7 +121,7 @@ export default async function PronunciationPage() {
             </Link>
           </Button>
           <Button asChild variant="secondary">
-            <Link href="/library/pronunciation/notes">
+            <Link href="/pronunciation/notes">
               <NotebookPen />
               {t("pronunciation.overview.openNotes")}
               <span className="rounded-full bg-blue-50 px-2 text-[13px]">

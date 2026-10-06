@@ -99,6 +99,13 @@
       "when": 1791130163720,
       "tag": "0013_library_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791277087821,
+      "tag": "0014_pronunciation_items",
+      "breakpoints": true
     }
   ]
 }

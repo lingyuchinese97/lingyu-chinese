@@ -2,7 +2,7 @@
 import { FINAL_GROUPS, FINALS } from "./finals";
 import { INITIAL_GROUPS, INITIALS } from "./initials";
 import { SANDHI_RULES, SANDHI_TIPS, TONE_SETS, TONE_TIPS, TONES } from "./tones";
-import type { L } from "./types";
+import type { Example, L } from "./types";
 
 export * from "./types";
 export { FINAL_GROUPS, FINALS, INITIAL_GROUPS, INITIALS, SANDHI_RULES, SANDHI_TIPS, TONE_SETS, TONE_TIPS, TONES };
@@ -54,4 +54,21 @@ export function topicHref(topic: string) {
   if (kind === "tone") return "/library/pronunciation/tones";
   if (kind === "sandhi" && a && a !== "general") return `/library/pronunciation/sandhi?rule=${a}`;
   return "/library/pronunciation/sandhi";
+}
+
+/**
+ * Từ ví dụ của một mục trong Thư viện (để lưu vào "Phát âm của tôi"): "initial:b", "final:ang", "tone:3", "sandhi:bu".
+ * Mục không có / không có ví dụ → null. Ví dụ biến điệu có thêm `spoken` (cách đọc thực tế).
+ */
+export function libraryExamples(topic: string): (Example & { spoken?: string })[] | null {
+  const [kind, a, ...rest] = topic.split(":");
+  if (rest.length || !a) return null;
+  if (kind === "initial") return INITIALS.find((x) => x.symbol === a)?.examples ?? null;
+  if (kind === "final") return FINALS.find((x) => x.symbol === a)?.examples ?? null;
+  if (kind === "tone") {
+    const tn = TONES.find((x) => String(x.tone) === a);
+    return tn ? [tn.example] : null;
+  }
+  if (kind === "sandhi") return SANDHI_RULES.find((x) => x.id === a)?.examples ?? null;
+  return null;
 }

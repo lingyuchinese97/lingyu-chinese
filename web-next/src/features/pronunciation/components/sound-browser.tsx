@@ -1,10 +1,9 @@
 "use client";
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookmarkCheck, BookmarkPlus, Lightbulb, ListChecks, Loader2, NotebookPen } from "lucide-react";
+import { BookmarkPlus, Lightbulb, ListChecks, Loader2, NotebookPen } from "lucide-react";
 import { toast } from "@/components/ui/toaster";
-import { saveSoundExampleAction } from "../actions";
+import { saveFromLibraryAction } from "../actions";
 import { useLocale, useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import type { SoundGroup, SoundItem } from "@/data/pronunciation";
@@ -12,6 +11,7 @@ import { PCard, PTitle } from "./pron-header";
 import { SpeakBtn } from "./speak-btn";
 import { useL } from "./speech";
 import { TopicNoteButton } from "./topic-note";
+import { SaveToMine } from "./save-to-mine";
 
 const GROUP_TONE = [
   "bg-blue-50 text-blue-700",
@@ -39,7 +39,7 @@ export function SoundBrowser({
   groups: SoundGroup[];
   items: SoundItem[];
   notes: Record<string, string>;
-  /** Từ ví dụ đã có trong Từ vựng của tôi. */
+  /** Chữ Hán đã có trong Phát âm của tôi. */
   saved?: string[];
   selected?: string;
   filterable?: boolean;
@@ -60,15 +60,15 @@ export function SoundBrowser({
   const topic = `${kind}:${item.symbol}`;
   const name = t(kind === "initial" ? "pronunciation.tabs.initials" : "pronunciation.tabs.finals");
 
-  /** Lưu một ví dụ (hoặc cả âm khi `hanzi` = null) vào Từ vựng của tôi — bản sao để sửa / thêm tag. */
+  /** Lưu một ví dụ (hoặc cả âm khi `hanzi` = null) vào Phát âm của tôi — bản sao để sửa / thêm tag. */
   async function save(hanzi: string | null) {
     setSaving(hanzi ?? "*");
-    const r = await saveSoundExampleAction(kind === "initial" ? "initials" : "finals", item.symbol, hanzi);
+    const r = await saveFromLibraryAction(topic, hanzi);
     setSaving(null);
     if (!r.ok) return void toast.error(r.message);
     setSaved((x) => new Set([...x, ...(hanzi ? [hanzi] : item.examples.map((e) => e.hanzi))]));
     toast.success(t("pronunciation.sound.saved", { added: r.data.added, skipped: r.data.skipped }), {
-      action: { label: t("pronunciation.sound.openMine"), onClick: () => router.push("/vocabulary") },
+      action: { label: t("pronunciation.sound.openMine"), onClick: () => router.push("/pronunciation") },
     });
   }
   const allSaved = item.examples.every((e) => saved.has(e.hanzi));
@@ -258,31 +258,12 @@ export function SoundBrowser({
                     <div className="text-[13.5px] text-text-2">{l(e.meaning)}</div>
                   </div>
                   <SpeakBtn text={e.hanzi} label={t("ui.listen", { text: e.hanzi })} size="sm" />
-                  {saved.has(e.hanzi) ? (
-                    <Link
-                      href={`/vocabulary?q=${encodeURIComponent(e.hanzi)}`}
-                      aria-label={t("pronunciation.sound.inMine", { hanzi: e.hanzi })}
-                      title={t("pronunciation.sound.inMine", { hanzi: e.hanzi })}
-                      className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-green-700 hover:bg-green-50"
-                    >
-                      <BookmarkCheck className="size-5" />
-                    </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => save(e.hanzi)}
-                      disabled={!!saving}
-                      aria-label={t("pronunciation.sound.saveOne", { hanzi: e.hanzi })}
-                      title={t("pronunciation.sound.saveOne", { hanzi: e.hanzi })}
-                      className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-blue-600 hover:bg-blue-50"
-                    >
-                      {saving === e.hanzi ? (
-                        <Loader2 className="size-5 animate-spin" />
-                      ) : (
-                        <BookmarkPlus className="size-5" />
-                      )}
-                    </button>
-                  )}
+                  <SaveToMine
+                    topic={topic}
+                    hanzi={e.hanzi}
+                    saved={saved.has(e.hanzi)}
+                    onSaved={() => setSaved((x) => new Set([...x, e.hanzi]))}
+                  />
                 </li>
               ))}
             </ul>

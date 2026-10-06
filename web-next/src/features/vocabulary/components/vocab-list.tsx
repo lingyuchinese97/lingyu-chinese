@@ -1,4 +1,5 @@
 "use client";
+import { HanziGrid } from "@/components/hanzi-grid";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -564,9 +565,7 @@ export function VocabListView({
                           </td>
                           <td className="text-text-2 tabular-nums">{(data.page - 1) * data.pageSize + i + 1}</td>
                           <td>
-                            <span className="hanzi text-[24px] text-[#E0302F]" lang="zh">
-                              {v.hanzi}
-                            </span>
+                            <HanziGrid text={v.hanzi} size={44} />
                           </td>
                           <td>
                             <span className="inline-flex items-center gap-1">
@@ -628,11 +627,8 @@ export function VocabListView({
                         aria-label={t("vocab.selectWord", { word: v.hanzi })}
                       />
                     </div>
-                    <div
-                      className="min-w-0 hanzi text-[24px] leading-tight [overflow-wrap:anywhere] text-[#E0302F] [grid-area:word]"
-                      lang="zh"
-                    >
-                      {v.hanzi}
+                    <div className="min-w-0 [grid-area:word]">
+                      <HanziGrid text={v.hanzi} size={48} />
                     </div>
                     <div className="flex items-center gap-1 text-[14.5px] [grid-area:py]">
                       <span className="pinyin">{v.pinyin}</span>

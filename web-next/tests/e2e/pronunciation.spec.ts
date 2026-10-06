@@ -110,8 +110,11 @@ test("Phát âm: tổng quan → thanh mẫu (ghi chú riêng) → vận mẫu (
   await page.getByRole("button", { name: "Kiểm tra đáp án" }).click();
   await expect(page.getByText(/Chính xác!|Chưa đúng\. Đáp án:/)).toBeVisible();
 
-  // Ghi chú của tôi: đủ 4 ghi chú; sửa, xoá; link mở lại bài học.
+  // Ghi chú nằm trong kho của tôi (mục Phát âm & Biến điệu): đủ 4 ghi chú; sửa, xoá; link mở lại bài học ở Thư viện.
+  await page.getByRole("link", { name: "Phát âm của tôi", exact: true }).click();
+  await expect(page).toHaveURL(/\/pronunciation$/);
   await page.getByRole("link", { name: "Ghi chú của tôi", exact: true }).click();
+  await expect(page).toHaveURL(/\/pronunciation\/notes$/);
   const list = page.getByRole("list", { name: "Danh sách ghi chú" });
   await expect(list.getByRole("listitem")).toHaveCount(4);
   await expect(list.getByText("Thanh mẫu zh")).toBeVisible();
@@ -128,7 +131,7 @@ test("Phát âm: tổng quan → thanh mẫu (ghi chú riêng) → vận mẫu (
     .filter({ hasText: "Thanh mẫu zh" })
     .getByRole("link", { name: "Mở bài học" })
     .click();
-  await expect(page).toHaveURL(/\/pronunciation\/initials\?s=zh/);
+  await expect(page).toHaveURL(/\/library\/pronunciation\/initials\?s=zh/);
 });
 
 test("API phát âm: 401, nội dung, bài luyện, ghi chú riêng (người khác → 404)", async ({ page, browser }, info) => {

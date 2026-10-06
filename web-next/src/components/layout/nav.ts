@@ -1,5 +1,6 @@
 import type { Messages } from "@/i18n/messages/vi";
 import {
+  AudioLines,
   BarChart3,
   BookOpen,
   BookOpenText,
@@ -44,6 +45,7 @@ export const NAV: NavItem[] = [
   { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png", group: 1 },
   { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png", group: 1 },
   { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png", group: 1 },
+  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, img: "/brand/ui/nav-pronunciation.png", group: 1 },
   { key: "listening", href: "/listening", icon: Headphones, img: "/brand/ui/nav-listening.png", group: 1 },
   { key: "reading", href: "/reading", icon: BookOpenText, img: "/brand/ui/nav-reading.png", group: 1 },
   { key: "sentences", href: "/translate", icon: MessagesSquare, img: "/brand/ui/nav-translation.png", group: 1 },

@@ -153,6 +153,7 @@ export const libhub = {
     t4: "Thanh 4 (đi xuống mạnh)",
     t5: "Thanh nhẹ (đọc nhẹ, ngắn)",
   },
+  writeTitle: "Cách viết (thứ tự nét)",
   examplesTitle: "Ví dụ câu",
   illustration: "Hình ảnh minh họa",
   radicalsTitle: "Bộ thủ & Phân tích",

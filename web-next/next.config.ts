@@ -57,11 +57,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "2mb",
     },
   },
-  // Phát âm & Biến điệu chuyển vào Thư viện LingYu — link cũ vẫn mở được.
+  // Bài học Phát âm & Biến điệu của LingYu chuyển vào Thư viện — link cũ vẫn mở được.
+  // (/pronunciation và /pronunciation/notes giờ là kho riêng của người học.)
   async redirects() {
     return [
-      { source: "/pronunciation", destination: "/library/pronunciation", permanent: true },
-      { source: "/pronunciation/:path*", destination: "/library/pronunciation/:path*", permanent: true },
+      {
+        source: "/pronunciation/:page(initials|finals|tones|sandhi|practice)",
+        destination: "/library/pronunciation/:page",
+        permanent: true,
+      },
     ];
   },
   async headers() {

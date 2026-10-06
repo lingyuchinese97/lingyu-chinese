@@ -153,6 +153,7 @@ export const libhub = {
     t4: "Tone 4 (sharp fall)",
     t5: "Neutral tone (light, short)",
   },
+  writeTitle: "How to write (stroke order)",
   examplesTitle: "Example sentences",
   illustration: "Illustration",
   radicalsTitle: "Radicals & analysis",

@@ -491,6 +491,33 @@ export const pronunciationNote = pgTable(
   ],
 );
 
+/**
+ * "Phát âm của tôi": từ / âm tiết người học tự nhập hoặc lưu từ Thư viện LingYu (bản sao — sửa, thêm tag tự do).
+ * `source` = mục gốc trong Thư viện ("initial:b", "sandhi:bu"...), null = tự nhập.
+ */
+export const pronunciationItem = pgTable(
+  "pronunciation_item",
+  {
+    id: id(),
+    userId: userRef(),
+    hanzi: text("hanzi").notNull(),
+    pinyin: text("pinyin").notNull(),
+    meaning: text("meaning").notNull().default(""),
+    note: text("note").notNull().default(""),
+    tags: text("tags")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    source: text("source"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex("pronunciation_item_user_word_uq").on(t.userId, t.hanzi, t.pinyin),
+    index("pronunciation_item_user_updated_idx").on(t.userId, t.updatedAt),
+  ],
+);
+
 // ---------- Tiến độ học tập ----------
 /**
  * Nhật ký hoạt động học (Lịch sử học tập, Bài học gần đây, số liệu hôm nay). Ghi từ service khi người dùng hoàn thành

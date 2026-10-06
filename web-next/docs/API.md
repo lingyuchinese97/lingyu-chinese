@@ -179,16 +179,19 @@ Thân thêm / sửa: `{ title, meaning?, structure? (mỗi dòng một cấu tr�
 
 ## Phát âm `/api/v1/pronunciation`
 
-| Route                                                         | Việc                                                                                                                                             |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /pronunciation`                                          | Nội dung: `initials`, `finals` (nhóm + âm), `tones`, `sandhi` (quy tắc + ví dụ). Chữ có sẵn `vi` / `en`                                          |
-| `GET /pronunciation/practice`                                 | Tạo bài tự luyện. Query: `mode` (bắt buộc), `count` (1–20, mặc định 10) → `{ mode, questions }`                                                  |
-| `GET /pronunciation/notes`                                    | Ghi chú phát âm của tôi (mới sửa trước)                                                                                                          |
-| `POST /pronunciation/notes`                                   | Không `topic` → ghi chú tự do (`title`, `content` bắt buộc) → `201`. Có `topic` → lưu ghi chú mục đó → `200` (nội dung rỗng = xoá, `data: null`) |
-| `GET /pronunciation/notes/{id}`                               | Một ghi chú                                                                                                                                      |
-| `PUT /pronunciation/notes/{id}`                               | Sửa `{ title?, content }`                                                                                                                        |
-| `DELETE /pronunciation/notes/{id}`                            | Xoá → `{ deleted: true }`                                                                                                                        |
-| `POST /pronunciation/sounds/{initials\|finals}/{symbol}/save` | Lưu từ ví dụ của âm vào Từ vựng của tôi, body `{ hanzi? }` (bỏ trống = mọi ví dụ); tag `Phát âm` + tên âm → `{ added, skipped }`                 |
+| Route                                        | Việc                                                                                                                                                  |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /pronunciation`                         | Nội dung: `initials`, `finals` (nhóm + âm), `tones`, `sandhi` (quy tắc + ví dụ). Chữ có sẵn `vi` / `en`                                               |
+| `GET /pronunciation/practice`                | Tạo bài tự luyện. Query: `mode` (bắt buộc), `count` (1–20, mặc định 10) → `{ mode, questions }`                                                       |
+| `GET /pronunciation/notes`                   | Ghi chú phát âm của tôi (mới sửa trước)                                                                                                               |
+| `POST /pronunciation/notes`                  | Không `topic` → ghi chú tự do (`title`, `content` bắt buộc) → `201`. Có `topic` → lưu ghi chú mục đó → `200` (nội dung rỗng = xoá, `data: null`)      |
+| `GET /pronunciation/notes/{id}`              | Một ghi chú                                                                                                                                           |
+| `PUT /pronunciation/notes/{id}`              | Sửa `{ title?, content }`                                                                                                                             |
+| `DELETE /pronunciation/notes/{id}`           | Xoá → `{ deleted: true }`                                                                                                                             |
+| `GET /pronunciation/items`                   | Phát âm của tôi. Query `q`, `tag`, `from` (`all`\|`library`\|`mine`), `sort` (`updated`\|`newest`\|`az`) → `{ items, total, all, fromLibrary, tags }` |
+| `POST /pronunciation/items`                  | Thêm `{ hanzi, pinyin?, meaning?, note?, tags? }` (pinyin trống → tự điền) → `201`; trùng chữ Hán + pinyin → `409`                                    |
+| `GET\|PUT\|DELETE /pronunciation/items/{id}` | Một mục của mình: xem / sửa, thêm tag / xoá (người khác → `404`)                                                                                      |
+| `POST /pronunciation/items/from-library`     | Lưu từ ví dụ của mục Thư viện `{ topic: "initial:b"\|"final:ang"\|"tone:3"\|"sandhi:bu", hanzi? }` → `{ added, skipped }`                             |
 
 - `mode`: `listen-choose` · `listen-type` · `speak-compare` · `pairs` · `read-words` · `sandhi`. Bài tự luyện không lưu điểm nên
   câu hỏi có kèm `answer`; chấm pinyin gõ tay chấp nhận số thanh (`ba1` ≡ `bā`, `lv4` ≡ `lǜ`). `speak` là chữ Hán để máy đọc.

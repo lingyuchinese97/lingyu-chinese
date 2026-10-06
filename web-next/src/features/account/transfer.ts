@@ -2,7 +2,7 @@
  * Xuất / nhập dữ liệu học tập (JSON). Xuất: từ vựng (kèm ảnh base64, lịch ôn), tag, ngữ pháp (kèm ví dụ, ghi chú cá nhân,
  * đã lưu), câu (Ôn dịch câu), bài làm luyện nghe, ghi chú phát âm, bộ thủ đã thuộc, tiến độ bài học. Nhập: GỘP vào dữ liệu hiện có, không ghi đè — bản ghi trùng thì bỏ qua.
  */
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/server/db/client";
 import {
@@ -17,6 +17,7 @@ import {
   listeningExercise,
   listeningTag,
   listeningToTag,
+  pronunciationItem,
   pronunciationNote,
   radicalKnown,
   sentence,
@@ -40,7 +41,8 @@ import { sentenceInputSchema } from "@/features/sentences/schema";
 import { ensureSentenceTags, sentenceValues } from "@/features/sentences/service";
 import { exerciseInputSchema } from "@/features/listening/schema";
 import { exerciseValues, setListeningTags } from "@/features/listening/service";
-import { noteInputSchema } from "@/features/pronunciation/schema";
+import { itemInputSchema, noteInputSchema } from "@/features/pronunciation/schema";
+import { libraryExamples } from "@/data/pronunciation";
 
 export const EXPORT_FORMAT = "lingyu-export";
 export const EXPORT_VERSION = 1;
@@ -119,6 +121,11 @@ export async function exportData(u: { id: string; name: string; email: string })
     .from(pronunciationNote)
     .where(eq(pronunciationNote.userId, userId))
     .orderBy(asc(pronunciationNote.createdAt));
+  const pItems = await db
+    .select()
+    .from(pronunciationItem)
+    .where(eq(pronunciationItem.userId, userId))
+    .orderBy(asc(pronunciationItem.createdAt));
 
   return {
     format: EXPORT_FORMAT,
@@ -215,6 +222,16 @@ export async function exportData(u: { id: string; name: string; email: string })
       content: n.content,
       createdAt: n.createdAt.toISOString(),
     })),
+    // Phát âm của tôi (tự nhập / lưu từ Thư viện).
+    pronunciationItems: pItems.map((x) => ({
+      hanzi: x.hanzi,
+      pinyin: x.pinyin,
+      meaning: x.meaning,
+      note: x.note,
+      tags: x.tags,
+      source: x.source,
+      createdAt: x.createdAt.toISOString(),
+    })),
     radicalsKnown: known.map((k) => k.radical).sort((a, b) => a - b),
     lessonProgress: lessons.map((l) => ({
       lessonId: l.lessonId,
@@ -258,6 +275,7 @@ const fileSchema = z.object({
   listeningTags: z.array(z.unknown()).max(5000).default([]),
   listening: z.array(z.unknown()).max(5000).default([]),
   pronunciationNotes: z.array(z.unknown()).max(5000).default([]),
+  pronunciationItems: z.array(z.unknown()).max(5000).default([]),
   radicalsKnown: z.array(z.unknown()).max(214).default([]),
   lessonProgress: z.array(z.unknown()).max(1000).default([]),
 });
@@ -538,6 +556,41 @@ export async function importData(userId: string, raw: unknown): Promise<ImportRe
         ...(created.success && created.data.createdAt ? { createdAt: created.data.createdAt } : {}),
       });
       report.pronunciation.added++;
+    }
+
+    // Phát âm của tôi: trùng chữ Hán + pinyin → bỏ qua; không vượt giới hạn (đếm chung vào báo cáo "phát âm").
+    const [iCount] = await tx
+      .select({ n: count() })
+      .from(pronunciationItem)
+      .where(eq(pronunciationItem.userId, userId));
+    let iLeft = PRONUNCIATION.MAX_ITEMS - (iCount?.n ?? 0);
+    for (const item of f.pronunciationItems) {
+      const input = itemInputSchema.safeParse(item);
+      const extra = z
+        .object({
+          createdAt: date.optional().catch(undefined),
+          source: z.string().max(64).nullish().catch(null),
+        })
+        .safeParse(item ?? {});
+      if (!input.success || !input.data.pinyin || iLeft <= 0) {
+        report.pronunciation.skipped++;
+        continue;
+      }
+      const ins = await tx
+        .insert(pronunciationItem)
+        .values({
+          userId,
+          ...input.data,
+          // Chỉ giữ nguồn là mục có thật trong Thư viện.
+          source: extra.success && extra.data.source && libraryExamples(extra.data.source) ? extra.data.source : null,
+          ...(extra.success && extra.data.createdAt ? { createdAt: extra.data.createdAt } : {}),
+        })
+        .onConflictDoNothing()
+        .returning({ id: pronunciationItem.id });
+      if (ins.length) {
+        iLeft--;
+        report.pronunciation.added++;
+      } else report.pronunciation.skipped++;
     }
 
     // Bộ thủ đã thuộc: hợp lại.

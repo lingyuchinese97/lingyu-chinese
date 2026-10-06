@@ -1958,18 +1958,76 @@ export function openApiDocument() {
         }),
       },
 
-      "/api/v1/pronunciation/sounds/{kind}/{symbol}/save": {
-        post: op(P, {
-          summary:
-            "Lưu từ ví dụ của một thanh mẫu / vận mẫu vào Từ vựng của tôi (tag Phát âm + tên âm; từ đã có bỏ qua)",
-          description:
-            "Thân request có thể bỏ trống (= lưu mọi ví dụ của âm). Bản sao trong Từ vựng của tôi sửa / thêm tag tự do.",
+      "/api/v1/pronunciation/items": {
+        get: op(P, {
+          summary: "Phát âm của tôi: từ / âm tự nhập hoặc lưu từ Thư viện (tìm, lọc tag / nguồn)",
           params: [
-            { name: "kind", in: "path", required: true, schema: { enum: ["initials", "finals"] } },
-            pathStr("symbol", "Ký hiệu âm, vd b, zh, ang, üe"),
+            q("q", { type: "string" }, "Chữ Hán, pinyin (không dấu được), nghĩa, ghi chú"),
+            q("tag", { type: "string" }),
+            q("from", { enum: ["all", "library", "mine"] }),
+            q("sort", { enum: ["updated", "newest", "az"] }),
           ],
-          body: obj({ hanzi: { type: ["string", "null"], maxLength: 12 } }, []),
-          example: { hanzi: "爸爸" },
+          data: obj({ items: { type: "array" }, total: int, all: int, fromLibrary: int, tags: { type: "array" } }),
+        }),
+        post: op(P, {
+          summary: "Thêm một mục (trùng chữ Hán + pinyin → 409)",
+          body: obj(
+            {
+              hanzi: { type: "string", maxLength: 40 },
+              pinyin: { type: "string", maxLength: 120, description: "Bỏ trống = tự điền theo chữ Hán" },
+              meaning: { type: "string", maxLength: 300 },
+              note: { type: "string", maxLength: 2000 },
+              tags: { type: "array", items: { type: "string", maxLength: 24 }, maxItems: 10 },
+            },
+            ["hanzi"],
+          ),
+          example: { hanzi: "四十", meaning: "bốn mươi", note: "s – sh dễ nhầm", tags: ["Khó đọc"] },
+          status: 201,
+          data: { type: "object" },
+          errors: [409],
+        }),
+      },
+      "/api/v1/pronunciation/items/{id}": {
+        get: op(P, {
+          summary: "Một mục (của mình)",
+          params: [pathId("id mục")],
+          data: { type: "object" },
+          errors: [404],
+        }),
+        put: op(P, {
+          summary: "Sửa mục / thêm tag (cả bản lưu từ Thư viện; bản gốc không đổi)",
+          params: [pathId("id mục")],
+          body: obj(
+            {
+              hanzi: { type: "string", maxLength: 40 },
+              pinyin: { type: "string", maxLength: 120, description: "Bỏ trống = tự điền theo chữ Hán" },
+              meaning: { type: "string", maxLength: 300 },
+              note: { type: "string", maxLength: 2000 },
+              tags: { type: "array", items: { type: "string", maxLength: 24 }, maxItems: 10 },
+            },
+            ["hanzi"],
+          ),
+          data: { type: "object" },
+          errors: [404, 409],
+        }),
+        delete: op(P, {
+          summary: "Xoá mục",
+          params: [pathId("id mục")],
+          data: obj({ deleted: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/pronunciation/items/from-library": {
+        post: op(P, {
+          summary: "Lưu từ ví dụ của một mục Thư viện vào Phát âm của tôi (từ đã có bỏ qua)",
+          body: obj(
+            {
+              topic: { type: "string", description: "initial:b · final:ang · tone:3 · sandhi:bu" },
+              hanzi: { type: ["string", "null"], description: "Bỏ trống = mọi ví dụ của mục" },
+            },
+            ["topic"],
+          ),
+          example: { topic: "initial:b", hanzi: "爸爸" },
           data: obj({ added: int, skipped: int }),
           errors: [404],
         }),

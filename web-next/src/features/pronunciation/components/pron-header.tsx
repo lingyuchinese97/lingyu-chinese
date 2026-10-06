@@ -2,7 +2,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AudioLines, BookOpen, Gauge, Layers, LayoutGrid, Music, NotebookPen, Target, Waves } from "lucide-react";
+import {
+  AudioLines,
+  BookOpen,
+  Gauge,
+  Layers,
+  LayoutGrid,
+  Library,
+  ListMusic,
+  Music,
+  NotebookPen,
+  Target,
+  Waves,
+} from "lucide-react";
 import { LeafDecor } from "@/components/layout/icons";
 import { useLocale, useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
@@ -15,16 +27,35 @@ export const PRON_TABS = [
   { key: "tones", href: "/library/pronunciation/tones", icon: Music },
   { key: "sandhi", href: "/library/pronunciation/sandhi", icon: Waves },
   { key: "practice", href: "/library/pronunciation/practice", icon: Target },
-  { key: "notes", href: "/library/pronunciation/notes", icon: NotebookPen },
+  { key: "mine", href: "/pronunciation", icon: ListMusic },
+] as const;
+/** Tab của mục "Phát âm & Biến điệu" trên thanh bên — kho riêng của người học. */
+export const MINE_TABS = [
+  { key: "words", href: "/pronunciation", icon: ListMusic },
+  { key: "notes", href: "/pronunciation/notes", icon: NotebookPen },
+  { key: "library", href: "/library/pronunciation", icon: Library },
 ] as const;
 
-/** Tiêu đề module + thanh tab (link, nên quay lại / chia sẻ được). Tab đang mở lấy theo đường dẫn. */
-export function PronunciationHeader() {
+/**
+ * Tiêu đề module + thanh tab (link, nên quay lại / chia sẻ được). Tab đang mở lấy theo đường dẫn.
+ * `mode="library"`: nội dung LingYu ở Thư viện · `mode="mine"`: Phát âm của tôi (tự nhập / lưu từ Thư viện, ghi chú).
+ */
+export function PronunciationHeader({ mode = "library" }: { mode?: "library" | "mine" }) {
   const t = useT();
   const path = usePathname();
+  const tabs = (mode === "mine" ? MINE_TABS : PRON_TABS).map((x) => ({
+    ...x,
+    label: t(
+      mode === "mine" ? `pronunciation.mine.tabs.${x.key as "words"}` : `pronunciation.tabs.${x.key as "overview"}`,
+    ),
+  }));
   const active =
-    [...PRON_TABS].reverse().find((x) => (x.key === "overview" ? path === x.href : path.startsWith(x.href)))?.key ??
-    "overview";
+    mode === "mine"
+      ? path.startsWith("/pronunciation/notes")
+        ? "notes"
+        : "words"
+      : ([...PRON_TABS].reverse().find((x) => (x.key === "overview" ? path === x.href : path.startsWith(x.href)))
+          ?.key ?? "overview");
   return (
     <div className="flex flex-col gap-3">
       <section
@@ -40,10 +71,12 @@ export function PronunciationHeader() {
             id="pr-title"
             className="flex items-center gap-3 text-[24px] font-extrabold tracking-tight text-navy-900 md:text-[32px]"
           >
-            {t("pronunciation.title")}
+            {mode === "mine" ? t("pronunciation.mine.title") : t("pronunciation.title")}
             <LeafDecor className="hidden w-10 sm:block" />
           </h1>
-          <p className="mt-1 text-[14px] text-text-2 md:text-[16px]">{t("pronunciation.subtitle")}</p>
+          <p className="mt-1 text-[14px] text-text-2 md:text-[16px]">
+            {mode === "mine" ? t("pronunciation.mine.subtitle") : t("pronunciation.subtitle")}
+          </p>
         </div>
         <p
           aria-hidden="true"
@@ -65,7 +98,7 @@ export function PronunciationHeader() {
       <div className="flex flex-col gap-2">
         <nav aria-label={t("pronunciation.tabs.label")} className="-mx-1 overflow-x-auto px-1 pb-1">
           <ul className="flex min-w-max gap-2">
-            {PRON_TABS.map((x) => (
+            {tabs.map((x) => (
               <li key={x.key}>
                 <Link
                   href={x.href}
@@ -78,7 +111,7 @@ export function PronunciationHeader() {
                   )}
                 >
                   <x.icon aria-hidden="true" />
-                  {t(`pronunciation.tabs.${x.key}`)}
+                  {x.label}
                 </Link>
               </li>
             ))}

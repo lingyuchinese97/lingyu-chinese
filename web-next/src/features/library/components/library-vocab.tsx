@@ -1,4 +1,5 @@
 "use client";
+import { HanziGrid } from "@/components/hanzi-grid";
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -296,8 +297,8 @@ function Detail({
             {index}
           </span>
         ) : null}
-        <h2 id="lv-word" lang="zh" className="hanzi text-[72px] leading-none font-bold text-navy-900 md:text-[96px]">
-          {w.hanzi}
+        <h2 id="lv-word">
+          <HanziGrid text={w.hanzi} size={88} />
         </h2>
         <div className="flex min-w-0 flex-1 flex-col items-start gap-2 pt-2">
           <span className="flex items-center gap-2">
