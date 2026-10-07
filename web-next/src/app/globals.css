@@ -51,6 +51,8 @@
   --shadow-cta: 0 8px 20px rgba(21, 149, 245, 0.28);
 
   --font-sans: "Inter Variable", "Inter", "Noto Sans", Arial, system-ui, sans-serif;
+  /* Giấy ô vuông Đọc hiểu: chữ Khải (như sách giáo khoa) nếu máy có, không thì về font Trung mặc định. */
+  --font-paper: "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", "Noto Serif SC", var(--font-cn);
   --font-cn: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Inter Variable", sans-serif;
   --font-hand: "Dancing Script", "Segoe Script", cursive;
 

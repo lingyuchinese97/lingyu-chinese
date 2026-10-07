@@ -6,6 +6,12 @@
 
 ### Changed
 
+- **Đọc hiểu — trang bài đọc theo thiết kế mới (vở ô vuông + câu hỏi)**: bỏ tranh minh hoạ; bên trái là bài đọc chép trên
+  **giấy ô vuông kẻ kín trang** (số cột tự theo bề rộng, dòng đầu là tiêu đề căn giữa, mỗi câu bắt đầu dòng mới, chữ Khải nếu máy có),
+  bấm từ khoá để xem nghĩa. Bên phải: danh sách câu hỏi (Gợi ý đáp án / Làm lại / Kiểm tra kết quả), hai ô **Hiển thị pinyin** /
+  **Hiển thị bản dịch** (mặc định tắt — pinyin nhỏ trên đầu ô, bản dịch dưới mỗi câu), **Từ vựng nổi bật** (thẻ chữ Hán · pinyin · nghĩa,
+  lưu từng từ / lưu tất cả), nút **Bài trước / Bài tiếp theo**. Thanh trên có **Bút** với 5 màu (đen, đỏ, xanh dương, xanh lá, vàng dạ
+  quang) để khoanh / gạch trên bài và nút **Xóa** nét vẽ (nét vẽ chỉ nằm trên máy, không lưu lên máy chủ).
 - **Trang chủ — bìa mới cho 5 chức năng**: mỗi thẻ (Bài học, Từ vựng, Ngữ pháp, Phát âm & Biến điệu, Luyện nghe & Nói) dùng mascot
   LingYu tương ứng (ôm sách HSK, đọc sách LY, bóng đèn ý tưởng, bong bóng vẫy tay, đeo tai nghe) cùng ô chữ đặc trưng (HSK / 词 / 文 / 音 /
   听) và lá trang trí trên nền pastel. **Bỏ ô tìm kiếm trên cùng** (trang `/search` và API `GET /api/v1/search` vẫn giữ).
