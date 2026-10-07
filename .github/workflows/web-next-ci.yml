@@ -37,7 +37,7 @@ jobs:
       ADMIN_EMAILS: admin@lingyu.local
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           package_json_file: web-next/package.json
