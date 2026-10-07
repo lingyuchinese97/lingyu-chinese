@@ -11,6 +11,10 @@
 
 ### Changed
 
+- **Đọc hiểu — chữ Khải như sách giáo khoa + tinh chỉnh theo design**: giấy ô vuông, câu hỏi, phương án và thẻ từ vựng dùng font
+  **LXGW WenKai** (SIL OFL 1.1, tự host, cắt còn ~90KB chỉ gồm chữ trong bài đọc — `scripts/subset-paper-font.py`, test báo khi thiếu
+  chữ). Thẻ bài đọc có nhãn **Bài đọc** và nút mở rộng; phần Câu hỏi có bộ đếm "1 / 3" với nút ‹ › chuyển câu; nút Gợi ý đáp án / Làm
+  lại viền trắng, **Kiểm tra kết quả** xanh đậm.
 - **Đọc hiểu — trang bài đọc theo thiết kế mới (vở ô vuông + câu hỏi)**: bỏ tranh minh hoạ; bên trái là bài đọc chép trên
   **giấy ô vuông kẻ kín trang** (số cột tự theo bề rộng, dòng đầu là tiêu đề căn giữa, mỗi câu bắt đầu dòng mới, chữ Khải nếu máy có),
   bấm từ khoá để xem nghĩa. Bên phải: danh sách câu hỏi (Gợi ý đáp án / Làm lại / Kiểm tra kết quả), hai ô **Hiển thị pinyin** /
