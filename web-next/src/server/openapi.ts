@@ -133,6 +133,7 @@ const TR = "Luyện dịch";
 const RDG = "Đọc hiểu";
 const AD = "Quản trị";
 const LIB = "Thư viện LingYu";
+const SP = "Luyện giao tiếp";
 const A = "Tài khoản";
 
 const vocabExample = {
@@ -177,6 +178,11 @@ export function openApiDocument() {
     servers: [{ url: "/" }],
     tags: [
       { name: A, description: "Đăng nhập, đăng xuất, ngôn ngữ" },
+      {
+        name: SP,
+        description:
+          "Luyện giao tiếp: câu hỏi tự tạo (HSK, tag) và câu trả lời trên vở ô ly. Pinyin tự sinh; nghĩa Việt và nhận xét câu trả lời nhờ trợ lý AI khi máy chủ có ANTHROPIC_API_KEY (không có thì nghĩa ghép theo từ + kiểm tra cơ bản). Chỉ của riêng người tạo.",
+      },
       { name: V, description: "Kho từ vựng của mình, chia sẻ" },
       { name: LIB, description: "Nội dung do LingYu soạn và public (từ vựng); lưu vào kho của mình" },
       { name: R, description: "Ôn tự chọn và ôn thẻ đến hạn (FSRS)" },
@@ -2034,6 +2040,134 @@ export function openApiDocument() {
           params: [pathId("id mục")],
           data: obj({ deleted: { type: "boolean" } }),
           errors: [404],
+        }),
+      },
+      "/api/v1/speaking/questions": {
+        get: op(SP, {
+          summary: "Câu hỏi của tôi (tìm theo chữ Hán / pinyin / nghĩa; lọc tag, HSK, đánh dấu; phân trang)",
+          params: [
+            q("q", { type: "string" }),
+            q("tag", { type: "string" }),
+            q("hsk", { type: "integer", minimum: 1, maximum: 6 }),
+            q("starred", { enum: ["1"] }),
+            q("sort", { enum: ["newest", "oldest", "az"] }),
+            q("page", { type: "integer", minimum: 1 }),
+            q("size", { enum: [10, 20, 50] }),
+          ],
+          data: obj({
+            items: { type: "array" },
+            total: int,
+            all: int,
+            page: int,
+            pages: int,
+            tags: { type: "array" },
+            hskCounts: { type: "array" },
+          }),
+        }),
+        post: op(SP, {
+          summary: "Tạo một hoặc nhiều câu hỏi (tối đa 20 / lần); pinyin, nghĩa bỏ trống thì tự sinh",
+          body: obj(
+            {
+              questions: {
+                type: "array",
+                maxItems: 20,
+                items: obj(
+                  {
+                    zh: { type: "string", maxLength: 200 },
+                    pinyin: { type: "string", maxLength: 400, description: "Bỏ trống = tự sinh" },
+                    meaning: { type: "string", maxLength: 300, description: "Bỏ trống = tự sinh" },
+                    hsk: { type: ["integer", "null"], minimum: 1, maximum: 6 },
+                    tags: { type: "array", items: { type: "string", maxLength: 30 }, maxItems: 8 },
+                  },
+                  ["zh"],
+                ),
+              },
+            },
+            ["questions"],
+          ),
+          example: { questions: [{ zh: "你周末喜欢做什么？", hsk: 1, tags: ["Sở thích"] }] },
+          status: 201,
+          data: obj({ ids: { type: "array", items: { type: "string" } } }),
+        }),
+        delete: op(SP, {
+          summary: "Xoá nhiều câu hỏi (chỉ của mình)",
+          body: obj({ ids: { type: "array", items: { type: "string", format: "uuid" }, maxItems: 200 } }, ["ids"]),
+          data: obj({ deleted: int }),
+        }),
+      },
+      "/api/v1/speaking/questions/{id}": {
+        get: op(SP, {
+          summary: "Một câu hỏi + câu trả lời gần nhất, nhận xét, vị trí (câu trước / tiếp theo)",
+          params: [pathId("id câu hỏi")],
+          data: { type: "object" },
+          errors: [404],
+        }),
+        put: op(SP, {
+          summary: "Sửa câu hỏi",
+          params: [pathId("id câu hỏi")],
+          body: obj(
+            {
+              zh: { type: "string", maxLength: 200 },
+              pinyin: { type: "string", maxLength: 400, description: "Bỏ trống = tự sinh" },
+              meaning: { type: "string", maxLength: 300, description: "Bỏ trống = tự sinh" },
+              hsk: { type: ["integer", "null"], minimum: 1, maximum: 6 },
+              tags: { type: "array", items: { type: "string", maxLength: 30 }, maxItems: 8 },
+            },
+            ["zh"],
+          ),
+          data: { type: "object" },
+          errors: [404],
+        }),
+        delete: op(SP, {
+          summary: "Xoá câu hỏi",
+          params: [pathId("id câu hỏi")],
+          data: obj({ deleted: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/speaking/questions/{id}/answer": {
+        put: op(SP, {
+          summary: "Lưu câu trả lời (gõ hoặc từ ghi âm) — trả pinyin + nghĩa Việt tự sinh",
+          params: [pathId("id câu hỏi")],
+          body: obj({ answer: { type: "string", maxLength: 200 } }, ["answer"]),
+          example: { answer: "我周末喜欢和家人一起出去玩。" },
+          data: obj({
+            answer: { type: "string" },
+            answerPinyin: { type: "string" },
+            answerMeaning: { type: "string" },
+            changed: { type: "boolean" },
+          }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/speaking/questions/{id}/check": {
+        post: op(SP, {
+          summary: "Kiểm tra câu trả lời: ngữ pháp, từ vựng, độ tự nhiên (không có đáp án mẫu)",
+          params: [pathId("id câu hỏi")],
+          body: obj({ answer: { type: "string", maxLength: 200 } }, ["answer"]),
+          data: { type: "object" },
+          errors: [404],
+        }),
+      },
+      "/api/v1/speaking/questions/{id}/star": {
+        put: op(SP, {
+          summary: "Đánh dấu / bỏ đánh dấu",
+          params: [pathId("id câu hỏi")],
+          body: obj({ starred: { type: "boolean" } }, ["starred"]),
+          data: obj({ starred: { type: "boolean" } }),
+          errors: [404],
+        }),
+      },
+      "/api/v1/speaking/assist": {
+        post: op(SP, {
+          summary: "Sinh pinyin + nghĩa Việt cho một câu tiếng Trung (xem trước khi lưu)",
+          body: obj({ text: { type: "string", maxLength: 200 } }, ["text"]),
+          data: obj({
+            pinyin: { type: "string" },
+            meaning: { type: "string" },
+            source: { enum: ["ai", "gloss"] },
+            ai: { type: "boolean" },
+          }),
         }),
       },
       "/api/v1/pronunciation/items/from-library": {

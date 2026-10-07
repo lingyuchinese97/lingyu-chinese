@@ -73,6 +73,8 @@ test("a11y (axe): không có lỗi serious/critical ở các trang chính", asyn
     "/search?q=%E4%BD%A0",
     "/reading",
     "/reading/r302",
+    "/speaking",
+    "/speaking/new",
     "/settings",
     "/~offline",
   ]) {

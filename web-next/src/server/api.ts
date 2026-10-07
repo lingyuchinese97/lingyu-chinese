@@ -15,6 +15,7 @@ import { LessonError } from "@/features/lessons/service";
 import { AccountError } from "@/features/account/service";
 import { TranslationError } from "@/features/translation/service";
 import { ReadingError } from "@/features/reading/service";
+import { SpeakingError } from "@/features/speaking/service";
 
 /**
  * Khung chung cho REST API `/api/v1/...` (quy ước ở CLAUDE.md):
@@ -101,6 +102,8 @@ function errorResponse(e: unknown, t: Awaited<ReturnType<typeof getT>>) {
       { ok: false, message: t.maybe(e.message) },
       e.code === "not-found" ? 404 : e.code === "duplicate" ? 409 : 400,
     );
+  if (e instanceof SpeakingError)
+    return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
   if (e instanceof SentenceError || e instanceof LessonError)
     return json({ ok: false, message: t.maybe(e.message) }, e.code === "not-found" ? 404 : 400);
   if (e instanceof GrammarError)

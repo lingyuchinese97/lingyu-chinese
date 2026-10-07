@@ -98,6 +98,11 @@ Mọi chức năng mới phải có REST API dưới `/api/v1/...` (quy ước �
 chia sẻ; tạo bài ôn tự chọn hoặc đến hạn, trả lời, đánh giá Khó/Được/Dễ, nộp bài. Danh sách route, dạng request/response và cách
 đăng nhập từ app khác: [`docs/API.md`](docs/API.md).
 
+**Luyện giao tiếp** (`/api/v1/speaking/*`): câu hỏi của tôi (tìm, lọc HSK / tag / đã đánh dấu, sắp xếp, phân trang), tạo nhiều câu
+một lần (pinyin + nghĩa tiếng Việt tự sinh khi bỏ trống), xem (kèm câu trước / sau), sửa, xoá, đánh dấu; lưu câu trả lời (pinyin + nghĩa
+tự sinh), kiểm tra câu trả lời (ngữ pháp, từ vựng, độ tự nhiên — trợ lý AI khi máy chủ có `ANTHROPIC_API_KEY`, không có thì kiểm tra cơ bản),
+gợi ý pinyin + nghĩa cho một câu bất kỳ.
+
 **Luyện nghe** (`/api/v1/listening/*`): bài làm của tôi (tìm, lọc thẻ, sắp xếp), lưu / xem / sửa / xoá bài làm (server tự so sánh và
 chấm điểm), thẻ, so sánh bài chép với đáp án. **Thư viện LingYu** (`/api/v1/library/*`): trang chủ, 15 bộ từ vựng theo chủ đề (đã học / yêu thích của riêng mình, lưu cả bộ), 21 bài ngữ pháp HSK 1–3 (cấu trúc, ví dụ, bài tập nhanh, đã học / yêu thích, lưu vào Ngữ pháp của tôi), từ vựng HSK 1–6, từ vựng LingYu public theo HSK, chi tiết, lưu vào kho của mình; admin soạn (gợi ý khi gõ, phân tích tự động, ảnh gợi ý từ Wikimedia) /
 public qua `/api/v1/admin/library/*`. **Quản trị** (`/api/v1/admin/*`, chỉ admin — người thường nhận 403): số liệu tổng
