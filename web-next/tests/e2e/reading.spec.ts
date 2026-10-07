@@ -43,6 +43,8 @@ test("Đọc hiểu: chọn bài → pinyin / bản dịch → xem từ, lưu t�
   const hl = page.getByRole("button", { name: "Bút highlight", exact: true });
   await expect(hl).toHaveAttribute("aria-pressed", "true");
   const ink = page.locator("canvas[data-ink]");
+  // Đưa đầu tờ giấy lên gần đỉnh màn hình (tránh thanh tab cố định ở đáy trên điện thoại).
+  await ink.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 140));
   const box = (await ink.boundingBox())!;
   for (const y of [40, 90]) {
     await page.mouse.move(box.x + 30, box.y + y);
