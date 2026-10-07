@@ -33,7 +33,7 @@ export function FeatureHero({
     <section
       aria-labelledby={id}
       className={cn(
-        "relative isolate overflow-hidden rounded-[26px] border border-[#D3E8F8] bg-[#DCEFFD] shadow-card",
+        "@container relative isolate overflow-hidden rounded-[26px] border border-[#D3E8F8] bg-[#DCEFFD] shadow-card",
         className,
       )}
     >
@@ -45,14 +45,14 @@ export function FeatureHero({
         fill
         priority
         sizes="100vw"
-        className="-z-20 object-cover object-center"
+        className="-z-20 object-cover object-bottom"
       />
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,.72)_0%,rgba(255,255,255,.45)_42%,rgba(255,255,255,0)_68%)]"
       />
 
-      {/* Mascot ngồi trên bậu cửa sổ, cầm sách đọc (vị trí theo ảnh bìa). */}
+      {/* Ảnh bìa neo đáy (dư thì cắt phần trời phía trên) → mascot ngồi trên mặt bàn cạnh cửa sổ, cầm sách đọc. */}
       <Image
         unoptimized
         src="/brand/hero/mascot-reading.webp"
@@ -61,7 +61,7 @@ export function FeatureHero({
         width={560}
         height={493}
         priority
-        className="pointer-events-none absolute right-[17%] bottom-[5%] -z-10 hidden h-[74%] max-h-[230px] w-auto drop-shadow-[0_10px_14px_rgba(20,70,40,.18)] md:block"
+        className="pointer-events-none absolute bottom-[1.6cqw] left-[70%] -z-10 hidden h-[74%] max-h-[230px] w-auto -translate-x-1/2 drop-shadow-[0_10px_14px_rgba(20,70,40,.18)] md:block"
       />
 
       <div className="flex min-h-[200px] flex-col justify-center px-5 py-7 md:min-h-[260px] md:max-w-[62%] md:py-9 md:pl-12">

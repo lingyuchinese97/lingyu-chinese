@@ -4,15 +4,10 @@
 @import "@fontsource/noto-sans-sc/700.css";
 @import "@fontsource/dancing-script/600.css";
 
-/* Chữ Khải cho giấy ô vuông / câu hỏi Đọc hiểu: LXGW WenKai (SIL OFL 1.1), chỉ gồm chữ có trong bài đọc
-   (scripts/subset-paper-font.py → public/fonts/paper-kai{,-bold}.woff2, ~90KB mỗi file). */
-@font-face {
-  font-family: "LingYu Kai";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/paper-kai.woff2") format("woff2");
-}
+/* Chữ Khải (LXGW WenKai, SIL OFL 1.1): nét thường chia ~25 gói theo unicode-range (6.763 chữ GB2312 + dấu câu,
+   scripts/subset-paper-font.py → public/fonts/kai, src/app/kai-font.css) — trình duyệt chỉ tải gói có chữ đang hiện;
+   nét đậm (tiêu đề / câu hỏi Đọc hiểu) chỉ gồm chữ trong bài đọc. */
+@import "./kai-font.css";
 @font-face {
   font-family: "LingYu Kai";
   font-style: normal;
@@ -137,6 +132,21 @@
       transition-duration: 0.001ms !important;
     }
   }
+}
+
+/* Giấy ô ly cho ô gõ chữ (Chép chính tả): ô 40px, mỗi chữ Hán (rộng 1em = 26px + giãn 14px) nằm giữa một ô; lưới cuộn
+   theo nội dung. */
+@utility paper-lines {
+  font-family: var(--font-paper);
+  font-size: 26px;
+  letter-spacing: 14px;
+  line-height: 40px;
+  padding: 0 0 0 7px;
+  background-color: #fffcf3;
+  background-image:
+    linear-gradient(to right, #e8e1cf 1px, transparent 1px), linear-gradient(to bottom, #e8e1cf 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: local;
 }
 
 /* Chữ Khải in đậm rõ (nét Bold của LXGW WenKai khá mảnh): thêm viền nét cùng màu chữ. */

@@ -542,7 +542,7 @@ export const DictationEditor = React.forwardRef<
           if (el instanceof HTMLElement) openCard(el, true);
         }}
         data-placeholder={t("listening.dictation.placeholder")}
-        className="lx-editor min-h-[260px] w-full overflow-y-auto rounded-[14px] border-[1.5px] border-border bg-white px-4 py-3 font-cn text-[19px] leading-[1.9] break-words whitespace-pre-wrap text-text outline-none hover:border-border-strong focus-visible:border-blue focus-visible:shadow-[var(--focus-ring)] md:min-h-[300px]"
+        className="lx-editor paper-lines min-h-[280px] w-full overflow-y-auto rounded-[14px] border-[1.5px] border-[#E8E1CF] break-all whitespace-pre-wrap text-[#1F2937] outline-none hover:border-border-strong focus-visible:border-blue focus-visible:shadow-[var(--focus-ring)] md:min-h-[320px]"
         onBeforeInput={(e) => {
           const ne = e.nativeEvent as InputEvent;
           const type = ne.inputType;
