@@ -22,15 +22,34 @@ test("Đọc hiểu: chọn bài → pinyin / bản dịch → xem từ, lưu t�
   const p = R_PASSAGE_BY_ID.get("r102")!;
   await expect(page.getByRole("heading", { level: 1, name: p.title.zh })).toBeVisible();
 
-  // Dòng pinyin trên mỗi câu + bản dịch (mặc định bật), tắt được.
-  await expect(page.locator("[data-pinyin-line]").first()).toBeVisible();
-  await expect(page.getByText(p.lines[1]!.vi)).toBeVisible();
-  await page.getByLabel("Hiện pinyin").uncheck();
+  // Giấy ô vuông: mặc định chưa có pinyin / bản dịch; bật trong ô "Hiển thị…", tắt lại được.
+  await expect(page.getByRole("group", { name: "Bài đọc trên giấy ô vuông" })).toBeVisible();
   await expect(page.locator("[data-pinyin-line]")).toHaveCount(0);
-  await page.getByLabel("Hiện bản dịch").uncheck();
   await expect(page.getByText(p.lines[1]!.vi)).toHaveCount(0);
-  await page.getByLabel("Hiện bản dịch").check();
-  await page.getByLabel("Hiện pinyin").check();
+  await page.getByLabel("Hiển thị pinyin").check();
+  await expect(page.locator("[data-pinyin-line]").first()).toBeVisible();
+  await page.getByLabel("Hiển thị bản dịch").check();
+  await expect(page.getByText(p.lines[1]!.vi).first()).toBeVisible();
+  await page.getByLabel("Hiển thị pinyin").uncheck();
+  await expect(page.locator("[data-pinyin-line]")).toHaveCount(0);
+  await page.getByLabel("Hiển thị pinyin").check();
+
+  // Bút: chọn màu đỏ → vẽ lên bài → Xóa.
+  const clear = page.getByRole("button", { name: "Xóa nét vẽ trên bài đọc" });
+  await expect(clear).toBeDisabled();
+  await page.getByRole("radio", { name: "Bút màu đỏ" }).click();
+  await expect(page.getByRole("button", { name: "Bút", exact: true })).toHaveAttribute("aria-pressed", "true");
+  const ink = page.locator("canvas[data-ink]");
+  const box = (await ink.boundingBox())!;
+  await page.mouse.move(box.x + 30, box.y + 30);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 90, box.y + 60, { steps: 5 });
+  await page.mouse.up();
+  await expect(clear).toBeEnabled();
+  await clear.click();
+  await expect(clear).toBeDisabled();
+  await page.getByRole("button", { name: "Bút", exact: true }).click();
+
   // Câu hỏi có pinyin + nghĩa phương án; thanh tiến độ đếm câu đã trả lời.
   await expect(page.getByRole("progressbar", { name: "Số câu đã trả lời" })).toHaveAttribute("aria-valuenow", "0");
 
