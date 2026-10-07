@@ -14,7 +14,7 @@ export function NavIcon({ item, className, muted }: { item: NavItem; className?:
         width={48}
         height={48}
         sizes="28px"
-        className={cn("shrink-0 object-contain", muted && "opacity-55 grayscale", className)}
+        className={cn("shrink-0 object-contain", muted && "opacity-80", className)}
       />
     );
   const Icon = item.icon;

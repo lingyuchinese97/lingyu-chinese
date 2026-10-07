@@ -41,7 +41,7 @@ export type NavItem = {
 
 export const NAV: NavItem[] = [
   { key: "home", href: "/home", icon: House, img: "/brand/ui/nav-home.png", group: 1 },
-  { key: "library", href: "/library", icon: Library, group: 1 },
+  { key: "library", href: "/library", icon: Library, img: "/brand/ui/nav-library.png", group: 1 },
   { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png", group: 1 },
   { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png", group: 1 },
   { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png", group: 1 },

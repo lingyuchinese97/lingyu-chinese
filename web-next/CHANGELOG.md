@@ -6,6 +6,9 @@
 
 ### Changed
 
+- **Biểu tượng menu màu sắc (theo bộ icon mới)**: thay toàn bộ icon thanh bên và thanh tab điện thoại (Trang chủ, Thư viện LingYu,
+  Bài học, Từ vựng, Ngữ pháp, Phát âm, Nghe, Đọc hiểu, Luyện dịch, Ôn tập, Tiến độ, Bộ thủ, Cài đặt) bằng icon màu; mục chưa chọn giữ
+  nguyên màu (chỉ nhạt nhẹ) thay vì xám; Thư viện LingYu có icon riêng.
 - **Đọc hiểu — trang bài đọc kiểu vở ô li (theo thiết kế mới)**: thanh trên có ‹ › chuyển bài cùng cấp HSK ("Bài đọc 1: 我的一天 · 1/4"),
   **Nghe mẫu** cả bài + chọn tốc độ (0.75x / 1.0x / 1.25x), nút **Aa** đổi cỡ chữ, bật / tắt pinyin và bản dịch, **Từ vựng** (hộp từ khoá,
   lưu từng từ / lưu tất cả), Lưu bài. Bên trái: tranh minh hoạ + bài đọc chép trên **giấy ô vuông** — mỗi chữ / dấu câu một ô, pinyin nhỏ
