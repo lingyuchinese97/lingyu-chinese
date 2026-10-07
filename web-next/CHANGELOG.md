@@ -11,6 +11,12 @@
 
 ### Changed
 
+- **Đọc hiểu — giấy trắng kẻ ô xám nhạt** (thay nền ngà vàng, giống trang vở trong design); ô **Hiển thị pinyin / Hiển thị bản dịch**
+  chuyển lên đầu thẻ Bài đọc, ngay cạnh bài.
+- **Bìa đầu trang — mascot ngồi bậu cửa sổ cầm sách đọc** (bỏ chồng sách và bong bóng): vị trí và khoảng cách theo design — tiêu đề
+  lớn có nhánh lá, mô tả, nút; mascot đặt trước khung cửa sổ, cao ~3/4 bìa. Trang chủ Thư viện dùng cùng mascot.
+- **Đọc hiểu — Bút highlight**: bút trên bài đọc thành bút dạ quang — nét to, trong (chữ bên dưới vẫn rõ, nét chồng nhau không đậm
+  dần), chọn 5 màu vàng / xanh lá / hồng / xanh dương / cam; thêm **Hoàn tác** nét vừa tô và **Xóa** toàn bộ highlight.
 - **Bìa đầu trang cố định cho mọi màn / tab (theo design)**: `FeatureHero` dùng chung một ảnh bìa (trời xanh, cửa sổ, lá bay —
   `public/brand/hero/cover-bg.webp`) và một mascot đọc sách ngồi trên chồng sách HSK · 汉语 · 中国文化 (`mascot-books.webp`) kèm bong bóng
   "每天进步一点点！"; tiêu đề lớn, mô tả, nút thao tác. Áp dụng thêm cho các tab Thư viện (Từ vựng, Ngữ pháp, HSK, Từ vựng Thư viện)

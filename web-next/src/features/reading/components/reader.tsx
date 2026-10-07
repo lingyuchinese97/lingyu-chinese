@@ -14,10 +14,11 @@ import {
   Loader2,
   Maximize2,
   Minimize2,
-  PenLine,
+  Highlighter,
   RotateCcw,
   SkipForward,
   Trash2,
+  Undo2,
   X,
   XCircle,
 } from "lucide-react";
@@ -113,19 +114,19 @@ function layout(passage: Passage, cols: number, showTr: boolean): Row[] {
   return rows;
 }
 
-/** Màu bút (vàng là bút dạ quang: nét to, trong). */
+/** Màu bút highlight (dạ quang): nét to, trong, chữ bên dưới vẫn rõ. */
 const INKS = [
-  { key: "black", color: "#1F2937" },
-  { key: "red", color: "#E5484D" },
-  { key: "blue", color: "#2F80ED" },
-  { key: "green", color: "#30A46C" },
-  { key: "yellow", color: "#F5C518" },
+  { key: "yellow", color: "#FFD43B" },
+  { key: "green", color: "#69DB7C" },
+  { key: "pink", color: "#FF8EC2" },
+  { key: "blue", color: "#74C0FC" },
+  { key: "orange", color: "#FFA94D" },
 ] as const;
 type Ink = (typeof INKS)[number]["key"];
 /** Nét vẽ: toạ độ chia theo bề rộng tờ giấy để giữ đúng chỗ khi đổi cỡ màn hình. */
 type Stroke = { ink: Ink; pts: [number, number][] };
 
-/** Lớp vẽ trên tờ giấy: chỉ nhận chuột / chạm khi bật Bút. */
+/** Lớp highlight trên tờ giấy: chỉ nhận chuột / chạm khi bật Bút highlight. */
 function InkLayer({
   strokes,
   setStrokes,
@@ -160,11 +161,10 @@ function InkLayer({
     g.scale(dpr, dpr);
     g.lineCap = "round";
     g.lineJoin = "round";
+    // Nét cao ~2/3 ô chữ; độ trong do cả lớp canvas đảm nhận (opacity + multiply) nên nét chồng nhau không đậm dần.
+    g.lineWidth = Math.min(30, Math.max(14, box.w * 0.045));
     for (const s of drawing.current ? [...strokes, drawing.current] : strokes) {
-      const hl = s.ink === "yellow";
-      g.strokeStyle = INKS.find((i) => i.key === s.ink)!.color;
-      g.globalAlpha = hl ? 0.4 : 0.9;
-      g.lineWidth = hl ? 14 : 3;
+      g.strokeStyle = INKS.find((i) => i.key === s.ink)?.color ?? INKS[0].color;
       g.beginPath();
       s.pts.forEach(([x, y], i) => (i ? g.lineTo(x * box.w, y * box.w) : g.moveTo(x * box.w, y * box.w)));
       if (s.pts.length === 1) g.lineTo(s.pts[0]![0] * box.w + 0.1, s.pts[0]![1] * box.w);
@@ -182,7 +182,10 @@ function InkLayer({
       ref={ref}
       aria-hidden="true"
       data-ink
-      className={cn("absolute inset-0 z-[2] size-full", pen ? "cursor-crosshair touch-none" : "pointer-events-none")}
+      className={cn(
+        "absolute inset-0 z-[2] size-full opacity-45 mix-blend-multiply",
+        pen ? "cursor-crosshair touch-none" : "pointer-events-none",
+      )}
       onPointerDown={(e) => {
         if (!pen) return;
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -246,7 +249,7 @@ function Paper({
       <div
         aria-label={t("reading.paper")}
         role="group"
-        className="overflow-hidden border-t border-l border-[#E6DFCF] bg-[#FCF8EE]"
+        className="overflow-hidden border-t border-l border-[#DCE0E6] bg-white"
         style={{ ["--cols" as string]: cols } as React.CSSProperties}
       >
         {rows.map((r, i) =>
@@ -254,7 +257,7 @@ function Paper({
             <p
               key={i}
               lang="vi"
-              className="border-r border-b border-[#E4DCCB] bg-[#FFFCF4] px-2.5 py-1 text-[13.5px] leading-snug text-text-2"
+              className="border-r border-b border-[#DCE0E6] bg-[#FAFBFC] px-2.5 py-1 text-[13.5px] leading-snug text-text-2"
             >
               {r.text}
             </p>
@@ -265,7 +268,7 @@ function Paper({
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "relative flex w-full items-end justify-center border-r border-b border-[#E4DCCB]",
+                      "relative flex w-full items-end justify-center border-r border-b border-[#DCE0E6]",
                       pinyin ? "aspect-[4/5]" : "aspect-square",
                       c.speaker && "text-blue-700",
                     )}
@@ -338,7 +341,7 @@ export function Reader({
   const [wide, setWide] = React.useState(false);
   const [cur, setCur] = React.useState(0);
   const [pen, setPen] = React.useState(false);
-  const [ink, setInk] = React.useState<Ink>("red");
+  const [ink, setInk] = React.useState<Ink>("yellow");
   const [strokes, setStrokes] = React.useState<Stroke[]>([]);
   const startedAt = React.useRef(0);
   React.useEffect(() => {
@@ -507,7 +510,7 @@ export function Reader({
                   : "border-border bg-white text-navy-900 hover:bg-blue-50",
               )}
             >
-              <PenLine className="text-blue-600" aria-hidden="true" />
+              <Highlighter className="text-[#E8A400]" aria-hidden="true" />
               {t("reading.pen")}
             </button>
             <div role="radiogroup" aria-label={t("reading.pen")} className="flex items-center gap-1">
@@ -539,6 +542,17 @@ export function Reader({
                 );
               })}
             </div>
+            <button
+              type="button"
+              onClick={() => setStrokes((x) => x.slice(0, -1))}
+              disabled={!strokes.length}
+              aria-label={t("reading.undoInkLabel")}
+              title={t("reading.undoInkLabel")}
+              className={cn(tool, "border-border bg-white px-2.5 text-navy-900 hover:bg-blue-50")}
+            >
+              <Undo2 className="text-text-2" aria-hidden="true" />
+              <span className="sr-only md:not-sr-only">{t("reading.undoInk")}</span>
+            </button>
             <button
               type="button"
               onClick={() => setStrokes([])}
@@ -576,11 +590,53 @@ export function Reader({
             aria-labelledby="rd-title"
             className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-4"
           >
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-[12px] bg-[#FFF3D6] px-3 py-1.5 text-[15px] font-bold text-[#7A4E00]">
                 <BookOpen className="size-[18px] text-blue-600" aria-hidden="true" />
                 {t("reading.passageLabel")}
               </span>
+              {/* Hiển thị pinyin / bản dịch ngay cạnh bài đọc. */}
+              <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                {[
+                  {
+                    v: pinyin,
+                    set: setPinyin,
+                    label: t("reading.showPinyin"),
+                    badge: "ā",
+                    c: "bg-[#E6F1FF] text-blue-700",
+                  },
+                  {
+                    v: showTr,
+                    set: setShowTr,
+                    label: t("reading.showTranslation"),
+                    badge: "VI",
+                    c: "bg-[#EEE8FF] text-[#6D4FD8]",
+                  },
+                ].map((o) => (
+                  <label
+                    key={o.label}
+                    className="relative flex min-h-10 cursor-pointer items-center gap-2 rounded-[12px] border border-border bg-white px-2.5 text-[14px] font-semibold text-text"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={o.v}
+                      onChange={(e) => o.set(e.target.checked)}
+                      className="peer absolute inset-0 z-[1] size-full cursor-pointer opacity-0"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className={cn("flex size-6 items-center justify-center rounded-[7px] text-[12px] font-bold", o.c)}
+                    >
+                      {o.badge}
+                    </span>
+                    <span className="whitespace-nowrap">{o.label}</span>
+                    <span
+                      aria-hidden="true"
+                      className="relative h-6 w-11 rounded-full bg-[#CBD5E1] transition-colors peer-checked:bg-blue-600 peer-focus-visible:shadow-[var(--focus-ring)] after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"
+                    />
+                  </label>
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={() => setWide((w) => !w)}
@@ -596,48 +652,6 @@ export function Reader({
               <InkLayer strokes={strokes} setStrokes={setStrokes} pen={pen} ink={ink} />
             </Paper>
           </article>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              {
-                v: pinyin,
-                set: setPinyin,
-                label: t("reading.showPinyin"),
-                badge: "ā",
-                c: "bg-[#E6F1FF] text-blue-700",
-              },
-              {
-                v: showTr,
-                set: setShowTr,
-                label: t("reading.showTranslation"),
-                badge: "VI",
-                c: "bg-[#EEE8FF] text-[#6D4FD8]",
-              },
-            ].map((o) => (
-              <label
-                key={o.label}
-                className="relative flex min-h-12 cursor-pointer items-center gap-2.5 rounded-[14px] border border-border bg-white px-3 text-[14.5px] font-semibold text-text shadow-sm"
-              >
-                <input
-                  type="checkbox"
-                  checked={o.v}
-                  onChange={(e) => o.set(e.target.checked)}
-                  className="peer absolute inset-0 z-[1] size-full cursor-pointer opacity-0"
-                />
-                <span
-                  aria-hidden="true"
-                  className={cn("flex size-7 items-center justify-center rounded-[8px] text-[13px] font-bold", o.c)}
-                >
-                  {o.badge}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-[14px]">{o.label}</span>
-                <span
-                  aria-hidden="true"
-                  className="relative h-6 w-11 rounded-full bg-[#CBD5E1] transition-colors peer-checked:bg-blue-600 peer-focus-visible:shadow-[var(--focus-ring)] after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"
-                />
-              </label>
-            ))}
-          </div>
 
           <section
             aria-labelledby="rd-words"
