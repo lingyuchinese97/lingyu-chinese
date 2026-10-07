@@ -9,7 +9,6 @@ import { NavProgress } from "./nav-progress";
 import { NotificationBell } from "./notification-bell";
 import { Sidebar } from "./sidebar";
 import { StudyTimer } from "./study-timer";
-import { TopSearch } from "./top-search";
 import { UserMenu } from "./user-menu";
 import { useT } from "@/i18n/client";
 
@@ -85,13 +84,10 @@ export function AppShell({
             aria-label={navOpen ? t("shell.closeMenu") : t("shell.openMenu")}
             aria-controls="sidebar"
             aria-expanded={navOpen}
-            className="mr-auto flex size-11 items-center justify-center rounded-full text-navy outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)] md:mr-0 lg:hidden"
+            className="mr-auto flex size-11 items-center justify-center rounded-full text-navy outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)] lg:hidden"
           >
             <Menu className="size-[26px]" aria-hidden="true" />
           </button>
-          <React.Suspense fallback={<span className="mr-auto hidden flex-1 md:block" />}>
-            <TopSearch />
-          </React.Suspense>
           <NotificationBell initialUnread={unread} />
           <span className="h-[30px] w-px bg-border" aria-hidden="true" />
           <UserMenu name={user.name} email={user.email} />
