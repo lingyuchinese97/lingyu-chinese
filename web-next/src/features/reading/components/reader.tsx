@@ -30,6 +30,7 @@ import { useConfirm } from "@/components/ui/confirm";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
 import type { LocalPassage } from "../service";
+import { FeatureHero } from "@/components/feature-hero";
 import { pickPassageAction, saveWordsAction, setSavedAction, submitReadingAction } from "../actions";
 
 type Passage = LocalPassage & { saved: boolean };
@@ -280,7 +281,7 @@ function Paper({
                     <span
                       className={cn(
                         "flex aspect-square w-full items-center justify-center hanzi [font-family:var(--font-paper)] leading-none",
-                        r.title ? "font-semibold! text-navy-900" : "font-normal! text-[#1F2937]",
+                        r.title ? "kai-bold text-navy-900" : "font-normal! text-[#1F2937]",
                         c.speaker
                           ? "text-[length:calc(100cqw/var(--cols)*0.42)] font-bold text-blue-700"
                           : "text-[length:calc(100cqw/var(--cols)*0.62)]",
@@ -426,6 +427,17 @@ export function Reader({
 
   return (
     <div className="flex flex-col gap-4">
+      <FeatureHero
+        id="rd-title"
+        mascot="vocabulary"
+        eyebrow={`${t("reading.passageN", { n: nav.index })} · HSK ${passage.level} · ${t(`reading.types.${passage.type}`)}`}
+        title={
+          <span lang="zh" className="kai-bold">
+            {passage.title}
+          </span>
+        }
+        description={passage.titleTr}
+      />
       {/* Thanh trên: ‹ Bài đọc n: 标题 n/N › · Nghe mẫu · tốc độ · Bút + màu · Xóa · Lưu bài */}
       <div className="@container rounded-[var(--radius-xl)] border border-border bg-white/92 p-3 shadow-card">
         <div className="flex flex-col gap-3 @[60rem]:flex-row @[60rem]:items-center @[60rem]:justify-between">
@@ -438,17 +450,11 @@ export function Reader({
               <ChevronLeft />
             </Link>
             <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-1">
-              <p className="flex min-w-0 items-baseline gap-2">
-                <span className="shrink-0 text-[17px] font-bold text-navy-900">
-                  {t("reading.passageN", { n: nav.index })}:
-                </span>
-                <h1
-                  id="rd-title"
-                  lang="zh"
-                  className="hanzi text-[22px] leading-tight font-extrabold whitespace-nowrap text-navy-900 md:text-[26px]"
-                >
+              <p className="flex min-w-0 items-baseline gap-2.5 whitespace-nowrap text-navy-900">
+                <span className="shrink-0 text-[17px] font-extrabold">{t("reading.passageN", { n: nav.index })}:</span>
+                <span lang="zh" className="kai-bold text-[22px] leading-tight">
                   {passage.title}
-                </h1>
+                </span>
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-[13px] font-semibold whitespace-nowrap text-text-2 tabular-nums">
@@ -752,10 +758,7 @@ export function Reader({
                       <div className="min-w-0 flex-1">
                         <span className="sr-only">{t("reading.questionN", { n: i + 1 })}: </span>
                         {pinyin ? <p className="text-[13.5px] text-text-2">{q.py}</p> : null}
-                        <p
-                          lang="zh"
-                          className="hanzi [font-family:var(--font-paper)] text-[19px] font-normal! tracking-[.12em] text-navy-900"
-                        >
+                        <p lang="zh" className="kai-bold text-[19px] tracking-[.1em] text-navy-900">
                           {q.zh}
                         </p>
                         {showTr || hint ? <p className="text-[14px] text-text-2">{q.tr}</p> : null}
