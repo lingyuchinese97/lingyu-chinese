@@ -74,7 +74,7 @@ export const reading: Messages["reading"] = {
   questions: "Questions",
   questionN: "Question {n}",
   choose: "Choose an answer",
-  fillPlaceholder: "Type the characters…",
+  fillPlaceholder: "Type the answer in Chinese…",
   fillLabel: "Answer to question {n}",
   submit: "Check results",
   submitting: "Checking…",

@@ -40,19 +40,19 @@ export type NavItem = {
 };
 
 export const NAV: NavItem[] = [
-  { key: "home", href: "/home", icon: House, img: "/brand/ui/nav-home.png", group: 1 },
-  { key: "library", href: "/library", icon: Library, img: "/brand/ui/nav-library.png", group: 1 },
-  { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png", group: 1 },
-  { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png", group: 1 },
-  { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png", group: 1 },
-  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, img: "/brand/ui/nav-pronunciation.png", group: 1 },
-  { key: "listening", href: "/listening", icon: Headphones, img: "/brand/ui/nav-listening.png", group: 1 },
-  { key: "reading", href: "/reading", icon: BookOpenText, img: "/brand/ui/nav-reading.png", group: 1 },
-  { key: "sentences", href: "/translate", icon: MessagesSquare, img: "/brand/ui/nav-translation.png", group: 1 },
-  { key: "review", href: "/review/setup", icon: ReviewIcon, img: "/brand/ui/nav-review.png", group: 1 },
-  { key: "progress", href: "/progress", icon: BarChart3, img: "/brand/ui/nav-progress.png", group: 2 },
-  { key: "radicals", href: "/radicals", icon: RadicalIcon, img: "/brand/ui/nav-radicals.png", group: 2 },
-  { key: "settings", href: "/settings", icon: Settings, img: "/brand/ui/nav-settings.png", group: 3 },
+  { key: "home", href: "/home", icon: House, img: "/brand/ui/nav-home.png?v=2", group: 1 },
+  { key: "library", href: "/library", icon: Library, img: "/brand/ui/nav-library.png?v=2", group: 1 },
+  { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png?v=2", group: 1 },
+  { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png?v=2", group: 1 },
+  { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png?v=2", group: 1 },
+  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, img: "/brand/ui/nav-pronunciation.png?v=2", group: 1 },
+  { key: "listening", href: "/listening", icon: Headphones, img: "/brand/ui/nav-listening.png?v=2", group: 1 },
+  { key: "reading", href: "/reading", icon: BookOpenText, img: "/brand/ui/nav-reading.png?v=2", group: 1 },
+  { key: "sentences", href: "/translate", icon: MessagesSquare, img: "/brand/ui/nav-translation.png?v=2", group: 1 },
+  { key: "review", href: "/review/setup", icon: ReviewIcon, img: "/brand/ui/nav-review.png?v=2", group: 1 },
+  { key: "progress", href: "/progress", icon: BarChart3, img: "/brand/ui/nav-progress.png?v=2", group: 2 },
+  { key: "radicals", href: "/radicals", icon: RadicalIcon, img: "/brand/ui/nav-radicals.png?v=2", group: 2 },
+  { key: "settings", href: "/settings", icon: Settings, img: "/brand/ui/nav-settings.png?v=2", group: 3 },
 ];
 export const ADMIN_NAV: NavItem = { key: "admin", href: "/admin", icon: ShieldCheck, group: 3 };
 

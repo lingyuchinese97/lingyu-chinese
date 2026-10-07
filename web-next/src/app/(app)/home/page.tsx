@@ -171,10 +171,10 @@ export default async function HomePage() {
   const goal = s.goals.minutes_day;
   const goalPct = goal.target ? Math.min(100, Math.round((goal.value / goal.target) * 100)) : 0;
   const stats = [
-    { key: "todayVocab", value: todayStats.vocab, img: "/brand/ui/nav-vocabulary.png", c: "bg-green-50" },
-    { key: "todayGrammar", value: todayStats.grammar, img: "/brand/ui/nav-grammar.png", c: "bg-blue-50" },
-    { key: "todayReading", value: todayStats.reading, img: "/brand/ui/nav-reading.png", c: "bg-red-50" },
-    { key: "todayTranslation", value: todayStats.translation, img: "/brand/ui/nav-translation.png", c: "bg-amber-50" },
+    { key: "todayVocab", value: todayStats.vocab, img: "/brand/ui/nav-vocabulary.png?v=2", c: "bg-green-50" },
+    { key: "todayGrammar", value: todayStats.grammar, img: "/brand/ui/nav-grammar.png?v=2", c: "bg-blue-50" },
+    { key: "todayReading", value: todayStats.reading, img: "/brand/ui/nav-reading.png?v=2", c: "bg-red-50" },
+    { key: "todayTranslation", value: todayStats.translation, img: "/brand/ui/nav-translation.png?v=2", c: "bg-amber-50" },
   ] as const;
   const rings = [
     {
@@ -511,7 +511,7 @@ export default async function HomePage() {
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <Image
               unoptimized
-              src="/brand/ui/nav-progress.png"
+              src="/brand/ui/nav-progress.png?v=2"
               alt=""
               aria-hidden="true"
               width={45}

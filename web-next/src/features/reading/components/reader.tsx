@@ -13,7 +13,6 @@ import {
   Loader2,
   PenLine,
   RotateCcw,
-  Send,
   SkipForward,
   Trash2,
   X,
@@ -76,11 +75,11 @@ function segment(zh: string, py: string, words: Word[]) {
 type Cell = { ch: string; py: string | null; word: Word | null; first: boolean; speaker?: boolean };
 type Row = { kind: "cells"; cells: Cell[]; title?: boolean } | { kind: "tr"; text: string };
 
-/** Ô vuông mục tiêu ~40px; số cột theo bề rộng tờ giấy (8–16 cột). */
+/** Ô vuông mục tiêu ~40px (điện thoại ~34px); số cột theo bề rộng tờ giấy (9–16 cột). */
 const TARGET_CELL = 40;
 /** Số dòng ô tối thiểu của trang giấy. */
 const MIN_ROWS = 12;
-const colsFor = (w: number) => Math.min(16, Math.max(8, Math.floor(w / TARGET_CELL)));
+const colsFor = (w: number) => Math.min(16, Math.max(9, Math.floor(w / (w < 480 ? 34 : TARGET_CELL))));
 
 /** Xếp bài đọc lên giấy ô vuông: dòng đầu là tiêu đề căn giữa, mỗi câu bắt đầu một dòng mới, hết dòng thì xuống dòng. */
 function layout(passage: Passage, cols: number, showTr: boolean): Row[] {
@@ -243,7 +242,7 @@ function Paper({
       <div
         aria-label={t("reading.paper")}
         role="group"
-        className="overflow-hidden border-t border-l border-[#D9DEE5] bg-[#FDFDFB]"
+        className="overflow-hidden border-t border-l border-[#E6DFCF] bg-[#FCF8EE]"
         style={{ ["--cols" as string]: cols } as React.CSSProperties}
       >
         {rows.map((r, i) =>
@@ -251,7 +250,7 @@ function Paper({
             <p
               key={i}
               lang="vi"
-              className="border-r border-b border-[#D9DEE5] bg-white px-2.5 py-1 text-[13.5px] leading-snug text-text-2"
+              className="border-r border-b border-[#E4DCCB] bg-[#FFFCF4] px-2.5 py-1 text-[13.5px] leading-snug text-text-2"
             >
               {r.text}
             </p>
@@ -262,7 +261,7 @@ function Paper({
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "relative flex w-full items-end justify-center border-r border-b border-[#D9DEE5]",
+                      "relative flex w-full items-end justify-center border-r border-b border-[#E4DCCB]",
                       pinyin ? "aspect-[4/5]" : "aspect-square",
                       c.speaker && "text-blue-700",
                     )}
@@ -277,7 +276,7 @@ function Paper({
                     ) : null}
                     <span
                       className={cn(
-                        "flex aspect-square w-full items-center justify-center hanzi leading-none [font-family:var(--font-paper)]",
+                        "flex aspect-square w-full items-center justify-center hanzi [font-family:var(--font-paper)] leading-none",
                         r.title ? "font-semibold! text-navy-900" : "font-normal! text-[#1F2937]",
                         c.speaker
                           ? "text-[length:calc(100cqw/var(--cols)*0.42)] font-bold text-blue-700"
@@ -416,332 +415,149 @@ export function Reader({
   return (
     <div className="flex flex-col gap-4">
       {/* Thanh trên: ‹ Bài đọc n: 标题 n/N › · Nghe mẫu · tốc độ · Bút + màu · Xóa · Lưu bài */}
-      <div className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white/92 p-3 shadow-card xl:flex-row xl:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <Link
-            href={nav.prev ? `/reading/${nav.prev}` : "/reading"}
-            aria-label={nav.prev ? t("reading.prevPassage") : t("reading.back")}
-            className={navBtn}
-          >
-            <ChevronLeft />
-          </Link>
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1">
-            <p className="flex min-w-0 items-baseline gap-2">
-              <span className="shrink-0 text-[17px] font-bold text-navy-900">
-                {t("reading.passageN", { n: nav.index })}:
-              </span>
-              <h1
-                id="rd-title"
-                lang="zh"
-                className="hanzi text-[22px] leading-tight font-extrabold text-navy-900 md:text-[26px]"
-              >
-                {passage.title}
-              </h1>
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-text-2 tabular-nums">
-                {nav.index} / {nav.total}
-              </span>
-              <span className="h-1.5 w-[120px] overflow-hidden rounded-full bg-[#E3ECF7]">
-                <span
-                  className="block h-full rounded-full bg-blue-600"
-                  style={{ width: `${(nav.index / Math.max(1, nav.total)) * 100}%` }}
-                />
-              </span>
-            </div>
-          </div>
-          {nav.next ? (
-            <Link href={`/reading/${nav.next}`} aria-label={t("reading.nextPassage")} className={navBtn}>
-              <ChevronRight />
-            </Link>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <SpeakButton
-            text={passage.lines.map((l) => l.zh).join("")}
-            rate={SPEECH_RATE.normal * speed}
-            label={t("reading.listenAll")}
-            className="h-10 w-auto gap-2 rounded-[12px] border border-[#CFE3F7] bg-blue-50 px-3.5 text-[14.5px] font-semibold hover:bg-blue-100"
-          >
-            {t("reading.listenAll")}
-          </SpeakButton>
-          <label>
-            <span className="sr-only">{t("reading.speed")}</span>
-            <select
-              value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
-              className="h-10 rounded-[12px] border border-border bg-white px-2.5 text-[14px] font-semibold text-navy-900"
+      <div className="@container rounded-[var(--radius-xl)] border border-border bg-white/92 p-3 shadow-card">
+        <div className="flex flex-col gap-3 @[60rem]:flex-row @[60rem]:items-center @[60rem]:justify-between">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Link
+              href={nav.prev ? `/reading/${nav.prev}` : "/reading"}
+              aria-label={nav.prev ? t("reading.prevPassage") : t("reading.back")}
+              className={navBtn}
             >
-              {[0.75, 1, 1.25].map((v) => (
-                <option key={v} value={v}>
-                  {v.toFixed(v === 1 ? 1 : 2)}x
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => setPen((x) => !x)}
-            aria-pressed={pen}
-            className={cn(
-              tool,
-              pen
-                ? "border-blue-600 bg-blue-50 text-blue-700"
-                : "border-border bg-white text-navy-900 hover:bg-blue-50",
-            )}
-          >
-            <PenLine className="text-blue-600" aria-hidden="true" />
-            {t("reading.pen")}
-          </button>
-          <div role="radiogroup" aria-label={t("reading.pen")} className="flex items-center gap-1">
-            {INKS.map((i) => {
-              const name = t("reading.penColor", { color: t(`reading.inkColors.${i.key}`) });
-              return (
-                <button
-                  key={i.key}
-                  type="button"
-                  role="radio"
-                  aria-checked={ink === i.key}
-                  aria-label={name}
-                  title={name}
-                  onClick={() => {
-                    setInk(i.key);
-                    setPen(true);
-                  }}
-                  className="flex size-8 items-center justify-center rounded-full outline-none focus-visible:shadow-[var(--focus-ring)]"
+              <ChevronLeft />
+            </Link>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-1">
+              <p className="flex min-w-0 items-baseline gap-2">
+                <span className="shrink-0 text-[17px] font-bold text-navy-900">
+                  {t("reading.passageN", { n: nav.index })}:
+                </span>
+                <h1
+                  id="rd-title"
+                  lang="zh"
+                  className="hanzi text-[22px] leading-tight font-extrabold whitespace-nowrap text-navy-900 md:text-[26px]"
                 >
+                  {passage.title}
+                </h1>
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] font-semibold whitespace-nowrap text-text-2 tabular-nums">
+                  {nav.index} / {nav.total}
+                </span>
+                <span className="h-1.5 w-[120px] overflow-hidden rounded-full bg-[#E3ECF7]">
                   <span
-                    aria-hidden="true"
-                    className={cn(
-                      "block size-5 rounded-full",
-                      ink === i.key && pen && "ring-2 ring-white ring-offset-2 ring-offset-[#9DB3CC]",
-                    )}
-                    style={{ background: i.color }}
+                    className="block h-full rounded-full bg-blue-600"
+                    style={{ width: `${(nav.index / Math.max(1, nav.total)) * 100}%` }}
                   />
-                </button>
-              );
-            })}
+                </span>
+              </div>
+            </div>
+            {nav.next ? (
+              <Link href={`/reading/${nav.next}`} aria-label={t("reading.nextPassage")} className={navBtn}>
+                <ChevronRight />
+              </Link>
+            ) : null}
           </div>
-          <button
-            type="button"
-            onClick={() => setStrokes([])}
-            disabled={!strokes.length}
-            aria-label={t("reading.clearInkLabel")}
-            className={cn(tool, "border-border bg-white text-navy-900 hover:bg-red-50")}
-          >
-            <Trash2 className="text-text-2" aria-hidden="true" />
-            {t("reading.clearInk")}
-          </button>
-          <Button
-            type="button"
-            variant={saved ? "ghost" : "secondary"}
-            size="sm"
-            onClick={toggleSave}
-            disabled={!!busy}
-            aria-pressed={saved}
-          >
-            {saved ? <BookmarkCheck /> : <Bookmark />}
-            {saved ? t("reading.unsave") : t("reading.save")}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <SpeakButton
+              text={passage.lines.map((l) => l.zh).join("")}
+              rate={SPEECH_RATE.normal * speed}
+              label={t("reading.listenAll")}
+              className="h-10 w-auto gap-2 rounded-[12px] border border-[#CFE3F7] bg-blue-50 px-3.5 text-[14.5px] font-semibold hover:bg-blue-100"
+            >
+              {t("reading.listenAll")}
+            </SpeakButton>
+            <label>
+              <span className="sr-only">{t("reading.speed")}</span>
+              <select
+                value={speed}
+                onChange={(e) => setSpeed(Number(e.target.value))}
+                className="h-10 rounded-[12px] border border-border bg-white px-2.5 text-[14px] font-semibold text-navy-900"
+              >
+                {[0.75, 1, 1.25].map((v) => (
+                  <option key={v} value={v}>
+                    {v.toFixed(v === 1 ? 1 : 2)}x
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={() => setPen((x) => !x)}
+              aria-pressed={pen}
+              className={cn(
+                tool,
+                pen
+                  ? "border-blue-600 bg-blue-50 text-blue-700"
+                  : "border-border bg-white text-navy-900 hover:bg-blue-50",
+              )}
+            >
+              <PenLine className="text-blue-600" aria-hidden="true" />
+              {t("reading.pen")}
+            </button>
+            <div role="radiogroup" aria-label={t("reading.pen")} className="flex items-center gap-1">
+              {INKS.map((i) => {
+                const name = t("reading.penColor", { color: t(`reading.inkColors.${i.key}`) });
+                return (
+                  <button
+                    key={i.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={ink === i.key}
+                    aria-label={name}
+                    title={name}
+                    onClick={() => {
+                      setInk(i.key);
+                      setPen(true);
+                    }}
+                    className="flex size-8 items-center justify-center rounded-full outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "block size-5 rounded-full",
+                        ink === i.key && pen && "ring-2 ring-white ring-offset-2 ring-offset-[#9DB3CC]",
+                      )}
+                      style={{ background: i.color }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => setStrokes([])}
+              disabled={!strokes.length}
+              aria-label={t("reading.clearInkLabel")}
+              className={cn(tool, "border-border bg-white text-navy-900 hover:bg-red-50")}
+            >
+              <Trash2 className="text-text-2" aria-hidden="true" />
+              {t("reading.clearInk")}
+            </button>
+            <Button
+              type="button"
+              variant={saved ? "ghost" : "secondary"}
+              size="sm"
+              onClick={toggleSave}
+              disabled={!!busy}
+              aria-pressed={saved}
+            >
+              {saved ? <BookmarkCheck /> : <Bookmark />}
+              {saved ? t("reading.unsave") : t("reading.save")}
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        {/* Bên trái: bài đọc chép trên giấy ô vuông (vẽ / khoanh được bằng Bút). */}
-        <article
-          aria-labelledby="rd-title"
-          className="rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-4"
-        >
-          <Paper passage={passage} pinyin={pinyin} showTr={showTr} onWord={openCard}>
-            <InkLayer strokes={strokes} setStrokes={setStrokes} pen={pen} ink={ink} />
-          </Paper>
-        </article>
-
-        {/* Bên phải: câu hỏi · pinyin / bản dịch · từ vựng nổi bật · bài trước / tiếp theo. */}
+        {/* Bên trái: bài đọc trên giấy ô vuông (vẽ / khoanh bằng Bút) · pinyin / bản dịch · từ vựng nổi bật. */}
         <div className="flex flex-col gap-4">
-          <section
-            aria-labelledby="rd-q"
-            className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-4"
+          <article
+            aria-labelledby="rd-title"
+            className="rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-4"
           >
-            <div className="flex flex-wrap items-center gap-3">
-              <h2
-                id="rd-q"
-                className="inline-flex items-center gap-2 rounded-[12px] bg-[#FFE9EC] px-3 py-1.5 text-[16px] font-bold text-[#C42A42]"
-              >
-                <span className="flex size-6 items-center justify-center rounded-full bg-[#E0302F] text-[14px] text-white">
-                  ?
-                </span>
-                {t("reading.questions")}
-              </h2>
-              <div className="ml-auto flex items-center gap-3">
-                <span className="text-[14px] font-bold text-text-2 tabular-nums">
-                  {answered} / {passage.questions.length}
-                </span>
-                <div
-                  role="progressbar"
-                  aria-label={t("reading.progress")}
-                  aria-valuemin={0}
-                  aria-valuemax={passage.questions.length}
-                  aria-valuenow={answered}
-                  className="h-2 w-[100px] overflow-hidden rounded-full bg-[#E3ECF7]"
-                >
-                  <div
-                    className="h-full rounded-full bg-blue-600 transition-[width]"
-                    style={{ width: `${(answered / Math.max(1, passage.questions.length)) * 100}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            <ol className="flex flex-col gap-3">
-              {passage.questions.map((q, i) => {
-                const r = result?.results[i];
-                return (
-                  <li
-                    key={i}
-                    className={cn(
-                      "@container rounded-2xl border p-3",
-                      r
-                        ? r.correct
-                          ? "border-green-100 bg-green-50/60"
-                          : "border-red-100 bg-red-50/50"
-                        : "border-transparent bg-[#F5F8FD]",
-                    )}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#DCEBFF] text-[14px] font-bold text-blue-700">
-                        {i + 1}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <span className="sr-only">{t("reading.questionN", { n: i + 1 })}: </span>
-                        {pinyin ? <p className="text-[13.5px] text-text-2">{q.py}</p> : null}
-                        <p lang="zh" className="hanzi text-[19px] font-bold text-navy-900">
-                          {q.zh}
-                        </p>
-                        {showTr || hint ? <p className="text-[14px] text-text-2">{q.tr}</p> : null}
-                      </div>
-                    </div>
-                    <div className="mt-2 pl-0 @md:pl-9">
-                      {q.kind === "choice" ? (
-                        <div
-                          role="radiogroup"
-                          aria-label={`${t("reading.questionN", { n: i + 1 })}: ${t("reading.choose")}`}
-                          className={cn(
-                            "grid gap-2",
-                            q.options!.length === 4 ? "@md:grid-cols-2 @3xl:grid-cols-4" : "@md:grid-cols-3",
-                          )}
-                        >
-                          {q.options!.map((o, j) => {
-                            const on = answers[i] === j;
-                            const right = r && r.answer === j;
-                            return (
-                              <button
-                                key={j}
-                                type="button"
-                                role="radio"
-                                aria-checked={on}
-                                disabled={!!result}
-                                onClick={() => setAnswers((a) => a.map((x, k) => (k === i ? j : x)))}
-                                className={cn(
-                                  "flex min-h-12 items-center gap-2.5 rounded-[14px] border-[1.5px] bg-white px-2.5 py-1.5 text-left outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-default",
-                                  right
-                                    ? "border-green"
-                                    : on
-                                      ? r
-                                        ? "border-red"
-                                        : "border-blue-600 bg-blue-50"
-                                      : "border-border hover:border-[#A9D3F8]",
-                                )}
-                              >
-                                <span
-                                  className={cn(
-                                    "flex size-8 shrink-0 items-center justify-center rounded-full text-[14px] font-bold",
-                                    on && !r ? "bg-blue-600 text-white" : "bg-[#EEF4FB] text-text-2",
-                                  )}
-                                >
-                                  {String.fromCharCode(65 + j)}
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                  <span lang="zh" className="block hanzi text-[17px] font-bold text-navy-900">
-                                    {o}
-                                  </span>
-                                  {pinyin && q.optionInfo?.[j]?.py ? (
-                                    <span className="block text-[12.5px] leading-snug text-text-2">
-                                      {q.optionInfo[j]!.py}
-                                    </span>
-                                  ) : null}
-                                  {(showTr || hint) && q.optionInfo?.[j]?.meaning ? (
-                                    <span className="block text-[12.5px] leading-snug text-text-2">
-                                      {q.optionInfo[j]!.meaning}
-                                    </span>
-                                  ) : null}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <input
-                          lang="zh"
-                          value={(answers[i] as string | null) ?? ""}
-                          disabled={!!result}
-                          onChange={(e) => setAnswers((a) => a.map((x, k) => (k === i ? e.target.value : x)))}
-                          placeholder={t("reading.fillPlaceholder")}
-                          aria-label={t("reading.fillLabel", { n: i + 1 })}
-                          maxLength={40}
-                          className={cn(inputClass, "bg-white text-[17px]")}
-                        />
-                      )}
-                      {r ? (
-                        <p
-                          role="status"
-                          className={cn(
-                            "mt-2 flex flex-wrap items-center gap-2 text-[14.5px] font-semibold",
-                            r.correct ? "text-green-700" : "text-red",
-                          )}
-                        >
-                          {r.correct ? (
-                            <CheckCircle2 className="size-5" aria-hidden="true" />
-                          ) : (
-                            <XCircle className="size-5" aria-hidden="true" />
-                          )}
-                          {r.correct ? t("reading.correct") : t("reading.wrong")}
-                          {!r.correct ? (
-                            <span className="font-normal text-text">
-                              {t("reading.yourAnswer", { answer: optText(i, r.userAnswer) })} ·{" "}
-                              {t("reading.rightAnswer", { answer: optText(i, r.answer) })}
-                            </span>
-                          ) : null}
-                        </p>
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-            <div className="mt-1 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => setHint((h) => !h)}
-                aria-pressed={hint}
-              >
-                <Lightbulb className="text-amber" />
-                {t("reading.hint")}
-              </Button>
-              <Button type="button" variant="secondary" size="sm" onClick={retry}>
-                <RotateCcw />
-                {t("reading.retry")}
-              </Button>
-              {!result ? (
-                <Button variant="primary" className="ml-auto max-sm:w-full" onClick={submit} disabled={!!busy}>
-                  {busy === "submit" ? <Loader2 className="animate-spin" /> : <Send />}
-                  {busy === "submit" ? t("reading.submitting") : t("reading.submit")}
-                  <ChevronRight />
-                </Button>
-              ) : null}
-            </div>
-          </section>
+            <Paper passage={passage} pinyin={pinyin} showTr={showTr} onWord={openCard}>
+              <InkLayer strokes={strokes} setStrokes={setStrokes} pen={pen} ink={ink} />
+            </Paper>
+          </article>
 
           <div className="grid gap-3 sm:grid-cols-2">
             {[
@@ -776,7 +592,7 @@ export function Reader({
                 >
                   {o.badge}
                 </span>
-                <span className="flex-1">{o.label}</span>
+                <span className="min-w-0 flex-1 truncate text-[14px]">{o.label}</span>
                 <span
                   aria-hidden="true"
                   className="relative h-6 w-11 rounded-full bg-[#CBD5E1] transition-colors peer-checked:bg-blue-600 peer-focus-visible:shadow-[var(--focus-ring)] after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"
@@ -824,6 +640,204 @@ export function Reader({
                 </li>
               ))}
             </ul>
+          </section>
+        </div>
+
+        {/* Bên phải: câu hỏi · bài trước / tiếp theo. */}
+        <div className="flex flex-col gap-4">
+          <section
+            aria-labelledby="rd-q"
+            className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-4"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <h2
+                id="rd-q"
+                className="inline-flex items-center gap-2 rounded-[12px] bg-[#FFE9EC] px-3 py-1.5 text-[16px] font-bold text-[#C42A42]"
+              >
+                <span className="flex size-6 items-center justify-center rounded-full bg-[#E0302F] text-[14px] text-white">
+                  ?
+                </span>
+                {t("reading.questions")}
+              </h2>
+              <div className="ml-auto flex items-center gap-3">
+                <span className="text-[14px] font-bold text-text-2 tabular-nums">
+                  {answered} / {passage.questions.length}
+                </span>
+                <div
+                  role="progressbar"
+                  aria-label={t("reading.progress")}
+                  aria-valuemin={0}
+                  aria-valuemax={passage.questions.length}
+                  aria-valuenow={answered}
+                  className="h-2 w-[100px] overflow-hidden rounded-full bg-[#E3ECF7]"
+                >
+                  <div
+                    className="h-full rounded-full bg-blue-600 transition-[width]"
+                    style={{ width: `${(answered / Math.max(1, passage.questions.length)) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            <ol className="flex flex-col gap-3">
+              {passage.questions.map((q, i) => {
+                const r = result?.results[i];
+                return (
+                  <li
+                    key={i}
+                    className={cn(
+                      "@container rounded-[18px] border px-3 py-3 md:px-4",
+                      r
+                        ? r.correct
+                          ? "border-green-100 bg-green-50/60"
+                          : "border-red-100 bg-red-50/50"
+                        : "border-transparent bg-[#F3F7FC]",
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#DCEBFF] text-[14px] font-bold text-blue-700">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <span className="sr-only">{t("reading.questionN", { n: i + 1 })}: </span>
+                        {pinyin ? <p className="text-[13.5px] text-text-2">{q.py}</p> : null}
+                        <p
+                          lang="zh"
+                          className="hanzi [font-family:var(--font-paper)] text-[19px] font-normal! tracking-[.12em] text-navy-900"
+                        >
+                          {q.zh}
+                        </p>
+                        {showTr || hint ? <p className="text-[14px] text-text-2">{q.tr}</p> : null}
+                      </div>
+                    </div>
+                    <div className="mt-2.5 pl-0 @md:pl-10">
+                      {q.kind === "choice" ? (
+                        <div
+                          role="radiogroup"
+                          aria-label={`${t("reading.questionN", { n: i + 1 })}: ${t("reading.choose")}`}
+                          className={cn(
+                            "grid gap-2.5",
+                            q.options!.length === 4 ? "grid-cols-2 @xl:grid-cols-4" : "grid-cols-2 @md:grid-cols-3",
+                          )}
+                        >
+                          {q.options!.map((o, j) => {
+                            const on = answers[i] === j;
+                            const right = r && r.answer === j;
+                            return (
+                              <button
+                                key={j}
+                                type="button"
+                                role="radio"
+                                aria-checked={on}
+                                disabled={!!result}
+                                onClick={() => setAnswers((a) => a.map((x, k) => (k === i ? j : x)))}
+                                className={cn(
+                                  "flex min-h-12 items-center gap-3 rounded-[10px] border-[1.5px] bg-white px-3 py-1.5 text-left shadow-[0_1px_2px_rgba(16,42,80,.04)] outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-default",
+                                  right
+                                    ? "border-green"
+                                    : on
+                                      ? r
+                                        ? "border-red"
+                                        : "border-[#86B9F2] bg-[#EAF3FF]"
+                                      : "border-[#E3EAF3] hover:border-[#A9D3F8]",
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "flex size-7 shrink-0 items-center justify-center rounded-full text-[13.5px] font-bold",
+                                    on && !r ? "bg-[#D3E6FF] text-blue-700" : "bg-[#EEF2F8] text-navy-900",
+                                  )}
+                                >
+                                  {String.fromCharCode(65 + j)}
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span
+                                    lang="zh"
+                                    className="block hanzi [font-family:var(--font-paper)] text-[17px] font-normal! tracking-[.12em] text-navy-900"
+                                  >
+                                    {o}
+                                  </span>
+                                  {pinyin && q.optionInfo?.[j]?.py ? (
+                                    <span className="block text-[12.5px] leading-snug text-text-2">
+                                      {q.optionInfo[j]!.py}
+                                    </span>
+                                  ) : null}
+                                  {(showTr || hint) && q.optionInfo?.[j]?.meaning ? (
+                                    <span className="block text-[12.5px] leading-snug text-text-2">
+                                      {q.optionInfo[j]!.meaning}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <input
+                          lang="zh"
+                          value={(answers[i] as string | null) ?? ""}
+                          disabled={!!result}
+                          onChange={(e) => setAnswers((a) => a.map((x, k) => (k === i ? e.target.value : x)))}
+                          placeholder={t("reading.fillPlaceholder")}
+                          aria-label={t("reading.fillLabel", { n: i + 1 })}
+                          maxLength={40}
+                          className={cn(inputClass, "h-12 rounded-[10px] border-[#E3EAF3] bg-white text-[17px]")}
+                        />
+                      )}
+                      {r ? (
+                        <p
+                          role="status"
+                          className={cn(
+                            "mt-2 flex flex-wrap items-center gap-2 text-[14.5px] font-semibold",
+                            r.correct ? "text-green-700" : "text-red",
+                          )}
+                        >
+                          {r.correct ? (
+                            <CheckCircle2 className="size-5" aria-hidden="true" />
+                          ) : (
+                            <XCircle className="size-5" aria-hidden="true" />
+                          )}
+                          {r.correct ? t("reading.correct") : t("reading.wrong")}
+                          {!r.correct ? (
+                            <span className="font-normal text-text">
+                              {t("reading.yourAnswer", { answer: optText(i, r.userAnswer) })} ·{" "}
+                              {t("reading.rightAnswer", { answer: optText(i, r.answer) })}
+                            </span>
+                          ) : null}
+                        </p>
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+            <div className="mt-1 flex flex-wrap items-center gap-2.5 pt-1">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setHint((h) => !h)}
+                aria-pressed={hint}
+              >
+                <Lightbulb className="text-amber" />
+                {t("reading.hint")}
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={retry}>
+                <RotateCcw />
+                {t("reading.retry")}
+              </Button>
+              {!result ? (
+                <Button
+                  variant="primary"
+                  className="ml-auto min-w-[200px] justify-between max-sm:w-full"
+                  onClick={submit}
+                  disabled={!!busy}
+                >
+                  {busy === "submit" ? <Loader2 className="animate-spin" /> : null}
+                  {busy === "submit" ? t("reading.submitting") : t("reading.submit")}
+                  <ChevronRight />
+                </Button>
+              ) : null}
+            </div>
           </section>
 
           <div className="flex items-center justify-between gap-3">

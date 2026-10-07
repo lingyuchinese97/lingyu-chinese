@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Icon menu màu không hiện trên máy đã mở app trước đó**: service worker giữ ảnh `nav-*.png` cũ (cùng tên file) → thêm phiên bản
+  vào đường dẫn icon (`?v=2`) để mọi trình duyệt / app PWA tải bộ icon màu mới.
+
 ### Changed
 
 - **Đọc hiểu — trang bài đọc theo thiết kế mới (vở ô vuông + câu hỏi)**: bỏ tranh minh hoạ; bên trái là bài đọc chép trên
