@@ -4,7 +4,6 @@ import {
   BarChart3,
   BookOpen,
   BookOpenText,
-  GraduationCap,
   Headphones,
   House,
   Library,
@@ -42,10 +41,15 @@ export type NavItem = {
 export const NAV: NavItem[] = [
   { key: "home", href: "/home", icon: House, img: "/brand/ui/nav-home.png?v=2", group: 1 },
   { key: "library", href: "/library", icon: Library, img: "/brand/ui/nav-library.png?v=2", group: 1 },
-  { key: "lessons", href: "/lessons", icon: GraduationCap, img: "/brand/ui/nav-lessons.png?v=2", group: 1 },
   { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png?v=2", group: 1 },
   { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png?v=2", group: 1 },
-  { key: "pronunciation", href: "/pronunciation", icon: AudioLines, img: "/brand/ui/nav-pronunciation.png?v=2", group: 1 },
+  {
+    key: "pronunciation",
+    href: "/pronunciation",
+    icon: AudioLines,
+    img: "/brand/ui/nav-pronunciation.png?v=2",
+    group: 1,
+  },
   { key: "listening", href: "/listening", icon: Headphones, img: "/brand/ui/nav-listening.png?v=2", group: 1 },
   { key: "reading", href: "/reading", icon: BookOpenText, img: "/brand/ui/nav-reading.png?v=2", group: 1 },
   { key: "sentences", href: "/translate", icon: MessagesSquare, img: "/brand/ui/nav-translation.png?v=2", group: 1 },
@@ -95,6 +99,8 @@ export function shellState(pathname: string): ShellState {
     (first === "translate" && seg[1] === "session") ||
     (first === "review" && seg[1] === "session") ||
     (first === "lessons" && seg.length === 3 && seg[2] !== "result");
+  // Bài học không còn mục riêng trên thanh bên (vào từ Trang chủ) — vẫn giữ câu trích dẫn của Bài học.
+  if (first === "lessons") return { nav: null, quote: QUOTES.lessons ?? null, focus };
   if (first === "review" && seg[1] === "session") return { nav, quote: "shell.quote.reviewSession", focus };
   if (first === "review" && seg[1] === "result") return { nav, quote: "shell.quote.reviewResult", focus };
   // Phát âm & Biến điệu nằm trong Thư viện LingYu (nội dung LingYu biên soạn).

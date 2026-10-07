@@ -174,7 +174,12 @@ export default async function HomePage() {
     { key: "todayVocab", value: todayStats.vocab, img: "/brand/ui/nav-vocabulary.png?v=2", c: "bg-green-50" },
     { key: "todayGrammar", value: todayStats.grammar, img: "/brand/ui/nav-grammar.png?v=2", c: "bg-blue-50" },
     { key: "todayReading", value: todayStats.reading, img: "/brand/ui/nav-reading.png?v=2", c: "bg-red-50" },
-    { key: "todayTranslation", value: todayStats.translation, img: "/brand/ui/nav-translation.png?v=2", c: "bg-amber-50" },
+    {
+      key: "todayTranslation",
+      value: todayStats.translation,
+      img: "/brand/ui/nav-translation.png?v=2",
+      c: "bg-amber-50",
+    },
   ] as const;
   const rings = [
     {
@@ -349,7 +354,12 @@ export default async function HomePage() {
                 >
                   {/* Bìa: mascot LingYu của từng chức năng + ô chữ đặc trưng, lá trang trí trên nền pastel. */}
                   <div aria-hidden="true" className="@container relative aspect-[242/118] w-full overflow-hidden">
-                    <span className={cn("absolute top-[6%] right-[2%] aspect-square w-[58%] rounded-full opacity-70", c.halo)} />
+                    <span
+                      className={cn(
+                        "absolute top-[6%] right-[2%] aspect-square w-[58%] rounded-full opacity-70",
+                        c.halo,
+                      )}
+                    />
                     <span className="absolute bottom-[10%] left-[4%] h-[26%] w-[50%] rounded-full bg-white/70 blur-md" />
                     <span
                       className={cn(
@@ -385,13 +395,10 @@ export default async function HomePage() {
                       className="absolute right-[5%] bottom-[3%] h-[94%] w-auto object-contain drop-shadow-[0_6px_10px_rgba(30,90,60,.18)] transition-transform duration-300 group-hover:-translate-y-1 motion-reduce:transition-none"
                     />
                   </div>
-                  <div className="flex flex-1 items-end gap-2 rounded-t-[16px] bg-white/80 px-3.5 pt-3 pb-3.5 md:px-4">
+                  <div className="flex flex-1 items-center gap-2 rounded-t-[16px] bg-white/80 px-3.5 py-3 md:px-4">
                     <div className="min-w-0 flex-1">
                       <span className="block text-[16px] leading-tight font-extrabold text-navy-900 md:text-[18px] xl:text-[15.5px] 2xl:text-[18px]">
                         {title}
-                      </span>
-                      <span className="mt-1 block text-[12.5px] leading-snug text-text-2 md:text-[13.5px]">
-                        {t(`home.cards.${c.key}.desc`)}
                       </span>
                     </div>
                     <span

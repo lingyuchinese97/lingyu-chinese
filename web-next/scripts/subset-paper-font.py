@@ -13,24 +13,28 @@ import re
 from fontTools import subset
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SRC = ROOT / "node_modules/@fontsource/lxgw-wenkai/files/lxgw-wenkai-latin-500-normal.woff2"
-OUT = ROOT / "public/fonts/paper-kai.woff2"
+FILES = ROOT / "node_modules/@fontsource/lxgw-wenkai/files"
+# Nét thường (500) cho chữ trong bài, nét đậm (700) cho tiêu đề / câu hỏi.
+FACES = {"paper-kai.woff2": "lxgw-wenkai-latin-500-normal.woff2", "paper-kai-bold.woff2": "lxgw-wenkai-latin-700-normal.woff2"}
+OUT_DIR = ROOT / "public/fonts"
 CHARS = ROOT / "public/fonts/paper-kai.chars.txt"
 
 text = (ROOT / "src/data/reading/passages.ts").read_text(encoding="utf-8")
 han = set(re.findall(r"[　-〿㐀-鿿＀-￯“”‘’…—·]", text))
 chars = "".join(sorted(han)) + " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:;,.!?()_-"
 
-OUT.parent.mkdir(parents=True, exist_ok=True)
-opts = subset.Options()
-opts.flavor = "woff2"
-opts.layout_features = ["*"]
-opts.name_IDs = ["*"]
-opts.notdef_outline = True
-font = subset.load_font(str(SRC), opts)
-sub = subset.Subsetter(opts)
-sub.populate(text=chars)
-sub.subset(font)
-subset.save_font(font, str(OUT), opts)
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+for out_name, src_name in FACES.items():
+    opts = subset.Options()
+    opts.flavor = "woff2"
+    opts.layout_features = ["*"]
+    opts.name_IDs = ["*"]
+    opts.notdef_outline = True
+    font = subset.load_font(str(FILES / src_name), opts)
+    sub = subset.Subsetter(opts)
+    sub.populate(text=chars)
+    sub.subset(font)
+    out = OUT_DIR / out_name
+    subset.save_font(font, str(out), opts)
+    print(f"{len(han)} chữ → {out.relative_to(ROOT)} ({out.stat().st_size // 1024} KB)")
 CHARS.write_text("".join(sorted(han)) + "\n", encoding="utf-8")
-print(f"{len(han)} chữ → {OUT.relative_to(ROOT)} ({OUT.stat().st_size // 1024} KB)")

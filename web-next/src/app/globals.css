@@ -5,13 +5,20 @@
 @import "@fontsource/dancing-script/600.css";
 
 /* Chữ Khải cho giấy ô vuông / câu hỏi Đọc hiểu: LXGW WenKai (SIL OFL 1.1), chỉ gồm chữ có trong bài đọc
-   (scripts/subset-paper-font.py → public/fonts/paper-kai.woff2, ~90KB). */
+   (scripts/subset-paper-font.py → public/fonts/paper-kai{,-bold}.woff2, ~90KB mỗi file). */
 @font-face {
   font-family: "LingYu Kai";
   font-style: normal;
-  font-weight: 400 700;
+  font-weight: 400 600;
   font-display: swap;
   src: url("/fonts/paper-kai.woff2") format("woff2");
+}
+@font-face {
+  font-family: "LingYu Kai";
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: url("/fonts/paper-kai-bold.woff2") format("woff2");
 }
 
 @import "tailwindcss";
@@ -130,6 +137,14 @@
       transition-duration: 0.001ms !important;
     }
   }
+}
+
+/* Chữ Khải in đậm rõ (nét Bold của LXGW WenKai khá mảnh): thêm viền nét cùng màu chữ. */
+@utility kai-bold {
+  font-family: var(--font-paper);
+  font-weight: 700 !important;
+  -webkit-text-stroke: 0.04em currentColor;
+  paint-order: stroke fill;
 }
 
 @utility hanzi {

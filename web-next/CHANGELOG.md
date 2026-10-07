@@ -11,6 +11,11 @@
 
 ### Changed
 
+- **Đọc hiểu — bìa đầu trang + chữ đậm**: trang bài đọc có bìa kiểu Trang chủ (Bài đọc n · HSK · loại bài, tên bài chữ Khải, nghĩa,
+  mascot); tiêu đề trên thanh công cụ "Bài đọc 1: 小狗" theo design; tên bài (dòng đầu giấy ô vuông, bìa, thanh trên) và câu hỏi in đậm
+  rõ (thêm bản Bold của font Khải `paper-kai-bold.woff2` + tiện ích `kai-bold`).
+- **Trang chủ**: bỏ dòng mô tả nhỏ dưới tên 5 thẻ chức năng. **Thanh bên**: bỏ mục **Bài học** (vẫn vào từ thẻ Bài học / nút "Bắt đầu
+  học ngay" ở Trang chủ).
 - **Bìa đầu trang thống nhất cho mọi chức năng (theo bìa Trang chủ)**: component dùng chung `FeatureHero` — nền trời xanh nhạt, ánh
   sáng + lá trang trí, tiêu đề lớn có lá, mô tả, nút thao tác kiểu bo tròn và mascot của chức năng bên phải — cho Thư viện LingYu, Bài học,
   Từ vựng của tôi, Ngữ pháp của tôi, Phát âm & Biến điệu, Luyện nghe, Đọc hiểu, Luyện dịch, Ôn tập, Tiến độ học tập, Bộ thủ và Cài đặt.
