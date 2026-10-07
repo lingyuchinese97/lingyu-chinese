@@ -11,7 +11,9 @@
 
 ### Changed
 
-- **Đọc hiểu — giấy trắng kẻ ô xám nhạt** (thay nền ngà vàng, giống trang vở trong design); ô **Hiển thị pinyin / Hiển thị bản dịch**
+- **Bìa đầu trang — mascot ngồi trên bàn**: ảnh bìa mới, neo đáy (dư thì cắt phần trời phía trên) để luôn thấy mặt bàn cạnh cửa sổ;
+  mascot đặt ngồi trên bàn. Thư viện: ảnh bìa chỉ phủ phần tiêu đề, hàng danh mục nằm dưới (mascot ngồi ngay trên bàn).
+- **Đọc hiểu — giấy ngà nhẹ kẻ ô be** (như màu vở tập viết tiếng Trung); ô **Hiển thị pinyin / Hiển thị bản dịch**
   chuyển lên đầu thẻ Bài đọc, ngay cạnh bài.
 - **Bìa đầu trang — mascot ngồi bậu cửa sổ cầm sách đọc** (bỏ chồng sách và bong bóng): vị trí và khoảng cách theo design — tiêu đề
   lớn có nhánh lá, mô tả, nút; mascot đặt trước khung cửa sổ, cao ~3/4 bìa. Trang chủ Thư viện dùng cùng mascot.

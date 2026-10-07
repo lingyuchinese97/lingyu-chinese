@@ -138,36 +138,37 @@ export async function LibraryHome({ data }: { data: Home }) {
   const t = await getT();
   return (
     <div className="flex flex-col gap-5">
-      {/* Bìa Thư viện (theo design): nền trời + cửa sổ, mascot ngồi trên chồng sách, ô tìm + bộ lọc, hàng danh mục. */}
+      {/* Bìa Thư viện (theo design): nền trời + cửa sổ, mascot ngồi trên bàn, ô tìm + bộ lọc, hàng danh mục. */}
       <section
         aria-labelledby="lh-title"
         className="relative isolate overflow-hidden rounded-[28px] border border-[#D3E8F8] bg-[#DCEFFD] shadow-card"
       >
-        <Image
-          unoptimized
-          src="/brand/hero/cover-bg.webp"
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="-z-20 object-cover object-[70%_center]"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,.55)_0%,rgba(255,255,255,.25)_45%,rgba(255,255,255,0)_70%)]"
-        />
-        <Image
-          unoptimized
-          src="/brand/library/leaves.png"
-          alt=""
-          aria-hidden="true"
-          width={276}
-          height={265}
-          className="pointer-events-none absolute top-3 left-[46%] -z-10 hidden w-[120px] opacity-70 lg:block"
-        />
+        {/* Phần trên có ảnh bìa (neo đáy → mặt bàn ngay trên hàng danh mục); mascot ngồi trên bàn. */}
+        <div className="@container relative isolate px-4 pt-3 md:px-9 md:pt-4">
+          <Image
+            unoptimized
+            src="/brand/hero/cover-bg.webp"
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            sizes="100vw"
+            className="-z-20 object-cover object-bottom"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,.55)_0%,rgba(255,255,255,.25)_45%,rgba(255,255,255,0)_70%)]"
+          />
+          <Image
+            unoptimized
+            src="/brand/library/leaves.png"
+            alt=""
+            aria-hidden="true"
+            width={276}
+            height={265}
+            className="pointer-events-none absolute top-3 left-[46%] -z-10 hidden w-[120px] opacity-70 lg:block"
+          />
 
-        <div className="px-4 pt-3 md:px-9 md:pt-4">
           <Crumbs label={t("shell.breadcrumb")} home={t("shell.nav.home")} items={[{ text: t("libhub.breadcrumb") }]} />
           <div className="grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_minmax(240px,400px)]">
             <div className="min-w-0 pt-2 pb-4 md:pt-6 md:pb-7">
@@ -208,7 +209,7 @@ export async function LibraryHome({ data }: { data: Home }) {
               </form>
             </div>
 
-            <div aria-hidden="true" className="relative hidden h-[300px] md:block">
+            <div aria-hidden="true" className="hidden h-[300px] md:block">
               <Image
                 unoptimized
                 src="/brand/hero/mascot-reading.webp"
@@ -216,7 +217,7 @@ export async function LibraryHome({ data }: { data: Home }) {
                 width={560}
                 height={493}
                 priority
-                className="absolute right-[14%] bottom-[2px] h-[230px] w-auto drop-shadow-[0_10px_14px_rgba(20,70,40,.18)]"
+                className="pointer-events-none absolute bottom-[1.6cqw] left-[72%] -z-10 h-[230px] w-auto -translate-x-1/2 drop-shadow-[0_10px_14px_rgba(20,70,40,.18)]"
               />
             </div>
           </div>
@@ -224,7 +225,7 @@ export async function LibraryHome({ data }: { data: Home }) {
 
         <nav
           aria-label={t("libhub.breadcrumb")}
-          className="grid grid-cols-2 gap-3 rounded-t-[26px] bg-white/60 p-3 backdrop-blur-sm sm:grid-cols-4 md:p-5 xl:grid-cols-7"
+          className="grid grid-cols-2 gap-3 bg-white/85 p-3 sm:grid-cols-4 md:p-5 xl:grid-cols-7"
         >
           {CATS.map((c) => {
             const inner = (

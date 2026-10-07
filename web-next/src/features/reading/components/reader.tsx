@@ -249,7 +249,7 @@ function Paper({
       <div
         aria-label={t("reading.paper")}
         role="group"
-        className="overflow-hidden border-t border-l border-[#DCE0E6] bg-white"
+        className="overflow-hidden border-t border-l border-[#E8E1CF] bg-[#FFFCF3]"
         style={{ ["--cols" as string]: cols } as React.CSSProperties}
       >
         {rows.map((r, i) =>
@@ -257,7 +257,7 @@ function Paper({
             <p
               key={i}
               lang="vi"
-              className="border-r border-b border-[#DCE0E6] bg-[#FAFBFC] px-2.5 py-1 text-[13.5px] leading-snug text-text-2"
+              className="border-r border-b border-[#E8E1CF] bg-[#FFFAEE] px-2.5 py-1 text-[13.5px] leading-snug text-text-2"
             >
               {r.text}
             </p>
@@ -268,7 +268,7 @@ function Paper({
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "relative flex w-full items-end justify-center border-r border-b border-[#DCE0E6]",
+                      "relative flex w-full items-end justify-center border-r border-b border-[#E8E1CF]",
                       pinyin ? "aspect-[4/5]" : "aspect-square",
                       c.speaker && "text-blue-700",
                     )}
