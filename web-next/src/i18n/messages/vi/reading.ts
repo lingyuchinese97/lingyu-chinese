@@ -72,7 +72,7 @@ export const reading = {
   questions: "Câu hỏi",
   questionN: "Câu {n}",
   choose: "Chọn đáp án",
-  fillPlaceholder: "Điền chữ Hán…",
+  fillPlaceholder: "Nhập đáp án bằng tiếng Trung…",
   fillLabel: "Đáp án câu {n}",
   submit: "Kiểm tra kết quả",
   submitting: "Đang chấm…",

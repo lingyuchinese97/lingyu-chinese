@@ -34,8 +34,11 @@ test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiê
   // Tìm kiếm chung (trang /search — ô tìm trên cùng đã bỏ).
   await expect(page.getByRole("search")).toHaveCount(0);
   await page.goto("/search");
-  await page.getByRole("searchbox", { name: "Tìm kiếm" }).fill("xin chao");
-  await page.getByRole("button", { name: "Tìm kiếm" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Tìm kiếm" })).toBeVisible();
+  const box = page.getByRole("searchbox", { name: "Tìm kiếm" });
+  await box.fill("xin chao");
+  await expect(box).toHaveValue("xin chao");
+  await box.press("Enter");
   await expect(page).toHaveURL(/\/search\?q=xin/);
   await expect(page.getByRole("region", { name: "Từ vựng" }).getByText("你好")).toBeVisible();
 
