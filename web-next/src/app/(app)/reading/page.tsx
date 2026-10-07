@@ -54,7 +54,6 @@ export default async function ReadingPage() {
     <div className="flex flex-col gap-4">
       <FeatureHero
         id="rd-page-title"
-        mascot="vocabulary"
         title={t("reading.title")}
         description={t("reading.subtitle")}
       />

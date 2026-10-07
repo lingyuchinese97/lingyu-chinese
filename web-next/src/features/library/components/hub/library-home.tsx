@@ -145,7 +145,7 @@ export async function LibraryHome({ data }: { data: Home }) {
       >
         <Image
           unoptimized
-          src="/brand/library/header-bg.jpg"
+          src="/brand/hero/cover-bg.webp"
           alt=""
           aria-hidden="true"
           fill
@@ -211,20 +211,12 @@ export async function LibraryHome({ data }: { data: Home }) {
             <div aria-hidden="true" className="relative hidden h-[330px] md:block">
               <Image
                 unoptimized
-                src="/brand/library/books.png"
+                src="/brand/hero/mascot-books.webp"
                 alt=""
-                width={370}
-                height={198}
-                className="absolute bottom-[-10px] left-1/2 z-0 w-[70%] -translate-x-[40%]"
-              />
-              <Image
-                unoptimized
-                src="/brand/library/mascot-read.png"
-                alt=""
-                width={416}
-                height={364}
+                width={640}
+                height={636}
                 priority
-                className="absolute bottom-[112px] left-1/2 z-10 w-[56%] -translate-x-[34%] drop-shadow-[0_12px_18px_rgba(20,80,40,.18)]"
+                className="absolute right-[4%] bottom-[-12px] w-[min(88%,300px)] drop-shadow-[0_14px_20px_rgba(20,70,40,.18)]"
               />
               <Image
                 unoptimized

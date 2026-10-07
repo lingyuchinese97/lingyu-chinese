@@ -88,7 +88,6 @@ export function RadicalList({
     <>
       <FeatureHero
         id="rl-title"
-        mascot="write"
         title={t("radicals.title")}
         description={t("radicals.subtitle")}
         aside={

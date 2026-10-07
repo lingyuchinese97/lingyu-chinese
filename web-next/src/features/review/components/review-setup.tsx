@@ -139,7 +139,7 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
         </div>
       ) : null}
 
-      <FeatureHero id="rs-title" mascot="wave" title={t("review.setup.heading")} description={t("review.setup.sub")} />
+      <FeatureHero id="rs-title" title={t("review.setup.heading")} description={t("review.setup.sub")} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
         <section

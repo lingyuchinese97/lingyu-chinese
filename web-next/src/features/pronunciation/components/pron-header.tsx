@@ -58,7 +58,6 @@ export function PronunciationHeader({ mode = "library" }: { mode?: "library" | "
     <div className="flex flex-col gap-3">
       <FeatureHero
         id="pr-title"
-        mascot="pronunciation"
         title={mode === "mine" ? t("pronunciation.mine.title") : t("pronunciation.title")}
         description={mode === "mine" ? t("pronunciation.mine.subtitle") : t("pronunciation.subtitle")}
       />

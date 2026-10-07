@@ -429,7 +429,6 @@ export function Reader({
     <div className="flex flex-col gap-4">
       <FeatureHero
         id="rd-title"
-        mascot="vocabulary"
         eyebrow={`${t("reading.passageN", { n: nav.index })} · HSK ${passage.level} · ${t(`reading.types.${passage.type}`)}`}
         title={
           <span lang="zh" className="kai-bold">
