@@ -19,7 +19,6 @@ export function ListeningHeader({ tab, actions }: { tab: "practice" | "mine"; ac
     <div className="flex flex-col gap-3">
       <FeatureHero
         id="ls-title"
-        mascot="listening"
         title={tab === "practice" ? t("listening.pageTitle") : t("listening.tabs.mine")}
         description={t("listening.subtitle")}
         actions={actions}

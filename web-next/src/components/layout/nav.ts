@@ -35,12 +35,11 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   /** Icon ảnh theo thiết kế (`public/brand/ui/nav-*.png`); không có thì dùng `icon`. */
   img?: string;
-  group: 1 | 2 | 3;
+  group: 1 | 2 | 3 | 4;
 };
 
 export const NAV: NavItem[] = [
   { key: "home", href: "/home", icon: House, img: "/brand/ui/nav-home.png?v=2", group: 1 },
-  { key: "library", href: "/library", icon: Library, img: "/brand/ui/nav-library.png?v=2", group: 1 },
   { key: "vocabulary", href: "/vocabulary", icon: BookOpen, img: "/brand/ui/nav-vocabulary.png?v=2", group: 1 },
   { key: "grammar", href: "/grammar", icon: GrammarIcon, img: "/brand/ui/nav-grammar.png?v=2", group: 1 },
   {
@@ -57,6 +56,8 @@ export const NAV: NavItem[] = [
   { key: "progress", href: "/progress", icon: BarChart3, img: "/brand/ui/nav-progress.png?v=2", group: 2 },
   { key: "radicals", href: "/radicals", icon: RadicalIcon, img: "/brand/ui/nav-radicals.png?v=2", group: 2 },
   { key: "settings", href: "/settings", icon: Settings, img: "/brand/ui/nav-settings.png?v=2", group: 3 },
+  // Thư viện LingYu nằm cuối thanh bên (nhóm riêng).
+  { key: "library", href: "/library", icon: Library, img: "/brand/ui/nav-library.png?v=2", group: 4 },
 ];
 export const ADMIN_NAV: NavItem = { key: "admin", href: "/admin", icon: ShieldCheck, group: 3 };
 

@@ -338,7 +338,6 @@ export function VocabListView({
     <>
       <FeatureHero
         id="vl-title"
-        mascot="vocabulary"
         title={t("vocab.myTitle", { count: data.totalAll })}
         description={t("vocab.mySub")}
         actions={

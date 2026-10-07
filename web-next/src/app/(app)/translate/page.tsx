@@ -36,7 +36,6 @@ export default async function TranslatePage() {
     <div className="flex flex-col gap-4">
       <FeatureHero
         id="tr-page-title"
-        mascot="bubble"
         title={t("translate.title")}
         description={t("translate.subtitle")}
       />

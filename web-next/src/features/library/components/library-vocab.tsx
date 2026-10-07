@@ -25,6 +25,7 @@ import { T_TOPICS } from "@/data/translation/items";
 import { LIB_LEVELS, type LibListParams } from "../schema";
 import type { PublicWord, PublicWordList } from "../service";
 import { saveLibraryWordToMineAction } from "../actions";
+import { FeatureHero } from "@/components/feature-hero";
 
 /** Thư viện LingYu → Từ vựng: HSK 1–6, tìm / chủ đề / sắp xếp, danh sách (trái) + chi tiết (phải). */
 export function LibraryVocab({
@@ -98,54 +99,48 @@ export function LibraryVocab({
         </span>
       </nav>
 
-      <section aria-labelledby="lv-title" className="flex flex-col gap-4 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 items-center gap-4">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#E4F2EA] text-[#15935A] md:size-20">
-            <BookOpen className="size-8 md:size-10" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <h1 id="lv-title" className="text-[28px] font-extrabold tracking-tight text-navy-900 md:text-[36px]">
-              {t("library.vocabTitle")}
-            </h1>
-            <p className="text-[15px] text-text-2 md:text-[16px]">{t("library.vocabSub")}</p>
-          </div>
-        </div>
-        <div className="flex w-full flex-col gap-2.5 lg:w-[640px]">
-          <label className="relative block">
-            <span className="sr-only">{t("library.searchPlaceholder")}</span>
-            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={t("library.searchPlaceholder")}
-              autoComplete="off"
-              className={cn(inputClass, "bg-white pl-11")}
-            />
-          </label>
-          <div className="grid grid-cols-2 gap-2.5 sm:ml-auto sm:w-[480px]">
-            <label>
-              <span className="sr-only">{t("library.topicFilter")}</span>
-              <Select value={params.topic} onChange={(e) => go({ topic: e.target.value as LibListParams["topic"] })}>
-                <option value="">{t("library.topicAll")}</option>
-                {T_TOPICS.map((x) => (
-                  <option key={x} value={x}>
-                    {t("library.topicFilter")}: {t(`translate.topics.${x}`)}
-                  </option>
-                ))}
-              </Select>
+      <FeatureHero
+        id="lv-title"
+        title={t("library.vocabTitle")}
+        description={t("library.vocabSub")}
+        actions={
+          <div className="flex w-full max-w-[680px] flex-col gap-2.5">
+            <label className="relative block">
+              <span className="sr-only">{t("library.searchPlaceholder")}</span>
+              <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t("library.searchPlaceholder")}
+                autoComplete="off"
+                className={cn(inputClass, "bg-white pl-11")}
+              />
             </label>
-            <label>
-              <span className="sr-only">{t("library.sortLabel")}</span>
-              <Select value={params.sort} onChange={(e) => go({ sort: e.target.value as LibListParams["sort"] })}>
-                <option value="order">{t("library.sortOrder")}</option>
-                <option value="newest">{t("library.sortNewest")}</option>
-                <option value="pinyin">{t("library.sortPinyin")}</option>
-              </Select>
-            </label>
+            <div className="grid grid-cols-2 gap-2.5 sm:ml-auto sm:w-[480px]">
+              <label>
+                <span className="sr-only">{t("library.topicFilter")}</span>
+                <Select value={params.topic} onChange={(e) => go({ topic: e.target.value as LibListParams["topic"] })}>
+                  <option value="">{t("library.topicAll")}</option>
+                  {T_TOPICS.map((x) => (
+                    <option key={x} value={x}>
+                      {t("library.topicFilter")}: {t(`translate.topics.${x}`)}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label>
+                <span className="sr-only">{t("library.sortLabel")}</span>
+                <Select value={params.sort} onChange={(e) => go({ sort: e.target.value as LibListParams["sort"] })}>
+                  <option value="order">{t("library.sortOrder")}</option>
+                  <option value="newest">{t("library.sortNewest")}</option>
+                  <option value="pinyin">{t("library.sortPinyin")}</option>
+                </Select>
+              </label>
+            </div>
           </div>
-        </div>
-      </section>
+        }
+      />
 
       <div
         role="group"

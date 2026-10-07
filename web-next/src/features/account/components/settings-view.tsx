@@ -40,7 +40,7 @@ export function SettingsView({ user }: { user: { name: string; email: string; ro
   const t = useT();
   return (
     <>
-      <FeatureHero id="st-title" mascot="bubble" title={t("settings.title")} description={t("settings.subtitle")} />
+      <FeatureHero id="st-title" title={t("settings.title")} description={t("settings.subtitle")} />
       <div className="grid items-start gap-5 lg:grid-cols-2">
         <div className="flex flex-col gap-5">
           <AccountCard user={user} />

@@ -129,7 +129,6 @@ export function GrammarList({
     <>
       <FeatureHero
         id="gl-title"
-        mascot="grammar"
         title={t("grammar.title")}
         description={t("grammar.subtitle")}
         actions={

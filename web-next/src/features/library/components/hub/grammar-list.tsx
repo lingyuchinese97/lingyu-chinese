@@ -21,6 +21,7 @@ import type { GrammarCard, LibGrammarList } from "../../grammar";
 import type { GrammarListParams } from "../../schema";
 import { setGrammarFavoriteAction } from "../../actions";
 import { Cover, Crumbs, Pill, card } from "./parts";
+import { FeatureHero } from "@/components/feature-hero";
 
 export const TOPIC_EMOJI: Record<LibGrammarTopic, string> = {
   basic: "🧱",
@@ -187,81 +188,71 @@ export function GrammarList({ data, params }: { data: LibGrammarList; params: Gr
         home={t("shell.nav.home")}
         items={[{ href: "/library", text: t("libhub.breadcrumb") }, { text: t("libgram.title") }]}
       />
-      <header className="flex flex-col gap-4 xl:flex-row xl:items-start">
-        <div className="flex min-w-0 flex-1 items-start gap-4">
-          <span
-            lang="zh"
-            aria-hidden="true"
-            className="hidden size-[84px] shrink-0 items-center justify-center rounded-full bg-[#FFF1D6] hanzi text-[42px] font-bold text-[#C27C0E] sm:flex"
-          >
-            语
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-[28px] font-extrabold tracking-tight text-navy-900 md:text-[34px]">
-              {t("libgram.title")}
-            </h1>
-            <p className="mt-1 text-[15px] text-text-2">{t("libgram.sub")}</p>
+      <FeatureHero
+        id="lg-title"
+        title={t("libgram.title")}
+        description={t("libgram.sub")}
+        actions={
+          <div className="flex w-full max-w-[680px] flex-col gap-2">
+            <label className="relative block">
+              <span className="sr-only">{t("libgram.search")}</span>
+              <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t("libgram.search")}
+                className="h-12 w-full rounded-[16px] border border-border bg-white pr-4 pl-12 text-[15px] shadow-card outline-none focus:border-blue-600"
+              />
+            </label>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <label>
+                <span className="sr-only">{t("libgram.topicAll")}</span>
+                <select
+                  className={selectCls}
+                  value={params.topic}
+                  onChange={(e) => go({ topic: e.target.value as GrammarListParams["topic"] })}
+                >
+                  <option value="">{t("libgram.topicAll")}</option>
+                  {LIB_GRAMMAR_TOPICS.map((tp) => (
+                    <option key={tp} value={tp}>
+                      {t(`libgram.topics.${tp}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className="sr-only">{t("libgram.statusLabel")}</span>
+                <select
+                  className={selectCls}
+                  value={params.status}
+                  onChange={(e) => go({ status: e.target.value as GrammarListParams["status"] })}
+                >
+                  {(["all", "learned", "todo", "favorite"] as const).map((s) => (
+                    <option key={s} value={s}>
+                      {t(`libgram.status.${s}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className="sr-only">{t("libgram.sortLabel")}</span>
+                <select
+                  className={selectCls}
+                  value={params.sort}
+                  onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
+                >
+                  {(["order", "newest", "name"] as const).map((s) => (
+                    <option key={s} value={s}>
+                      {t(`libgram.sorts.${s}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
-        </div>
-        <div className="flex w-full flex-col gap-2 xl:max-w-[640px]">
-          <label className="relative block">
-            <span className="sr-only">{t("libgram.search")}</span>
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={t("libgram.search")}
-              className="h-12 w-full rounded-[16px] border border-border bg-white pr-4 pl-12 text-[15px] shadow-card outline-none focus:border-blue-600"
-            />
-          </label>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <label>
-              <span className="sr-only">{t("libgram.topicAll")}</span>
-              <select
-                className={selectCls}
-                value={params.topic}
-                onChange={(e) => go({ topic: e.target.value as GrammarListParams["topic"] })}
-              >
-                <option value="">{t("libgram.topicAll")}</option>
-                {LIB_GRAMMAR_TOPICS.map((tp) => (
-                  <option key={tp} value={tp}>
-                    {t(`libgram.topics.${tp}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">{t("libgram.statusLabel")}</span>
-              <select
-                className={selectCls}
-                value={params.status}
-                onChange={(e) => go({ status: e.target.value as GrammarListParams["status"] })}
-              >
-                {(["all", "learned", "todo", "favorite"] as const).map((s) => (
-                  <option key={s} value={s}>
-                    {t(`libgram.status.${s}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">{t("libgram.sortLabel")}</span>
-              <select
-                className={selectCls}
-                value={params.sort}
-                onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
-              >
-                {(["order", "newest", "name"] as const).map((s) => (
-                  <option key={s} value={s}>
-                    {t(`libgram.sorts.${s}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <nav aria-label={t("libgram.levelsLabel")} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {[0, 1, 2, 3, 4, 5, 6].map((h) => {

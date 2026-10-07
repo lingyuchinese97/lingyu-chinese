@@ -12,6 +12,7 @@ import { LIB_SET_TOPICS } from "@/data/library/vocab-sets";
 import type { HskList } from "../../sets";
 import { setHskLearnedAction } from "../../actions";
 import { Crumbs, Pill, Ring, card } from "./parts";
+import { FeatureHero } from "@/components/feature-hero";
 
 /** Từ vựng theo cấp HSK: tab cấp, tìm, danh sách (pinyin, nghĩa, ví dụ, cách nhớ, đã học), tiến độ. */
 export function HskListView({ data, q: q0 }: { data: HskList; q: string }) {
@@ -65,21 +66,11 @@ export function HskListView({ data, q: q0 }: { data: HskList; q: string }) {
           { text: `HSK ${data.level}` },
         ]}
       />
-      <header className="flex items-center gap-4">
-        <span
-          lang="zh"
-          aria-hidden="true"
-          className="hidden size-[84px] shrink-0 items-center justify-center rounded-[20px] bg-[#FFF3D6] hanzi text-[44px] font-bold text-[#C27C0E] sm:flex"
-        >
-          字
-        </span>
-        <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-navy-900 md:text-[34px]">
-            {t("libhub.hskTitle", { level: data.level })}
-          </h1>
-          <p className="text-[15px] text-text-2">{t("libhub.hskSub", { level: data.level })}</p>
-        </div>
-      </header>
+      <FeatureHero
+        id="lhsk-title"
+        title={t("libhub.hskTitle", { level: data.level })}
+        description={t("libhub.hskSub", { level: data.level })}
+      />
 
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-3">

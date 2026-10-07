@@ -21,6 +21,7 @@ import type { SetCard } from "../../sets";
 import type { SetListParams } from "../../schema";
 import { SetGridCard, SetRow } from "./set-card";
 import { Crumbs, card } from "./parts";
+import { FeatureHero } from "@/components/feature-hero";
 
 type Data = { items: SetCard[]; total: number; all: number; featured: SetCard[] };
 
@@ -73,78 +74,68 @@ export function SetList({ data, params }: { data: Data; params: SetListParams })
         home={t("shell.nav.home")}
         items={[{ href: "/library", text: t("libhub.breadcrumb") }, { text: t("libhub.vocabTitle") }]}
       />
-      <header className="flex flex-col gap-4 xl:flex-row xl:items-start">
-        <div className="flex min-w-0 flex-1 items-start gap-4">
-          <span
-            lang="zh"
-            aria-hidden="true"
-            className="hidden size-[84px] shrink-0 items-center justify-center rounded-full bg-[#FFE4E8] hanzi text-[42px] font-bold text-[#E0302F] sm:flex"
-          >
-            词
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-[28px] font-extrabold tracking-tight text-navy-900 md:text-[34px]">
-              {t("libhub.vocabTitle")}
-            </h1>
-            <p className="mt-1 text-[15px] text-text-2">{t("libhub.vocabSub")}</p>
+      <FeatureHero
+        id="ls-sets-title"
+        title={t("libhub.vocabTitle")}
+        description={t("libhub.vocabSub")}
+        actions={
+          <div className="flex w-full max-w-[680px] flex-col gap-2">
+            <label className="relative block">
+              <span className="sr-only">{t("libhub.searchSets")}</span>
+              <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t("libhub.searchSets")}
+                className="h-12 w-full rounded-[16px] border border-border bg-white pr-4 pl-12 text-[15px] shadow-card outline-none focus:border-blue-600"
+              />
+            </label>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <label>
+                <span className="sr-only">{t("libhub.hskAll")}</span>
+                <select className={selectCls} value={params.hsk} onChange={(e) => go({ hsk: Number(e.target.value) })}>
+                  <option value={0}>{t("libhub.hskAll")}</option>
+                  {[1, 2, 3, 4, 5, 6].map((l) => (
+                    <option key={l} value={l}>
+                      HSK {l}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className="sr-only">{t("libhub.topicAll")}</span>
+                <select
+                  className={selectCls}
+                  value={params.topic}
+                  onChange={(e) => go({ topic: e.target.value as SetListParams["topic"] })}
+                >
+                  <option value="">{t("libhub.topicAll")}</option>
+                  {LIB_SET_TOPICS.map((tp) => (
+                    <option key={tp} value={tp}>
+                      {t(`libhub.topics.${tp}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className="sr-only">{t("libhub.sortLabel")}</span>
+                <select
+                  className={selectCls}
+                  value={params.sort}
+                  onChange={(e) => go({ sort: e.target.value as SetListParams["sort"] })}
+                >
+                  {(["order", "newest", "name", "size"] as const).map((s) => (
+                    <option key={s} value={s}>
+                      {t(`libhub.sorts.${s}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
-        </div>
-        <div className="flex w-full flex-col gap-2 xl:max-w-[640px]">
-          <label className="relative block">
-            <span className="sr-only">{t("libhub.searchSets")}</span>
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={t("libhub.searchSets")}
-              className="h-12 w-full rounded-[16px] border border-border bg-white pr-4 pl-12 text-[15px] shadow-card outline-none focus:border-blue-600"
-            />
-          </label>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <label>
-              <span className="sr-only">{t("libhub.hskAll")}</span>
-              <select className={selectCls} value={params.hsk} onChange={(e) => go({ hsk: Number(e.target.value) })}>
-                <option value={0}>{t("libhub.hskAll")}</option>
-                {[1, 2, 3, 4, 5, 6].map((l) => (
-                  <option key={l} value={l}>
-                    HSK {l}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">{t("libhub.topicAll")}</span>
-              <select
-                className={selectCls}
-                value={params.topic}
-                onChange={(e) => go({ topic: e.target.value as SetListParams["topic"] })}
-              >
-                <option value="">{t("libhub.topicAll")}</option>
-                {LIB_SET_TOPICS.map((tp) => (
-                  <option key={tp} value={tp}>
-                    {t(`libhub.topics.${tp}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">{t("libhub.sortLabel")}</span>
-              <select
-                className={selectCls}
-                value={params.sort}
-                onChange={(e) => go({ sort: e.target.value as SetListParams["sort"] })}
-              >
-                {(["order", "newest", "name", "size"] as const).map((s) => (
-                  <option key={s} value={s}>
-                    {t(`libhub.sorts.${s}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <nav aria-label={t("libhub.kindsLabel")} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {TABS.map((tab) => {

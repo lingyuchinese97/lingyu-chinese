@@ -6,7 +6,7 @@ export default async function ProgressLayout({ children }: { children: React.Rea
   const t = await getT();
   return (
     <div className="flex flex-col gap-4">
-      <FeatureHero id="pg-title" mascot="wave" title={t("progress.title")} description={t("progress.subtitle")} />
+      <FeatureHero id="pg-title" title={t("progress.title")} description={t("progress.subtitle")} />
       <ProgressTabs />
       {children}
     </div>

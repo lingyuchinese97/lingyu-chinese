@@ -11,6 +11,10 @@
 
 ### Changed
 
+- **Bìa đầu trang cố định cho mọi màn / tab (theo design)**: `FeatureHero` dùng chung một ảnh bìa (trời xanh, cửa sổ, lá bay —
+  `public/brand/hero/cover-bg.webp`) và một mascot đọc sách ngồi trên chồng sách HSK · 汉语 · 中国文化 (`mascot-books.webp`) kèm bong bóng
+  "每天进步一点点！"; tiêu đề lớn, mô tả, nút thao tác. Áp dụng thêm cho các tab Thư viện (Từ vựng, Ngữ pháp, HSK, Từ vựng Thư viện)
+  và trang chủ Thư viện. **Thư viện LingYu** chuyển xuống cuối thanh bên.
 - **Thư viện LingYu — bìa mới theo design**: nền trời xanh + cửa sổ, chậu cây; tiêu đề "Thư viện **LingYu**" (LingYu màu xanh); ô tìm
   kiếm lớn + 2 ô chọn trình độ / sắp xếp bo tròn; mascot đọc sách ngồi trên chồng sách HSK · 汉语 · 中国文化 kèm bong bóng "每天进步一点点！"
   và lá bay; hàng danh mục nằm trong bìa (Tất cả, Từ vựng, Ngữ pháp, Phát âm, Hội thoại & Nghe, Bài đọc, Mẹo học) — nền pastel, icon
