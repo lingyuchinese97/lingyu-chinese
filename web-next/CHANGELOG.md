@@ -6,6 +6,11 @@
 
 ### Changed
 
+- **Đọc hiểu — trang bài đọc kiểu vở ô li (theo thiết kế mới)**: thanh trên có ‹ › chuyển bài cùng cấp HSK ("Bài đọc 1: 我的一天 · 1/4"),
+  **Nghe mẫu** cả bài + chọn tốc độ (0.75x / 1.0x / 1.25x), nút **Aa** đổi cỡ chữ, bật / tắt pinyin và bản dịch, **Từ vựng** (hộp từ khoá,
+  lưu từng từ / lưu tất cả), Lưu bài. Bên trái: tranh minh hoạ + bài đọc chép trên **giấy ô vuông** — mỗi chữ / dấu câu một ô, pinyin nhỏ
+  trên đầu ô, từ khoá tô vàng (bấm xem nghĩa), mỗi câu bắt đầu dòng mới, nút mở rộng bài đọc. Bên phải: câu hỏi đánh số, phương án xếp
+  ngang (A / B / C…), ô điền chữ Hán; **Gợi ý đáp án** (hiện nghĩa câu hỏi và phương án), **Làm lại**, **Kiểm tra kết quả**.
 - **Từ vựng của tôi — thiết kế mới**: hàng thẻ **HSK** (Tất cả, HSK1–6, Khác — theo tag "HSK1", "HSK 2", "HSK3_Bài 1"…, nhiều tag
   HSK → cấp nhỏ nhất) kèm số từ; ô tìm + sắp xếp + nút **Lọc** (trạng thái Đã thuộc / Cần ôn, chỉ từ yêu thích); hàng chip tag nhiều màu
   (bấm để lọc, "…" đổi tên / xoá, + Thêm tag); bảng theo thiết kế: ô chữ Hán nền xanh nhạt, cột Pinyin bấm để sắp xếp, Tag, Trạng thái có

@@ -53,7 +53,7 @@ test("Đọc hiểu: chọn bài → pinyin / bản dịch → xem từ, lưu t�
   await expect(page.getByRole("progressbar", { name: "Số câu đã trả lời" })).toHaveAttribute("aria-valuenow", "2");
   await expect(qs.getByRole("radiogroup").nth(0).getByRole("radio", { name: /五块/ })).toContainText("wǔ kuài");
   await qs.getByLabel("Đáp án câu 3").fill("大");
-  await qs.getByRole("button", { name: "Nộp bài" }).click();
+  await qs.getByRole("button", { name: "Kiểm tra kết quả" }).click();
   const result = page.getByRole("region", { name: "Kết quả" });
   await expect(result.getByText(/2\/3 câu đúng/)).toBeVisible();
   await expect(qs.getByText(/Đáp án đúng: 贵/)).toBeVisible();
