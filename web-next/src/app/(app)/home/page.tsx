@@ -47,19 +47,19 @@ function relative(d: Date, now: Date, tag: string, justNow: string) {
 const CARDS = [
   {
     key: "lessons",
-    img: "/brand/ui/card-lessons.png",
+    mascot: "/brand/ui/cover-lessons.png",
     href: "/lessons",
     icon: BookOpenText,
     badge: "HSK",
     bg: "bg-[linear-gradient(160deg,#FFF3D6_0%,#FFF9EC_100%)]",
     ring: "border-[#FBE3B5]",
-    art: "bg-white text-[#E9A22D]",
+    art: "bg-white text-[#A35F00]",
     halo: "bg-[#FFE5AA]",
     btn: "bg-[#F5A524]",
   },
   {
     key: "vocabulary",
-    img: "/brand/ui/card-vocabulary.png",
+    mascot: "/brand/ui/cover-vocabulary.png",
     href: "/vocabulary",
     icon: BookOpen,
     badge: "词",
@@ -71,7 +71,7 @@ const CARDS = [
   },
   {
     key: "grammar",
-    img: "/brand/ui/card-grammar.png",
+    mascot: "/brand/ui/cover-grammar.png",
     href: "/grammar",
     icon: GrammarIcon,
     badge: "文",
@@ -83,7 +83,7 @@ const CARDS = [
   },
   {
     key: "pronunciation",
-    img: "/brand/ui/card-pronunciation.png",
+    mascot: "/brand/ui/cover-pronunciation.png",
     href: "/library/pronunciation",
     icon: AudioLines,
     badge: "音",
@@ -95,7 +95,7 @@ const CARDS = [
   },
   {
     key: "listening",
-    img: "/brand/ui/card-listening.png",
+    mascot: "/brand/ui/cover-listening.png",
     href: "/listening",
     icon: Headphones,
     badge: "听",
@@ -347,16 +347,42 @@ export default async function HomePage() {
                     c.bg,
                   )}
                 >
-                  {/* Hình minh hoạ theo thiết kế (nền pastel + lá trang trí đã có trong ảnh). */}
-                  <div className="relative aspect-[242/118] w-full overflow-hidden">
+                  {/* Bìa: mascot LingYu của từng chức năng + ô chữ đặc trưng, lá trang trí trên nền pastel. */}
+                  <div aria-hidden="true" className="@container relative aspect-[242/118] w-full overflow-hidden">
+                    <span className={cn("absolute top-[6%] right-[2%] aspect-square w-[58%] rounded-full opacity-70", c.halo)} />
+                    <span className="absolute bottom-[10%] left-[4%] h-[26%] w-[50%] rounded-full bg-white/70 blur-md" />
+                    <span
+                      className={cn(
+                        "absolute top-[20%] left-[8%] flex aspect-square w-[27%] max-w-[88px] -rotate-6 items-center justify-center rounded-[22%] font-black shadow-soft transition-transform duration-300 group-hover:-rotate-12 motion-reduce:transition-none",
+                        c.badge.length > 1 ? "text-[min(8cqw,24px)]" : "text-[min(15cqw,44px)]",
+                        c.art,
+                      )}
+                    >
+                      {c.badge}
+                    </span>
                     <Image
                       unoptimized
-                      src={c.img}
+                      src="/brand/ui/deco-leaf.png"
                       alt=""
-                      aria-hidden="true"
-                      fill
-                      sizes="(min-width: 1280px) 20vw, (min-width: 640px) 33vw, 50vw"
-                      className="object-cover object-top transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+                      width={57}
+                      height={68}
+                      className="absolute top-[6%] left-[38%] w-[8%] rotate-12 opacity-90"
+                    />
+                    <Image
+                      unoptimized
+                      src="/brand/ui/deco-leaf.png"
+                      alt=""
+                      width={57}
+                      height={68}
+                      className="absolute bottom-[8%] left-[2%] w-[7%] -rotate-45 opacity-80"
+                    />
+                    <Image
+                      unoptimized
+                      src={c.mascot}
+                      alt=""
+                      width={300}
+                      height={300}
+                      className="absolute right-[5%] bottom-[3%] h-[94%] w-auto object-contain drop-shadow-[0_6px_10px_rgba(30,90,60,.18)] transition-transform duration-300 group-hover:-translate-y-1 motion-reduce:transition-none"
                     />
                   </div>
                   <div className="flex flex-1 items-end gap-2 rounded-t-[16px] bg-white/80 px-3.5 pt-3 pb-3.5 md:px-4">

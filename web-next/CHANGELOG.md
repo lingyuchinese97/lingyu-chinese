@@ -6,6 +6,9 @@
 
 ### Changed
 
+- **Trang chủ — bìa mới cho 5 chức năng**: mỗi thẻ (Bài học, Từ vựng, Ngữ pháp, Phát âm & Biến điệu, Luyện nghe & Nói) dùng mascot
+  LingYu tương ứng (ôm sách HSK, đọc sách LY, bóng đèn ý tưởng, bong bóng vẫy tay, đeo tai nghe) cùng ô chữ đặc trưng (HSK / 词 / 文 / 音 /
+  听) và lá trang trí trên nền pastel. **Bỏ ô tìm kiếm trên cùng** (trang `/search` và API `GET /api/v1/search` vẫn giữ).
 - **Biểu tượng menu màu sắc (theo bộ icon mới)**: thay toàn bộ icon thanh bên và thanh tab điện thoại (Trang chủ, Thư viện LingYu,
   Bài học, Từ vựng, Ngữ pháp, Phát âm, Nghe, Đọc hiểu, Luyện dịch, Ôn tập, Tiến độ, Bộ thủ, Cài đặt) bằng icon màu; mục chưa chọn giữ
   nguyên màu (chỉ nhạt nhẹ) thay vì xám; Thư viện LingYu có icon riêng.

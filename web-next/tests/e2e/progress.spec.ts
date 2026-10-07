@@ -7,7 +7,7 @@ test.beforeEach(() => resetRateLimit());
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dữ liệu JSON trả về từ API
 const data = async (r: { json: () => Promise<any> }) => (await r.json()).data;
 
-test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiêu, biểu đồ, lịch sử, HSK)", async ({ page }, info) => {
+test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiêu, biểu đồ, lịch sử, HSK)", async ({ page }) => {
   test.setTimeout(120_000);
   await register(page, "Nguyễn Văn An", "prog");
   const api = page.request;
@@ -31,15 +31,11 @@ test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiê
   await expect(recent.getByText("Thêm 1 từ mới")).toBeVisible();
   await expect(page.getByRole("region", { name: "Học tập hôm nay" }).getByText("Từ vựng đã học")).toBeVisible();
 
-  // Tìm kiếm chung.
-  if (info.project.name === "desktop") {
-    await page.getByRole("searchbox", { name: "Tìm kiếm" }).first().fill("xin chao");
-    await page.keyboard.press("Enter");
-  } else {
-    await page.getByRole("link", { name: "Tìm kiếm" }).click();
-    await page.getByRole("searchbox", { name: "Tìm kiếm" }).fill("xin chao");
-    await page.getByRole("button", { name: "Tìm kiếm" }).click();
-  }
+  // Tìm kiếm chung (trang /search — ô tìm trên cùng đã bỏ).
+  await expect(page.getByRole("search")).toHaveCount(0);
+  await page.goto("/search");
+  await page.getByRole("searchbox", { name: "Tìm kiếm" }).fill("xin chao");
+  await page.getByRole("button", { name: "Tìm kiếm" }).click();
   await expect(page).toHaveURL(/\/search\?q=xin/);
   await expect(page.getByRole("region", { name: "Từ vựng" }).getByText("你好")).toBeVisible();
 
