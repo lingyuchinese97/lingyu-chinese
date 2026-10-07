@@ -14,5 +14,8 @@ describe("font giấy ô vuông Đọc hiểu", () => {
     ]).join("");
     const missing = [...new Set(text.match(/\p{Script=Han}/gu))].filter((c) => !have.has(c));
     expect(missing, "chạy lại: python3 scripts/subset-paper-font.py").toEqual([]);
+    // Nét thường chia gói theo unicode-range: chữ trong bài đọc cũng phải nằm trong các gói.
+    const chunks = new Set(readFileSync("public/fonts/kai/chars.txt", "utf8").trim());
+    expect([...new Set(text.match(/\p{Script=Han}/gu))].filter((c) => !chunks.has(c))).toEqual([]);
   });
 });

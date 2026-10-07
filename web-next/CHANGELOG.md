@@ -11,6 +11,9 @@
 
 ### Changed
 
+- **Luyện nghe — ô Chép chính tả trên vở ô ly**: nền ngà kẻ ô 40px, chữ Khải; mỗi chữ Hán gõ vào nằm giữa một ô, dòng khớp hàng ô.
+  Font Khải (LXGW WenKai) nét thường chia ~25 gói theo `unicode-range` (6.763 chữ GB2312 + dấu câu, `public/fonts/kai`,
+  `src/app/kai-font.css`) — trình duyệt chỉ tải gói có chữ đang hiện, nên chữ bất kỳ đều hiện đúng kiểu Khải.
 - **Bìa đầu trang — mascot ngồi trên bàn**: ảnh bìa mới, neo đáy (dư thì cắt phần trời phía trên) để luôn thấy mặt bàn cạnh cửa sổ;
   mascot đặt ngồi trên bàn. Thư viện: ảnh bìa chỉ phủ phần tiêu đề, hàng danh mục nằm dưới (mascot ngồi ngay trên bàn).
 - **Đọc hiểu — giấy ngà nhẹ kẻ ô be** (như màu vở tập viết tiếng Trung); ô **Hiển thị pinyin / Hiển thị bản dịch**

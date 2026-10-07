@@ -4,15 +4,10 @@
 @import "@fontsource/noto-sans-sc/700.css";
 @import "@fontsource/dancing-script/600.css";
 
-/* Chữ Khải cho giấy ô vuông / câu hỏi Đọc hiểu: LXGW WenKai (SIL OFL 1.1), chỉ gồm chữ có trong bài đọc
-   (scripts/subset-paper-font.py → public/fonts/paper-kai{,-bold}.woff2, ~90KB mỗi file). */
-@font-face {
-  font-family: "LingYu Kai";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/paper-kai.woff2") format("woff2");
-}
+/* Chữ Khải (LXGW WenKai, SIL OFL 1.1): nét thường chia ~25 gói theo unicode-range (6.763 chữ GB2312 + dấu câu,
+   scripts/subset-paper-font.py → public/fonts/kai, src/app/kai-font.css) — trình duyệt chỉ tải gói có chữ đang hiện;
+   nét đậm (tiêu đề / câu hỏi Đọc hiểu) chỉ gồm chữ trong bài đọc. */
+@import "./kai-font.css";
 @font-face {
   font-family: "LingYu Kai";
   font-style: normal;

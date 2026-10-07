@@ -14,8 +14,8 @@ from fontTools import subset
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FILES = ROOT / "node_modules/@fontsource/lxgw-wenkai/files"
-# Nét thường (500) cho chữ trong bài, nét đậm (700) cho tiêu đề / câu hỏi.
-FACES = {"paper-kai.woff2": "lxgw-wenkai-latin-500-normal.woff2", "paper-kai-bold.woff2": "lxgw-wenkai-latin-700-normal.woff2"}
+# Nét đậm (700) cho tiêu đề / câu hỏi Đọc hiểu — chỉ chữ trong bài đọc. Nét thường: bộ chia gói ở cuối file.
+FACES = {"paper-kai-bold.woff2": "lxgw-wenkai-latin-700-normal.woff2"}
 OUT_DIR = ROOT / "public/fonts"
 CHARS = ROOT / "public/fonts/paper-kai.chars.txt"
 
