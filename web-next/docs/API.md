@@ -60,6 +60,26 @@ Ví dụ lỗi kiểm tra dữ liệu (`400`):
 }
 ```
 
+## Luyện giao tiếp `/api/v1/speaking`
+
+Luồng: tạo câu hỏi (chữ Hán) → pinyin + nghĩa tiếng Việt tự sinh (sửa được) → HSK + nhiều tag → danh sách theo tag → luyện trả lời
+trên vở ô ly → kiểm tra. Mọi câu hỏi chỉ chủ nhân thấy (người khác nhận `404`). **Không có đáp án mẫu**: phần kiểm tra nhận xét ngữ pháp,
+từ vựng, độ tự nhiên và đúng trọng tâm. Nghĩa tiếng Việt và nhận xét chi tiết dùng trợ lý AI khi máy chủ đặt biến môi trường
+`ANTHROPIC_API_KEY` (giới hạn 120 lượt / giờ / người); không có thì nghĩa ghép theo từ điển và kiểm tra cơ bản (`ai: false`).
+
+| Route                                 | Việc                                                                                                                                                                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /speaking/questions`             | Danh sách. Query: `q` (chữ Hán, pinyin không dấu, nghĩa, tag), `tag`, `hsk` (1–6), `starred=1`, `sort` (`newest`\|`oldest`\|`az`), `page`, `size` (10/20/50) → `{ items, total, all, page, pages, tags: [{ name, count }], hskCounts }` |
+| `POST /speaking/questions`            | `{ questions: [{ zh, pinyin?, meaning?, hsk?, tags? }] }` (1–20 câu) → `201 { ids }`; pinyin / nghĩa bỏ trống thì tự sinh                                                                                                               |
+| `DELETE /speaking/questions`          | `{ ids: [...] }` → `{ deleted }` (chỉ xoá câu của mình)                                                                                                                                                                                 |
+| `GET /speaking/questions/{id}`        | Một câu + câu trả lời đã lưu + nhận xét + `nav: { index, total, prev, next }` + `ai`                                                                                                                                                    |
+| `PUT /speaking/questions/{id}`        | Sửa `{ zh, pinyin?, meaning?, hsk?, tags? }`                                                                                                                                                                                            |
+| `DELETE /speaking/questions/{id}`     | Xoá → `{ deleted: true }`                                                                                                                                                                                                               |
+| `PUT /speaking/questions/{id}/answer` | `{ answer }` → `{ answer, answerPinyin, answerMeaning, changed }` (đổi câu trả lời thì xoá nhận xét cũ)                                                                                                                                 |
+| `POST /speaking/questions/{id}/check` | `{ answer }` → lưu + `feedback: { verdict: great\|good\|needs_work, summary_vi, corrected_zh, issues: [{ kind, text_vi }], better_zh, ai }`                                                                                             |
+| `PUT /speaking/questions/{id}/star`   | `{ starred }` → `{ starred }`                                                                                                                                                                                                           |
+| `POST /speaking/assist`               | `{ text }` → `{ pinyin, meaning, source: ai\|gloss, ai }` (không lưu)                                                                                                                                                                   |
+
 ## Luyện nghe `/api/v1/listening`
 
 Luồng: người dùng dán link, **tự nhập đáp án tham khảo** (không lấy phụ đề), chép chính tả, so sánh, sửa, lưu bài làm.

@@ -7,6 +7,7 @@ import {
   Headphones,
   House,
   Library,
+  MessageCircleMore,
   MessagesSquare,
   Settings,
   ShieldCheck,
@@ -21,6 +22,7 @@ export type NavKey =
   | "grammar"
   | "radicals"
   | "listening"
+  | "speaking"
   | "pronunciation"
   | "reading"
   | "progress"
@@ -50,6 +52,7 @@ export const NAV: NavItem[] = [
     group: 1,
   },
   { key: "listening", href: "/listening", icon: Headphones, img: "/brand/ui/nav-listening.png?v=2", group: 1 },
+  { key: "speaking", href: "/speaking", icon: MessageCircleMore, img: "/brand/ui/nav-speaking.png?v=2", group: 1 },
   { key: "reading", href: "/reading", icon: BookOpenText, img: "/brand/ui/nav-reading.png?v=2", group: 1 },
   { key: "sentences", href: "/translate", icon: MessagesSquare, img: "/brand/ui/nav-translation.png?v=2", group: 1 },
   { key: "review", href: "/review/setup", icon: ReviewIcon, img: "/brand/ui/nav-review.png?v=2", group: 1 },
@@ -72,6 +75,7 @@ const QUOTES: Partial<Record<NavKey, QuoteKey>> = {
   grammar: "shell.quote.grammar",
   radicals: "shell.quote.radicals",
   listening: "shell.quote.listening",
+  speaking: "shell.quote.speaking",
   reading: "shell.quote.reading",
   progress: "shell.quote.progress",
   pronunciation: "shell.quote.pronunciation",

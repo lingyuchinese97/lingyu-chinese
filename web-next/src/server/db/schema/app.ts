@@ -719,3 +719,31 @@ export const libraryFavorite = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.kind, t.itemId, t.key] })],
 );
+
+/**
+ * Luyện giao tiếp: câu hỏi người học tự tạo (chữ Hán + pinyin + nghĩa Việt, HSK, tag) và câu trả lời gần nhất của họ
+ * (chữ Hán + pinyin + nghĩa, nhận xét lần kiểm tra cuối). Chỉ của riêng người tạo.
+ */
+export const speakingQuestion = pgTable(
+  "speaking_question",
+  {
+    id: id(),
+    userId: userRef(),
+    zh: text("zh").notNull(),
+    pinyin: text("pinyin").notNull().default(""),
+    meaning: text("meaning").notNull().default(""),
+    hsk: smallint("hsk"),
+    tags: text("tags")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    starred: boolean("starred").notNull().default(false),
+    answer: text("answer").notNull().default(""),
+    answerPinyin: text("answer_pinyin").notNull().default(""),
+    answerMeaning: text("answer_meaning").notNull().default(""),
+    feedback: jsonb("feedback"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("speaking_question_user_created_idx").on(t.userId, t.createdAt)],
+);

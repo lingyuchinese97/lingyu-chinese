@@ -161,4 +161,15 @@ export const errors = {
   rdNotFound: "Không tìm thấy bài đọc này.",
   rdEmpty: "Không có bài đọc nào phù hợp. Hãy đổi lựa chọn.",
   rdWordNotIn: "Từ này không có trong bài đọc.",
+  // Luyện giao tiếp
+  spNotFound: "Không tìm thấy câu hỏi này.",
+  spTooMany: "Bạn đã có tối đa {max} câu hỏi.",
+  spEmptyAnswer: "Vui lòng viết hoặc nói câu trả lời trước.",
+  spNeedZh: "Vui lòng nhập câu hỏi tiếng Trung.",
+  spNeedHan: "Câu hỏi cần có chữ Hán.",
+  spZhMax: "Câu hỏi tối đa {max} ký tự.",
+  spAnswerMax: "Câu trả lời tối đa {max} ký tự.",
+  spAtLeastOne: "Vui lòng nhập ít nhất một câu hỏi.",
+  spBatchMax: "Tối đa {max} câu hỏi mỗi lần.",
+  spNeedSentence: "Vui lòng nhập câu tiếng Trung.",
 };

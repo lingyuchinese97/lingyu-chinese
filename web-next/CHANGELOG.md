@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Luyện giao tiếp** (`/speaking`, mục mới trên thanh bên): tự tạo câu hỏi giao tiếp (nhiều câu một lần) — pinyin và nghĩa tiếng Việt
+  tự sinh, sửa được; chọn HSK và nhiều tag (tag gợi ý sẵn). Danh sách tìm theo chữ Hán / pinyin / nghĩa, lọc HSK / tag / đã đánh dấu,
+  sắp xếp, phân trang, xoá nhiều. Bấm câu hỏi → màn luyện như Đọc hiểu: thanh công cụ (← Câu hỏi n/N →, Nghe câu hỏi, tốc độ, Bút
+  highlight, Đánh dấu, Lưu), trả lời trên **vở ô ly** (gõ hoặc ghi âm), pinyin + nghĩa câu trả lời tự sinh, loa riêng cho câu hỏi và
+  câu trả lời, Gợi ý / Làm lại / Kiểm tra câu trả lời (ngữ pháp, từ vựng, độ tự nhiên — không có đáp án mẫu) / Câu tiếp theo, hàng tag
+  "+ Thêm tag". Câu trả lời tự lưu, chuyển câu trước / sau không mất dữ liệu. REST API `/api/v1/speaking/*` (xem `docs/API.md`).
+- **Trợ lý AI (tuỳ chọn)**: đặt biến môi trường `ANTHROPIC_API_KEY` trên máy chủ (vd Vercel) để dịch nghĩa câu và nhận xét câu trả lời
+  chi tiết bằng Claude; không đặt thì app dùng nghĩa ghép theo từ điển và kiểm tra cơ bản. Giới hạn 120 lượt / giờ / người.
+- Bút highlight dùng chung (`src/components/ink-layer.tsx`) cho Đọc hiểu và Luyện giao tiếp.
+
 ### Fixed
 
 - **Icon menu màu không hiện trên máy đã mở app trước đó**: service worker giữ ảnh `nav-*.png` cũ (cùng tên file) → thêm phiên bản

@@ -206,6 +206,11 @@ Sau mỗi phase: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (+ e2e
     của tôi) rồi sửa / thêm tag tự do; bài gốc không đổi. API `…/sample` giữ lại (deprecated) cho app khác và dữ liệu test.
 49. **Chữ Hán ở Từ vựng hiện trong ô 米字格** (component `HanziGrid`: viền đỏ, nét đứt chéo + chữ thập, chữ đỏ) theo yêu cầu chủ dự án;
     khung tập viết hanzi-writer cũng dùng ô 米字格 và tô đỏ cả chữ.
+50. **Luyện giao tiếp**: bảng `speaking_question` (câu hỏi, pinyin, nghĩa, HSK, tag `text[]`, đánh dấu, câu trả lời + pinyin / nghĩa
+    tự sinh, nhận xét `jsonb`) — một câu hỏi giữ một câu trả lời đang luyện (không lưu lịch sử). Không có đáp án mẫu nên phần kiểm tra
+    dựa vào trợ lý AI (Claude qua `@anthropic-ai/sdk`, chỉ bật khi có `ANTHROPIC_API_KEY`, ngân sách 120 lượt / giờ / người trong bộ nhớ);
+    không có khoá thì nghĩa ghép theo từ điển (từ điển có sẵn + từ vựng của người dùng) và kiểm tra cơ bản (chữ Hán, độ dài, dấu câu, dùng
+    lại từ của câu hỏi). Ghi âm dùng Web Speech API (zh-CN) — trình duyệt không hỗ trợ thì ẩn nút. Chưa đưa vào file xuất tài khoản.
 
 ## Chỗ mơ hồ & cách xử lý
 

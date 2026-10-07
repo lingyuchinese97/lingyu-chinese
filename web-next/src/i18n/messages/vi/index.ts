@@ -23,6 +23,7 @@ import { search } from "./search";
 import { sentences } from "./sentences";
 import { settings } from "./settings";
 import { shell } from "./shell";
+import { speaking } from "./speaking";
 import { translate } from "./translate";
 import { ui } from "./ui";
 import { vocab } from "./vocab";
@@ -34,6 +35,7 @@ export const vi = {
   errors,
   ui,
   shell,
+  speaking,
   notifications,
   auth,
   landing,

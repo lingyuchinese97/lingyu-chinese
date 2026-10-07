@@ -149,4 +149,15 @@ export const errors: Messages["errors"] = {
   rdNotFound: "Reading passage not found.",
   rdEmpty: "No passages match. Try different options.",
   rdWordNotIn: "This word is not in the passage.",
+  // Luyện giao tiếp
+  spNotFound: "This question was not found.",
+  spTooMany: "You already have the maximum of {max} questions.",
+  spEmptyAnswer: "Please write or say your answer first.",
+  spNeedZh: "Please enter the question in Chinese.",
+  spNeedHan: "The question needs Chinese characters.",
+  spZhMax: "The question can be at most {max} characters.",
+  spAnswerMax: "The answer can be at most {max} characters.",
+  spAtLeastOne: "Please enter at least one question.",
+  spBatchMax: "At most {max} questions at a time.",
+  spNeedSentence: "Please enter a Chinese sentence.",
 };

@@ -65,3 +65,16 @@ export const PRONUNCIATION = {
   MAX_TAGS: 10,
   MAX_TAG: 24,
 } as const;
+
+/** Luyện giao tiếp: câu hỏi tự tạo + câu trả lời. */
+export const SPEAKING = {
+  MAX_QUESTIONS: 1000,
+  /** Số câu hỏi tạo một lần (nút "+ Thêm câu hỏi"). */
+  MAX_BATCH: 20,
+  MAX_ZH: 200,
+  MAX_PINYIN: 400,
+  MAX_MEANING: 300,
+  MAX_TAGS: 8,
+  MAX_TAG: 30,
+  MAX_ANSWER: 200,
+} as const;
