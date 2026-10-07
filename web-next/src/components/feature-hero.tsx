@@ -1,10 +1,11 @@
 import * as React from "react";
 import Image from "next/image";
+import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 
 /**
- * Bìa đầu trang dùng chung cho mọi chức năng (theo design): ảnh bìa cố định (trời xanh, cửa sổ, lá bay), tiêu đề lớn, mô tả, nút
- * thao tác; bên phải là mascot LingYu đọc sách ngồi trên chồng sách HSK · 汉语 · 中国文化 kèm bong bóng "每天进步一点点！".
+ * Bìa đầu trang dùng chung cho mọi chức năng (theo design): ảnh bìa cố định (trời xanh, cửa sổ, lá bay), tiêu đề lớn có nhánh lá,
+ * mô tả, nút thao tác; bên phải là mascot LingYu ngồi trên bậu cửa sổ cầm sách đọc.
  * Không dùng hook → dùng được ở cả server lẫn client component.
  */
 export function FeatureHero({
@@ -44,50 +45,39 @@ export function FeatureHero({
         fill
         priority
         sizes="100vw"
-        className="-z-20 object-cover object-[60%_center]"
+        className="-z-20 object-cover object-center"
       />
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,.72)_0%,rgba(255,255,255,.45)_42%,rgba(255,255,255,0)_68%)]"
       />
 
-      <div className="grid items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(220px,340px)]">
-        <div className="min-w-0 px-5 py-6 md:py-8 md:pl-10">
-          <h1 id={id} className="text-navy-900">
-            {eyebrow ? (
-              <span className="block text-[16px] font-bold text-blue-600 md:text-[18px]">{eyebrow}</span>
-            ) : null}
-            <span className="mt-0.5 block text-[30px] leading-[1.12] font-black tracking-tight md:text-[44px]">
-              {title}
-            </span>
-          </h1>
-          {question ? <p className="mt-1.5 text-[16.5px] font-bold text-navy md:text-[19px]">{question}</p> : null}
-          {description ? (
-            <p className="mt-2 max-w-[620px] text-[15px] text-navy/80 md:text-[17px]">{description}</p>
-          ) : null}
-          {aside ? <div className="mt-4 max-w-[420px]">{aside}</div> : null}
-          {actions ? <div className="mt-5 flex flex-wrap gap-2.5">{actions}</div> : null}
-        </div>
+      {/* Mascot ngồi trên bậu cửa sổ, cầm sách đọc (vị trí theo ảnh bìa). */}
+      <Image
+        unoptimized
+        src="/brand/hero/mascot-reading.webp"
+        alt=""
+        aria-hidden="true"
+        width={560}
+        height={493}
+        priority
+        className="pointer-events-none absolute right-[17%] bottom-[5%] -z-10 hidden h-[74%] max-h-[230px] w-auto drop-shadow-[0_10px_14px_rgba(20,70,40,.18)] md:block"
+      />
 
-        <div aria-hidden="true" className="relative hidden h-full min-h-[230px] self-stretch md:block">
-          <Image
-            unoptimized
-            src="/brand/hero/mascot-books.webp"
-            alt=""
-            width={640}
-            height={636}
-            priority
-            className="absolute right-[6%] bottom-[-14px] w-[min(92%,260px)] drop-shadow-[0_14px_20px_rgba(20,70,40,.18)]"
-          />
-          <Image
-            unoptimized
-            src="/brand/library/speech-bubble.png"
-            alt=""
-            width={293}
-            height={220}
-            className="absolute top-3 left-[-4%] w-[min(42%,130px)] -rotate-6"
-          />
-        </div>
+      <div className="flex min-h-[200px] flex-col justify-center px-5 py-7 md:min-h-[260px] md:max-w-[62%] md:py-9 md:pl-12">
+        <h1 id={id} className="text-navy-900">
+          {eyebrow ? <span className="block text-[16px] font-bold text-blue-600 md:text-[18px]">{eyebrow}</span> : null}
+          <span className="mt-0.5 flex items-start gap-1 text-[30px] leading-[1.12] font-black tracking-tight md:text-[46px]">
+            <span className="min-w-0">{title}</span>
+            <LeafDecor className="mt-[-4px] w-8 shrink-0 -rotate-12 md:w-11" />
+          </span>
+        </h1>
+        {question ? <p className="mt-1.5 text-[16.5px] font-bold text-navy md:text-[19px]">{question}</p> : null}
+        {description ? (
+          <p className="mt-2 max-w-[620px] text-[15px] font-medium text-navy/75 md:text-[18px]">{description}</p>
+        ) : null}
+        {aside ? <div className="mt-4 max-w-[420px]">{aside}</div> : null}
+        {actions ? <div className="mt-5 flex flex-wrap gap-2.5">{actions}</div> : null}
       </div>
     </section>
   );

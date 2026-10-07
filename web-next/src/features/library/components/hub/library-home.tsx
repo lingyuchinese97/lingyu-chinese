@@ -208,23 +208,15 @@ export async function LibraryHome({ data }: { data: Home }) {
               </form>
             </div>
 
-            <div aria-hidden="true" className="relative hidden h-[330px] md:block">
+            <div aria-hidden="true" className="relative hidden h-[300px] md:block">
               <Image
                 unoptimized
-                src="/brand/hero/mascot-books.webp"
+                src="/brand/hero/mascot-reading.webp"
                 alt=""
-                width={640}
-                height={636}
+                width={560}
+                height={493}
                 priority
-                className="absolute right-[4%] bottom-[-12px] w-[min(88%,300px)] drop-shadow-[0_14px_20px_rgba(20,70,40,.18)]"
-              />
-              <Image
-                unoptimized
-                src="/brand/library/speech-bubble.png"
-                alt=""
-                width={293}
-                height={220}
-                className="absolute top-0 left-[-4%] z-20 w-[40%] -rotate-6"
+                className="absolute right-[14%] bottom-[2px] h-[230px] w-auto drop-shadow-[0_10px_14px_rgba(20,70,40,.18)]"
               />
             </div>
           </div>

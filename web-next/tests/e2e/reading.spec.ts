@@ -34,21 +34,30 @@ test("Đọc hiểu: chọn bài → pinyin / bản dịch → xem từ, lưu t�
   await expect(page.locator("[data-pinyin-line]")).toHaveCount(0);
   await page.getByLabel("Hiển thị pinyin").check();
 
-  // Bút: chọn màu đỏ → vẽ lên bài → Xóa.
-  const clear = page.getByRole("button", { name: "Xóa nét vẽ trên bài đọc" });
+  // Bút highlight: chọn màu xanh lá → tô 2 nét → Hoàn tác 1 nét → Xóa toàn bộ.
+  const clear = page.getByRole("button", { name: "Xóa toàn bộ highlight trên bài đọc" });
+  const undo = page.getByRole("button", { name: "Hoàn tác nét highlight vừa tô" });
   await expect(clear).toBeDisabled();
-  await page.getByRole("radio", { name: "Bút màu đỏ" }).click();
-  await expect(page.getByRole("button", { name: "Bút", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("radio", { name: "Highlight màu xanh lá" }).click();
+  await expect(page.getByRole("radio", { name: "Highlight màu xanh lá" })).toHaveAttribute("aria-checked", "true");
+  const hl = page.getByRole("button", { name: "Bút highlight", exact: true });
+  await expect(hl).toHaveAttribute("aria-pressed", "true");
   const ink = page.locator("canvas[data-ink]");
+  // Đưa đầu tờ giấy lên gần đỉnh màn hình (tránh thanh tab cố định ở đáy trên điện thoại).
+  await ink.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 140));
   const box = (await ink.boundingBox())!;
-  await page.mouse.move(box.x + 30, box.y + 30);
-  await page.mouse.down();
-  await page.mouse.move(box.x + 90, box.y + 60, { steps: 5 });
-  await page.mouse.up();
+  for (const y of [40, 90]) {
+    await page.mouse.move(box.x + 30, box.y + y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 160, box.y + y, { steps: 6 });
+    await page.mouse.up();
+  }
+  await undo.click();
   await expect(clear).toBeEnabled();
   await clear.click();
   await expect(clear).toBeDisabled();
-  await page.getByRole("button", { name: "Bút", exact: true }).click();
+  await expect(undo).toBeDisabled();
+  await hl.click();
 
   // Câu hỏi có pinyin + nghĩa phương án; thanh tiến độ đếm câu đã trả lời.
   await expect(page.getByRole("progressbar", { name: "Số câu đã trả lời" })).toHaveAttribute("aria-valuenow", "0");
