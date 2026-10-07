@@ -4,7 +4,7 @@ export const libhub = {
   sub1: "Tài liệu học tiếng Trung được LingYu chọn lọc và chia sẻ.",
   sub2: "Từ vựng, ngữ pháp, phát âm, hội thoại, bài đọc và nhiều tài liệu hữu ích khác.",
   breadcrumb: "Thư viện",
-  searchAll: "Tìm kiếm tài liệu (từ vựng, chủ đề, HSK...)",
+  searchAll: "Tìm kiếm tài liệu (từ vựng, ngữ pháp, bài học, HSK...)",
   searchLabel: "Tìm trong Thư viện",
   levelAll: "Tất cả trình độ",
   comingSoon: "Sắp có",
