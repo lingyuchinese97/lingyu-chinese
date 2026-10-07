@@ -46,6 +46,8 @@ export const reading = {
   illustration: "Tranh minh hoạ",
   passageLabel: "Bài đọc",
   keyWords: "Từ vựng nổi bật trong bài",
+  prevQuestion: "Câu trước",
+  nextQuestion: "Câu tiếp theo",
   keyWordsTitle: "Từ vựng nổi bật",
   pen: "Bút",
   penColor: "Bút màu {color}",

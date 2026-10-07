@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import type { SetCard } from "../../sets";
 import { Cover, Crumbs, Pill, card } from "./parts";
 import { SetGridCard } from "./set-card";
+import { FeatureHero } from "@/components/feature-hero";
 
 type Home = {
   sets: number;
@@ -43,63 +44,61 @@ export async function LibraryHome({ data }: { data: Home }) {
   return (
     <div className="flex flex-col gap-5">
       <Crumbs label={t("shell.breadcrumb")} home={t("shell.nav.home")} items={[{ text: t("libhub.breadcrumb") }]} />
-      <header className="flex flex-col gap-4 xl:flex-row xl:items-start">
-        <div className="flex min-w-0 flex-1 items-start gap-4">
-          <span className="hidden size-[84px] shrink-0 items-center justify-center rounded-full bg-[#DDF3E8] text-[#1E9E5A] sm:flex">
-            <BookOpen className="size-10" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-[28px] font-extrabold tracking-tight text-navy-900 md:text-[34px]">
-              {t("libhub.title")}
-            </h1>
-            <p className="mt-1 text-[15px] text-text-2">{t("libhub.sub1")}</p>
-            <p className="text-[15px] text-text-2">{t("libhub.sub2")}</p>
-          </div>
-        </div>
-        <form action="/library/vocabulary" className="flex w-full flex-col gap-2 xl:max-w-[560px]" role="search">
-          <label className="relative block">
-            <span className="sr-only">{t("libhub.searchLabel")}</span>
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
-            <input
-              name="q"
-              type="search"
-              placeholder={t("libhub.searchAll")}
-              className="h-12 w-full rounded-[16px] border border-border bg-white pr-4 pl-12 text-[15px] shadow-card outline-none focus:border-blue-600"
-            />
-          </label>
-          <div className="flex gap-2">
-            <label className="flex-1">
-              <span className="sr-only">{t("libhub.hskAll")}</span>
-              <select
-                name="hsk"
-                defaultValue="0"
-                className="h-11 w-full rounded-[14px] border border-border bg-white px-3 text-[15px] font-semibold text-navy-900"
-              >
-                <option value="0">{t("libhub.levelAll")}</option>
-                {[1, 2, 3, 4, 5, 6].map((l) => (
-                  <option key={l} value={l}>
-                    HSK {l}
-                  </option>
-                ))}
-              </select>
+      <FeatureHero
+        id="lh-title"
+        mascot="write"
+        title={t("libhub.title")}
+        description={
+          <>
+            {t("libhub.sub1")} {t("libhub.sub2")}
+          </>
+        }
+        actions={
+          <form action="/library/vocabulary" className="flex w-full max-w-[560px] flex-col gap-2" role="search">
+            <label className="relative block">
+              <span className="sr-only">{t("libhub.searchLabel")}</span>
+              <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
+              <input
+                name="q"
+                type="search"
+                placeholder={t("libhub.searchAll")}
+                className="h-12 w-full rounded-[16px] border border-border bg-white pr-4 pl-12 text-[15px] shadow-card outline-none focus:border-blue-600"
+              />
             </label>
-            <label className="flex-1">
-              <span className="sr-only">{t("libhub.sortLabel")}</span>
-              <select
-                name="sort"
-                defaultValue="newest"
-                className="h-11 w-full rounded-[14px] border border-border bg-white px-3 text-[15px] font-semibold text-navy-900"
-              >
-                {(["newest", "order", "name", "size"] as const).map((s) => (
-                  <option key={s} value={s}>
-                    {t(`libhub.sorts.${s}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </form>
-      </header>
+            <div className="flex gap-2">
+              <label className="flex-1">
+                <span className="sr-only">{t("libhub.hskAll")}</span>
+                <select
+                  name="hsk"
+                  defaultValue="0"
+                  className="h-11 w-full rounded-[14px] border border-border bg-white px-3 text-[15px] font-semibold text-navy-900"
+                >
+                  <option value="0">{t("libhub.levelAll")}</option>
+                  {[1, 2, 3, 4, 5, 6].map((l) => (
+                    <option key={l} value={l}>
+                      HSK {l}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex-1">
+                <span className="sr-only">{t("libhub.sortLabel")}</span>
+                <select
+                  name="sort"
+                  defaultValue="newest"
+                  className="h-11 w-full rounded-[14px] border border-border bg-white px-3 text-[15px] font-semibold text-navy-900"
+                >
+                  {(["newest", "order", "name", "size"] as const).map((s) => (
+                    <option key={s} value={s}>
+                      {t(`libhub.sorts.${s}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </form>
+        }
+      />
 
       <nav aria-label={t("libhub.breadcrumb")} className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
         {CATS.map((c) => {

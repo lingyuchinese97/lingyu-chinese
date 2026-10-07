@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { sceneOf } from "@/data/reading/scenes";
 import { Cover } from "@/features/library/components/hub/parts";
-import Image from "next/image";
 import Link from "next/link";
 import { BookmarkCheck, ChevronRight, History, Library } from "lucide-react";
 import { requireUser } from "@/server/session";
@@ -10,6 +9,7 @@ import { estimateLevel, localGrammar } from "@/features/translation/service";
 import { listPassages, listSaved, readingHistory } from "@/features/reading/service";
 import { ReadingSetup } from "@/features/reading/components/reading-setup";
 import { R_PASSAGES } from "@/data/reading/passages";
+import { FeatureHero } from "@/components/feature-hero";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getT())("reading.title") };
@@ -52,23 +52,12 @@ export default async function ReadingPage() {
   );
   return (
     <div className="flex flex-col gap-4">
-      <header className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[#FBD2DC] bg-[linear-gradient(110deg,#FFF5F7_0%,#FFEAF0_60%,#FFE1EA_100%)] px-5 py-5 shadow-card md:px-7">
-        <div className="flex items-center gap-4">
-          <Image
-            src="/brand/ui/card-reading.png"
-            alt=""
-            aria-hidden="true"
-            width={392}
-            height={242}
-            unoptimized
-            className="hidden h-auto w-[120px] rounded-2xl sm:block"
-          />
-          <div>
-            <h1 className="text-[26px] font-extrabold text-navy-900 md:text-[30px]">{t("reading.title")}</h1>
-            <p className="text-[15.5px] text-text-2">{t("reading.subtitle")}</p>
-          </div>
-        </div>
-      </header>
+      <FeatureHero
+        id="rd-page-title"
+        mascot="vocabulary"
+        title={t("reading.title")}
+        description={t("reading.subtitle")}
+      />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <ReadingSetup level={level} grammar={grammar} />
         <div className="flex flex-col gap-4">

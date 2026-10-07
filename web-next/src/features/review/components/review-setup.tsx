@@ -9,7 +9,6 @@ import {
   FileText,
   ListChecks,
   Loader2,
-  Pin,
   Play,
   RefreshCw,
   Shuffle,
@@ -24,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { COUNTS, MODES, MODE_LABEL, type ReviewMode } from "../schema";
 import { abandonAction, countPoolAction, startCustomAction } from "../actions";
 import { useT } from "@/i18n/client";
+import { FeatureHero } from "@/components/feature-hero";
 
 type Props = {
   tags: { name: string; count: number }[];
@@ -139,23 +139,13 @@ export function ReviewSetup({ tags, total, last, active }: Props) {
         </div>
       ) : null}
 
+      <FeatureHero id="rs-title" mascot="wave" title={t("review.setup.heading")} description={t("review.setup.sub")} />
+
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
         <section
           aria-labelledby="rs-title"
           className="flex flex-col gap-6 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-7"
         >
-          <div className="flex items-start gap-4">
-            <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-              <Pin className="size-7" />
-            </span>
-            <div>
-              <h1 id="rs-title" className="text-[26px] font-extrabold tracking-tight text-navy md:text-[32px]">
-                {t("review.setup.heading")}
-              </h1>
-              <p className="mt-1 text-[15px] text-text-2 md:text-[17px]">{t("review.setup.sub")}</p>
-            </div>
-          </div>
-
           <Step n={1} title={t("review.setup.step1")} desc={t("review.setup.step1Desc")}>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(116px,1fr))] gap-3">
               <CheckChip on={!sel.length} onClick={() => setSel([])}>

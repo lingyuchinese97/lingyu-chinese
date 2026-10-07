@@ -48,6 +48,8 @@ export const reading: Messages["reading"] = {
   illustration: "Illustration",
   passageLabel: "Passage",
   keyWords: "Key words in this text",
+  prevQuestion: "Previous question",
+  nextQuestion: "Next question",
   keyWordsTitle: "Key words",
   pen: "Pen",
   penColor: "{color} pen",

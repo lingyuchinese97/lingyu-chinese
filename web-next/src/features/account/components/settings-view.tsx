@@ -20,13 +20,13 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Dialog, DialogActions, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toaster";
-import { LeafDecor } from "@/components/layout/icons";
 import { authClient } from "@/lib/auth-client";
 import { MIN_PASSWORD } from "@/lib/auth-rules";
 import { changePasswordAction, deleteAccountAction, updateNameAction } from "../actions";
 import type { ImportReport } from "../transfer";
 import { useT } from "@/i18n/client";
 import { LanguageSwitch } from "@/components/language-switch";
+import { FeatureHero } from "@/components/feature-hero";
 
 const initials = (name: string) =>
   name
@@ -40,13 +40,7 @@ export function SettingsView({ user }: { user: { name: string; email: string; ro
   const t = useT();
   return (
     <>
-      <div>
-        <h1 className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]">
-          {t("settings.title")}
-          <LeafDecor className="w-10" />
-        </h1>
-        <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("settings.subtitle")}</p>
-      </div>
+      <FeatureHero id="st-title" mascot="bubble" title={t("settings.title")} description={t("settings.subtitle")} />
       <div className="grid items-start gap-5 lg:grid-cols-2">
         <div className="flex flex-col gap-5">
           <AccountCard user={user} />

@@ -1,9 +1,7 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  AudioLines,
   BookOpen,
   Gauge,
   Layers,
@@ -15,10 +13,10 @@ import {
   Target,
   Waves,
 } from "lucide-react";
-import { LeafDecor } from "@/components/layout/icons";
 import { useLocale, useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { PRON_DEFAULT_SPEED, PRON_SPEEDS, setPronSpeed, usePronSpeed } from "./speech";
+import { FeatureHero } from "@/components/feature-hero";
 
 export const PRON_TABS = [
   { key: "overview", href: "/library/pronunciation", icon: LayoutGrid },
@@ -58,43 +56,12 @@ export function PronunciationHeader({ mode = "library" }: { mode?: "library" | "
           ?.key ?? "overview");
   return (
     <div className="flex flex-col gap-3">
-      <section
-        aria-labelledby="pr-title"
-        className="relative flex items-center gap-4 overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F4F9FF_0%,#E9F3FE_60%,#E1EFFD_100%)] px-[18px] py-[18px] md:px-7 md:py-5"
-      >
-        <LeafDecor className="pointer-events-none absolute right-[34%] -bottom-2 hidden w-12 -rotate-12 opacity-40 lg:block" />
-        <span className="hidden size-14 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-soft sm:flex md:size-16">
-          <AudioLines className="size-7 md:size-8" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h1
-            id="pr-title"
-            className="flex items-center gap-3 text-[24px] font-extrabold tracking-tight text-navy-900 md:text-[32px]"
-          >
-            {mode === "mine" ? t("pronunciation.mine.title") : t("pronunciation.title")}
-            <LeafDecor className="hidden w-10 sm:block" />
-          </h1>
-          <p className="mt-1 text-[14px] text-text-2 md:text-[16px]">
-            {mode === "mine" ? t("pronunciation.mine.subtitle") : t("pronunciation.subtitle")}
-          </p>
-        </div>
-        <p
-          aria-hidden="true"
-          className="hidden -rotate-6 text-center font-hand text-[22px] leading-tight font-semibold text-blue-700 xl:block"
-        >
-          {t("pronunciation.slogan1")}
-          <br />
-          {t("pronunciation.slogan2")}
-        </p>
-        <Image
-          src="/brand/lingyu-mascot.png"
-          alt=""
-          aria-hidden="true"
-          width={1536}
-          height={1024}
-          className="hidden h-auto w-[130px] shrink-0 lg:block"
-        />
-      </section>
+      <FeatureHero
+        id="pr-title"
+        mascot="pronunciation"
+        title={mode === "mine" ? t("pronunciation.mine.title") : t("pronunciation.title")}
+        description={mode === "mine" ? t("pronunciation.mine.subtitle") : t("pronunciation.subtitle")}
+      />
       <div className="flex flex-col gap-2">
         <nav aria-label={t("pronunciation.tabs.label")} className="-mx-1 overflow-x-auto px-1 pb-1">
           <ul className="flex min-w-max gap-2">

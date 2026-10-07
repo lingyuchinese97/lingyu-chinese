@@ -6,11 +6,14 @@ import {
   Bookmark,
   BookmarkCheck,
   BookmarkPlus,
+  BookOpen,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Lightbulb,
   Loader2,
+  Maximize2,
+  Minimize2,
   PenLine,
   RotateCcw,
   SkipForward,
@@ -331,6 +334,8 @@ export function Reader({
   const [busy, setBusy] = React.useState<string | null>(null);
   const [speed, setSpeed] = React.useState(1);
   const [hint, setHint] = React.useState(false);
+  const [wide, setWide] = React.useState(false);
+  const [cur, setCur] = React.useState(0);
   const [pen, setPen] = React.useState(false);
   const [ink, setInk] = React.useState<Ink>("red");
   const [strokes, setStrokes] = React.useState<Stroke[]>([]);
@@ -400,6 +405,13 @@ export function Reader({
   };
 
   const answered = answers.filter((a) => a !== null && a !== "").length;
+  const goQuestion = (i: number) => {
+    const k = Math.max(0, Math.min(passage.questions.length - 1, i));
+    setCur(k);
+    const el = document.getElementById(`rd-q-${k}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    el?.focus({ preventScroll: true });
+  };
   const navBtn =
     "inline-flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-border bg-white text-navy-900 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5";
   const tool =
@@ -547,13 +559,34 @@ export function Reader({
         </div>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      <div
+        className={cn(
+          "grid grid-cols-[minmax(0,1fr)] items-start gap-4",
+          !wide && "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]",
+        )}
+      >
         {/* Bên trái: bài đọc trên giấy ô vuông (vẽ / khoanh bằng Bút) · pinyin / bản dịch · từ vựng nổi bật. */}
         <div className="flex flex-col gap-4">
           <article
             aria-labelledby="rd-title"
-            className="rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-4"
+            className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-4"
           >
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-2 rounded-[12px] bg-[#FFF3D6] px-3 py-1.5 text-[15px] font-bold text-[#7A4E00]">
+                <BookOpen className="size-[18px] text-blue-600" aria-hidden="true" />
+                {t("reading.passageLabel")}
+              </span>
+              <button
+                type="button"
+                onClick={() => setWide((w) => !w)}
+                aria-pressed={wide}
+                aria-label={wide ? t("reading.collapse") : t("reading.expand")}
+                title={wide ? t("reading.collapse") : t("reading.expand")}
+                className="hidden size-10 items-center justify-center rounded-[12px] text-text-2 outline-none hover:bg-blue-50 hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)] lg:inline-flex"
+              >
+                {wide ? <Minimize2 className="size-5" /> : <Maximize2 className="size-5" />}
+              </button>
+            </div>
             <Paper passage={passage} pinyin={pinyin} showTr={showTr} onWord={openCard}>
               <InkLayer strokes={strokes} setStrokes={setStrokes} pen={pen} ink={ink} />
             </Paper>
@@ -621,7 +654,10 @@ export function Reader({
                   key={w.zh}
                   className="relative flex flex-col items-center rounded-[12px] border border-border bg-white px-2 pt-2.5 pb-2 text-center"
                 >
-                  <span lang="zh" className="hanzi text-[18px] font-bold text-navy-900">
+                  <span
+                    lang="zh"
+                    className="hanzi [font-family:var(--font-paper)] text-[20px] font-normal! text-navy-900"
+                  >
                     {w.zh}
                   </span>
                   <span className="text-[12.5px] text-text-2">{w.py}</span>
@@ -659,23 +695,35 @@ export function Reader({
                 </span>
                 {t("reading.questions")}
               </h2>
-              <div className="ml-auto flex items-center gap-3">
-                <span className="text-[14px] font-bold text-text-2 tabular-nums">
-                  {answered} / {passage.questions.length}
+              <div className="ml-auto flex items-center gap-2">
+                <span className="mr-1 text-[15px] font-semibold text-text-2 tabular-nums">
+                  {cur + 1} / {passage.questions.length}
                 </span>
+                {[
+                  { d: -1, label: t("reading.prevQuestion"), icon: <ChevronLeft /> },
+                  { d: 1, label: t("reading.nextQuestion"), icon: <ChevronRight /> },
+                ].map((b) => (
+                  <button
+                    key={b.d}
+                    type="button"
+                    aria-label={b.label}
+                    title={b.label}
+                    disabled={b.d < 0 ? cur === 0 : cur === passage.questions.length - 1}
+                    onClick={() => goQuestion(cur + b.d)}
+                    className={cn(navBtn, "size-9 disabled:bg-[#F3F6FA] disabled:text-text-3")}
+                  >
+                    {b.icon}
+                  </button>
+                ))}
                 <div
                   role="progressbar"
                   aria-label={t("reading.progress")}
                   aria-valuemin={0}
                   aria-valuemax={passage.questions.length}
                   aria-valuenow={answered}
-                  className="h-2 w-[100px] overflow-hidden rounded-full bg-[#E3ECF7]"
-                >
-                  <div
-                    className="h-full rounded-full bg-blue-600 transition-[width]"
-                    style={{ width: `${(answered / Math.max(1, passage.questions.length)) * 100}%` }}
-                  />
-                </div>
+                  aria-valuetext={`${answered} / ${passage.questions.length}`}
+                  className="sr-only"
+                />
               </div>
             </div>
             <ol className="flex flex-col gap-3">
@@ -684,8 +732,12 @@ export function Reader({
                 return (
                   <li
                     key={i}
+                    id={`rd-q-${i}`}
+                    tabIndex={-1}
+                    onFocusCapture={() => setCur(i)}
                     className={cn(
-                      "@container rounded-[18px] border px-3 py-3 md:px-4",
+                      "@container scroll-mt-24 rounded-[18px] border px-3 py-3 outline-none md:px-4",
+                      cur === i && !r && "ring-1 ring-[#CFE1F7]",
                       r
                         ? r.correct
                           ? "border-green-100 bg-green-50/60"
@@ -811,31 +863,39 @@ export function Reader({
               })}
             </ol>
             <div className="mt-1 flex flex-wrap items-center gap-2.5 pt-1">
-              <Button
+              <button
                 type="button"
-                variant="secondary"
-                size="sm"
                 onClick={() => setHint((h) => !h)}
                 aria-pressed={hint}
+                className={cn(
+                  tool,
+                  "h-11 border-border bg-white text-navy-900 hover:bg-amber-50 aria-pressed:border-amber aria-pressed:bg-[#FFF8E6]",
+                )}
               >
-                <Lightbulb className="text-amber" />
+                <Lightbulb className="text-amber" aria-hidden="true" />
                 {t("reading.hint")}
-              </Button>
-              <Button type="button" variant="secondary" size="sm" onClick={retry}>
-                <RotateCcw />
+              </button>
+              <button
+                type="button"
+                onClick={retry}
+                className={cn(tool, "h-11 border-border bg-white text-navy-900 hover:bg-blue-50")}
+              >
+                <RotateCcw aria-hidden="true" />
                 {t("reading.retry")}
-              </Button>
+              </button>
               {!result ? (
-                <Button
-                  variant="primary"
-                  className="ml-auto min-w-[200px] justify-between max-sm:w-full"
+                <button
+                  type="button"
                   onClick={submit}
                   disabled={!!busy}
+                  className="ml-auto inline-flex h-12 min-w-[210px] items-center justify-between gap-3 rounded-[12px] bg-[#1769C9] px-5 text-[15.5px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.28)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60 max-sm:w-full"
                 >
-                  {busy === "submit" ? <Loader2 className="animate-spin" /> : null}
-                  {busy === "submit" ? t("reading.submitting") : t("reading.submit")}
-                  <ChevronRight />
-                </Button>
+                  <span className="inline-flex items-center gap-2">
+                    {busy === "submit" ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : null}
+                    {busy === "submit" ? t("reading.submitting") : t("reading.submit")}
+                  </span>
+                  <ChevronRight className="size-5" aria-hidden="true" />
+                </button>
               ) : null}
             </div>
           </section>

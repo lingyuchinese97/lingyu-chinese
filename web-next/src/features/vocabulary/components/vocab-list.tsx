@@ -44,6 +44,7 @@ import { HskCards, TagChips, TagNameDialog } from "./tag-cards";
 import { SpeakButton } from "@/components/speak-button";
 import { BulkButton, Pager } from "@/components/ui/list-controls";
 import type { ReceivedVocabShare } from "../share-service";
+import { FeatureHero, heroPrimary } from "@/components/feature-hero";
 import {
   AcceptVocabDialog,
   rejectVocabWithConfirm,
@@ -335,20 +336,18 @@ export function VocabListView({
 
   return (
     <>
-      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-[26px] font-extrabold tracking-tight text-text md:text-[32px]">
-            {t("vocab.myTitle", { count: data.totalAll })}
-          </h1>
-          <p className="mt-1 text-[15px] text-text-2 md:text-base">{t("vocab.mySub")}</p>
-        </div>
-        <Button asChild variant="solid" className="shrink-0 max-md:w-full">
-          <Link href="/vocabulary/new">
-            <Plus />
+      <FeatureHero
+        id="vl-title"
+        mascot="vocabulary"
+        title={t("vocab.myTitle", { count: data.totalAll })}
+        description={t("vocab.mySub")}
+        actions={
+          <Link href="/vocabulary/new" className={heroPrimary}>
+            <Plus aria-hidden="true" />
             {t("vocab.add")}
           </Link>
-        </Button>
-      </header>
+        }
+      />
 
       <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
 
