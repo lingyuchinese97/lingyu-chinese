@@ -139,6 +139,21 @@
   }
 }
 
+/* Giấy ô ly cho ô gõ chữ (Chép chính tả): ô 40px, mỗi chữ Hán (rộng 1em = 26px + giãn 14px) nằm giữa một ô; lưới cuộn
+   theo nội dung. */
+@utility paper-lines {
+  font-family: var(--font-paper);
+  font-size: 26px;
+  letter-spacing: 14px;
+  line-height: 40px;
+  padding: 0 0 0 7px;
+  background-color: #fffcf3;
+  background-image:
+    linear-gradient(to right, #e8e1cf 1px, transparent 1px), linear-gradient(to bottom, #e8e1cf 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: local;
+}
+
 /* Chữ Khải in đậm rõ (nét Bold của LXGW WenKai khá mảnh): thêm viền nét cùng màu chữ. */
 @utility kai-bold {
   font-family: var(--font-paper);
