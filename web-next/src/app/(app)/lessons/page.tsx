@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { LeafDecor } from "@/components/layout/icons";
 import { requireUser } from "@/server/session";
 import { LESSONS, localizeLesson } from "@/data/lessons";
 import { getLocale, getT } from "@/i18n/server";
 import { progressOf } from "@/features/lessons/service";
 import { ProgressBar } from "@/features/lessons/components/progress-bar";
+import { FeatureHero } from "@/components/feature-hero";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getT())("lessons.title") };
@@ -19,19 +19,7 @@ export default async function LessonsPage() {
   const locale = await getLocale();
   return (
     <>
-      <section
-        aria-labelledby="ls-title"
-        className="relative overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F4F9FF_0%,#E9F3FE_60%,#E1EFFD_100%)] px-[18px] py-[22px] md:px-8 md:py-7"
-      >
-        <h1
-          id="ls-title"
-          className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]"
-        >
-          {t("lessons.title")}
-          <LeafDecor className="w-10" />
-        </h1>
-        <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("lessons.subtitle")}</p>
-      </section>
+      <FeatureHero id="ls-title" mascot="lessons" title={t("lessons.title")} description={t("lessons.subtitle")} />
       <ul className="grid gap-4 md:grid-cols-2">
         {LESSONS.map((raw) => {
           const l = localizeLesson(raw, locale);

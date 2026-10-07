@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { BookOpen, Globe, Headphones } from "lucide-react";
+import { BookOpen, Globe } from "lucide-react";
 import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
+import { FeatureHero } from "@/components/feature-hero";
 
 /**
  * Thanh tiêu đề gọn "Luyện nghe · Chép chính tả" (nút thao tác bên phải) + 2 tab: Luyện nghe từ các kênh · Bài làm của tôi
@@ -16,21 +17,13 @@ export function ListeningHeader({ tab, actions }: { tab: "practice" | "mine"; ac
   ];
   return (
     <div className="flex flex-col gap-3">
-      <section
-        aria-labelledby="ls-title"
-        className="flex flex-wrap items-center gap-3 rounded-[20px] border border-[#DDEBF8] bg-white/95 px-4 py-3 shadow-card md:px-5"
-      >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-          <Headphones className="size-5" />
-        </span>
-        <h1
-          id="ls-title"
-          className="min-w-0 flex-1 text-[20px] font-extrabold tracking-tight text-navy-900 md:text-[24px]"
-        >
-          {tab === "practice" ? t("listening.pageTitle") : t("listening.tabs.mine")}
-        </h1>
-        {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
-      </section>
+      <FeatureHero
+        id="ls-title"
+        mascot="listening"
+        title={tab === "practice" ? t("listening.pageTitle") : t("listening.tabs.mine")}
+        description={t("listening.subtitle")}
+        actions={actions}
+      />
       <nav aria-label={t("listening.tabs.label")} className="flex flex-wrap gap-2">
         {tabs.map((x) => (
           <Link

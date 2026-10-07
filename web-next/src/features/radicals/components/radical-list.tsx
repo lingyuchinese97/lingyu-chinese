@@ -6,11 +6,11 @@ import { Check, CheckCircle2, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/input";
 import { toast } from "@/components/ui/toaster";
-import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { radicalMeaning, radicalName, type Radical } from "@/lib/radicals";
 import { useLocale, useT } from "@/i18n/client";
 import { setRadicalKnownAction } from "../actions";
+import { FeatureHero } from "@/components/feature-hero";
 
 export type RadicalFilter = { q: string; strokes: number; known: "" | "known" | "unknown" };
 type Row = Radical & { known: boolean };
@@ -86,43 +86,36 @@ export function RadicalList({
 
   return (
     <>
-      <section
-        aria-labelledby="rl-title"
-        className="relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-[#DDEBF8] bg-[linear-gradient(100deg,#F4F9FF_0%,#E9F3FE_60%,#E1EFFD_100%)] px-[18px] py-[22px] md:flex-row md:items-center md:px-8 md:py-7"
-      >
-        <div className="min-w-0 flex-1">
-          <h1
-            id="rl-title"
-            className="flex items-center gap-3 text-[26px] font-extrabold tracking-tight text-text md:text-[34px]"
-          >
-            {t("radicals.title")}
-            <LeafDecor className="w-10" />
-          </h1>
-          <p className="mt-1.5 text-[15px] text-text-2 md:text-[17px]">{t("radicals.subtitle")}</p>
-        </div>
-        <div
-          aria-live="polite"
-          className="grid min-w-[200px] grid-cols-[auto_1fr] items-baseline gap-x-2.5 rounded-2xl border border-border bg-white/85 px-4 py-3 max-md:w-full"
-        >
-          <div className="text-[15px] text-text-2">
-            <strong className="text-[26px] text-navy">{count}</strong>/214
-          </div>
-          <div className="text-sm text-text-2">{t("radicals.knownCount")}</div>
+      <FeatureHero
+        id="rl-title"
+        mascot="write"
+        title={t("radicals.title")}
+        description={t("radicals.subtitle")}
+        aside={
           <div
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={214}
-            aria-valuenow={count}
-            aria-label={t("radicals.progress")}
-            className="col-span-2 mt-1.5 h-2 overflow-hidden rounded-full bg-blue-50"
+            aria-live="polite"
+            className="grid w-full min-w-[200px] grid-cols-[auto_1fr] items-baseline gap-x-2.5 rounded-2xl border border-border bg-white/85 px-4 py-3"
           >
-            <span
-              className="block h-full rounded-full bg-[linear-gradient(90deg,var(--color-blue),var(--color-cyan))]"
-              style={{ width: `${(count / 214) * 100}%` }}
-            />
+            <div className="text-[15px] text-text-2">
+              <strong className="text-[26px] text-navy">{count}</strong>/214
+            </div>
+            <div className="text-sm text-text-2">{t("radicals.knownCount")}</div>
+            <div
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={214}
+              aria-valuenow={count}
+              aria-label={t("radicals.progress")}
+              className="col-span-2 mt-1.5 h-2 overflow-hidden rounded-full bg-blue-50"
+            >
+              <span
+                className="block h-full rounded-full bg-[linear-gradient(90deg,var(--color-blue),var(--color-cyan))]"
+                style={{ width: `${(count / 214) * 100}%` }}
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        }
+      />
 
       <section
         aria-label={t("radicals.list")}

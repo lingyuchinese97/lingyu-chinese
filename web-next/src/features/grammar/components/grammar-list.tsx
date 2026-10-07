@@ -33,6 +33,7 @@ import type { GrammarItem, ReceivedShare } from "../service";
 import { createTagAction, deleteTagAction, renameTagAction } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
+import { FeatureHero, heroPrimary } from "@/components/feature-hero";
 
 type Data = {
   items: GrammarItem[];
@@ -126,20 +127,18 @@ export function GrammarList({
 
   return (
     <>
-      <section aria-labelledby="gl-title" className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <div className="min-w-0 flex-1">
-          <h1 id="gl-title" className="text-[28px] font-extrabold tracking-tight text-navy-900 md:text-[34px]">
-            {t("grammar.title")}
-          </h1>
-          <p className="mt-1 text-[15px] text-text-2 md:text-[16.5px]">{t("grammar.subtitle")}</p>
-        </div>
-        <Button asChild variant="solid" size="lg" className="shrink-0 max-sm:w-full">
-          <Link href="/grammar/new">
-            <Plus />
+      <FeatureHero
+        id="gl-title"
+        mascot="grammar"
+        title={t("grammar.title")}
+        description={t("grammar.subtitle")}
+        actions={
+          <Link href="/grammar/new" className={heroPrimary}>
+            <Plus aria-hidden="true" />
             {t("grammar.addNew")}
           </Link>
-        </Button>
-      </section>
+        }
+      />
 
       <section
         aria-label={t("grammar.list")}

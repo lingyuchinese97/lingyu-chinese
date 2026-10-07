@@ -11,6 +11,9 @@
 
 ### Changed
 
+- **Bìa đầu trang thống nhất cho mọi chức năng (theo bìa Trang chủ)**: component dùng chung `FeatureHero` — nền trời xanh nhạt, ánh
+  sáng + lá trang trí, tiêu đề lớn có lá, mô tả, nút thao tác kiểu bo tròn và mascot của chức năng bên phải — cho Thư viện LingYu, Bài học,
+  Từ vựng của tôi, Ngữ pháp của tôi, Phát âm & Biến điệu, Luyện nghe, Đọc hiểu, Luyện dịch, Ôn tập, Tiến độ học tập, Bộ thủ và Cài đặt.
 - **Đọc hiểu — chữ Khải như sách giáo khoa + tinh chỉnh theo design**: giấy ô vuông, câu hỏi, phương án và thẻ từ vựng dùng font
   **LXGW WenKai** (SIL OFL 1.1, tự host, cắt còn ~90KB chỉ gồm chữ trong bài đọc — `scripts/subset-paper-font.py`, test báo khi thiếu
   chữ). Thẻ bài đọc có nhãn **Bài đọc** và nút mở rộng; phần Câu hỏi có bộ đếm "1 / 3" với nút ‹ › chuyển câu; nút Gợi ý đáp án / Làm

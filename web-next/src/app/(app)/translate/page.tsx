@@ -13,6 +13,7 @@ import {
 } from "@/features/translation/service";
 import { TranslateSetup } from "@/features/translation/components/translate-setup";
 import { formatDuration } from "@/features/translation/components/format";
+import { FeatureHero } from "@/components/feature-hero";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getT())("translate.title") };
@@ -33,10 +34,12 @@ export default async function TranslatePage() {
   const date = new Intl.DateTimeFormat(tag, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   return (
     <div className="flex flex-col gap-4">
-      <header>
-        <h1 className="text-[26px] font-extrabold text-navy-900 md:text-[30px]">{t("translate.title")}</h1>
-        <p className="text-[15.5px] text-text-2">{t("translate.subtitle")}</p>
-      </header>
+      <FeatureHero
+        id="tr-page-title"
+        mascot="bubble"
+        title={t("translate.title")}
+        description={t("translate.subtitle")}
+      />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <TranslateSetup
           level={level}
