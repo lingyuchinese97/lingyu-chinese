@@ -11,6 +11,10 @@
 
 ### Changed
 
+- **Thư viện LingYu — bìa mới theo design**: nền trời xanh + cửa sổ, chậu cây; tiêu đề "Thư viện **LingYu**" (LingYu màu xanh); ô tìm
+  kiếm lớn + 2 ô chọn trình độ / sắp xếp bo tròn; mascot đọc sách ngồi trên chồng sách HSK · 汉语 · 中国文化 kèm bong bóng "每天进步一点点！"
+  và lá bay; hàng danh mục nằm trong bìa (Tất cả, Từ vựng, Ngữ pháp, Phát âm, Hội thoại & Nghe, Bài đọc, Mẹo học) — nền pastel, icon
+  trong ô màu, mũi tên tròn. Ảnh tách từ bộ design (`public/brand/library/`).
 - **Đọc hiểu — bìa đầu trang + chữ đậm**: trang bài đọc có bìa kiểu Trang chủ (Bài đọc n · HSK · loại bài, tên bài chữ Khải, nghĩa,
   mascot); tiêu đề trên thanh công cụ "Bài đọc 1: 小狗" theo design; tên bài (dòng đầu giấy ô vuông, bìa, thanh trên) và câu hỏi in đậm
   rõ (thêm bản Bold của font Khải `paper-kai-bold.woff2` + tiện ích `kai-bold`).

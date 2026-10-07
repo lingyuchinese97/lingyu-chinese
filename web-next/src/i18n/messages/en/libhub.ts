@@ -4,7 +4,7 @@ export const libhub = {
   sub1: "Chinese learning materials curated and shared by LingYu.",
   sub2: "Vocabulary, grammar, pronunciation, dialogues, readings and more.",
   breadcrumb: "Library",
-  searchAll: "Search materials (vocabulary, topics, HSK...)",
+  searchAll: "Search materials (vocabulary, grammar, lessons, HSK...)",
   searchLabel: "Search the Library",
   levelAll: "All levels",
   comingSoon: "Coming soon",

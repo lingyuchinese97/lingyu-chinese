@@ -1,15 +1,19 @@
+import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
   AudioLines,
   BookOpen,
   BookOpenText,
+  ChevronDown,
+  ChevronRight,
   CircleHelp,
   Flame,
   Headphones,
   Languages,
+  Layers,
   Lightbulb,
-  Library,
   Search,
 } from "lucide-react";
 import { getT } from "@/i18n/server";
@@ -17,7 +21,6 @@ import { cn } from "@/lib/utils";
 import type { SetCard } from "../../sets";
 import { Cover, Crumbs, Pill, card } from "./parts";
 import { SetGridCard } from "./set-card";
-import { FeatureHero } from "@/components/feature-hero";
 
 type Home = {
   sets: number;
@@ -29,110 +32,257 @@ type Home = {
 };
 
 const CATS = [
-  { key: "all", href: "/library", icon: Library, color: "bg-blue-600 text-white" },
-  { key: "vocab", href: "/library/vocabulary", icon: Languages, color: "bg-[#FFE4E8] text-[#E0302F]" },
-  { key: "grammar", href: "/library/grammar", icon: BookOpen, color: "bg-[#FFF1D6] text-[#C27C0E]" },
-  { key: "pron", href: "/library/pronunciation", icon: AudioLines, color: "bg-[#EFE6FF] text-[#7A45E0]" },
-  { key: "listen", href: "/listening", icon: Headphones, color: "bg-[#DDF6E6] text-[#1E9E5A]" },
-  { key: "reading", href: "/reading", icon: BookOpenText, color: "bg-[#E1EEFF] text-[#2C6FDB]" },
-  { key: "tips", href: null, icon: Lightbulb, color: "bg-[#FFE7DA] text-[#E0632F]" },
+  {
+    key: "all",
+    href: "/library",
+    icon: Layers,
+    bg: "border-[#CFE3F7] bg-[#EEF6FF]",
+    icon_bg: "bg-[#DCEBFF] text-blue-600",
+    chev: "bg-[#DCEBFF] text-blue-600",
+  },
+  {
+    key: "vocab",
+    href: "/library/vocabulary",
+    icon: Languages,
+    bg: "border-[#FBDDE2] bg-[#FFF1F3]",
+    icon_bg: "bg-[#FFE0E6] text-[#E0302F]",
+    chev: "bg-[#FFE0E6] text-[#E0302F]",
+  },
+  {
+    key: "grammar",
+    href: "/library/grammar",
+    icon: BookOpen,
+    bg: "border-[#FBE8C6] bg-[#FFF7E8]",
+    icon_bg: "bg-[#FFEBC4] text-[#D98A0B]",
+    chev: "bg-[#FFEBC4] text-[#B86E00]",
+  },
+  {
+    key: "pron",
+    href: "/library/pronunciation",
+    icon: AudioLines,
+    bg: "border-[#E6DAFB] bg-[#F5F0FF]",
+    icon_bg: "bg-[#E8DCFF] text-[#7A45E0]",
+    chev: "bg-[#E8DCFF] text-[#6A36D0]",
+  },
+  {
+    key: "listen",
+    href: "/listening",
+    icon: Headphones,
+    bg: "border-[#CDEEDB] bg-[#EEFAF3]",
+    icon_bg: "bg-[#D5F2E1] text-[#1E9E5A]",
+    chev: "bg-[#D5F2E1] text-[#16804A]",
+  },
+  {
+    key: "reading",
+    href: "/reading",
+    icon: BookOpenText,
+    bg: "border-[#D3E4FA] bg-[#EEF5FF]",
+    icon_bg: "bg-[#D9E8FF] text-[#2C6FDB]",
+    chev: "bg-[#D9E8FF] text-[#2C6FDB]",
+  },
+  {
+    key: "tips",
+    href: null,
+    icon: Lightbulb,
+    bg: "border-[#FBDCCB] bg-[#FFF3EC]",
+    icon_bg: "bg-[#FFE2D2] text-[#E0632F]",
+    chev: "bg-[#FFE2D2] text-[#C24E1E]",
+  },
 ] as const;
+
+/** "Thư viện LingYu" → chữ LingYu màu xanh như design. */
+function BrandTitle({ text }: { text: string }) {
+  const i = text.indexOf("LingYu");
+  if (i < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, i)}
+      <span className="text-[#1F8BEA]">LingYu</span>
+      {text.slice(i + 6)}
+    </>
+  );
+}
+
+/** Ô chọn bo tròn có mũi tên (bộ lọc trên bìa). */
+function SelectBox({
+  name,
+  label,
+  defaultValue,
+  children,
+}: {
+  name: string;
+  label: string;
+  defaultValue: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="relative block">
+      <span className="sr-only">{label}</span>
+      <select
+        name={name}
+        defaultValue={defaultValue}
+        className="h-14 w-full appearance-none rounded-[16px] border border-white bg-white/95 pr-11 pl-5 text-[16px] font-semibold text-navy-900 shadow-[0_8px_24px_rgba(20,60,110,.08)] outline-none focus:border-blue-600"
+      >
+        {children}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-navy-900"
+        aria-hidden="true"
+      />
+    </label>
+  );
+}
 
 /** Trang chủ Thư viện LingYu: danh mục, tài liệu nổi bật / mới nhất, hướng dẫn, chủ đề phổ biến. */
 export async function LibraryHome({ data }: { data: Home }) {
   const t = await getT();
   return (
     <div className="flex flex-col gap-5">
-      <Crumbs label={t("shell.breadcrumb")} home={t("shell.nav.home")} items={[{ text: t("libhub.breadcrumb") }]} />
-      <FeatureHero
-        id="lh-title"
-        mascot="write"
-        title={t("libhub.title")}
-        description={
-          <>
-            {t("libhub.sub1")} {t("libhub.sub2")}
-          </>
-        }
-        actions={
-          <form action="/library/vocabulary" className="flex w-full max-w-[560px] flex-col gap-2" role="search">
-            <label className="relative block">
-              <span className="sr-only">{t("libhub.searchLabel")}</span>
-              <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
-              <input
-                name="q"
-                type="search"
-                placeholder={t("libhub.searchAll")}
-                className="h-12 w-full rounded-[16px] border border-border bg-white pr-4 pl-12 text-[15px] shadow-card outline-none focus:border-blue-600"
-              />
-            </label>
-            <div className="flex gap-2">
-              <label className="flex-1">
-                <span className="sr-only">{t("libhub.hskAll")}</span>
-                <select
-                  name="hsk"
-                  defaultValue="0"
-                  className="h-11 w-full rounded-[14px] border border-border bg-white px-3 text-[15px] font-semibold text-navy-900"
-                >
-                  <option value="0">{t("libhub.levelAll")}</option>
-                  {[1, 2, 3, 4, 5, 6].map((l) => (
-                    <option key={l} value={l}>
-                      HSK {l}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex-1">
-                <span className="sr-only">{t("libhub.sortLabel")}</span>
-                <select
-                  name="sort"
-                  defaultValue="newest"
-                  className="h-11 w-full rounded-[14px] border border-border bg-white px-3 text-[15px] font-semibold text-navy-900"
-                >
-                  {(["newest", "order", "name", "size"] as const).map((s) => (
-                    <option key={s} value={s}>
-                      {t(`libhub.sorts.${s}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </form>
-        }
-      />
+      {/* Bìa Thư viện (theo design): nền trời + cửa sổ, mascot ngồi trên chồng sách, ô tìm + bộ lọc, hàng danh mục. */}
+      <section
+        aria-labelledby="lh-title"
+        className="relative isolate overflow-hidden rounded-[28px] border border-[#D3E8F8] bg-[#DCEFFD] shadow-card"
+      >
+        <Image
+          unoptimized
+          src="/brand/library/header-bg.jpg"
+          alt=""
+          aria-hidden="true"
+          fill
+          priority
+          sizes="100vw"
+          className="-z-20 object-cover object-[70%_center]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,.55)_0%,rgba(255,255,255,.25)_45%,rgba(255,255,255,0)_70%)]"
+        />
+        <Image
+          unoptimized
+          src="/brand/library/leaves.png"
+          alt=""
+          aria-hidden="true"
+          width={276}
+          height={265}
+          className="pointer-events-none absolute top-3 left-[46%] -z-10 hidden w-[120px] opacity-70 lg:block"
+        />
 
-      <nav aria-label={t("libhub.breadcrumb")} className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
-        {CATS.map((c) => {
-          const inner = (
-            <>
-              <span className={cn("flex size-11 items-center justify-center rounded-[14px]", c.color)}>
-                <c.icon className="size-6" aria-hidden="true" />
-              </span>
-              {!c.href ? (
-                <Pill color="amber" className="absolute top-2.5 right-2.5">
-                  {t("libhub.comingSoon")}
-                </Pill>
-              ) : null}
-              <span className="mt-2 text-[16px] font-bold text-navy-900">{t(`libhub.cats.${c.key}`)}</span>
-              <span className="text-[13px] leading-snug text-text-2">{t(`libhub.cats.${c.key}Sub`)}</span>
-            </>
-          );
-          const cls = cn(
-            card,
-            "relative flex flex-col p-3.5 transition",
-            c.key === "all" && "border-blue-600 ring-1 ring-blue-600",
-            c.href ? "hover:-translate-y-0.5 hover:shadow-lg" : "opacity-80",
-          );
-          return c.href ? (
-            <Link key={c.key} href={c.href} className={cls} aria-current={c.key === "all" ? "page" : undefined}>
-              {inner}
-            </Link>
-          ) : (
-            <div key={c.key} className={cls} aria-disabled="true">
-              {inner}
+        <div className="px-4 pt-3 md:px-9 md:pt-4">
+          <Crumbs label={t("shell.breadcrumb")} home={t("shell.nav.home")} items={[{ text: t("libhub.breadcrumb") }]} />
+          <div className="grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_minmax(240px,400px)]">
+            <div className="min-w-0 pt-2 pb-4 md:pt-6 md:pb-7">
+              <h1
+                id="lh-title"
+                className="text-[38px] leading-[1.1] font-black tracking-tight text-navy-900 md:text-[56px]"
+              >
+                <BrandTitle text={t("libhub.title")} />
+              </h1>
+              <form action="/library/vocabulary" role="search" className="mt-5 flex max-w-[860px] flex-col gap-3">
+                <label className="relative block">
+                  <span className="sr-only">{t("libhub.searchLabel")}</span>
+                  <Search className="pointer-events-none absolute top-1/2 left-5 size-[22px] -translate-y-1/2 text-text-2" />
+                  <input
+                    name="q"
+                    type="search"
+                    placeholder={t("libhub.searchAll")}
+                    className="h-14 w-full rounded-[18px] border border-white bg-white/95 pr-4 pl-14 text-[16px] text-navy-900 shadow-[0_8px_24px_rgba(20,60,110,.10)] outline-none placeholder:text-text-3 focus:border-blue-600"
+                  />
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2 sm:pr-[12%]">
+                  <SelectBox name="hsk" label={t("libhub.hskAll")} defaultValue="0">
+                    <option value="0">{t("libhub.levelAll")}</option>
+                    {[1, 2, 3, 4, 5, 6].map((l) => (
+                      <option key={l} value={l}>
+                        HSK {l}
+                      </option>
+                    ))}
+                  </SelectBox>
+                  <SelectBox name="sort" label={t("libhub.sortLabel")} defaultValue="newest">
+                    {(["newest", "order", "name", "size"] as const).map((s) => (
+                      <option key={s} value={s}>
+                        {t(`libhub.sorts.${s}`)}
+                      </option>
+                    ))}
+                  </SelectBox>
+                </div>
+              </form>
             </div>
-          );
-        })}
-      </nav>
+
+            <div aria-hidden="true" className="relative hidden h-[330px] md:block">
+              <Image
+                unoptimized
+                src="/brand/library/books.png"
+                alt=""
+                width={370}
+                height={198}
+                className="absolute bottom-[-10px] left-1/2 z-0 w-[70%] -translate-x-[40%]"
+              />
+              <Image
+                unoptimized
+                src="/brand/library/mascot-read.png"
+                alt=""
+                width={416}
+                height={364}
+                priority
+                className="absolute bottom-[112px] left-1/2 z-10 w-[56%] -translate-x-[34%] drop-shadow-[0_12px_18px_rgba(20,80,40,.18)]"
+              />
+              <Image
+                unoptimized
+                src="/brand/library/speech-bubble.png"
+                alt=""
+                width={293}
+                height={220}
+                className="absolute top-0 left-[-4%] z-20 w-[40%] -rotate-6"
+              />
+            </div>
+          </div>
+        </div>
+
+        <nav
+          aria-label={t("libhub.breadcrumb")}
+          className="grid grid-cols-2 gap-3 rounded-t-[26px] bg-white/60 p-3 backdrop-blur-sm sm:grid-cols-4 md:p-5 xl:grid-cols-7"
+        >
+          {CATS.map((c) => {
+            const inner = (
+              <>
+                <span className={cn("flex size-[52px] items-center justify-center rounded-[16px]", c.icon_bg)}>
+                  <c.icon className="size-7" aria-hidden="true" />
+                </span>
+                <span className="mt-3 block pr-9">
+                  <span className="text-[16px] leading-tight font-extrabold text-navy-900 2xl:text-[18px]">
+                    {t(`libhub.cats.${c.key}`)}
+                    {!c.href ? <span className="sr-only"> ({t("libhub.comingSoon")})</span> : null}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-full",
+                      c.chev,
+                    )}
+                  >
+                    <ChevronRight className="size-[18px]" />
+                  </span>
+                </span>
+              </>
+            );
+            const cls = cn(
+              "relative flex min-h-[124px] flex-col justify-between rounded-[20px] border p-3.5 shadow-[0_6px_16px_rgba(20,60,110,.06)] transition",
+              c.bg,
+              c.key === "all" && "border-[#8EC0EE] ring-1 ring-[#8EC0EE]",
+              c.href ? "hover:-translate-y-0.5 hover:shadow-lg" : "cursor-default",
+            );
+            return c.href ? (
+              <Link key={c.key} href={c.href} className={cls} aria-current={c.key === "all" ? "page" : undefined}>
+                {inner}
+              </Link>
+            ) : (
+              <div key={c.key} className={cls} aria-disabled="true" title={t("libhub.comingSoon")}>
+                {inner}
+              </div>
+            );
+          })}
+        </nav>
+      </section>
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-5">
