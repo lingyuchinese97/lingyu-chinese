@@ -12,10 +12,11 @@ test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiê
   await register(page, "Nguyễn Văn An", "prog");
   const api = page.request;
 
-  // Trang chủ: lời chào, 5 chức năng, học tập hôm nay.
+  // Trang chủ: lời chào, 4 chức năng (không còn Bài học), học tập hôm nay.
   await expect(page.getByRole("heading", { level: 1, name: "Xin chào, Văn An!" })).toBeVisible();
-  for (const name of ["Bài học", "Từ vựng", "Ngữ pháp", "Phát âm & Biến điệu", "Luyện nghe & Nói"])
+  for (const name of ["Từ vựng", "Ngữ pháp", "Phát âm & Biến điệu", "Luyện nghe & Nói"])
     await expect(page.getByRole("link", { name: `Mở ${name}` })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Mở Bài học" })).toHaveCount(0);
   await expect(page.getByText("Chưa có hoạt động nào. Bắt đầu học để thấy ở đây nhé!")).toBeVisible();
 
   // Có hoạt động → hiện ở Trang chủ và số liệu hôm nay.
@@ -26,7 +27,7 @@ test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiê
     data: { answers: sec.questions.map((q: { answer: number }) => q.answer) },
   });
   await page.reload();
-  const recent = page.getByRole("region", { name: "Bài học gần đây" });
+  const recent = page.getByRole("region", { name: "Hoạt động gần đây" });
   await expect(recent.getByText(/Bài học · \d+\/\d+ đúng/)).toBeVisible();
   await expect(recent.getByText("Thêm 1 từ mới")).toBeVisible();
   await expect(page.getByRole("region", { name: "Học tập hôm nay" }).getByText("Từ vựng đã học")).toBeVisible();

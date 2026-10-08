@@ -16,7 +16,6 @@ export const home: Messages["home"] = {
   streakStart: "Study today to start your streak!",
   features: "Choose what to learn",
   cards: {
-    lessons: { title: "Lessons", desc: "Follow a clear, step-by-step HSK path" },
     vocabulary: { title: "Vocabulary", desc: "Learn words by topic, HSK level or your own list" },
     grammar: { title: "Grammar", desc: "Master structures and use them with confidence" },
     pronunciation: { title: "Pronunciation & Tone sandhi", desc: "Practise accurate sounds and tone-change rules" },
@@ -35,7 +34,6 @@ export const home: Messages["home"] = {
   goalMinutes: "Study {n} minutes a day",
   goalValue: "{v} / {n} min",
   progress: "Learning progress",
-  progressLessons: "Completed {done}/{total} lesson parts",
   rings: {
     vocab: "Vocabulary",
     grammar: "Grammar",

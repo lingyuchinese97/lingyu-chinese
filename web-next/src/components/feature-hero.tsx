@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Bìa đầu trang dùng chung cho mọi chức năng (theo design): ảnh bìa cố định (trời xanh, cửa sổ, lá bay), tiêu đề lớn có nhánh lá,
- * mô tả, nút thao tác; bên phải là mascot LingYu ngồi trên bậu cửa sổ cầm sách đọc.
+ * mô tả, nút thao tác; bên phải là mascot LingYu ngồi trên mặt bàn cạnh cửa sổ cầm sách đọc.
  * Không dùng hook → dùng được ở cả server lẫn client component.
  */
 export function FeatureHero({
@@ -52,17 +52,23 @@ export function FeatureHero({
         className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,.72)_0%,rgba(255,255,255,.45)_42%,rgba(255,255,255,0)_68%)]"
       />
 
-      {/* Ảnh bìa neo đáy (dư thì cắt phần trời phía trên) → mascot ngồi trên mặt bàn cạnh cửa sổ, cầm sách đọc. */}
-      <Image
-        unoptimized
-        src="/brand/hero/mascot-reading.webp"
-        alt=""
+      {/* Ảnh bìa neo đáy (dư thì cắt phần trời phía trên) → mặt bàn cạnh cửa sổ luôn ở ~0–5cqw tính từ đáy. Mascot co giãn theo
+          bề ngang bìa (cqw) để luôn cùng tỉ lệ với cửa sổ, chân đặt trên mặt bàn, có bóng đổ ngay dưới cho cảm giác đang ngồi. */}
+      <div
         aria-hidden="true"
-        width={560}
-        height={493}
-        priority
-        className="pointer-events-none absolute bottom-[1.6cqw] left-[70%] -z-10 hidden h-[74%] max-h-[230px] w-auto -translate-x-1/2 drop-shadow-[0_10px_14px_rgba(20,70,40,.18)] md:block"
-      />
+        className="pointer-events-none absolute bottom-[2cqw] left-[77%] -z-10 hidden h-[min(80%,19cqw)] -translate-x-1/2 md:block"
+      >
+        <span className="absolute -bottom-[0.6cqw] left-1/2 h-[1.8cqw] w-[70%] -translate-x-1/2 rounded-[50%] bg-[rgba(120,80,30,.28)] blur-[6px]" />
+        <Image
+          unoptimized
+          src="/brand/hero/mascot-reading.webp"
+          alt=""
+          width={560}
+          height={493}
+          priority
+          className="relative h-full w-auto max-w-none drop-shadow-[0_6px_8px_rgba(20,70,40,.16)]"
+        />
+      </div>
 
       <div className="flex min-h-[200px] flex-col justify-center px-5 py-7 md:min-h-[260px] md:max-w-[62%] md:py-9 md:pl-12">
         <h1 id={id} className="text-navy-900">

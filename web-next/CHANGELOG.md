@@ -23,6 +23,9 @@
 
 ### Changed
 
+- **Trang chủ**: bỏ thẻ **Bài học** (và dòng tiến độ bài học); 4 thẻ chức năng dùng icon màu giống thanh bên thay cho ô chữ
+  词 / 文 / 音 / 听. Nút "Bắt đầu học ngay" mở Thư viện LingYu; khung "Bài học gần đây" đổi tên **Hoạt động gần đây**.
+- **Bìa đầu trang — mascot ngồi trên mặt bàn** trước khung cửa sổ (như design), co giãn theo bề ngang bìa và có bóng đổ dưới chân.
 - **Luyện nghe — ô Chép chính tả trên vở ô ly**: nền ngà kẻ ô 40px, chữ Khải; mỗi chữ Hán gõ vào nằm giữa một ô, dòng khớp hàng ô.
   Font Khải (LXGW WenKai) nét thường chia ~25 gói theo `unicode-range` (6.763 chữ GB2312 + dấu câu, `public/fonts/kai`,
   `src/app/kai-font.css`) — trình duyệt chỉ tải gói có chữ đang hiện, nên chữ bất kỳ đều hiện đúng kiểu Khải.
