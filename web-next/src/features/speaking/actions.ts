@@ -40,8 +40,11 @@ export const deleteQuestionsAction = async (ids: unknown) =>
   run((uid) => svc.deleteQuestions(uid, z.array(z.uuid()).max(200).parse(ids)));
 export const setStarredAction = async (id: string, starred: boolean) =>
   run((uid) => svc.setStarred(uid, uuid(id), z.boolean().parse(starred)));
-export const saveAnswerAction = async (id: string, answer: unknown) =>
-  run((uid) => svc.saveAnswer(uid, uuid(id), answerSchema.parse({ answer }).answer), false);
+export const saveAnswerAction = async (id: string, input: unknown) =>
+  run((uid) => {
+    const { answer, ...edit } = answerSchema.parse(typeof input === "string" ? { answer: input } : input);
+    return svc.saveAnswer(uid, uuid(id), answer, edit);
+  }, false);
 export const checkAnswerAction = async (id: string, answer: unknown) =>
   run((uid) => svc.checkAnswer(uid, uuid(id), answerSchema.parse({ answer }).answer), false);
 export const assistAction = async (text: unknown) =>

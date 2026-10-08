@@ -109,4 +109,15 @@ export const speaking = {
   noIssues: "Không thấy lỗi nào. Tiếp tục nhé!",
   tagsLabel: "Tag",
   illustration: "Mascot LingYu",
+  // Bố cục 2 cột (danh sách + luyện tập)
+  listSubtitle: "Quản lý câu hỏi và luyện nói theo chủ đề.",
+  moreFilters: "Bộ lọc khác",
+  pickQuestion: "Chọn một câu hỏi bên trái để bắt đầu luyện.",
+  editQuestion: "Sửa câu hỏi",
+  edited: "(đã sửa)",
+  answerPinyinLabel: "Pinyin của câu trả lời",
+  answerMeaningLabel: "Nghĩa tiếng Việt của câu trả lời",
+  listenMeaning: "Nghe nghĩa tiếng Việt",
+  removeHsk: "Bỏ mức {hsk}",
+  pagination: "Phân trang",
 };

@@ -46,7 +46,7 @@ test("Luyện giao tiếp: tạo nhiều câu (pinyin + nghĩa tự sinh) → l�
   await expect(page.getByText("Đã lưu 2 câu hỏi.")).toBeVisible();
 
   // Lọc theo HSK / tag và tìm kiếm.
-  const list = page.getByRole("region", { name: "Danh sách câu hỏi" });
+  const list = page.getByRole("list", { name: "Danh sách câu hỏi" });
   const row1 = list.getByRole("link", { name: "Luyện câu “你周末喜欢做什么？”" });
   const row2 = list.getByRole("link", { name: "Luyện câu “你家有几口人？”" });
   await expect(row1).toBeVisible();
@@ -75,15 +75,33 @@ test("Luyện giao tiếp: tạo nhiều câu (pinyin + nghĩa tự sinh) → l�
   await expect(page).toHaveURL(/\/speaking\/[0-9a-f-]+$/);
   const firstUrl = page.url();
   await expect(page.getByRole("progressbar", { name: "Câu 1 / 2" })).toBeVisible();
-  await expect(page.getByText("Cuối tuần bạn thích làm gì?")).toBeVisible();
+  const qcard = page.locator("section[aria-labelledby=sp-q]");
+  await expect(qcard.getByText("Cuối tuần bạn thích làm gì?")).toBeVisible();
 
   // Trả lời trên vở ô ly → pinyin + nghĩa của câu trả lời tự sinh, (loa chỉ hiện khi máy có giọng tiếng Trung).
   const answer = page.getByLabel("Câu trả lời (tiếng Trung)");
   await expect(answer).toHaveClass(/paper-lines/);
   await answer.fill("我周末喜欢看书。");
-  await expect(page.getByText(/kàn\s*shū/)).toBeVisible();
+  await expect(page.getByLabel("Pinyin của câu trả lời")).toHaveValue(/kàn\s*shū/);
+  await expect(page.getByLabel("Nghĩa tiếng Việt của câu trả lời")).not.toHaveValue("");
   await page.getByRole("button", { name: "Lưu", exact: true }).click();
   await expect(page.getByText("Đã lưu câu trả lời.")).toBeVisible();
+
+  // Mọi phần đều sửa được: nghĩa của câu trả lời (sửa tay → giữ sau khi tải lại), câu hỏi ngay trên thẻ, bỏ HSK.
+  await page.getByLabel("Nghĩa tiếng Việt của câu trả lời").fill("Cuối tuần tôi thích đọc sách.");
+  await expect(page.getByText("(đã sửa)")).toBeVisible();
+  await page.getByRole("button", { name: "Lưu", exact: true }).click();
+  await expect(page.getByText("Đã lưu câu trả lời.").first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Nghĩa tiếng Việt của câu trả lời")).toHaveValue("Cuối tuần tôi thích đọc sách.");
+  await expect(page.getByLabel("Pinyin của câu trả lời")).toHaveValue(/kàn\s*shū/);
+  await qcard.getByRole("button", { name: "Sửa câu hỏi" }).click();
+  await qcard.getByLabel("Nghĩa tiếng Việt").fill("Cuối tuần bạn hay làm gì?");
+  await qcard.getByRole("button", { name: "Lưu", exact: true }).click();
+  await expect(page.getByText("Đã lưu câu hỏi.")).toBeVisible();
+  await expect(qcard.getByText("Cuối tuần bạn hay làm gì?")).toBeVisible();
+  await page.getByRole("button", { name: "Bỏ mức HSK1" }).click();
+  await expect(page.getByRole("button", { name: "Bỏ mức HSK1" })).toHaveCount(0);
 
   // Gợi ý + kiểm tra (không có đáp án mẫu).
   await page.getByRole("button", { name: "Gợi ý" }).click();
@@ -136,6 +154,11 @@ test("API Luyện giao tiếp: người lạ 401, người khác 404 / không th
   const put = await page.request.put(`/api/v1/speaking/questions/${q.id}/answer`, { data: { answer: "我很好。" } });
   expect(put.ok()).toBe(true);
   expect((await data(put)).answerPinyin).toMatch(/hěn/);
+  // Sửa tay pinyin / nghĩa của câu trả lời qua API.
+  const edit = await page.request.put(`/api/v1/speaking/questions/${q.id}/answer`, {
+    data: { answer: "我很好。", answerMeaning: "Tôi rất khỏe." },
+  });
+  expect((await data(edit)).answerMeaning).toBe("Tôi rất khỏe.");
 
   const anon = await browser.newContext();
   expect((await anon.request.get("/api/v1/speaking/questions")).status()).toBe(401);
@@ -156,4 +179,30 @@ test("API Luyện giao tiếp: người lạ 401, người khác 404 / không th
   // Chủ vẫn còn câu hỏi + câu trả lời.
   const mine = await data(await page.request.get(`/api/v1/speaking/questions/${q.id}`));
   expect(mine.answer).toBe("我很好。");
+});
+
+test("Luyện giao tiếp trên màn rộng: danh sách bên trái, luyện tập bên phải", async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await register(page, "Màn Rộng", "spw");
+  const r = await page.request.post("/api/v1/speaking/questions", {
+    data: {
+      questions: [
+        { zh: "你好吗？", hsk: 1 },
+        { zh: "你叫什么名字？", hsk: 1 },
+      ],
+    },
+  });
+  const ids = (await data(r)).ids as string[];
+  await page.goto("/speaking");
+  const list = page.getByRole("list", { name: "Danh sách câu hỏi" });
+  // Cột phải: câu đầu trang (mới nhất) đang được luyện.
+  await expect(list.getByRole("link", { name: "Luyện câu “你叫什么名字？”" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByLabel("Câu trả lời (tiếng Trung)")).toBeVisible();
+  await list.getByRole("link", { name: "Luyện câu “你好吗？”" }).click();
+  await expect(page).toHaveURL(new RegExp(`/speaking/${ids[0]}$`));
+  await expect(list).toBeVisible();
+  await expect(list.getByRole("link", { name: "Luyện câu “你好吗？”" })).toHaveAttribute("aria-current", "page");
+  await expect(page.locator("section[aria-labelledby=sp-q]").getByRole("heading", { name: "你好吗？" })).toBeVisible();
+  await page.getByLabel("Câu trả lời (tiếng Trung)").fill("我很好。");
+  await expect(page.getByLabel("Pinyin của câu trả lời")).toHaveValue(/hěn/);
 });

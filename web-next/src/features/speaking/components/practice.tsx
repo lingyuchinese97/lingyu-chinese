@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   ArrowRight,
   AudioLines,
   ChevronLeft,
@@ -15,9 +16,12 @@ import {
   MicOff,
   Minimize2,
   PenLine,
+  Pencil,
+  Play,
   Plus,
   RotateCcw,
   Save,
+  Sparkles,
   Star,
   X,
 } from "lucide-react";
@@ -29,7 +33,7 @@ import { SPEAKING } from "@/lib/limits";
 import { tagColors } from "@/lib/tag-style";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/client";
-import { checkAnswerAction, saveAnswerAction, setStarredAction, updateQuestionAction } from "../actions";
+import { assistAction, checkAnswerAction, saveAnswerAction, setStarredAction, updateQuestionAction } from "../actions";
 import type { Feedback, QuestionDetail } from "../service";
 
 /* Web Speech API (nhận dạng giọng nói) — chưa có trong lib.dom của TypeScript. */
@@ -51,7 +55,6 @@ const getRecognition = (): (new () => Recog) | null => {
 };
 
 const hasHan = (s: string) => /\p{Script=Han}/u.test(s);
-const noopSubscribe = () => () => {};
 
 /** Gợi ý trả lời (không có đáp án mẫu): đổi chủ ngữ 你 → 我, từ khoá nên dùng lại. */
 function hintOf(zh: string) {
@@ -66,13 +69,29 @@ function hintOf(zh: string) {
   return { start, words: [...new Set(words)].slice(0, 4) };
 }
 
-/** Màn C — xem lại câu hỏi và luyện trả lời trên vở ô ly; pinyin + nghĩa của câu trả lời tự sinh; kiểm tra bằng AI. */
-export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: string[] }) {
+type QFields = { zh: string; pinyin: string; meaning: string; hsk: number | null; tags: string[] };
+
+/**
+ * Màn C — luyện trả lời một câu hỏi (cột phải trên màn rộng, theo design). Mọi phần đều sửa được: câu hỏi (chữ Hán, pinyin,
+ * nghĩa, HSK, tag), câu trả lời trên vở ô ly, pinyin + nghĩa của câu trả lời (tự sinh, sửa tay được). Câu trả lời tự lưu;
+ * chuyển câu trước / sau lưu trước nên không mất bài. `qs`: bộ lọc của danh sách (giữ nguyên khi chuyển câu).
+ */
+export function Practice({ q, knownTags, qs = "" }: { q: QuestionDetail; knownTags: string[]; qs?: string }) {
   const t = useT();
   const router = useRouter();
+  const [qf, setQf] = React.useState<QFields>({
+    zh: q.zh,
+    pinyin: q.pinyin,
+    meaning: q.meaning,
+    hsk: q.hsk,
+    tags: q.tags,
+  });
+  const [editQ, setEditQ] = React.useState<QFields | null>(null);
   const [answer, setAnswer] = React.useState(q.answer);
-  const [savedAnswer, setSavedAnswer] = React.useState(q.answer);
-  const [auto, setAuto] = React.useState({ pinyin: q.answerPinyin, meaning: q.answerMeaning });
+  const [pinyin, setPinyin] = React.useState(q.answerPinyin);
+  const [meaning, setMeaning] = React.useState(q.answerMeaning);
+  const [manual, setManual] = React.useState({ pinyin: false, meaning: false });
+  const [saved, setSaved] = React.useState({ answer: q.answer, pinyin: q.answerPinyin, meaning: q.answerMeaning });
   const [saving, setSaving] = React.useState(false);
   const [feedback, setFeedback] = React.useState<Feedback | null>(q.feedback);
   const [checking, setChecking] = React.useState(false);
@@ -82,7 +101,6 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
   const [hint, setHint] = React.useState(false);
   const [speed, setSpeed] = React.useState(1);
   const [starred, setStarred] = React.useState(q.starred);
-  const [tags, setTags] = React.useState(q.tags);
   const [tagInput, setTagInput] = React.useState<string | null>(null);
   const [rec, setRec] = React.useState<Recog | null>(null);
   const [pen, setPen] = React.useState(false);
@@ -90,53 +108,52 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
   const [strokes, setStrokes] = React.useState<Stroke[]>([]);
   const inFlight = React.useRef<Promise<unknown> | null>(null);
 
-  // Trình duyệt có nhận dạng giọng nói không (máy chủ luôn "không" → không lệch khi hydrate).
-  const micOk = React.useSyncExternalStore(
-    noopSubscribe,
-    () => !!getRecognition(),
-    () => false,
-  );
+  const dirty =
+    answer.trim() !== saved.answer ||
+    (manual.pinyin && pinyin.trim() !== saved.pinyin) ||
+    (manual.meaning && meaning.trim() !== saved.meaning);
 
-  /** Lưu câu trả lời (nếu đổi) + nhận pinyin / nghĩa tự sinh. Dùng trước khi chuyển câu để không mất bài. */
-  const flush = React.useCallback(
-    async (text = answer) => {
-      const v = text.trim();
-      if (v === savedAnswer) return true;
-      setSaving(true);
-      const p = saveAnswerAction(q.id, v);
-      inFlight.current = p;
-      const r = await p;
-      if (inFlight.current === p) setSaving(false);
-      if (!r.ok) {
-        toast.error(r.message);
-        return false;
-      }
-      setSavedAnswer(r.data.answer);
-      setAuto({ pinyin: r.data.answerPinyin, meaning: r.data.answerMeaning });
-      if (r.data.changed) setFeedback(null);
-      return true;
-    },
-    [answer, savedAnswer, q.id],
-  );
-  // Tự lưu + sinh pinyin / nghĩa khi ngừng gõ.
+  /** Lưu câu trả lời (+ pinyin / nghĩa nếu người học tự sửa). Dùng trước khi chuyển câu để không mất bài. */
+  const flush = React.useCallback(async () => {
+    if (!dirty) return true;
+    setSaving(true);
+    const v = answer.trim();
+    const p = saveAnswerAction(q.id, {
+      answer: v,
+      ...(manual.pinyin && v ? { answerPinyin: pinyin.trim() } : {}),
+      ...(manual.meaning && v ? { answerMeaning: meaning.trim() } : {}),
+    });
+    inFlight.current = p;
+    const r = await p;
+    if (inFlight.current === p) setSaving(false);
+    if (!r.ok) {
+      toast.error(r.message);
+      return false;
+    }
+    setSaved({ answer: r.data.answer, pinyin: r.data.answerPinyin, meaning: r.data.answerMeaning });
+    if (!manual.pinyin || !v) setPinyin(r.data.answerPinyin);
+    if (!manual.meaning || !v) setMeaning(r.data.answerMeaning);
+    if (r.data.changed) setFeedback(null);
+    return true;
+  }, [dirty, answer, pinyin, meaning, manual, q.id]);
+  // Tự lưu khi ngừng gõ (câu trả lời đổi → sinh lại pinyin + nghĩa).
   React.useEffect(() => {
-    if (answer.trim() === savedAnswer) return;
+    if (!dirty) return;
     const h = setTimeout(() => void flush(), 900);
     return () => clearTimeout(h);
-  }, [answer, savedAnswer, flush]);
+  }, [dirty, flush]);
 
   async function goTo(href: string) {
-    if (await flush()) router.push(href);
+    if (await flush()) router.push(href, { scroll: false });
   }
   async function check() {
     const v = answer.trim();
     if (!v || !hasHan(v)) return void toast.error(t("speaking.needAnswer"));
+    if (!(await flush())) return;
     setChecking(true);
     const r = await checkAnswerAction(q.id, v);
     setChecking(false);
     if (!r.ok) return void toast.error(r.message);
-    setSavedAnswer(r.data.answer);
-    setAuto({ pinyin: r.data.answerPinyin, meaning: r.data.answerMeaning });
     setFeedback(r.data.feedback);
     requestAnimationFrame(() =>
       document.getElementById("sp-feedback")?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
@@ -146,17 +163,22 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
     const r = await setStarredAction(q.id, !starred);
     if (!r.ok) return void toast.error(r.message);
     setStarred(r.data.starred);
+    router.refresh();
   }
-  async function saveTags(next: string[]) {
-    const r = await updateQuestionAction(q.id, {
-      zh: q.zh,
-      pinyin: q.pinyin,
-      meaning: q.meaning,
-      hsk: q.hsk,
-      tags: next,
-    });
+  async function saveQuestion(next: QFields) {
+    const r = await updateQuestionAction(q.id, next);
+    if (!r.ok) {
+      toast.error(r.message);
+      return false;
+    }
+    setQf({ zh: r.data.zh, pinyin: r.data.pinyin, meaning: r.data.meaning, hsk: r.data.hsk, tags: r.data.tags });
+    return true;
+  }
+  async function autoFillQuestion() {
+    if (!editQ?.zh.trim()) return;
+    const r = await assistAction(editQ.zh);
     if (!r.ok) return void toast.error(r.message);
-    setTags(r.data.tags);
+    setEditQ((e) => (e ? { ...e, pinyin: r.data.pinyin, meaning: r.data.meaning } : e));
   }
   function record() {
     if (rec) return rec.stop();
@@ -171,7 +193,10 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
       let txt = "";
       for (let i = e.resultIndex; i < e.results.length; i++)
         if (e.results[i]!.isFinal) txt += e.results[i]![0].transcript;
-      if (txt) setAnswer((base + txt).slice(0, SPEAKING.MAX_ANSWER));
+      if (txt) {
+        setAnswer((base + txt).slice(0, SPEAKING.MAX_ANSWER));
+        setManual({ pinyin: false, meaning: false });
+      }
     };
     r.onerror = (e) => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") toast.error(t("speaking.micDenied"));
@@ -183,11 +208,14 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
 
   const nav = q.nav;
   const rate = SPEECH_RATE.normal * speed;
-  const h = hintOf(q.zh);
+  const h = hintOf(qf.zh);
+  const generating = saving && answer.trim() !== saved.answer;
   const navBtn =
     "inline-flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-border bg-white text-navy-900 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40 [&_svg]:size-5";
   const tool =
     "inline-flex h-11 items-center gap-2 rounded-[12px] border border-border bg-white px-4 text-[14.5px] font-semibold text-navy-900 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50 [&_svg]:size-[18px]";
+  const field =
+    "w-full rounded-[12px] border border-border bg-white px-3.5 py-2.5 text-[15.5px] text-navy-900 outline-none focus:border-blue-600 focus-visible:shadow-[var(--focus-ring)]";
   const toggles = [
     { v: showPinyin, set: setShowPinyin, label: t("speaking.showPinyin"), badge: "ā", c: "bg-[#E6F1FF] text-blue-700" },
     {
@@ -200,20 +228,20 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Thanh trên: ← Câu hỏi n / N → · Nghe câu hỏi · tốc độ · Bút highlight · Đánh dấu · Lưu */}
-      <div className="@container rounded-[var(--radius-xl)] border border-border bg-white/92 p-3 shadow-card">
-        <div className="flex flex-col gap-3 @[60rem]:flex-row @[60rem]:items-center @[60rem]:justify-between">
+    <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/95 p-3 shadow-card md:p-4">
+      {/* Thanh trên: ← Câu hỏi n / N → · Nghe câu hỏi · tốc độ · Đánh dấu · Bút highlight · Lưu */}
+      <div className="@container">
+        <div className="flex flex-col gap-2.5 @[44rem]:flex-row @[44rem]:items-center @[44rem]:justify-between">
           <div className="flex min-w-0 items-center gap-2">
             <button
               type="button"
-              onClick={() => goTo(nav.prev ? `/speaking/${nav.prev}` : "/speaking")}
+              onClick={() => goTo(nav.prev ? `/speaking/${nav.prev}${qs}` : `/speaking${qs}`)}
               aria-label={nav.prev ? t("speaking.prevQuestion") : t("speaking.backToList")}
               className={navBtn}
             >
-              <ChevronLeft />
+              {nav.prev ? <ArrowLeft /> : <ChevronLeft />}
             </button>
-            <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+            <div className="flex min-w-0 flex-1 items-center gap-3 px-1">
               <span className="text-[18px] font-extrabold whitespace-nowrap text-navy-900">
                 {t("speaking.questionOf", { n: nav.index })}
                 <span className="font-semibold text-text-3"> / {nav.total}</span>
@@ -224,7 +252,7 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
                 aria-valuemin={1}
                 aria-valuemax={nav.total}
                 aria-valuenow={nav.index}
-                className="block h-1.5 w-[140px] overflow-hidden rounded-full bg-[#E3ECF7]"
+                className="block h-1.5 w-full max-w-[130px] min-w-[60px] overflow-hidden rounded-full bg-[#E3ECF7]"
               >
                 <span
                   className="block h-full rounded-full bg-blue-600"
@@ -235,7 +263,7 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
             <button
               type="button"
               disabled={!nav.next}
-              onClick={() => nav.next && goTo(`/speaking/${nav.next}`)}
+              onClick={() => nav.next && goTo(`/speaking/${nav.next}${qs}`)}
               aria-label={t("speaking.nextQuestion")}
               className={navBtn}
             >
@@ -244,10 +272,10 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <SpeakButton
-              text={q.zh}
+              text={qf.zh}
               rate={rate}
               label={t("speaking.listen")}
-              className="h-10 w-auto gap-2 rounded-[12px] border border-[#CFE3F7] bg-blue-50 px-3.5 text-[14.5px] font-semibold hover:bg-blue-100"
+              className="h-10 w-auto gap-2 rounded-[12px] border border-[#CFE3F7] bg-blue-50 px-3 text-[14px] font-semibold hover:bg-blue-100"
             >
               {t("speaking.listen")}
             </SpeakButton>
@@ -265,15 +293,6 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
                 ))}
               </select>
             </label>
-            <InkTools
-              pen={pen}
-              setPen={setPen}
-              ink={ink}
-              setInk={setInk}
-              strokes={strokes}
-              setStrokes={setStrokes}
-              compact
-            />
             <button
               type="button"
               onClick={toggleStar}
@@ -281,27 +300,19 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
               className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-border bg-white px-3 text-[14px] font-semibold text-navy-900 hover:bg-amber-50"
             >
               <Star
-                className={cn("size-[18px]", starred ? "fill-amber text-amber" : "text-text-2")}
+                className={cn("size-[18px]", starred ? "fill-amber text-amber" : "text-amber")}
                 aria-hidden="true"
               />
               {t("speaking.starQuestion")}
-            </button>
-            <button
-              type="button"
-              onClick={async () => (await flush()) && toast.success(t("speaking.answerSaved"))}
-              className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-[#CFE3F7] bg-white px-3 text-[14px] font-semibold text-blue-700 hover:bg-blue-50"
-            >
-              {saving ? <Loader2 className="size-[18px] animate-spin" /> : <Save className="size-[18px]" />}
-              {t("speaking.saveAnswer")}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Câu hỏi */}
+      {/* Câu hỏi — sửa ngay tại chỗ (chữ Hán, pinyin, nghĩa, HSK). */}
       <section
         aria-labelledby="sp-q"
-        className="relative isolate overflow-hidden rounded-[22px] border border-[#D3E8F8] bg-[linear-gradient(110deg,#F4F9FF_0%,#E8F3FE_60%,#DDEEFD_100%)] px-5 py-5 shadow-card md:px-8"
+        className="relative isolate overflow-hidden rounded-[20px] border border-[#D3E8F8] bg-[linear-gradient(110deg,#F4F9FF_0%,#E8F3FE_55%,#D9EDFD_100%)] px-5 py-5 md:px-7"
       >
         <Image
           unoptimized
@@ -310,32 +321,144 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
           aria-hidden="true"
           width={560}
           height={493}
-          className="pointer-events-none absolute right-6 bottom-0 -z-10 hidden h-[90%] max-h-[130px] w-auto md:block"
+          className="pointer-events-none absolute right-5 bottom-0 -z-10 hidden h-[88%] max-h-[124px] w-auto drop-shadow-[0_6px_10px_rgba(20,70,40,.16)] sm:block"
         />
-        <div className="flex flex-wrap items-center gap-3 md:pr-40">
-          <h1 id="sp-q" lang="zh" className="kai-bold text-[28px] leading-tight text-navy-900 md:text-[34px]">
-            {q.zh}
-          </h1>
-          <SpeakButton
-            text={q.zh}
-            rate={rate}
-            label={t("speaking.listen")}
-            className="size-10 text-blue-600 [&_svg]:size-6"
-          />
-        </div>
-        {showPinyin && q.pinyin ? <p className="mt-1 text-[16px] text-pinyin md:pr-40">{q.pinyin}</p> : null}
-        {q.meaning ? <p className="mt-1.5 text-[17px] text-navy/80 md:pr-40">{q.meaning}</p> : null}
+        <Image
+          unoptimized
+          src="/brand/ui/deco-leaf.png"
+          alt=""
+          aria-hidden="true"
+          width={57}
+          height={68}
+          className="pointer-events-none absolute right-[150px] bottom-2 -z-10 hidden w-7 -rotate-[30deg] opacity-70 sm:block"
+        />
+        {editQ ? (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (await saveQuestion(editQ)) {
+                setEditQ(null);
+                toast.success(t("speaking.updated"));
+              }
+            }}
+            className="flex flex-col gap-2.5 sm:pr-36"
+          >
+            <h2 id="sp-q" className="text-[15px] font-bold text-navy-900">
+              {t("speaking.editQuestion")}
+            </h2>
+            <label className="flex flex-col gap-1">
+              <span className="text-[13.5px] font-semibold text-text-2">{t("speaking.zh")}</span>
+              <input
+                lang="zh"
+                value={editQ.zh}
+                maxLength={SPEAKING.MAX_ZH}
+                onChange={(e) => setEditQ({ ...editQ, zh: e.target.value })}
+                className={cn(field, "text-[19px] font-bold")}
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[13.5px] font-semibold text-text-2">{t("speaking.pinyin")}</span>
+              <input
+                value={editQ.pinyin}
+                maxLength={SPEAKING.MAX_PINYIN}
+                onChange={(e) => setEditQ({ ...editQ, pinyin: e.target.value })}
+                placeholder={t("speaking.pinyinPlaceholder")}
+                className={field}
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[13.5px] font-semibold text-text-2">{t("speaking.meaning")}</span>
+              <input
+                value={editQ.meaning}
+                maxLength={SPEAKING.MAX_MEANING}
+                onChange={(e) => setEditQ({ ...editQ, meaning: e.target.value })}
+                placeholder={t("speaking.meaningPlaceholder")}
+                className={field}
+              />
+            </label>
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="flex flex-col gap-1">
+                <span className="text-[13.5px] font-semibold text-text-2">{t("speaking.hsk")}</span>
+                <select
+                  value={editQ.hsk ?? ""}
+                  onChange={(e) => setEditQ({ ...editQ, hsk: e.target.value ? Number(e.target.value) : null })}
+                  className={cn(field, "h-11 w-[130px] py-0")}
+                >
+                  <option value="">{t("speaking.hskNone")}</option>
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>
+                      HSK{n}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                onClick={autoFillQuestion}
+                className="inline-flex h-11 items-center gap-1.5 rounded-[12px] bg-[#F1EBFF] px-3 text-[14px] font-semibold text-[#5B3CC4] hover:bg-[#E7DEFF]"
+              >
+                <Sparkles className="size-4" aria-hidden="true" />
+                {t("speaking.autoFill")}
+              </button>
+              <span className="ml-auto flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditQ(null)}
+                  className="inline-flex h-11 items-center rounded-[12px] border border-border bg-white px-4 text-[14.5px] font-semibold text-navy-900 hover:bg-blue-50"
+                >
+                  {t("speaking.cancel")}
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex h-11 items-center gap-2 rounded-[12px] bg-[#1769C9] px-4 text-[14.5px] font-semibold text-white hover:bg-[#135AAD]"
+                >
+                  <Save className="size-[18px]" aria-hidden="true" />
+                  {t("speaking.save")}
+                </button>
+              </span>
+            </div>
+          </form>
+        ) : (
+          <div className="sm:pr-36">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2
+                id="sp-q"
+                lang="zh"
+                className="text-[26px] leading-tight font-extrabold tracking-wide text-navy-900 md:text-[30px]"
+              >
+                {qf.zh}
+              </h2>
+              <SpeakButton
+                text={qf.zh}
+                rate={rate}
+                label={t("speaking.listen")}
+                className="size-10 text-blue-600 [&_svg]:size-6"
+              />
+              <button
+                type="button"
+                onClick={() => setEditQ(qf)}
+                aria-label={t("speaking.editQuestion")}
+                title={t("speaking.editQuestion")}
+                className="inline-flex size-9 items-center justify-center rounded-full text-blue-600 hover:bg-white/70"
+              >
+                <Pencil className="size-[18px]" />
+              </button>
+            </div>
+            {showPinyin && qf.pinyin ? <p className="mt-1 text-[15.5px] text-pinyin">{qf.pinyin}</p> : null}
+            {qf.meaning ? <p className="mt-1.5 text-[16.5px] text-navy/80">{qf.meaning}</p> : null}
+          </div>
+        )}
       </section>
 
       {/* Câu trả lời */}
       <section
         aria-labelledby="sp-a"
-        className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white p-3 shadow-card md:p-5"
+        className="flex flex-col gap-3 rounded-[18px] border border-border bg-white p-3 md:p-4"
       >
         <div className="flex flex-wrap items-center gap-2">
           <h2
             id="sp-a"
-            className="inline-flex items-center gap-2 rounded-[12px] bg-[#FFF3D6] px-3 py-1.5 text-[15px] font-bold text-[#7A4E00]"
+            className="inline-flex items-center gap-2 rounded-[10px] bg-[#FFF3D6] px-3 py-1.5 text-[14.5px] font-bold text-[#7A4E00]"
           >
             <PenLine className="size-[18px] text-[#E8A400]" aria-hidden="true" />
             {t("speaking.yourAnswer")}
@@ -344,7 +467,7 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
             {toggles.map((o) => (
               <label
                 key={o.label}
-                className="relative flex min-h-10 cursor-pointer items-center gap-2 rounded-[12px] border border-border bg-white px-2.5 text-[14px] font-semibold text-text"
+                className="relative flex min-h-10 cursor-pointer items-center gap-2 rounded-[12px] border border-border bg-white px-2.5 text-[13.5px] font-semibold text-text"
               >
                 <input
                   type="checkbox"
@@ -378,19 +501,42 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
           </div>
         </div>
 
+        <div className="flex flex-wrap items-center gap-2">
+          <InkTools
+            pen={pen}
+            setPen={setPen}
+            ink={ink}
+            setInk={setInk}
+            strokes={strokes}
+            setStrokes={setStrokes}
+            compact
+          />
+          <button
+            type="button"
+            onClick={async () => (await flush()) && toast.success(t("speaking.answerSaved"))}
+            className="ml-auto inline-flex h-10 items-center gap-2 rounded-[12px] border border-[#CFE3F7] bg-white px-3 text-[14px] font-semibold text-blue-700 hover:bg-blue-50"
+          >
+            {saving ? <Loader2 className="size-[18px] animate-spin" /> : <Save className="size-[18px]" />}
+            {t("speaking.saveAnswer")}
+          </button>
+        </div>
+
         <div className="relative">
           <textarea
             lang="zh"
             value={answer}
             maxLength={SPEAKING.MAX_ANSWER}
-            onChange={(e) => setAnswer(e.target.value)}
+            onChange={(e) => {
+              setAnswer(e.target.value);
+              setManual({ pinyin: false, meaning: false });
+            }}
             onBlur={() => void flush()}
             aria-label={t("speaking.answerLabel")}
             placeholder={t("speaking.answerPlaceholder")}
             spellCheck={false}
             className={cn(
               "block w-full resize-none rounded-[14px] border-[1.5px] border-[#E8E1CF] paper-lines text-[#1F2937] outline-none placeholder:text-[16px] placeholder:tracking-normal placeholder:text-text-3 focus-visible:border-blue focus-visible:shadow-[var(--focus-ring)]",
-              wide ? "h-[480px]" : "h-[240px]",
+              wide ? "h-[440px]" : "h-[220px]",
             )}
           />
           <InkLayer strokes={strokes} setStrokes={setStrokes} pen={pen} ink={ink} />
@@ -400,45 +546,59 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
         </div>
 
         {showPinyin ? (
-          <AutoBox
+          <EditBox
             icon={<AudioLines className="size-5 text-blue-600" aria-hidden="true" />}
-            label={t("speaking.answerPinyin")}
-            auto={t("speaking.auto")}
-            tone="bg-[#F1F7FF] text-blue-700"
-            text={saving ? t("speaking.generating") : auto.pinyin}
-            speak={savedAnswer}
-            speakLabel={t("speaking.listenAnswer")}
-            rate={rate}
+            title={t("speaking.answerPinyin")}
+            note={manual.pinyin ? t("speaking.edited") : t("speaking.auto")}
+            tone="bg-[#EAF3FF] text-blue-700"
+            label={t("speaking.answerPinyinLabel")}
+            value={pinyin}
+            max={SPEAKING.MAX_PINYIN}
+            busy={generating && !manual.pinyin}
+            onChange={(v) => {
+              setPinyin(v);
+              setManual((m) => ({ ...m, pinyin: true }));
+            }}
+            onBlur={() => void flush()}
+            speak={<SpeakButton text={saved.answer || answer} rate={rate} label={t("speaking.listenAnswer")} />}
           />
         ) : null}
         {showMeaning ? (
-          <AutoBox
+          <EditBox
             icon={<PenLine className="size-5 text-[#6D4FD8]" aria-hidden="true" />}
-            label={t("speaking.answerMeaning")}
-            auto={t("speaking.auto")}
-            tone="bg-[#F6F2FF] text-[#5B3CC4]"
-            text={saving ? t("speaking.generating") : auto.meaning}
+            title={t("speaking.answerMeaning")}
+            note={manual.meaning ? t("speaking.edited") : t("speaking.auto")}
+            tone="bg-[#F1EBFF] text-[#5B3CC4]"
+            label={t("speaking.answerMeaningLabel")}
+            value={meaning}
+            max={SPEAKING.MAX_MEANING}
+            busy={generating && !manual.meaning}
+            onChange={(v) => {
+              setMeaning(v);
+              setManual((m) => ({ ...m, meaning: true }));
+            }}
+            onBlur={() => void flush()}
+            speak={<SpeakButton text={meaning} voice="vi" label={t("speaking.listenMeaning")} />}
           />
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {micOk ? (
-            <button
-              type="button"
-              onClick={record}
-              aria-pressed={!!rec}
-              className={cn(tool, rec && "border-red bg-red-50 text-red")}
-            >
-              {rec ? <MicOff /> : <Mic className="text-blue-600" />}
-              {rec ? t("speaking.recording") : t("speaking.record")}
-            </button>
-          ) : null}
+          <button
+            type="button"
+            onClick={record}
+            aria-pressed={!!rec}
+            className={cn(tool, "border-[#BFD9F5] bg-[#F3F8FF] text-blue-700", rec && "border-red bg-red-50 text-red")}
+          >
+            {rec ? <MicOff /> : <Mic />}
+            {rec ? t("speaking.recording") : t("speaking.record")}
+          </button>
           <SpeakButton
-            text={savedAnswer || answer}
+            text={saved.answer || answer}
             rate={rate}
             label={t("speaking.listenAnswer")}
-            className={cn(tool, "w-auto")}
+            className={cn(tool, "w-auto [&>svg:first-child]:hidden")}
           >
+            <Play className="size-[18px] fill-blue-600 text-blue-600" aria-hidden="true" />
             {t("speaking.replay")}
           </SpeakButton>
           <button type="button" onClick={() => setHint((x) => !x)} aria-pressed={hint} className={tool}>
@@ -449,8 +609,8 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
             type="button"
             onClick={() => {
               setAnswer("");
+              setManual({ pinyin: false, meaning: false });
               setFeedback(null);
-              void flush("");
             }}
             className={tool}
           >
@@ -461,7 +621,7 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
             type="button"
             onClick={check}
             disabled={checking}
-            className="ml-auto inline-flex h-12 min-w-[220px] items-center justify-between gap-3 rounded-[12px] bg-[#1769C9] px-5 text-[15.5px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.28)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60 max-sm:w-full"
+            className="ml-auto inline-flex h-12 min-w-[200px] items-center justify-between gap-3 rounded-[12px] bg-[#1769C9] px-5 text-[15.5px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.28)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60 max-sm:w-full"
           >
             <span className="inline-flex items-center gap-2">
               {checking ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : null}
@@ -484,76 +644,74 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
         ) : null}
 
         {feedback ? <FeedbackBox f={feedback} rate={rate} /> : null}
-
-        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-          <span className="mr-1 text-[15px] font-bold text-navy-900">{t("speaking.tagsLabel")}</span>
-          {tagInput === null ? (
-            <button
-              type="button"
-              onClick={() => setTagInput("")}
-              className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-white px-3 text-[14px] font-semibold text-blue-700 hover:bg-blue-50"
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              {t("speaking.addTag")}
-            </button>
-          ) : (
-            <input
-              autoFocus
-              value={tagInput}
-              list="sp-known-tags"
-              aria-label={t("speaking.addTag")}
-              placeholder={t("speaking.tagPlaceholder")}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") setTagInput(null);
-                if (e.key !== "Enter") return;
-                e.preventDefault();
-                const v = tagInput.trim().slice(0, SPEAKING.MAX_TAG);
-                setTagInput(null);
-                if (v && !tags.some((x) => x.toLowerCase() === v.toLowerCase())) void saveTags([...tags, v]);
-              }}
-              onBlur={() => setTagInput(null)}
-              className="h-9 w-[180px] rounded-[10px] border border-blue-600 px-2.5 text-[14px] outline-none"
-            />
-          )}
-          <datalist id="sp-known-tags">
-            {knownTags.map((x) => (
-              <option key={x} value={x} />
-            ))}
-          </datalist>
-          {q.hsk ? (
-            <span className="rounded-full px-3 py-1 text-[13.5px] font-semibold" style={tagColors("HSK")}>
-              HSK{q.hsk}
-            </span>
-          ) : null}
-          {tags.map((tg) => (
-            <span
-              key={tg}
-              className="inline-flex items-center gap-1 rounded-full py-1 pr-1.5 pl-3 text-[13.5px] font-semibold"
-              style={tagColors(tg)}
-            >
-              {tg}
-              <button
-                type="button"
-                onClick={() => saveTags(tags.filter((x) => x !== tg))}
-                aria-label={t("speaking.removeTag", { tag: tg })}
-                className="inline-flex size-5 items-center justify-center rounded-full hover:bg-black/5"
-              >
-                <X className="size-3.5" />
-              </button>
-            </span>
-          ))}
-        </div>
       </section>
 
-      <div className="flex items-center justify-between gap-3">
+      {/* Tag: + Thêm tag · HSK × · tag × */}
+      <div className="flex flex-wrap items-center gap-2 px-1">
+        <span className="mr-1 text-[15px] font-bold text-navy-900">{t("speaking.tagsLabel")}</span>
+        {tagInput === null ? (
+          <button
+            type="button"
+            onClick={() => setTagInput("")}
+            className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-white px-3 text-[14px] font-semibold text-blue-700 hover:bg-blue-50"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {t("speaking.addTag")}
+          </button>
+        ) : (
+          <input
+            autoFocus
+            value={tagInput}
+            list="sp-known-tags"
+            aria-label={t("speaking.addTag")}
+            placeholder={t("speaking.tagPlaceholder")}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setTagInput(null);
+              if (e.key !== "Enter") return;
+              e.preventDefault();
+              const v = tagInput.trim().slice(0, SPEAKING.MAX_TAG);
+              setTagInput(null);
+              if (v && !qf.tags.some((x) => x.toLowerCase() === v.toLowerCase()))
+                void saveQuestion({ ...qf, tags: [...qf.tags, v] });
+            }}
+            onBlur={() => setTagInput(null)}
+            className="h-9 w-[180px] rounded-[10px] border border-blue-600 px-2.5 text-[14px] outline-none"
+          />
+        )}
+        <datalist id="sp-known-tags">
+          {knownTags.map((x) => (
+            <option key={x} value={x} />
+          ))}
+        </datalist>
+        {qf.hsk ? (
+          <Pill
+            text={`HSK${qf.hsk}`}
+            style={tagColors("HSK")}
+            removeLabel={t("speaking.removeHsk", { hsk: `HSK${qf.hsk}` })}
+            onRemove={() => saveQuestion({ ...qf, hsk: null })}
+          />
+        ) : null}
+        {qf.tags.map((tg) => (
+          <Pill
+            key={tg}
+            text={tg}
+            style={tagColors(tg)}
+            removeLabel={t("speaking.removeTag", { tag: tg })}
+            onRemove={() => saveQuestion({ ...qf, tags: qf.tags.filter((x) => x !== tg) })}
+          />
+        ))}
+      </div>
+
+      {/* Điện thoại: danh sách nằm ở trang riêng → nút quay lại + câu tiếp theo. */}
+      <div className="flex items-center justify-between gap-3 2xl:hidden">
         <Link
-          href="/speaking"
+          href={`/speaking${qs}`}
           onClick={(e) => {
             e.preventDefault();
-            void goTo("/speaking");
+            void goTo(`/speaking${qs}`);
           }}
-          className="inline-flex h-12 items-center gap-2 rounded-[14px] border border-border bg-white px-5 font-semibold text-navy-900 shadow-sm hover:bg-blue-50"
+          className="inline-flex h-12 items-center gap-2 rounded-[14px] border border-border bg-white px-4 font-semibold text-navy-900 hover:bg-blue-50"
         >
           <ChevronLeft className="size-5" aria-hidden="true" />
           {t("speaking.backToList")}
@@ -561,8 +719,8 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
         {nav.next ? (
           <button
             type="button"
-            onClick={() => goTo(`/speaking/${nav.next}`)}
-            className="inline-flex h-12 min-w-[180px] items-center justify-between gap-2 rounded-[14px] bg-blue-600 px-5 font-semibold text-white shadow-soft hover:bg-blue-700"
+            onClick={() => goTo(`/speaking/${nav.next}${qs}`)}
+            className="inline-flex h-12 items-center gap-2 rounded-[14px] bg-blue-600 px-5 font-semibold text-white shadow-soft hover:bg-blue-700"
           >
             {t("speaking.nextQuestion")}
             <ChevronRight className="size-5" aria-hidden="true" />
@@ -573,37 +731,85 @@ export function Practice({ q, knownTags }: { q: QuestionDetail; knownTags: strin
   );
 }
 
-function AutoBox({
-  icon,
-  label,
-  auto,
-  tone,
+function Pill({
   text,
+  style,
+  removeLabel,
+  onRemove,
+}: {
+  text: string;
+  style: React.CSSProperties;
+  removeLabel: string;
+  onRemove: () => void;
+}) {
+  return (
+    <span
+      className="inline-flex h-9 items-center gap-1.5 rounded-[10px] pr-1.5 pl-3 text-[14px] font-semibold"
+      style={style}
+    >
+      {text}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={removeLabel}
+        className="inline-flex size-6 items-center justify-center rounded-full hover:bg-black/5"
+      >
+        <X className="size-3.5" />
+      </button>
+    </span>
+  );
+}
+
+/** Ô pinyin / nghĩa của câu trả lời: tự sinh, người học sửa tay được (có đếm ký tự và loa). */
+function EditBox({
+  icon,
+  title,
+  note,
+  tone,
+  label,
+  value,
+  max,
+  busy,
+  onChange,
+  onBlur,
   speak,
-  speakLabel,
-  rate,
 }: {
   icon: React.ReactNode;
-  label: string;
-  auto: string;
+  title: string;
+  note: string;
   tone: string;
-  text: string;
-  speak?: string;
-  speakLabel?: string;
-  rate?: number;
+  label: string;
+  value: string;
+  max: number;
+  busy: boolean;
+  onChange: (v: string) => void;
+  onBlur: () => void;
+  speak: React.ReactNode;
 }) {
   return (
     <div className="rounded-[16px] border border-[#E1EAF5] bg-[#F7FAFE] p-2.5">
       <div className="flex items-center gap-2 px-1 pb-2">
         <span className={cn("inline-flex items-center gap-2 rounded-[10px] px-2.5 py-1 text-[15px] font-bold", tone)}>
           {icon}
-          {label} <span className="font-semibold opacity-80">{auto}</span>
+          {title} <span className="font-semibold opacity-80">{note}</span>
         </span>
-        {speak ? <SpeakButton text={speak} rate={rate} label={speakLabel} className="ml-auto" /> : null}
+        {busy ? <Loader2 className="size-4 animate-spin text-text-3" aria-hidden="true" /> : null}
+        <span className="ml-auto">{speak}</span>
       </div>
-      <p className="min-h-11 rounded-[12px] border border-border bg-white px-4 py-2.5 text-[16px] text-navy-900">
-        {text || "—"}
-      </p>
+      <div className="relative">
+        <textarea
+          value={value}
+          maxLength={max}
+          rows={2}
+          aria-label={label}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          className="block min-h-[64px] w-full resize-y rounded-[12px] border border-border bg-white px-4 pt-2.5 pb-6 text-[16px] text-navy-900 outline-none focus:border-blue-600 focus-visible:shadow-[var(--focus-ring)]"
+        />
+        <span className="pointer-events-none absolute right-3 bottom-1.5 text-[12.5px] text-text-3 tabular-nums">
+          {value.length}/{max}
+        </span>
+      </div>
     </div>
   );
 }

@@ -238,18 +238,43 @@ export async function setStarred(userId: string, id: string, starred: boolean) {
 
 /**
  * Lưu câu trả lời và sinh lại pinyin + nghĩa (chỉ khi nội dung đổi). Xoá trắng = xoá câu trả lời và nhận xét.
+ * `answerPinyin` / `answerMeaning` gửi kèm = người học tự sửa → lưu đúng như vậy (không sinh lại).
  * Chuyển câu trước / tiếp theo trên giao diện gọi hàm này trước nên không mất bài đang viết.
  */
-export async function saveAnswer(userId: string, id: string, answer: string) {
+export async function saveAnswer(
+  userId: string,
+  id: string,
+  answer: string,
+  edit: { answerPinyin?: string; answerMeaning?: string } = {},
+) {
   const cur = await getRow(userId, id);
-  if (answer === cur.answer)
+  const changed = answer !== cur.answer;
+  const manual = edit.answerPinyin !== undefined || edit.answerMeaning !== undefined;
+  if (!changed && !manual)
     return { answer, answerPinyin: cur.answerPinyin, answerMeaning: cur.answerMeaning, changed: false };
-  const [answerPinyin, m] = answer
-    ? await Promise.all([autoPinyin(answer), autoMeanings(userId, [answer])])
-    : ["", { meanings: [""] }];
-  const answerMeaning = m.meanings[0] ?? "";
-  await db.update(speakingQuestion).set({ answer, answerPinyin, answerMeaning, feedback: null }).where(own(userId, id));
-  return { answer, answerPinyin, answerMeaning, changed: true };
+  let answerPinyin = cur.answerPinyin;
+  let answerMeaning = cur.answerMeaning;
+  if (changed) {
+    const needPinyin = edit.answerPinyin === undefined;
+    const needMeaning = edit.answerMeaning === undefined;
+    const [p, m] =
+      answer && (needPinyin || needMeaning)
+        ? await Promise.all([
+            needPinyin ? autoPinyin(answer) : "",
+            needMeaning ? autoMeanings(userId, [answer]) : { meanings: [""] },
+          ])
+        : ["", { meanings: [""] }];
+    if (needPinyin) answerPinyin = p;
+    if (needMeaning) answerMeaning = m.meanings[0] ?? "";
+  }
+  if (edit.answerPinyin !== undefined) answerPinyin = edit.answerPinyin;
+  if (edit.answerMeaning !== undefined) answerMeaning = edit.answerMeaning;
+  if (!answer) [answerPinyin, answerMeaning] = ["", ""];
+  await db
+    .update(speakingQuestion)
+    .set({ answer, answerPinyin, answerMeaning, ...(changed ? { feedback: null } : {}) })
+    .where(own(userId, id));
+  return { answer, answerPinyin, answerMeaning, changed };
 }
 
 export type Feedback = AnswerFeedback & { ai: boolean };

@@ -23,6 +23,12 @@
 
 ### Changed
 
+- **Luyện giao tiếp — bố cục theo design**: màn rộng (≥1536px) chia 2 cột — danh sách câu hỏi bên trái (tiêu đề + "Tạo câu hỏi",
+  chip lọc Tất cả / HSK / tag, ô tìm, sắp xếp, nút bộ lọc khác: đã đánh dấu + số câu mỗi trang; hàng: số thứ tự, câu hỏi + nghĩa,
+  HSK, tag, loa, sửa, xoá; câu đang luyện được tô sáng), luyện tập bên phải; màn hẹp vẫn tách trang danh sách / luyện tập.
+  **Mọi phần đều sửa được**: câu hỏi sửa ngay trên thẻ (chữ Hán, pinyin, nghĩa, HSK, tự sinh lại), pinyin + nghĩa của câu trả lời là
+  ô sửa được (có đếm ký tự, nhãn "(đã sửa)" — sửa tay thì giữ nguyên, sửa câu trả lời thì tự sinh lại), bỏ HSK / tag ngay trên hàng tag;
+  loa riêng cho câu hỏi, câu trả lời và nghĩa tiếng Việt (giọng vi). API `PUT …/answer` nhận thêm `answerPinyin` / `answerMeaning`.
 - **Trang chủ**: bỏ thẻ **Bài học** (và dòng tiến độ bài học); 4 thẻ chức năng dùng icon màu giống thanh bên thay cho ô chữ
   词 / 文 / 音 / 听. Nút "Bắt đầu học ngay" mở Thư viện LingYu; khung "Bài học gần đây" đổi tên **Hoạt động gần đây**.
 - **Bìa đầu trang — mascot ngồi trên mặt bàn** trước khung cửa sổ (như design), co giãn theo bề ngang bìa và có bóng đổ dưới chân.

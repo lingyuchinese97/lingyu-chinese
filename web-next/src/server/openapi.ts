@@ -2127,9 +2127,16 @@ export function openApiDocument() {
       },
       "/api/v1/speaking/questions/{id}/answer": {
         put: op(SP, {
-          summary: "Lưu câu trả lời (gõ hoặc từ ghi âm) — trả pinyin + nghĩa Việt tự sinh",
+          summary: "Lưu câu trả lời (gõ hoặc từ ghi âm) — pinyin + nghĩa Việt tự sinh, hoặc lưu bản người học sửa",
           params: [pathId("id câu hỏi")],
-          body: obj({ answer: { type: "string", maxLength: 200 } }, ["answer"]),
+          body: obj(
+            {
+              answer: { type: "string", maxLength: 200 },
+              answerPinyin: { type: "string", maxLength: 400, description: "Bỏ qua = tự sinh khi câu trả lời đổi" },
+              answerMeaning: { type: "string", maxLength: 300, description: "Bỏ qua = tự sinh khi câu trả lời đổi" },
+            },
+            ["answer"],
+          ),
           example: { answer: "我周末喜欢和家人一起出去玩。" },
           data: obj({
             answer: { type: "string" },
