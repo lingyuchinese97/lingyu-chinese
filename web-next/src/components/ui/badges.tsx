@@ -1,5 +1,5 @@
 "use client";
-import { CheckCircle2, RefreshCw, X } from "lucide-react";
+import { CheckCircle2, CircleDashed, RefreshCw, X } from "lucide-react";
 import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { tagColors } from "@/lib/tag-style";
@@ -32,21 +32,29 @@ export function Tag({ name, onRemove, className }: { name: string; onRemove?: ()
   );
 }
 
-export function StatusBadge({ status }: { status: "learned" | "review" }) {
+/** Trạng thái học: Đã thuộc (xanh lá), Cần ôn (cam), Chưa ôn (xám — từ chưa từng được ôn, truyền `fresh`). */
+export function StatusBadge({ status, fresh = false }: { status: "learned" | "review"; fresh?: boolean }) {
   const t = useT();
+  const kind = status === "learned" ? "learned" : fresh ? "fresh" : "review";
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[13.5px] font-medium whitespace-nowrap [&_svg]:size-4",
-        status === "learned" ? "bg-green-50 text-green-700" : "bg-amber-50 text-[#9A5C03]",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13.5px] font-semibold whitespace-nowrap [&_svg]:size-4",
+        kind === "learned"
+          ? "bg-green-50 text-green-700"
+          : kind === "fresh"
+            ? "bg-[#F1F4F8] text-text-2"
+            : "bg-amber-50 text-[#9A5C03]",
       )}
     >
-      {status === "learned" ? (
-        <CheckCircle2 aria-hidden="true" className="fill-[#22A55B] text-white" />
+      {kind === "learned" ? (
+        <CheckCircle2 aria-hidden="true" className="text-[#22A55B]" />
+      ) : kind === "fresh" ? (
+        <CircleDashed aria-hidden="true" className="text-text-3" />
       ) : (
         <RefreshCw aria-hidden="true" className="text-[#E8742A]" />
       )}
-      {t(`ui.${status}`)}
+      {kind === "fresh" ? t("ui.notReviewed") : t(`ui.${status}`)}
     </span>
   );
 }

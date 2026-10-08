@@ -20,6 +20,10 @@ export const home: Messages["home"] = {
     grammar: { title: "Grammar", desc: "Master structures and use them with confidence" },
     pronunciation: { title: "Pronunciation & Tone sandhi", desc: "Practise accurate sounds and tone-change rules" },
     listening: { title: "Listening & Speaking", desc: "Practise listening and speaking with real exercises" },
+    speaking: { title: "Speaking", desc: "Write your own questions and answer on grid paper" },
+    reading: { title: "Reading", desc: "Read HSK passages with word glosses" },
+    translation: { title: "Translation", desc: "Translate Vietnamese ⇄ Chinese and check" },
+    review: { title: "Review", desc: "Review due words or your own selection" },
   },
   open: "Open {name}",
   reviewNow: "Review now ({count})",
@@ -35,6 +39,7 @@ export const home: Messages["home"] = {
   goalValue: "{v} / {n} min",
   progress: "Learning progress",
   rings: {
+    listening: "Listening & Speaking",
     vocab: "Vocabulary",
     grammar: "Grammar",
     reading: "Reading",

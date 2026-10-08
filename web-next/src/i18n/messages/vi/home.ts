@@ -18,6 +18,10 @@ export const home = {
     grammar: { title: "Ngữ pháp", desc: "Nắm vững cấu trúc, hiểu và áp dụng linh hoạt" },
     pronunciation: { title: "Phát âm & Biến điệu", desc: "Luyện phát âm chuẩn và nắm quy tắc biến điệu" },
     listening: { title: "Luyện nghe & Nói", desc: "Luyện nghe, nói với các bài tập thực tế" },
+    speaking: { title: "Luyện giao tiếp", desc: "Tự tạo câu hỏi và luyện trả lời trên vở ô ly" },
+    reading: { title: "Đọc hiểu", desc: "Đọc bài theo HSK, xem nghĩa từng từ" },
+    translation: { title: "Luyện dịch", desc: "Dịch câu Việt – Trung, kiểm tra ngay" },
+    review: { title: "Ôn tập", desc: "Ôn từ vựng đến hạn hoặc tự chọn" },
   },
   open: "Mở {name}",
   reviewNow: "Ôn ngay ({count})",
@@ -33,6 +37,7 @@ export const home = {
   goalValue: "{v} / {n} phút",
   progress: "Tiến độ học tập",
   rings: {
+    listening: "Nghe & Nói",
     vocab: "Từ vựng",
     grammar: "Ngữ pháp",
     reading: "Đọc hiểu",

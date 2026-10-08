@@ -49,4 +49,5 @@ export const shell = {
   signOut: "Đăng xuất",
   breadcrumb: "Breadcrumb",
   languageSwitch: "Đổi ngôn ngữ",
+  back: "Quay lại",
 };

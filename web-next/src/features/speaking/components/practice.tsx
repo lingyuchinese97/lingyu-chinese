@@ -116,6 +116,8 @@ export function Practice({ q, knownTags, qs = "" }: { q: QuestionDetail; knownTa
   /** Lưu câu trả lời (+ pinyin / nghĩa nếu người học tự sửa). Dùng trước khi chuyển câu để không mất bài. */
   const flush = React.useCallback(async () => {
     if (!dirty) return true;
+    // Đang có lần lưu khác chạy → đợi xong rồi mới gửi bản mới (không để kết quả cũ về sau ghi đè).
+    if (inFlight.current) await inFlight.current.catch(() => undefined);
     setSaving(true);
     const v = answer.trim();
     const p = saveAnswerAction(q.id, {

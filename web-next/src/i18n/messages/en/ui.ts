@@ -10,4 +10,5 @@ export const ui: Messages["ui"] = {
   listen: "Listen: {text}",
   learned: "Learned",
   review: "To review",
+  notReviewed: "Not reviewed yet",
 };

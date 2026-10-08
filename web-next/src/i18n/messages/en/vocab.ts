@@ -6,7 +6,7 @@ export const vocab: Messages["vocab"] = {
   listSub: "Save words and learn more effectively every day.",
   note: "Word by word,\nlittle by little,\na great journey begins",
   myTitle: "My vocabulary ({count})",
-  mySub: "Organise, tag and review your words.",
+  mySub: "Organise and review your words by HSK level.",
   allTagsCard: "All",
   tagWords: "{count, plural, one {# word} other {# words}}",
   tagMenu: "Options for tag {name}",
@@ -258,4 +258,8 @@ export const vocab: Messages["vocab"] = {
     add: "Add radical {name}",
     unknown: "{chars}: no radical data yet — you can pick one yourself.",
   },
+  toolbar: "Search and filter words",
+  allHsk: "All HSK levels",
+  moreFilters: "Filters: status, favourites, tags, view",
+  createNew: "Create",
 };

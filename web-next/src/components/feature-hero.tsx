@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 export function FeatureHero({
   id,
   eyebrow,
+  eyebrowClassName,
   title,
   question,
   description,
@@ -21,6 +22,8 @@ export function FeatureHero({
   /** id của h1 (cho aria-labelledby). */
   id: string;
   eyebrow?: React.ReactNode;
+  /** Thay kiểu mặc định (chữ xanh nhỏ) của dòng trên tiêu đề — vd "Xin chào," cỡ lớn ở Trang chủ. */
+  eyebrowClassName?: string;
   title: React.ReactNode;
   question?: React.ReactNode;
   description?: React.ReactNode;
@@ -72,7 +75,11 @@ export function FeatureHero({
 
       <div className="flex min-h-[200px] flex-col justify-center px-5 py-7 md:min-h-[260px] md:max-w-[62%] md:py-9 md:pl-12">
         <h1 id={id} className="text-navy-900">
-          {eyebrow ? <span className="block text-[16px] font-bold text-blue-600 md:text-[18px]">{eyebrow}</span> : null}
+          {eyebrow ? (
+            <span className={eyebrowClassName ?? "block text-[16px] font-bold text-blue-600 md:text-[18px]"}>
+              {eyebrow}
+            </span>
+          ) : null}
           <span className="mt-0.5 flex items-start gap-1 text-[30px] leading-[1.12] font-black tracking-tight md:text-[46px]">
             <span className="min-w-0">{title}</span>
             <LeafDecor className="mt-[-4px] w-8 shrink-0 -rotate-12 md:w-11" />

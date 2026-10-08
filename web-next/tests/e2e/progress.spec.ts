@@ -12,9 +12,18 @@ test("Trang chủ mới → Tìm kiếm → Tiến độ học tập (mục tiê
   await register(page, "Nguyễn Văn An", "prog");
   const api = page.request;
 
-  // Trang chủ: lời chào, 4 chức năng (không còn Bài học), học tập hôm nay.
+  // Trang chủ: lời chào, 8 chức năng (không còn Bài học), học tập hôm nay.
   await expect(page.getByRole("heading", { level: 1, name: "Xin chào, Văn An!" })).toBeVisible();
-  for (const name of ["Từ vựng", "Ngữ pháp", "Phát âm & Biến điệu", "Luyện nghe & Nói"])
+  for (const name of [
+    "Từ vựng",
+    "Ngữ pháp",
+    "Phát âm & Biến điệu",
+    "Luyện nghe & Nói",
+    "Luyện giao tiếp",
+    "Đọc hiểu",
+    "Luyện dịch",
+    "Ôn tập",
+  ])
     await expect(page.getByRole("link", { name: `Mở ${name}` })).toBeVisible();
   await expect(page.getByRole("link", { name: "Mở Bài học" })).toHaveCount(0);
   await expect(page.getByText("Chưa có hoạt động nào. Bắt đầu học để thấy ở đây nhé!")).toBeVisible();

@@ -23,6 +23,15 @@
 
 ### Changed
 
+- **Trang chủ — theo design**: thanh trên cùng có nút quay lại + "LingYu Chinese"; bìa giống các màn khác (mascot ngồi trên sách,
+  "Xin chào, {tên}!", nút **Bắt đầu học ngay**, "Ôn ngay" khi có thẻ đến hạn); **8 thẻ chức năng** (Từ vựng, Ngữ pháp, Phát âm & Biến điệu,
+  Luyện nghe & Nói, Luyện giao tiếp, Đọc hiểu, Luyện dịch, Ôn tập) với icon màu như thanh bên; **Tiến độ học tập** 4 vòng (Từ vựng,
+  Ngữ pháp, Nghe & Nói, Đọc hiểu); chuỗi ngày học chuyển xuống cạnh Hoạt động gần đây. Logo giữ nguyên. API `/progress/summary` thêm
+  `skills.listening` / `sessions30.listening`.
+- **Từ vựng của tôi — theo design**: thanh công cụ một hàng (ô tìm · chọn HSK có số từ · sắp xếp · nút bộ lọc · **Tạo mới**);
+  trạng thái / yêu thích / tag / kiểu hiển thị nằm trong bảng **Bộ lọc** (mở bằng nút biểu tượng; tự mở khi đang lọc). Thanh chọn hàng loạt
+  và bảng tách thành thẻ riêng; ghi chú hiện một dòng (bấm để xem đầy đủ). Trạng thái mới **Chưa ôn** (xám) cho từ chưa từng được trả lời
+  trong phiên ôn nào; API danh sách / chi tiết từ vựng trả thêm `reviewed`.
 - **Bìa đầu trang — mascot ngồi trên 2 cuốn sách** (HSK · 汉语) đặt trên mặt bàn cạnh cửa sổ (`public/brand/hero/mascot-books-2.webp`).
 - **Luyện giao tiếp — bố cục theo design**: màn rộng (≥1536px) chia 2 cột — danh sách câu hỏi bên trái (tiêu đề + "Tạo câu hỏi",
   chip lọc Tất cả / HSK / tag, ô tìm, sắp xếp, nút bộ lọc khác: đã đánh dấu + số câu mỗi trang; hàng: số thứ tự, câu hỏi + nghĩa,

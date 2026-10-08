@@ -51,4 +51,5 @@ export const shell: Messages["shell"] = {
   signOut: "Sign out",
   breadcrumb: "Breadcrumb",
   languageSwitch: "Change language",
+  back: "Back",
 };

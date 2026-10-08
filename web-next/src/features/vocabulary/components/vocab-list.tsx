@@ -6,9 +6,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowUpDown,
-  Check,
   CheckCircle2,
-  Filter,
+  SlidersHorizontal,
   Library,
   Eye,
   LayoutGrid,
@@ -40,7 +39,7 @@ import type { TagCount, VocabItem, VocabList } from "../service";
 import { deleteTagAction, deleteVocabAction, setStatusAction, toggleFavoriteAction } from "../actions";
 import { startCustomAction } from "@/features/review/actions";
 import { AddTagDialog } from "./add-tag-dialog";
-import { HskCards, TagChips, TagNameDialog } from "./tag-cards";
+import { TagChips, TagNameDialog } from "./tag-cards";
 import { SpeakButton } from "@/components/speak-button";
 import { BulkButton, Pager } from "@/components/ui/list-controls";
 import type { ReceivedVocabShare } from "../share-service";
@@ -53,8 +52,8 @@ import {
   type ShareWord,
 } from "./share-dialogs";
 
-/** Ghi chú dài quá 10 ký tự → hiện "…" + nút con mắt để xem đầy đủ (như bản cũ). */
-const NOTE_PREVIEW = 10;
+/** Ghi chú dài hơn chừng này ký tự → bấm để xem đầy đủ trong hộp thoại. */
+const NOTE_PREVIEW = 14;
 const VIEW_KEY = "lingyu.vocab.view";
 /** Kiểu hiển thị trên máy tính (danh sách / lưới), nhớ theo trình duyệt. */
 const viewListeners = new Set<() => void>();
@@ -78,10 +77,6 @@ const viewStore = {
     viewListeners.add(f);
     return () => void viewListeners.delete(f);
   },
-};
-const shortNote = (note: string) => {
-  const chars = Array.from(note.trim());
-  return chars.length > NOTE_PREVIEW ? chars.slice(0, NOTE_PREVIEW).join("").trimEnd() + "…" : chars.join("");
 };
 const isLongNote = (note: string) => Array.from(note.trim()).length > NOTE_PREVIEW;
 
@@ -110,6 +105,8 @@ export function VocabListView({
   const [shareWords, setShareWords] = React.useState<ShareWord[] | null>(null);
   const [invite, setInvite] = React.useState<ReceivedVocabShare | null>(null);
   const [tagName, setTagName] = React.useState<"new" | TagCount | null>(null);
+  const activeFilters = (params.status ? 1 : 0) + (params.fav ? 1 : 0) + (params.tag ? 1 : 0);
+  const [filtersOpen, setFiltersOpen] = React.useState(activeFilters > 0);
   // Kiểu hiển thị trên máy tính (danh sách / lưới), nhớ theo trình duyệt.
   const view = React.useSyncExternalStore(viewStore.subscribe, viewStore.get, () => "list" as const);
   const changeView = viewStore.set;
@@ -257,6 +254,11 @@ export function VocabListView({
   }
 
   const radical = params.radical ? radicalByNum(params.radical) : null;
+  const chip = (on: boolean) =>
+    cn(
+      "inline-flex min-h-10 items-center gap-1.5 rounded-[12px] border-[1.5px] px-3.5 text-[14.5px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)]",
+      on ? "border-blue-600 bg-blue-50 text-blue-700" : "border-border bg-white text-text hover:bg-blue-50",
+    );
   const rowMenu = (v: VocabItem) => (
     <Menu>
       <MenuTrigger asChild>
@@ -314,22 +316,24 @@ export function VocabListView({
       </button>
     );
   };
+  // Ghi chú: hiện 1 dòng (cắt bằng CSS, theo design); dài thì bấm vào để xem đầy đủ.
   const note = (v: VocabItem) =>
     v.note ? (
-      <span className="inline-flex items-center gap-1">
-        <span className="text-text-2">{shortNote(v.note)}</span>
-        {isLongNote(v.note) ? (
-          <button
-            type="button"
-            className={cn(iconBtn, "size-8 [&_svg]:size-[18px]")}
-            onClick={() => setNoteOf(v)}
-            aria-label={t("vocab.fullNote", { word: v.hanzi })}
-            title={t("vocab.seeMore")}
-          >
-            <Eye />
-          </button>
-        ) : null}
-      </span>
+      isLongNote(v.note) ? (
+        <button
+          type="button"
+          onClick={() => setNoteOf(v)}
+          aria-label={t("vocab.fullNote", { word: v.hanzi })}
+          title={v.note}
+          className="block max-w-full truncate rounded-md text-left text-text-2 outline-none hover:text-blue-700 focus-visible:shadow-[var(--focus-ring)]"
+        >
+          {v.note}
+        </button>
+      ) : (
+        <span className="block truncate text-text-2" title={v.note}>
+          {v.note}
+        </span>
+      )
     ) : (
       <span className="text-text-3">—</span>
     );
@@ -350,39 +354,49 @@ export function VocabListView({
 
       <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
 
-      {data.totalAll > 0 ? (
-        <HskCards
-          counts={data.hskCounts}
-          totalAll={data.totalAll}
-          active={params.hsk}
-          onPick={(hsk) => go({ hsk, page: 1 })}
-        />
-      ) : null}
-
+      {/* Thanh công cụ (theo design): tìm · HSK · sắp xếp · bộ lọc · Tạo mới; bấm biểu tượng bộ lọc để mở trạng thái / yêu thích / tag. */}
       <section
-        aria-label={t("vocab.title")}
-        ref={listTop}
-        className="flex scroll-mt-4 flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
+        aria-label={t("vocab.toolbar")}
+        className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white/95 p-3 shadow-card md:p-4"
       >
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_190px_auto_auto]">
-          <label className="relative block">
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-[minmax(0,1fr)_170px_210px_auto_auto] md:gap-3">
+          <label className="relative col-span-2 block md:col-span-1">
             <span className="sr-only">{t("vocab.searchLabel")}</span>
-            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
             <input
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder={params.tag ? t("vocab.searchInTag", { tag: params.tag }) : t("vocab.searchPlaceholder")}
               autoComplete="off"
-              className={cn(inputClass, "pl-11")}
+              className={cn(inputClass, "h-12 pl-12")}
             />
           </label>
           <label>
+            <span className="sr-only">{t("vocab.hskFilter")}</span>
+            <select
+              value={params.hsk}
+              onChange={(e) => go({ hsk: e.target.value as ListParams["hsk"], page: 1 })}
+              className={cn(inputClass, "h-12 cursor-pointer font-semibold")}
+            >
+              <option value="">{t("vocab.allHsk")}</option>
+              {(["1", "2", "3", "4", "5", "6"] as const).map((k) => (
+                <option key={k} value={k}>
+                  HSK {k} ({data.hskCounts[k] ?? 0})
+                </option>
+              ))}
+              <option value="other">
+                {t("vocab.hskOther")} ({data.hskCounts.other ?? 0})
+              </option>
+            </select>
+          </label>
+          <label className="relative">
             <span className="sr-only">{t("vocab.sort")}</span>
+            <ArrowUpDown className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-navy-900" />
             <select
               value={params.sort}
               onChange={(e) => go({ sort: e.target.value as ListParams["sort"], page: 1 }, { keepSelection: true })}
-              className={cn(inputClass, "cursor-pointer")}
+              className={cn(inputClass, "h-12 cursor-pointer pl-11 font-semibold")}
             >
               {SORTS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -391,78 +405,103 @@ export function VocabListView({
               ))}
             </select>
           </label>
-          <Menu>
-            <MenuTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border px-4 font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
-                  params.status || params.fav
-                    ? "border-blue-600 bg-blue-50 text-blue-700"
-                    : "border-border bg-white text-blue-600 hover:bg-blue-50",
-                )}
-              >
-                <Filter />
-                {t("vocab.filter")}
-                {params.status || params.fav ? (
-                  <span className="rounded-full bg-blue-600 px-1.5 text-[12px] text-white">
-                    {(params.status ? 1 : 0) + (params.fav ? 1 : 0)}
-                  </span>
-                ) : null}
-              </button>
-            </MenuTrigger>
-            <MenuContent align="end" className="w-[230px]">
-              {(["", "learned", "review"] as const).map((st) => (
-                <MenuItem key={st || "all"} onSelect={() => go({ status: st, page: 1 })}>
-                  {params.status === st ? <Check /> : <span className="size-5" />}
-                  {st ? t(`ui.${st}`) : t("vocab.allStatus")}
-                </MenuItem>
-              ))}
-              <MenuSeparator />
-              <MenuItem onSelect={() => go({ fav: !params.fav, page: 1 })}>
-                {params.fav ? <Check /> : <Star />}
-                {t("vocab.onlyFavorite")}
-              </MenuItem>
-            </MenuContent>
-          </Menu>
-          <div
-            role="group"
-            aria-label={t("vocab.viewLabel")}
-            className="hidden items-center gap-1 rounded-[12px] border border-border bg-bg p-1 md:flex"
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((o) => !o)}
+            aria-expanded={filtersOpen}
+            aria-controls="vl-filters"
+            aria-label={t("vocab.moreFilters")}
+            title={t("vocab.moreFilters")}
+            className={cn(
+              "relative inline-flex h-12 items-center justify-center gap-2 rounded-[12px] border px-3.5 outline-none focus-visible:shadow-[var(--focus-ring)] md:w-12 md:px-0 [&_svg]:size-[22px]",
+              filtersOpen || activeFilters
+                ? "border-blue-600 bg-blue-50 text-blue-700"
+                : "border-border bg-white text-blue-600 hover:bg-blue-50",
+            )}
           >
-            {(["list", "grid"] as const).map((m) => {
-              const Icon = m === "list" ? List : LayoutGrid;
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  aria-pressed={view === m}
-                  aria-label={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
-                  title={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
-                  onClick={() => changeView(m)}
-                  className={cn(
-                    "inline-flex size-9 items-center justify-center rounded-[9px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
-                    view === m ? "bg-white text-blue-600 shadow-sm" : "text-text-3 hover:text-blue-600",
-                  )}
-                >
-                  <Icon />
-                </button>
-              );
-            })}
-          </div>
+            <SlidersHorizontal />
+            <span className="md:sr-only">{t("vocab.filter")}</span>
+            {activeFilters ? (
+              <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-blue-600 text-[11.5px] font-bold text-white">
+                {activeFilters}
+              </span>
+            ) : null}
+          </button>
+          <Link
+            href="/vocabulary/new"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#1769C9] px-5 text-[16px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.25)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5"
+          >
+            <Plus aria-hidden="true" />
+            {t("vocab.createNew")}
+          </Link>
         </div>
 
-        {data.totalAll > 0 ? (
-          <TagChips
-            tags={data.tagCounts}
-            active={params.tag}
-            onPick={(tag) => go({ tag, q, page: 1 })}
-            onCreate={() => setTagName("new")}
-            onRename={(g) => setTagName(g)}
-            onDelete={doDeleteTag}
-          />
+        {filtersOpen ? (
+          <div id="vl-filters" className="flex flex-col gap-3 border-t border-border pt-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div role="group" aria-label={t("vocab.colStatus")} className="flex flex-wrap gap-2">
+                {(["", "review", "learned"] as const).map((st) => (
+                  <button
+                    key={st || "all"}
+                    type="button"
+                    aria-pressed={params.status === st}
+                    onClick={() => go({ status: st, page: 1 })}
+                    className={chip(params.status === st)}
+                  >
+                    {st ? t(`ui.${st}`) : t("vocab.allStatus")}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                aria-pressed={params.fav}
+                onClick={() => go({ fav: !params.fav, page: 1 })}
+                className={chip(params.fav)}
+              >
+                <Star
+                  className={cn("size-4", params.fav ? "fill-amber text-amber" : "text-amber")}
+                  aria-hidden="true"
+                />
+                {t("vocab.onlyFavorite")}
+              </button>
+              <div
+                role="group"
+                aria-label={t("vocab.viewLabel")}
+                className="ml-auto hidden items-center gap-1 rounded-[12px] border border-border bg-bg p-1 md:flex"
+              >
+                {(["list", "grid"] as const).map((m) => {
+                  const Icon = m === "list" ? List : LayoutGrid;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-pressed={view === m}
+                      aria-label={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
+                      title={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
+                      onClick={() => changeView(m)}
+                      className={cn(
+                        "inline-flex size-9 items-center justify-center rounded-[9px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
+                        view === m ? "bg-white text-blue-600 shadow-sm" : "text-text-3 hover:text-blue-600",
+                      )}
+                    >
+                      <Icon />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {data.totalAll > 0 ? (
+              <TagChips
+                tags={data.tagCounts}
+                active={params.tag}
+                onPick={(tag) => go({ tag, q, page: 1 })}
+                onCreate={() => setTagName("new")}
+                onRename={(g) => setTagName(g)}
+                onDelete={doDeleteTag}
+              />
+            ) : null}
+          </div>
         ) : null}
-
         {radical ? (
           <div className="flex flex-wrap items-center gap-2 text-[15px] text-text-2">
             <span>{t("vocab.byRadical")}</span>
@@ -481,12 +520,16 @@ export function VocabListView({
             </Button>
           </div>
         ) : null}
+      </section>
 
+      <section aria-label={t("vocab.title")} ref={listTop} className="flex scroll-mt-4 flex-col gap-3">
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
           {data.totalAll === 0 ? (
-            <EmptyAll />
+            <div className="rounded-[var(--radius-xl)] border border-border bg-white/95 shadow-card">
+              <EmptyAll />
+            </div>
           ) : data.total === 0 ? (
-            <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
+            <div className="flex flex-col items-center gap-3 rounded-[var(--radius-xl)] border border-border bg-white/95 px-5 py-10 text-center shadow-card">
               <span className="flex size-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                 <Search className="size-7" />
               </span>
@@ -511,7 +554,7 @@ export function VocabListView({
               <div
                 role="toolbar"
                 aria-label={t("vocab.bulkToolbar")}
-                className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-[14px] border border-border bg-bg px-3 py-2.5"
+                className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-[var(--radius-xl)] border border-border bg-white/95 px-4 py-3 shadow-card"
               >
                 <label className="inline-flex min-w-[150px] cursor-pointer items-center gap-2.5 font-semibold text-text">
                   <input
@@ -584,13 +627,13 @@ export function VocabListView({
 
               {/* Máy tính, dạng danh sách: bảng */}
               {view === "list" ? (
-                <div className="hidden overflow-x-auto rounded-[14px] border border-border md:block">
+                <div className="hidden overflow-x-auto rounded-[var(--radius-xl)] border border-border bg-white/95 shadow-card md:block">
                   <table className="w-full min-w-[900px] border-collapse text-[15.5px]">
                     <caption className="sr-only">
                       {t("vocab.caption", { page: data.page, count: data.pageCount })}
                     </caption>
                     <thead>
-                      <tr className="bg-[#F3F8FE] text-left text-[14.5px] text-text-2 [&>th]:px-3 [&>th]:py-3.5 [&>th]:font-semibold [&>th]:whitespace-nowrap">
+                      <tr className="bg-[#F5F9FE] text-left text-[15px] text-navy-900 [&>th]:px-3 [&>th]:py-4 [&>th]:font-semibold [&>th]:whitespace-nowrap">
                         <th className="w-[52px] text-center">
                           <span className="sr-only">{t("vocab.colSelect")}</span>
                         </th>
@@ -618,7 +661,7 @@ export function VocabListView({
                         <tr
                           key={v.id}
                           className={cn(
-                            "border-t border-[#EDF3F9] hover:bg-[#F9FCFF] [&>td]:px-3 [&>td]:py-2.5 [&>td]:align-middle",
+                            "border-t border-[#EDF3F9] hover:bg-[#F9FCFF] [&>td]:px-3 [&>td]:py-3 [&>td]:align-middle",
                             selected.has(v.id) && "bg-[#F1F8FF] hover:bg-[#F1F8FF]",
                           )}
                         >
@@ -641,7 +684,7 @@ export function VocabListView({
                               <SpeakButton text={v.hanzi} label={t("vocab.listen", { word: v.hanzi })} />
                             </span>
                           </td>
-                          <td className="max-w-[240px]">{v.meaningVi}</td>
+                          <td className="max-w-[300px] text-navy-900">{v.meaningVi}</td>
                           <td className="max-w-[260px] min-w-[150px]">
                             <div className="flex flex-wrap gap-1.5">
                               {v.tags.length ? (
@@ -652,9 +695,9 @@ export function VocabListView({
                             </div>
                           </td>
                           <td>
-                            <StatusBadge status={v.status} />
+                            <StatusBadge status={v.status} fresh={!v.reviewed} />
                           </td>
-                          <td className="w-[150px]">{note(v)}</td>
+                          <td className="max-w-[220px]">{note(v)}</td>
                           <td className="whitespace-nowrap">
                             <span className="inline-flex items-center gap-0.5">
                               {eye(v)}
@@ -705,7 +748,7 @@ export function VocabListView({
                       {rowMenu(v)}
                     </div>
                     <div className="self-center justify-self-end [grid-area:status]">
-                      <StatusBadge status={v.status} />
+                      <StatusBadge status={v.status} fresh={!v.reviewed} />
                     </div>
                     {v.note ? <div className="mt-1.5 text-sm [grid-area:note]">{note(v)}</div> : null}
                     {v.tags.length ? (
