@@ -56,7 +56,7 @@ export function FeatureHero({
           bề ngang bìa (cqw) để luôn cùng tỉ lệ với cửa sổ, ngồi trên 2 cuốn sách (HSK · 汉语) đặt trên mặt bàn, có bóng đổ ngay dưới. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[1.6cqw] left-[77%] -z-10 hidden h-[min(92%,23cqw)] -translate-x-1/2 md:block"
+        className="pointer-events-none absolute bottom-[1.6cqw] left-[70%] -z-10 hidden h-[min(92%,23cqw)] -translate-x-1/2 md:block"
       >
         <span className="absolute -bottom-[0.6cqw] left-1/2 h-[1.8cqw] w-[70%] -translate-x-1/2 rounded-[50%] bg-[rgba(120,80,30,.28)] blur-[6px]" />
         <Image
