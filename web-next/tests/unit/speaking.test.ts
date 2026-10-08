@@ -61,6 +61,11 @@ describe("Luyện giao tiếp: câu hỏi", () => {
     expect(s.answerPinyin.toLowerCase()).toContain("píng");
     expect((await sp.getQuestion(B, id)).answer).toBe("我喜欢吃苹果。");
     expect((await sp.saveAnswer(B, id, "我喜欢吃苹果。")).changed).toBe(false);
+    // Sửa tay nghĩa (câu trả lời không đổi) → lưu đúng bản sửa, pinyin giữ nguyên.
+    const m = await sp.saveAnswer(B, id, "我喜欢吃苹果。", { answerMeaning: "Tôi thích ăn táo." });
+    expect(m.answerMeaning).toBe("Tôi thích ăn táo.");
+    expect(m.answerPinyin).toBe(s.answerPinyin);
+    expect((await sp.getQuestion(B, id)).answerMeaning).toBe("Tôi thích ăn táo.");
 
     const c = await sp.checkAnswer(B, id, "苹果");
     expect(c.feedback.ai).toBe(false);

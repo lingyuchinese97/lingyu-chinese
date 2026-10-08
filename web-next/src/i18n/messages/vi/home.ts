@@ -14,7 +14,6 @@ export const home = {
   streakStart: "Học hôm nay để bắt đầu chuỗi nhé!",
   features: "Chọn nội dung học",
   cards: {
-    lessons: { title: "Bài học", desc: "Học theo lộ trình HSK bài bản, dễ hiểu" },
     vocabulary: { title: "Từ vựng", desc: "Học từ vựng theo chủ đề, HSK hoặc từ của bạn" },
     grammar: { title: "Ngữ pháp", desc: "Nắm vững cấu trúc, hiểu và áp dụng linh hoạt" },
     pronunciation: { title: "Phát âm & Biến điệu", desc: "Luyện phát âm chuẩn và nắm quy tắc biến điệu" },
@@ -33,7 +32,6 @@ export const home = {
   goalMinutes: "Học {n} phút mỗi ngày",
   goalValue: "{v} / {n} phút",
   progress: "Tiến độ học tập",
-  progressLessons: "Hoàn thành {done}/{total} phần bài học",
   rings: {
     vocab: "Từ vựng",
     grammar: "Ngữ pháp",
@@ -46,7 +44,7 @@ export const home = {
   ringSessions: "{count} bài · 30 ngày",
   ringLabel: "{name}: {n}%",
   details: "Xem chi tiết",
-  recent: "Bài học gần đây",
+  recent: "Hoạt động gần đây",
   justNow: "Vừa xong",
   seeAll: "Xem tất cả",
   noRecent: "Chưa có hoạt động nào. Bắt đầu học để thấy ở đây nhé!",

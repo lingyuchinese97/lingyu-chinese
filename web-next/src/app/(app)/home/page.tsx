@@ -46,23 +46,11 @@ function relative(d: Date, now: Date, tag: string, justNow: string) {
 
 const CARDS = [
   {
-    key: "lessons",
-    mascot: "/brand/ui/cover-lessons.png",
-    href: "/lessons",
-    icon: BookOpenText,
-    badge: "HSK",
-    bg: "bg-[linear-gradient(160deg,#FFF3D6_0%,#FFF9EC_100%)]",
-    ring: "border-[#FBE3B5]",
-    art: "bg-white text-[#A35F00]",
-    halo: "bg-[#FFE5AA]",
-    btn: "bg-[#F5A524]",
-  },
-  {
     key: "vocabulary",
+    img: "/brand/ui/nav-vocabulary.png?v=2",
     mascot: "/brand/ui/cover-vocabulary.png",
     href: "/vocabulary",
     icon: BookOpen,
-    badge: "词",
     bg: "bg-[linear-gradient(160deg,#E3F0FF_0%,#F3F8FF_100%)]",
     ring: "border-[#CFE3F9]",
     art: "bg-white text-blue-700",
@@ -71,10 +59,10 @@ const CARDS = [
   },
   {
     key: "grammar",
+    img: "/brand/ui/nav-grammar.png?v=2",
     mascot: "/brand/ui/cover-grammar.png",
     href: "/grammar",
     icon: GrammarIcon,
-    badge: "文",
     bg: "bg-[linear-gradient(160deg,#FFE4EA_0%,#FFF4F6_100%)]",
     ring: "border-[#FBD2DC]",
     art: "bg-white text-[#EF5C8C]",
@@ -83,10 +71,10 @@ const CARDS = [
   },
   {
     key: "pronunciation",
+    img: "/brand/ui/nav-pronunciation.png?v=2",
     mascot: "/brand/ui/cover-pronunciation.png",
     href: "/library/pronunciation",
     icon: AudioLines,
-    badge: "音",
     bg: "bg-[linear-gradient(160deg,#DDF6EA_0%,#F1FBF6_100%)]",
     ring: "border-[#C6EEDB]",
     art: "bg-white text-[#08AA9C]",
@@ -95,10 +83,10 @@ const CARDS = [
   },
   {
     key: "listening",
+    img: "/brand/ui/nav-listening.png?v=2",
     mascot: "/brand/ui/cover-listening.png",
     href: "/listening",
     icon: Headphones,
-    badge: "听",
     bg: "bg-[linear-gradient(160deg,#ECE6FF_0%,#F7F4FF_100%)]",
     ring: "border-[#DDD3FB]",
     art: "bg-white text-[#7757DE]",
@@ -107,7 +95,7 @@ const CARDS = [
   },
 ] as const;
 
-/** Icon theo thiết kế cho "Bài học gần đây" (loại hoạt động → ảnh). */
+/** Icon theo thiết kế cho "Hoạt động gần đây" (loại hoạt động → ảnh). */
 const RECENT_IMG: Partial<Record<string, string>> = {
   lesson: "/brand/ui/recent-hsk.png",
   vocab_review: "/brand/ui/recent-hsk.png",
@@ -247,7 +235,7 @@ export default async function HomePage() {
             <p className="mt-1 max-w-[520px] text-[14.5px] text-text-2 md:text-[15px]">{t("home.hint")}</p>
             <div className="mt-4 flex flex-wrap gap-2.5">
               <Link
-                href="/lessons"
+                href="/library"
                 className="inline-flex min-h-12 items-center gap-2.5 rounded-full px-6 text-[16px] font-bold text-white shadow-cta outline-none bg-grad-primary hover:[background:var(--grad-primary-hover)] focus-visible:shadow-[var(--focus-ring)]"
               >
                 <BookOpenText className="size-5" aria-hidden="true" />
@@ -333,16 +321,16 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---------- 5 chức năng chính ---------- */}
+      {/* ---------- 4 chức năng chính ---------- */}
       <section aria-labelledby="home-features">
         <h2 id="home-features" className="sr-only">
           {t("home.features")}
         </h2>
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 xl:grid-cols-5">
-          {CARDS.map((c, i) => {
+        <ul className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
+          {CARDS.map((c) => {
             const title = t(`home.cards.${c.key}.title`);
             return (
-              <li key={c.key} className={i === CARDS.length - 1 ? "col-span-2 sm:col-span-1" : undefined}>
+              <li key={c.key}>
                 <Link
                   href={c.href}
                   aria-label={t("home.open", { name: title })}
@@ -363,12 +351,19 @@ export default async function HomePage() {
                     <span className="absolute bottom-[10%] left-[4%] h-[26%] w-[50%] rounded-full bg-white/70 blur-md" />
                     <span
                       className={cn(
-                        "absolute top-[20%] left-[8%] flex aspect-square w-[27%] max-w-[88px] -rotate-6 items-center justify-center rounded-[22%] font-black shadow-soft transition-transform duration-300 group-hover:-rotate-12 motion-reduce:transition-none",
-                        c.badge.length > 1 ? "text-[min(8cqw,24px)]" : "text-[min(15cqw,44px)]",
+                        "absolute top-[20%] left-[8%] flex aspect-square w-[27%] max-w-[88px] -rotate-6 items-center justify-center rounded-[22%] shadow-soft transition-transform duration-300 group-hover:-rotate-12 motion-reduce:transition-none",
                         c.art,
                       )}
                     >
-                      {c.badge}
+                      {/* Icon của chức năng giống thanh bên. */}
+                      <Image
+                        unoptimized
+                        src={c.img}
+                        alt=""
+                        width={96}
+                        height={96}
+                        className="h-auto w-[62%] object-contain"
+                      />
                     </span>
                     <Image
                       unoptimized
@@ -397,7 +392,7 @@ export default async function HomePage() {
                   </div>
                   <div className="flex flex-1 items-center gap-2 rounded-t-[16px] bg-white/80 px-3.5 py-3 md:px-4">
                     <div className="min-w-0 flex-1">
-                      <span className="block text-[16px] leading-tight font-extrabold text-navy-900 md:text-[18px] xl:text-[15.5px] 2xl:text-[18px]">
+                      <span className="block text-[16px] leading-tight font-extrabold text-navy-900 md:text-[18px]">
                         {title}
                       </span>
                     </div>
@@ -509,7 +504,7 @@ export default async function HomePage() {
         </section>
       </div>
 
-      {/* ---------- Tiến độ học tập + Bài học gần đây ---------- */}
+      {/* ---------- Tiến độ học tập + Hoạt động gần đây ---------- */}
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section
           aria-labelledby="home-progress"
@@ -536,9 +531,6 @@ export default async function HomePage() {
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
-          <p className="mb-3 text-[13.5px] text-text-2">
-            {t("home.progressLessons", { done: s.lessons.done, total: s.lessons.total })}
-          </p>
           <ul className="grid grid-cols-2 gap-y-4 sm:grid-cols-3 md:grid-cols-5 md:divide-x md:divide-border">
             {rings.map((r) => {
               const label = t(`home.rings.${r.key}`);

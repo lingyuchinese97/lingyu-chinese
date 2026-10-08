@@ -1,28 +1,19 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/server/session";
 import { getT } from "@/i18n/server";
-import { questionListSchema } from "@/features/speaking/schema";
-import { listQuestions } from "@/features/speaking/service";
-import { QuestionList } from "@/features/speaking/components/question-list";
+import { SpeakingScreen } from "@/features/speaking/components/screen";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getT())("speaking.title") };
 }
 export const dynamic = "force-dynamic";
 
-type SP = Promise<Record<string, string | string[] | undefined>>;
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-
-/** Luyện giao tiếp — danh sách câu hỏi của tôi. */
-export default async function SpeakingPage({ searchParams }: { searchParams: SP }) {
+/** Luyện giao tiếp — danh sách câu hỏi của tôi (+ luyện tập ở cột phải trên màn rộng). */
+export default async function SpeakingPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await requireUser();
-  const sp = await searchParams;
-  const params = questionListSchema.parse(Object.fromEntries(Object.keys(sp).map((k) => [k, one(sp[k])])));
-  return (
-    <QuestionList
-      key={JSON.stringify({ ...params, q: "" })}
-      data={await listQuestions(user.id, params)}
-      params={params}
-    />
-  );
+  return <SpeakingScreen userId={user.id} sp={await searchParams} />;
 }

@@ -56,10 +56,27 @@ export const questionListSchema = z.object({
 });
 export type QuestionListParams = z.infer<typeof questionListSchema>;
 
+/** Chuỗi query của bộ lọc danh sách (giữ khi mở / chuyển câu để danh sách bên trái không bị đổi). */
+export function listQuery(p: Partial<Record<keyof QuestionListParams, string | number | boolean | undefined>>) {
+  const sp = new URLSearchParams();
+  if (p.q) sp.set("q", String(p.q));
+  if (p.tag) sp.set("tag", String(p.tag));
+  if (p.hsk) sp.set("hsk", String(p.hsk));
+  if (p.starred) sp.set("starred", "1");
+  if (p.sort && p.sort !== "newest") sp.set("sort", String(p.sort));
+  if (Number(p.page) > 1) sp.set("page", String(p.page));
+  if (p.size && Number(p.size) !== 10) sp.set("size", String(p.size));
+  return sp.size ? `?${sp}` : "";
+}
+
 /** Câu trả lời (gõ hoặc từ ghi âm → chữ). */
 export const answerSchema = z.object({
   answer: z.string().trim().max(S.MAX_ANSWER, `Câu trả lời tối đa ${S.MAX_ANSWER} ký tự.`),
+  /** Người học tự sửa pinyin / nghĩa của câu trả lời (bỏ qua = tự sinh khi câu trả lời đổi). */
+  answerPinyin: z.string().trim().max(S.MAX_PINYIN, `Pinyin tối đa ${S.MAX_PINYIN} ký tự.`).optional(),
+  answerMeaning: z.string().trim().max(S.MAX_MEANING, `Nghĩa tối đa ${S.MAX_MEANING} ký tự.`).optional(),
 });
+export type AnswerInput = z.infer<typeof answerSchema>;
 
 /** Sinh pinyin + nghĩa cho một câu (xem trước khi lưu). */
 export const assistSchema = z.object({

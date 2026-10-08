@@ -37,7 +37,8 @@ export const speaking: Messages["speaking"] = {
   pageN: "Page {n}",
   newTitle: "Create questions",
   editTitle: "Edit question",
-  formSub: "Type the Chinese sentence — pinyin and the Vietnamese meaning are generated for you, and you can edit them.",
+  formSub:
+    "Type the Chinese sentence — pinyin and the Vietnamese meaning are generated for you, and you can edit them.",
   questionN: "Question {n}",
   zh: "Question (Chinese)",
   zhPlaceholder: "e.g. 你周末喜欢做什么？",
@@ -107,4 +108,15 @@ export const speaking: Messages["speaking"] = {
   noIssues: "No problems found. Keep going!",
   tagsLabel: "Tags",
   illustration: "LingYu mascot",
+  // Two-column layout (list + practice)
+  listSubtitle: "Manage questions and practise speaking by topic.",
+  moreFilters: "More filters",
+  pickQuestion: "Pick a question on the left to start practising.",
+  editQuestion: "Edit question",
+  edited: "(edited)",
+  answerPinyinLabel: "Pinyin of your answer",
+  answerMeaningLabel: "Vietnamese meaning of your answer",
+  listenMeaning: "Listen to the Vietnamese meaning",
+  removeHsk: "Remove level {hsk}",
+  pagination: "Pagination",
 };
