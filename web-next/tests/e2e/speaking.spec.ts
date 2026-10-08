@@ -90,8 +90,10 @@ test("Luyện giao tiếp: tạo nhiều câu (pinyin + nghĩa tự sinh) → l�
   // Mọi phần đều sửa được: nghĩa của câu trả lời (sửa tay → giữ sau khi tải lại), câu hỏi ngay trên thẻ, bỏ HSK.
   await page.getByLabel("Nghĩa tiếng Việt của câu trả lời").fill("Cuối tuần tôi thích đọc sách.");
   await expect(page.getByText("(đã sửa)")).toBeVisible();
+  // Đợi thông báo của lần lưu trước tắt hẳn, để chắc chắn thông báo dưới đây là của lần lưu này.
+  await expect(page.getByText("Đã lưu câu trả lời.")).toHaveCount(0, { timeout: 15_000 });
   await page.getByRole("button", { name: "Lưu", exact: true }).click();
-  await expect(page.getByText("Đã lưu câu trả lời.").first()).toBeVisible();
+  await expect(page.getByText("Đã lưu câu trả lời.")).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("Nghĩa tiếng Việt của câu trả lời")).toHaveValue("Cuối tuần tôi thích đọc sách.");
   await expect(page.getByLabel("Pinyin của câu trả lời")).toHaveValue(/kàn\s*shū/);
