@@ -324,14 +324,17 @@ export async function summary(userId: string, now = new Date()) {
     reading: ["reading"],
     translation: ["translation", "sentence_review"],
     review: ["vocab_review", "grammar_review"],
+    listening: ["listening", "pronunciation"],
   } satisfies Record<string, ActivityKind[]>;
-  const [reading, translation, review, nReading, nTranslation, nReview] = await Promise.all([
+  const [reading, translation, review, listening, nReading, nTranslation, nReview, nListening] = await Promise.all([
     avgScore(userId, K.reading, now),
     avgScore(userId, K.translation, now),
     avgScore(userId, K.review, now),
+    avgScore(userId, K.listening, now),
     count30(userId, K.reading, now),
     count30(userId, K.translation, now),
     count30(userId, K.review, now),
+    count30(userId, K.listening, now),
   ]);
   return {
     totalSeconds: secs[0]?.s ?? 0,
@@ -345,9 +348,10 @@ export async function summary(userId: string, now = new Date()) {
       reading,
       translation,
       review,
+      listening,
     },
     /** Số bài 30 ngày gần nhất theo kỹ năng. */
-    sessions30: { reading: nReading, translation: nTranslation, review: nReview },
+    sessions30: { reading: nReading, translation: nTranslation, review: nReview, listening: nListening },
     streak: st,
     goals: {
       minutes_day: { target: goals.minutes_day, value: todayMin },

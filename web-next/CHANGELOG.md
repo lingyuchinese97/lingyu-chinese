@@ -23,6 +23,11 @@
 
 ### Changed
 
+- **Trang chủ — theo design**: thanh trên cùng có nút quay lại + "LingYu Chinese"; bìa giống các màn khác (mascot ngồi trên sách,
+  "Xin chào, {tên}!", nút **Bắt đầu học ngay**, "Ôn ngay" khi có thẻ đến hạn); **8 thẻ chức năng** (Từ vựng, Ngữ pháp, Phát âm & Biến điệu,
+  Luyện nghe & Nói, Luyện giao tiếp, Đọc hiểu, Luyện dịch, Ôn tập) với icon màu như thanh bên; **Tiến độ học tập** 4 vòng (Từ vựng,
+  Ngữ pháp, Nghe & Nói, Đọc hiểu); chuỗi ngày học chuyển xuống cạnh Hoạt động gần đây. Logo giữ nguyên. API `/progress/summary` thêm
+  `skills.listening` / `sessions30.listening`.
 - **Từ vựng của tôi — theo design**: thanh công cụ một hàng (ô tìm · chọn HSK có số từ · sắp xếp · nút bộ lọc · **Tạo mới**);
   trạng thái / yêu thích / tag / kiểu hiển thị nằm trong bảng **Bộ lọc** (mở bằng nút biểu tượng; tự mở khi đang lọc). Thanh chọn hàng loạt
   và bảng tách thành thẻ riêng; ghi chú hiện một dòng (bấm để xem đầy đủ). Trạng thái mới **Chưa ôn** (xám) cho từ chưa từng được trả lời

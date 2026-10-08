@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
-import { usePathname } from "next/navigation";
-import { Heart, Menu } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowLeft, Heart, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BottomNav } from "./bottom-nav";
 import { ADMIN_NAV, NAV, TAB_KEYS, shellState } from "./nav";
@@ -25,6 +25,7 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const t = useT();
   const { nav, quote, focus } = shellState(pathname);
   // Ngăn kéo gắn với đường dẫn lúc mở → đổi trang (kể cả nút Back) là tự đóng.
@@ -88,6 +89,21 @@ export function AppShell({
           >
             <Menu className="size-[26px]" aria-hidden="true" />
           </button>
+          {/* Trang chủ (theo design): nút quay lại + tên ứng dụng ở thanh trên cùng (máy tính). */}
+          {nav === "home" ? (
+            <div className="mr-auto hidden items-center gap-4 lg:flex">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                aria-label={t("shell.back")}
+                title={t("shell.back")}
+                className="flex size-11 items-center justify-center rounded-[12px] border border-border bg-white text-navy-900 shadow-sm outline-none hover:bg-blue-50 focus-visible:[box-shadow:var(--focus-ring)]"
+              >
+                <ArrowLeft className="size-5" aria-hidden="true" />
+              </button>
+              <span className="text-[26px] font-extrabold tracking-tight text-navy-900">LingYu Chinese</span>
+            </div>
+          ) : null}
           <NotificationBell initialUnread={unread} />
           <span className="h-[30px] w-px bg-border" aria-hidden="true" />
           <UserMenu name={user.name} email={user.email} />
