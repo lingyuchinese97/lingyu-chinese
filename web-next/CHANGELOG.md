@@ -23,6 +23,7 @@
 
 ### Changed
 
+- **Bìa đầu trang — mascot ngồi trên 2 cuốn sách** (HSK · 汉语) đặt trên mặt bàn cạnh cửa sổ (`public/brand/hero/mascot-books-2.webp`).
 - **Luyện giao tiếp — bố cục theo design**: màn rộng (≥1536px) chia 2 cột — danh sách câu hỏi bên trái (tiêu đề + "Tạo câu hỏi",
   chip lọc Tất cả / HSK / tag, ô tìm, sắp xếp, nút bộ lọc khác: đã đánh dấu + số câu mỗi trang; hàng: số thứ tự, câu hỏi + nghĩa,
   HSK, tag, loa, sửa, xoá; câu đang luyện được tô sáng), luyện tập bên phải; màn hẹp vẫn tách trang danh sách / luyện tập.

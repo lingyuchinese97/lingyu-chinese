@@ -53,18 +53,18 @@ export function FeatureHero({
       />
 
       {/* Ảnh bìa neo đáy (dư thì cắt phần trời phía trên) → mặt bàn cạnh cửa sổ luôn ở ~0–5cqw tính từ đáy. Mascot co giãn theo
-          bề ngang bìa (cqw) để luôn cùng tỉ lệ với cửa sổ, chân đặt trên mặt bàn, có bóng đổ ngay dưới cho cảm giác đang ngồi. */}
+          bề ngang bìa (cqw) để luôn cùng tỉ lệ với cửa sổ, ngồi trên 2 cuốn sách (HSK · 汉语) đặt trên mặt bàn, có bóng đổ ngay dưới. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[2cqw] left-[77%] -z-10 hidden h-[min(80%,19cqw)] -translate-x-1/2 md:block"
+        className="pointer-events-none absolute bottom-[1.6cqw] left-[70%] -z-10 hidden h-[min(92%,23cqw)] -translate-x-1/2 md:block"
       >
         <span className="absolute -bottom-[0.6cqw] left-1/2 h-[1.8cqw] w-[70%] -translate-x-1/2 rounded-[50%] bg-[rgba(120,80,30,.28)] blur-[6px]" />
         <Image
           unoptimized
-          src="/brand/hero/mascot-reading.webp"
+          src="/brand/hero/mascot-books-2.webp"
           alt=""
-          width={560}
-          height={493}
+          width={640}
+          height={575}
           priority
           className="relative h-full w-auto max-w-none drop-shadow-[0_6px_8px_rgba(20,70,40,.16)]"
         />
