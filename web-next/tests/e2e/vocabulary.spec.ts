@@ -14,6 +14,8 @@ test("dữ liệu mẫu, tìm kiếm bỏ dấu, lọc tag, phân trang", async 
   await expect(page.getByRole("heading", { name: "Chưa có từ vựng nào" })).toBeVisible();
   await seedSample(page, "vocab");
   await expect(page.getByText("24 từ vựng", { exact: true })).toBeVisible();
+  // Từ mới chưa từng ôn → "Chưa ôn".
+  await expect(results(page, isMobile).getByText("Chưa ôn").first()).toBeVisible();
 
   await page.getByPlaceholder(/Tìm kiếm từ vựng/).fill("nihao");
   await expect(page).toHaveURL(/q=nihao/);
@@ -28,6 +30,8 @@ test("dữ liệu mẫu, tìm kiếm bỏ dấu, lọc tag, phân trang", async 
   await expect(detail).toBeHidden();
 
   await page.getByPlaceholder(/Tìm kiếm từ vựng/).fill("");
+  // Tag nằm trong bảng "Bộ lọc" (nút biểu tượng cạnh ô sắp xếp).
+  await page.getByRole("button", { name: /^Bộ lọc/ }).click();
   await page
     .getByRole("group", { name: "Lọc nhanh theo tag" })
     .getByRole("button", { name: /^Du lịch/ })
@@ -48,6 +52,7 @@ test("thẻ tag: tạo, đổi tên, xoá tag (giữ từ); dạng lưới; hi�
   await seedSample(page, "vocab");
   await expect(page.getByRole("heading", { name: "Từ vựng của tôi (24)" })).toBeVisible();
   await expect(page.getByText("Hiển thị 1–8 trong")).toBeVisible();
+  await page.getByRole("button", { name: /^Bộ lọc/ }).click();
   const cards = page.getByRole("group", { name: "Lọc nhanh theo tag" });
 
   await cards.getByRole("button", { name: "Thêm tag" }).click();
@@ -78,6 +83,7 @@ test("thẻ tag: tạo, đổi tên, xoá tag (giữ từ); dạng lưới; hi�
     await expect(page.locator("table")).toHaveCount(0);
     await expect(page.locator("ul[aria-label^='Danh sách từ vựng'] > li")).toHaveCount(8);
     await page.reload();
+    await page.getByRole("button", { name: /^Bộ lọc/ }).click();
     await expect(page.getByRole("button", { name: "Dạng lưới" })).toHaveAttribute("aria-pressed", "true");
     await page.getByRole("button", { name: "Dạng danh sách" }).click();
     await expect(page.locator("table")).toBeVisible();

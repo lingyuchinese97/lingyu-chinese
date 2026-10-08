@@ -5,6 +5,7 @@ import { pool } from "@/server/db/pool";
 import { image, srsCard } from "@/server/db/schema";
 import { storage } from "@/server/storage";
 import * as svc from "@/features/vocabulary/service";
+import * as review from "@/features/review/service";
 import { listParamsSchema, vocabInputSchema } from "@/features/vocabulary/schema";
 import { cleanupUsers, makeUser } from "./helpers";
 
@@ -29,6 +30,23 @@ afterAll(async () => {
 });
 
 describe("từ vựng — nghiệp vụ", () => {
+  it("trạng thái Chưa ôn: từ mới reviewed=false, trả lời trong phiên ôn → reviewed=true", async () => {
+    const id = await svc.createVocab(B, input({ hanzi: "苹果", pinyin: "píng guǒ", meaningVi: "táo" }));
+    const find = async () => (await svc.listVocab(B, params({ q: "苹果" }), 8)).items.find((x) => x.id === id)!;
+    expect((await find()).reviewed).toBe(false);
+    const s = await review.createCustomSession(B, {
+      tags: [],
+      vocabIds: [id],
+      count: 1,
+      mode: "meaning",
+      showImage: false,
+    });
+    expect((await find()).reviewed).toBe(false);
+    await review.checkAnswer(B, s, 0, "táo");
+    expect((await find()).reviewed).toBe(true);
+    await svc.deleteVocab(B, [id]);
+  });
+
   it("tạo từ: tag không trùng, tạo sẵn thẻ FSRS", async () => {
     const id = await svc.createVocab(
       A,

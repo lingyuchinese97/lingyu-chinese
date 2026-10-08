@@ -38,6 +38,8 @@ export type VocabItem = {
   imageId: string | null;
   status: VocabStatus;
   isFavorite: boolean;
+  /** Đã từng được ôn (trả lời trong một phiên ôn tập) — false + status "review" = "Chưa ôn". */
+  reviewed: boolean;
   radicals: number[];
   tags: string[];
   createdAt: Date;
@@ -56,6 +58,12 @@ const itemColumns = {
   imageId: vocab.imageId,
   status: vocab.status,
   isFavorite: vocab.isFavorite,
+  // Cột ghi đủ tên bảng: trong subquery, "id" trơn sẽ trỏ vào bảng con (srs_card / review_session).
+  reviewed: sql<boolean>`(exists (select 1 from srs_card c where c.vocab_id = "vocab"."id" and c.reps > 0)
+    or exists (select 1 from review_session s where s.user_id = "vocab"."user_id"
+      and jsonb_path_exists(s.questions, '$[*] ? (@.vocabId == $id && @.isCorrect != null)', jsonb_build_object('id', "vocab"."id"::text))))`.mapWith(
+    Boolean,
+  ),
   radicals: vocab.radicals,
   createdAt: vocab.createdAt,
 };

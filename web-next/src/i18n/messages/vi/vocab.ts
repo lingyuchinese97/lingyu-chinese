@@ -4,7 +4,7 @@ export const vocab = {
   listSub: "Lưu lại những từ vựng để học hiệu quả hơn mỗi ngày.",
   note: "Tích lũy\ntừng từ nhỏ\nTạo nên hành trình lớn",
   myTitle: "Từ vựng của tôi ({count})",
-  mySub: "Quản lý, phân loại và ôn tập từ vựng theo tag.",
+  mySub: "Quản lý, phân loại và ôn tập từ vựng theo HSK.",
   allTagsCard: "Tất cả",
   tagWords: "{count} từ",
   tagMenu: "Tùy chọn cho tag {name}",
@@ -250,4 +250,8 @@ export const vocab = {
     add: "Thêm bộ {name}",
     unknown: "{chars}: chưa có dữ liệu bộ thủ, bạn có thể tự chọn.",
   },
+  toolbar: "Tìm và lọc từ vựng",
+  allHsk: "Tất cả HSK",
+  moreFilters: "Bộ lọc: trạng thái, yêu thích, tag, kiểu hiển thị",
+  createNew: "Tạo mới",
 };

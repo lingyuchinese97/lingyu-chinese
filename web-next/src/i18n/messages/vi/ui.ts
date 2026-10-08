@@ -8,4 +8,5 @@ export const ui = {
   listen: "Nghe: {text}",
   learned: "Đã thuộc",
   review: "Cần ôn",
+  notReviewed: "Chưa ôn",
 };

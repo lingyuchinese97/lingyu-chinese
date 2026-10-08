@@ -252,6 +252,7 @@ export function openApiDocument() {
             note: { type: "string" },
             status: { enum: [...STATUS] },
             isFavorite: { type: "boolean" },
+            reviewed: { type: "boolean", description: "Đã từng được ôn; false + status review = “Chưa ôn”" },
             radicals: { type: "array", items: int },
             tags: { type: "array", items: { type: "string" } },
             createdAt: { type: "string", format: "date-time" },

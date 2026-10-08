@@ -23,6 +23,10 @@
 
 ### Changed
 
+- **Từ vựng của tôi — theo design**: thanh công cụ một hàng (ô tìm · chọn HSK có số từ · sắp xếp · nút bộ lọc · **Tạo mới**);
+  trạng thái / yêu thích / tag / kiểu hiển thị nằm trong bảng **Bộ lọc** (mở bằng nút biểu tượng; tự mở khi đang lọc). Thanh chọn hàng loạt
+  và bảng tách thành thẻ riêng; ghi chú hiện một dòng (bấm để xem đầy đủ). Trạng thái mới **Chưa ôn** (xám) cho từ chưa từng được trả lời
+  trong phiên ôn nào; API danh sách / chi tiết từ vựng trả thêm `reviewed`.
 - **Bìa đầu trang — mascot ngồi trên 2 cuốn sách** (HSK · 汉语) đặt trên mặt bàn cạnh cửa sổ (`public/brand/hero/mascot-books-2.webp`).
 - **Luyện giao tiếp — bố cục theo design**: màn rộng (≥1536px) chia 2 cột — danh sách câu hỏi bên trái (tiêu đề + "Tạo câu hỏi",
   chip lọc Tất cả / HSK / tag, ô tìm, sắp xếp, nút bộ lọc khác: đã đánh dấu + số câu mỗi trang; hàng: số thứ tự, câu hỏi + nghĩa,
