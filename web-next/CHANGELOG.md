@@ -23,6 +23,9 @@
 
 ### Changed
 
+- **Từ vựng của tôi — bố cục mới bên dưới ảnh bìa** (ảnh bìa giữ nguyên): thanh tìm kiếm & lọc thành khung riêng — ô tìm kiếm,
+  chọn cấp HSK (kèm số từ, thay hàng thẻ HSK), sắp xếp, nút lọc dạng icon (trạng thái / yêu thích), dạng danh sách / lưới và nút
+  **Tạo mới**; hàng tag và lọc theo bộ thủ nằm trong khung này. Danh sách (thao tác hàng loạt, bảng, phân trang) nằm ở khung thứ hai.
 - **Bìa đầu trang — mascot ngồi trên 2 cuốn sách** (HSK · 汉语) đặt trên mặt bàn cạnh cửa sổ (`public/brand/hero/mascot-books-2.webp`).
 - **Luyện giao tiếp — bố cục theo design**: màn rộng (≥1536px) chia 2 cột — danh sách câu hỏi bên trái (tiêu đề + "Tạo câu hỏi",
   chip lọc Tất cả / HSK / tag, ô tìm, sắp xếp, nút bộ lọc khác: đã đánh dấu + số câu mỗi trang; hàng: số thứ tự, câu hỏi + nghĩa,

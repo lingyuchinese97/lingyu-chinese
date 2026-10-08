@@ -8,7 +8,7 @@ import {
   ArrowUpDown,
   Check,
   CheckCircle2,
-  Filter,
+  SlidersHorizontal,
   Library,
   Eye,
   LayoutGrid,
@@ -40,7 +40,7 @@ import type { TagCount, VocabItem, VocabList } from "../service";
 import { deleteTagAction, deleteVocabAction, setStatusAction, toggleFavoriteAction } from "../actions";
 import { startCustomAction } from "@/features/review/actions";
 import { AddTagDialog } from "./add-tag-dialog";
-import { HskCards, TagChips, TagNameDialog } from "./tag-cards";
+import { TagChips, TagNameDialog } from "./tag-cards";
 import { SpeakButton } from "@/components/speak-button";
 import { BulkButton, Pager } from "@/components/ui/list-controls";
 import type { ReceivedVocabShare } from "../share-service";
@@ -350,22 +350,13 @@ export function VocabListView({
 
       <VocabInvites received={received} onOpen={setInvite} onReject={rejectInvite} />
 
-      {data.totalAll > 0 ? (
-        <HskCards
-          counts={data.hskCounts}
-          totalAll={data.totalAll}
-          active={params.hsk}
-          onPick={(hsk) => go({ hsk, page: 1 })}
-        />
-      ) : null}
-
+      {/* Thanh tìm kiếm & lọc: khung riêng (theo thiết kế) — tìm · cấp HSK · sắp xếp · lọc · kiểu xem · tạo mới. */}
       <section
-        aria-label={t("vocab.title")}
-        ref={listTop}
-        className="flex scroll-mt-4 flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
+        aria-label={t("vocab.toolbarLabel")}
+        className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:px-[22px] md:py-4"
       >
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_190px_auto_auto]">
-          <label className="relative block">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="relative block min-w-0 flex-[999_1_280px]">
             <span className="sr-only">{t("vocab.searchLabel")}</span>
             <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-3" />
             <input
@@ -377,78 +368,103 @@ export function VocabListView({
               className={cn(inputClass, "pl-11")}
             />
           </label>
-          <label>
-            <span className="sr-only">{t("vocab.sort")}</span>
-            <select
-              value={params.sort}
-              onChange={(e) => go({ sort: e.target.value as ListParams["sort"], page: 1 }, { keepSelection: true })}
-              className={cn(inputClass, "cursor-pointer")}
-            >
-              {SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {t(s.label)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Menu>
-            <MenuTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border px-4 font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
-                  params.status || params.fav
-                    ? "border-blue-600 bg-blue-50 text-blue-700"
-                    : "border-border bg-white text-blue-600 hover:bg-blue-50",
-                )}
+          <div className="flex flex-[1_1_auto] flex-wrap items-center gap-3 max-md:w-full">
+            <label className="min-w-0 flex-[1_1_140px] md:w-[150px] md:flex-none">
+              <span className="sr-only">{t("vocab.hskFilter")}</span>
+              <select
+                value={params.hsk}
+                onChange={(e) => go({ hsk: e.target.value as ListParams["hsk"], page: 1 })}
+                className={cn(inputClass, "cursor-pointer")}
               >
-                <Filter />
-                {t("vocab.filter")}
-                {params.status || params.fav ? (
-                  <span className="rounded-full bg-blue-600 px-1.5 text-[12px] text-white">
-                    {(params.status ? 1 : 0) + (params.fav ? 1 : 0)}
-                  </span>
-                ) : null}
-              </button>
-            </MenuTrigger>
-            <MenuContent align="end" className="w-[230px]">
-              {(["", "learned", "review"] as const).map((st) => (
-                <MenuItem key={st || "all"} onSelect={() => go({ status: st, page: 1 })}>
-                  {params.status === st ? <Check /> : <span className="size-5" />}
-                  {st ? t(`ui.${st}`) : t("vocab.allStatus")}
-                </MenuItem>
-              ))}
-              <MenuSeparator />
-              <MenuItem onSelect={() => go({ fav: !params.fav, page: 1 })}>
-                {params.fav ? <Check /> : <Star />}
-                {t("vocab.onlyFavorite")}
-              </MenuItem>
-            </MenuContent>
-          </Menu>
-          <div
-            role="group"
-            aria-label={t("vocab.viewLabel")}
-            className="hidden items-center gap-1 rounded-[12px] border border-border bg-bg p-1 md:flex"
-          >
-            {(["list", "grid"] as const).map((m) => {
-              const Icon = m === "list" ? List : LayoutGrid;
-              return (
+                <option value="">{t("vocab.allHsk")}</option>
+                {(["1", "2", "3", "4", "5", "6"] as const).map((k) => (
+                  <option key={k} value={k}>
+                    {`HSK ${k} (${data.hskCounts[k] ?? 0})`}
+                  </option>
+                ))}
+                <option value="other">{`${t("vocab.hskOther")} (${data.hskCounts.other ?? 0})`}</option>
+              </select>
+            </label>
+            <label className="min-w-0 flex-[1_1_160px] md:w-[180px] md:flex-none">
+              <span className="sr-only">{t("vocab.sort")}</span>
+              <select
+                value={params.sort}
+                onChange={(e) => go({ sort: e.target.value as ListParams["sort"], page: 1 }, { keepSelection: true })}
+                className={cn(inputClass, "cursor-pointer")}
+              >
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {t(s.label)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Menu>
+              <MenuTrigger asChild>
                 <button
-                  key={m}
                   type="button"
-                  aria-pressed={view === m}
-                  aria-label={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
-                  title={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
-                  onClick={() => changeView(m)}
+                  aria-label={t("vocab.filter")}
+                  title={t("vocab.filter")}
                   className={cn(
-                    "inline-flex size-9 items-center justify-center rounded-[9px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
-                    view === m ? "bg-white text-blue-600 shadow-sm" : "text-text-3 hover:text-blue-600",
+                    "relative inline-flex h-12 w-14 shrink-0 items-center justify-center rounded-md border-[1.5px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[22px]",
+                    params.status || params.fav
+                      ? "border-blue-600 bg-blue-50 text-blue-700"
+                      : "border-border bg-white text-blue-600 hover:bg-blue-50",
                   )}
                 >
-                  <Icon />
+                  <SlidersHorizontal />
+                  {params.status || params.fav ? (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-5 rounded-full bg-blue-600 px-1.5 text-[12px] leading-5 font-semibold text-white">
+                      {(params.status ? 1 : 0) + (params.fav ? 1 : 0)}
+                    </span>
+                  ) : null}
                 </button>
-              );
-            })}
+              </MenuTrigger>
+              <MenuContent align="end" className="w-[230px]">
+                {(["", "learned", "review"] as const).map((st) => (
+                  <MenuItem key={st || "all"} onSelect={() => go({ status: st, page: 1 })}>
+                    {params.status === st ? <Check /> : <span className="size-5" />}
+                    {st ? t(`ui.${st}`) : t("vocab.allStatus")}
+                  </MenuItem>
+                ))}
+                <MenuSeparator />
+                <MenuItem onSelect={() => go({ fav: !params.fav, page: 1 })}>
+                  {params.fav ? <Check /> : <Star />}
+                  {t("vocab.onlyFavorite")}
+                </MenuItem>
+              </MenuContent>
+            </Menu>
+            <div
+              role="group"
+              aria-label={t("vocab.viewLabel")}
+              className="hidden h-12 items-center gap-1 rounded-md border border-border bg-bg p-1 md:flex"
+            >
+              {(["list", "grid"] as const).map((m) => {
+                const Icon = m === "list" ? List : LayoutGrid;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={view === m}
+                    aria-label={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
+                    title={m === "list" ? t("vocab.viewList") : t("vocab.viewGrid")}
+                    onClick={() => changeView(m)}
+                    className={cn(
+                      "inline-flex size-9 items-center justify-center rounded-[9px] outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
+                      view === m ? "bg-white text-blue-600 shadow-sm" : "text-text-3 hover:text-blue-600",
+                    )}
+                  >
+                    <Icon />
+                  </button>
+                );
+              })}
+            </div>
+            <Button asChild variant="solid" className="max-md:flex-[1_1_100%]">
+              <Link href="/vocabulary/new">
+                <Plus />
+                {t("vocab.createNew")}
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -481,7 +497,13 @@ export function VocabListView({
             </Button>
           </div>
         ) : null}
+      </section>
 
+      <section
+        aria-label={t("vocab.title")}
+        ref={listTop}
+        className="scroll-mt-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
+      >
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
           {data.totalAll === 0 ? (
             <EmptyAll />
