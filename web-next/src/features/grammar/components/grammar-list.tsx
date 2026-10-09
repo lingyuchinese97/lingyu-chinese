@@ -3,13 +3,16 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ArrowRight,
   ArrowUpDown,
   Bookmark,
   Check,
   ChevronRight,
   Library,
   Eye,
+  FileText,
   Pencil,
+  PlayCircle,
   Plus,
   Search,
   Share2,
@@ -32,7 +35,7 @@ import type { GrammarItem, ReceivedShare } from "../service";
 import { createTagAction, deleteTagAction, renameTagAction } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
-import { FeatureHero } from "@/components/feature-hero";
+import { FeatureHero, heroPrimary } from "@/components/feature-hero";
 
 type Data = {
   items: GrammarItem[];
@@ -114,7 +117,20 @@ export function GrammarList({
 
   return (
     <>
-      <FeatureHero id="gl-title" title={t("grammar.title")} description={t("grammar.subtitle")} />
+      <FeatureHero
+        id="gl-title"
+        title={t("grammar.title")}
+        description={t("grammar.heroSub")}
+        icon={<FileText strokeWidth={2.2} />}
+        art={{ src: "/brand/hero/cover-grammar.webp", width: 2000, height: 471 }}
+        actions={
+          <Link href="/library/grammar" className={heroPrimary}>
+            <PlayCircle aria-hidden="true" />
+            {t("grammar.startLearning")}
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        }
+      />
 
       {/* Thanh công cụ (giống Từ vựng): tìm · ô lọc (Tất cả / Đã lưu / Được chia sẻ / HSK / thẻ) · sắp xếp · Tạo mới. */}
       <section
@@ -272,7 +288,6 @@ export function GrammarList({
     </>
   );
 }
-
 
 /** Bỏ nhãn "Tên dạng: " ở đầu dòng cấu trúc (xem `structureParts`). */
 export const formulaOf = (line: string) => line.replace(/^[^:：+]{1,40}[:：]\s*/, "");

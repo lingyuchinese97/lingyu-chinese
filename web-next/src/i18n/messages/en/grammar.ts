@@ -227,4 +227,6 @@ export const grammar: Messages["grammar"] = {
   createNew: "Create",
   filterLabel: "Filter: view, HSK level or tag",
   tagsGroup: "Tags",
+  heroSub: "Learn Chinese grammar — clear and easy to apply",
+  startLearning: "Start learning",
 };

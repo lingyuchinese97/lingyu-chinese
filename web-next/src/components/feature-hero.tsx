@@ -17,6 +17,8 @@ export function FeatureHero({
   description,
   actions,
   aside,
+  art,
+  icon,
   className,
 }: {
   /** id của h1 (cho aria-labelledby). */
@@ -30,8 +32,81 @@ export function FeatureHero({
   actions?: React.ReactNode;
   /** Khối phụ (thẻ số liệu…) hiện dưới mô tả. */
   aside?: React.ReactNode;
+  /** Ảnh bìa riêng của màn (theo design: nền cửa sổ + mascot đã ghép sẵn) — thay cho ảnh bìa + mascot dùng chung. */
+  art?: { src: string; width: number; height: number };
+  /** Ô icon màu đứng trước tiêu đề (vd Ngữ pháp). */
+  icon?: React.ReactNode;
   className?: string;
 }) {
+  const heading = (
+    <h1 id={id} className="text-navy-900">
+      {eyebrow ? (
+        <span className={eyebrowClassName ?? "block text-[16px] font-bold text-blue-600 md:text-[18px]"}>
+          {eyebrow}
+        </span>
+      ) : null}
+      <span
+        className={cn(
+          "mt-0.5 flex items-start gap-1 text-[30px] leading-[1.12] font-black tracking-tight",
+          art ? "md:text-[38px] xl:text-[46px]" : "md:text-[46px]",
+        )}
+      >
+        <span className="min-w-0">{title}</span>
+        {art ? null : <LeafDecor className="mt-[-4px] w-8 shrink-0 -rotate-12 md:w-11" />}
+      </span>
+    </h1>
+  );
+  if (art)
+    return (
+      <section
+        aria-labelledby={id}
+        className={cn(
+          "relative isolate overflow-hidden rounded-[26px] border border-[#D3E8F8] bg-[linear-gradient(90deg,#F4F9FF_0%,#EEF7FF_100%)] shadow-card",
+          className,
+        )}
+      >
+        <Image
+          unoptimized
+          src={art.src}
+          alt=""
+          aria-hidden="true"
+          fill
+          priority
+          sizes="100vw"
+          className="-z-10 object-cover object-[60%_100%] xl:hidden"
+        />
+        {/* Màn rộng: giữ nguyên chiều cao ảnh, neo phải (không cắt đầu mascot); mép trái mờ vào nền. */}
+        <Image
+          unoptimized
+          src={art.src}
+          alt=""
+          aria-hidden="true"
+          width={art.width}
+          height={art.height}
+          priority
+          className="pointer-events-none absolute right-0 bottom-0 -z-10 hidden h-full w-auto max-w-none [mask-image:linear-gradient(90deg,transparent_0%,#000_10%)] xl:block"
+        />
+        <div className="flex min-h-[200px] flex-col justify-center gap-6 px-5 py-7 md:min-h-[260px] md:max-w-[46%] md:py-9 md:pl-12 xl:max-w-[50%]">
+          <div className="flex items-center gap-5 md:gap-7">
+            {icon ? (
+              <span
+                aria-hidden="true"
+                className="flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-[linear-gradient(145deg,#FFCB57_0%,#F5A524_100%)] text-white shadow-[0_10px_22px_rgba(245,165,36,.32)] md:size-[104px] md:rounded-[26px] [&_svg]:size-8 md:[&_svg]:size-[52px]"
+              >
+                {icon}
+              </span>
+            ) : null}
+            <div className="min-w-0">
+              {heading}
+              {description ? (
+                <p className="mt-2 text-[15px] font-medium text-navy/75 md:text-[16px] xl:text-[18px]">{description}</p>
+              ) : null}
+            </div>
+          </div>
+          {actions ? <div className="flex flex-wrap gap-2.5">{actions}</div> : null}
+        </div>
+      </section>
+    );
   return (
     <section
       aria-labelledby={id}
