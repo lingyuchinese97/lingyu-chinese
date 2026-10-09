@@ -23,6 +23,9 @@
 
 ### Changed
 
+- **Ngữ pháp của tôi — thanh tìm kiếm giống Từ vựng**: bìa giữ nguyên; một hàng ô tìm · chọn HSK (mặc định **Tất cả**) · sắp xếp ·
+  nút **Bộ lọc** · **Tạo mới**. Bộ lọc mở ra chế độ xem (Tất cả / Đã lưu / Được chia sẻ), thẻ và kiểu hiển thị (tự mở khi đang lọc;
+  nút có số đỏ khi có ngữ pháp được chia sẻ chờ nhận).
 - **Trang chủ — theo design**: thanh trên cùng có nút quay lại + "LingYu Chinese"; bìa giống các màn khác (mascot ngồi trên sách,
   "Xin chào, {tên}!", nút **Bắt đầu học ngay**, "Ôn ngay" khi có thẻ đến hạn); **8 thẻ chức năng** (Từ vựng, Ngữ pháp, Phát âm & Biến điệu,
   Luyện nghe & Nói, Luyện giao tiếp, Đọc hiểu, Luyện dịch, Ôn tập) với icon màu như thanh bên; **Tiến độ học tập** 4 vòng (Từ vựng,

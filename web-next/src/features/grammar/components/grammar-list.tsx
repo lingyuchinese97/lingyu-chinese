@@ -3,11 +3,13 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ArrowUpDown,
   Bookmark,
   Check,
   ChevronRight,
   Library,
   Eye,
+  Filter,
   LayoutGrid,
   List,
   Pencil,
@@ -92,6 +94,8 @@ export function GrammarList({
   const [shareOf, setShareOf] = React.useState<GrammarItem | null>(null);
   const [acceptOf, setAcceptOf] = React.useState<PendingShare | null>(null);
   const [tagsOpen, setTagsOpen] = React.useState(false);
+  const activeFilters = (params.view !== "all" ? 1 : 0) + (params.tag ? 1 : 0);
+  const [filtersOpen, setFiltersOpen] = React.useState(activeFilters > 0);
   const layout = React.useSyncExternalStore(layoutStore.subscribe, layoutStore.get, () => "grid" as const);
 
   const go = React.useCallback(
@@ -139,95 +143,143 @@ export function GrammarList({
         }
       />
 
+      {/* Thanh công cụ (giống Từ vựng): tìm · HSK (mặc định Tất cả) · sắp xếp · bộ lọc · Tạo mới.
+          Bộ lọc mở ra: chế độ xem (Tất cả / Đã lưu / Được chia sẻ), thẻ, kiểu hiển thị. */}
       <section
-        aria-label={t("grammar.list")}
-        className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
+        aria-label={t("grammar.toolbar")}
+        className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white/95 p-3 shadow-card md:p-4"
       >
-        <div
-          role="tablist"
-          aria-label={t("grammar.viewMode")}
-          className="-mx-1 flex [scrollbar-width:none] gap-1 overflow-x-auto px-1"
-        >
-          {views.map((v) => {
-            const on = params.view === v.key;
-            return (
-              <button
-                key={v.key}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                onClick={() => go({ view: v.key })}
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-[minmax(0,1fr)_170px_230px_auto_auto] md:gap-3">
+          <label className="relative col-span-2 block md:col-span-1">
+            <span className="sr-only">{t("grammar.searchLabel")}</span>
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t("grammar.searchPlaceholder")}
+              autoComplete="off"
+              disabled={!listMode}
+              className={cn(inputClass, "h-12 pl-12")}
+            />
+          </label>
+          <label>
+            <span className="sr-only">{t("grammar.hskLabel")}</span>
+            <select
+              value={params.hsk}
+              disabled={!listMode}
+              onChange={(e) => go({ hsk: e.target.value as GrammarListParams["hsk"] })}
+              className={cn(inputClass, "h-12 cursor-pointer font-semibold")}
+            >
+              {(["", "1", "2", "3", "4", "5", "6", "other"] as const).map((h) => {
+                const n = h ? (data.hskCounts[h] ?? 0) : data.totalAll;
+                return (
+                  <option key={h || "all"} value={h}>
+                    {h === ""
+                      ? t("grammar.allCount", { count: n })
+                      : h === "other"
+                        ? t("grammar.hskOther", { count: n })
+                        : `HSK ${h} (${n})`}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+          <label className="relative">
+            <span className="sr-only">{t("grammar.sort")}</span>
+            <ArrowUpDown className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-navy-900" />
+            <select
+              value={params.sort}
+              disabled={!listMode}
+              onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
+              className={cn(inputClass, "h-12 cursor-pointer pl-11 font-semibold")}
+            >
+              {G_SORTS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {t(s.label)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((o) => !o)}
+            aria-expanded={filtersOpen}
+            aria-controls="gl-filters"
+            className={cn(
+              "relative inline-flex h-12 items-center justify-center gap-2 rounded-[12px] border-[1.5px] px-4 text-[15.5px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
+              filtersOpen || activeFilters
+                ? "border-blue-600 bg-blue-50 text-blue-700"
+                : "border-[#BCD6F5] bg-white text-blue-600 hover:bg-blue-50",
+            )}
+          >
+            <Filter aria-hidden="true" />
+            {t("grammar.filter")}
+            {activeFilters || received.length ? (
+              <span
                 className={cn(
-                  "inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[14.5px] font-semibold [&_svg]:size-[17px]",
-                  on ? "text-blue-600 underline decoration-2 underline-offset-8" : "text-text-2 hover:text-blue-600",
+                  "absolute -top-1.5 -right-1.5 flex min-w-5 items-center justify-center rounded-full px-1 text-[11.5px] leading-5 font-bold text-white",
+                  received.length && !activeFilters ? "bg-rose" : "bg-blue-600",
                 )}
               >
-                {v.icon}
-                {v.label}
-                {v.n ? (
-                  <span
-                    className={cn(
-                      "rounded-full px-2 text-xs leading-5",
-                      v.alert ? "bg-rose text-white" : "bg-[#E4EEF8] text-text-2",
-                    )}
-                  >
-                    {v.n}
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
+                {activeFilters || received.length}
+              </span>
+            ) : null}
+          </button>
+          <Link
+            href="/grammar/new"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#1769C9] px-5 text-[16px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.25)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5"
+          >
+            <Plus aria-hidden="true" />
+            {t("grammar.createNew")}
+          </Link>
         </div>
 
-        {listMode ? (
-          <>
-            <div className="flex flex-col gap-3 2xl:flex-row 2xl:items-center">
+        {filtersOpen ? (
+          <div id="gl-filters" className="flex flex-col gap-3 border-t border-border pt-3">
+            <div className="flex flex-wrap items-center gap-2">
               <div
-                role="group"
-                aria-label={t("grammar.hskLabel")}
-                className="-mx-4 flex min-w-0 flex-1 [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0"
+                role="tablist"
+                aria-label={t("grammar.viewMode")}
+                className="-mx-1 flex [scrollbar-width:none] gap-1 overflow-x-auto px-1"
               >
-                {(["", "1", "2", "3", "4", "5", "6", "other"] as const).map((h) => {
-                  const n = h ? (data.hskCounts[h] ?? 0) : data.totalAll;
-                  const on = params.hsk === h;
+                {views.map((v) => {
+                  const on = params.view === v.key;
                   return (
                     <button
-                      key={h || "all"}
+                      key={v.key}
                       type="button"
-                      aria-pressed={on}
-                      onClick={() => go({ hsk: h })}
-                      disabled={!!h && !n && !on}
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => go({ view: v.key })}
                       className={cn(
-                        "inline-flex min-h-11 shrink-0 items-center rounded-[12px] px-4 text-[14.5px] font-semibold whitespace-nowrap disabled:opacity-45",
-                        on ? "bg-blue-600 text-white shadow-cta" : "text-text-2 hover:bg-blue-50 hover:text-blue-700",
+                        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] px-3.5 text-[14.5px] font-semibold [&_svg]:size-[17px]",
+                        on
+                          ? "border-blue-600 bg-blue-50 text-blue-700"
+                          : "border-border bg-white text-text-2 hover:text-blue-600",
                       )}
                     >
-                      {h === ""
-                        ? t("grammar.allCount", { count: n })
-                        : h === "other"
-                          ? t("grammar.hskOther", { count: n })
-                          : `HSK ${h} (${n})`}
+                      {v.icon}
+                      {v.label}
+                      {v.n ? (
+                        <span
+                          className={cn(
+                            "rounded-full px-2 text-xs leading-5",
+                            v.alert ? "bg-rose text-white" : "bg-[#E4EEF8] text-text-2",
+                          )}
+                        >
+                          {v.n}
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })}
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <label className="relative block min-w-0 flex-1 2xl:w-[340px] 2xl:flex-none">
-                  <span className="sr-only">{t("grammar.searchLabel")}</span>
-                  <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
-                  <input
-                    type="search"
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    placeholder={t("grammar.searchPlaceholder")}
-                    autoComplete="off"
-                    className={cn(inputClass, "pl-12")}
-                  />
-                </label>
+              {listMode ? (
                 <div
                   role="group"
                   aria-label={t("grammar.layout")}
-                  className="flex gap-1 rounded-[14px] border border-border bg-white p-1"
+                  className="ml-auto flex gap-1 rounded-[14px] border border-border bg-white p-1"
                 >
                   {(["grid", "list"] as const).map((m) => {
                     const Icon = m === "grid" ? LayoutGrid : List;
@@ -252,13 +304,13 @@ export function GrammarList({
                     );
                   })}
                 </div>
-              </div>
+              ) : null}
             </div>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
+            {listMode ? (
               <div
                 role="group"
                 aria-label={t("grammar.filterTag")}
-                className="-mx-4 flex min-w-0 flex-1 [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
+                className="-mx-4 flex min-w-0 [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
               >
                 <Chip on={!params.tag} onClick={() => go({ tag: "" })} tone={-1}>
                   {t("grammar.allTags")}
@@ -279,24 +331,15 @@ export function GrammarList({
                   {t("grammar.addTagChip")}
                 </button>
               </div>
-              <label className="shrink-0 lg:w-[220px]">
-                <span className="sr-only">{t("grammar.sort")}</span>
-                <select
-                  value={params.sort}
-                  onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
-                  className={cn(inputClass, "cursor-pointer")}
-                >
-                  {G_SORTS.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {t("grammar.sortPrefix")} {t(s.label)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </>
+            ) : null}
+          </div>
         ) : null}
+      </section>
 
+      <section
+        aria-label={t("grammar.list")}
+        className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
+      >
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
           {!listMode ? (
             <Received
