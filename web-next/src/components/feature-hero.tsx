@@ -68,25 +68,7 @@ export function FeatureHero({
           width={art.width}
           height={art.height}
           priority
-          className="pointer-events-none absolute top-0 right-0 -z-10 hidden h-full w-auto max-w-[64%] [mask-image:linear-gradient(90deg,transparent_0%,#000_16%)] object-cover object-left md:block"
-        />
-        <Image
-          unoptimized
-          src="/brand/ui/deco-leaf.png"
-          alt=""
-          aria-hidden="true"
-          width={57}
-          height={68}
-          className="pointer-events-none absolute top-3 left-3 -z-10 w-9 -rotate-45 opacity-60"
-        />
-        <Image
-          unoptimized
-          src="/brand/ui/deco-leaf.png"
-          alt=""
-          aria-hidden="true"
-          width={57}
-          height={68}
-          className="pointer-events-none absolute bottom-4 left-[36%] -z-10 hidden w-10 rotate-12 opacity-70 md:block"
+          className="pointer-events-none absolute top-0 right-0 -z-10 hidden h-full w-auto max-w-[64%] object-cover object-left [mask-image:linear-gradient(90deg,transparent_0%,#000_16%)] md:block"
         />
         <div
           aria-hidden="true"
