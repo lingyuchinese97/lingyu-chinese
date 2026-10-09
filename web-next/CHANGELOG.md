@@ -23,8 +23,8 @@
 
 ### Changed
 
-- **Ngữ pháp — bìa mới theo design**: tranh riêng (cửa sổ, mascot ngồi viết bên bàn, sách HSK · 语法, cốc trà, kệ sách —
-  `public/brand/hero/cover-grammar.webp`) mờ dần vào nền bên trái, không thêm lá trang trí; ô icon cam trước tiêu đề "Ngữ pháp", mô tả "Học ngữ pháp tiếng Trung,
+- **Ngữ pháp — bìa mới theo design**: ảnh bìa riêng ghép từ nền cửa sổ + bàn gỗ và mascot ngồi viết
+  (sách HSK · 语法, vở, cốc trà — `public/brand/hero/cover-grammar.webp`), không thêm lá trang trí; ô icon cam trước tiêu đề "Ngữ pháp", mô tả "Học ngữ pháp tiếng Trung,
   dễ hiểu, dễ áp dụng", nút **Bắt đầu học** (mở Ngữ pháp trong Thư viện). `FeatureHero` có thêm tuỳ chọn `art` + `icon` cho các màn khác.
 - **Ngữ pháp của tôi — một ô lọc gộp**: bỏ nút **Bộ lọc** và nút "Thêm ngữ pháp mới" trên bìa (dùng nút **Tạo mới** ở thanh công cụ).
   Ô lọc chọn một trong: Tất cả · Đã lưu · **Được chia sẻ** · HSK 1–6 · Khác · từng thẻ · "Quản lý thẻ…" (mở hộp thêm / đổi tên / xoá thẻ).
