@@ -225,4 +225,6 @@ export const grammar: Messages["grammar"] = {
   toolbar: "Search and filter grammar",
   filter: "Filters",
   createNew: "Create",
+  filterLabel: "Filter: view, HSK level or tag",
+  tagsGroup: "Tags",
 };

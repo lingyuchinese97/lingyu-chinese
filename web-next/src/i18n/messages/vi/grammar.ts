@@ -220,4 +220,6 @@ export const grammar = {
   toolbar: "Tìm và lọc ngữ pháp",
   filter: "Bộ lọc",
   createNew: "Tạo mới",
+  filterLabel: "Lọc: chế độ xem, HSK hoặc thẻ",
+  tagsGroup: "Thẻ",
 };

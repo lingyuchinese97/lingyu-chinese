@@ -23,6 +23,9 @@
 
 ### Changed
 
+- **Ngữ pháp của tôi — một ô lọc gộp**: bỏ nút **Bộ lọc** và nút "Thêm ngữ pháp mới" trên bìa (dùng nút **Tạo mới** ở thanh công cụ).
+  Ô lọc chọn một trong: Tất cả · Đã lưu · **Được chia sẻ** · HSK 1–6 · Khác · từng thẻ · "Quản lý thẻ…" (mở hộp thêm / đổi tên / xoá thẻ).
+  Danh sách luôn hiện dạng lưới.
 - **Ngữ pháp của tôi — thanh tìm kiếm giống Từ vựng**: bìa giữ nguyên; một hàng ô tìm · chọn HSK (mặc định **Tất cả**) · sắp xếp ·
   nút **Bộ lọc** · **Tạo mới**. Bộ lọc mở ra chế độ xem (Tất cả / Đã lưu / Được chia sẻ), thẻ và kiểu hiển thị (tự mở khi đang lọc;
   nút có số đỏ khi có ngữ pháp được chia sẻ chờ nhận).
