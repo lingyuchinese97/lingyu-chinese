@@ -23,6 +23,8 @@
 
 ### Changed
 
+- **Bìa đầu trang — nền mới**: nền trời xanh, rèm, cửa sổ, bàn gỗ có kệ sách / chậu hoa / cốc trà (theo design); mascot ngồi viết
+  và chồng sách HSK · 语法 giữ nguyên, đặt trên mặt bàn (`cover-desk.webp`). Điện thoại dùng phần trời của nền (`cover-sky.webp`).
 - **Bìa đầu trang mọi màn = bìa Ngữ pháp**: `FeatureHero` dùng chung ảnh cửa sổ + bàn gỗ có mascot ngồi viết (`cover-desk.webp`) và
   ô icon của từng chức năng trước tiêu đề (icon màu như thanh bên; Ngữ pháp giữ ô cam). Tranh cao tối đa 300px, neo đáy, mép trên / trái
   mờ vào nền nên bìa cao (có ô tìm, tiêu đề 2 dòng) không bị mascot đè chữ; điện thoại chỉ hiện nền nhạt.
