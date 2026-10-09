@@ -222,4 +222,6 @@ export const grammar = {
   createNew: "Tạo mới",
   filterLabel: "Lọc: chế độ xem, HSK hoặc thẻ",
   tagsGroup: "Thẻ",
+  heroSub: "Học ngữ pháp tiếng Trung, dễ hiểu, dễ áp dụng",
+  startLearning: "Bắt đầu học",
 };
