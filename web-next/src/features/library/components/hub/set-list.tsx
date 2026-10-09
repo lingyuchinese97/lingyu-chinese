@@ -75,6 +75,7 @@ export function SetList({ data, params }: { data: Data; params: SetListParams })
         items={[{ href: "/library", text: t("libhub.breadcrumb") }, { text: t("libhub.vocabTitle") }]}
       />
       <FeatureHero
+        iconImg="/brand/ui/nav-library.png?v=2"
         id="ls-sets-title"
         title={t("libhub.vocabTitle")}
         description={t("libhub.vocabSub")}

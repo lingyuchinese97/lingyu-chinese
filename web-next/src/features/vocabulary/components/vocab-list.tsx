@@ -341,6 +341,7 @@ export function VocabListView({
   return (
     <>
       <FeatureHero
+        iconImg="/brand/ui/nav-vocabulary.png?v=2"
         id="vl-title"
         title={t("vocab.myTitle", { count: data.totalAll })}
         description={t("vocab.mySub")}

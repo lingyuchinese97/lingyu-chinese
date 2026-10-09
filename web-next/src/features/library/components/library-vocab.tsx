@@ -100,6 +100,7 @@ export function LibraryVocab({
       </nav>
 
       <FeatureHero
+        iconImg="/brand/ui/nav-library.png?v=2"
         id="lv-title"
         title={t("library.vocabTitle")}
         description={t("library.vocabSub")}

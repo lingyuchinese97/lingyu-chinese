@@ -122,7 +122,6 @@ export function GrammarList({
         title={t("grammar.title")}
         description={t("grammar.heroSub")}
         icon={<FileText strokeWidth={2.2} />}
-        art={{ src: "/brand/hero/cover-grammar.webp", width: 2000, height: 471 }}
         actions={
           <Link href="/library/grammar" className={heroPrimary}>
             <PlayCircle aria-hidden="true" />

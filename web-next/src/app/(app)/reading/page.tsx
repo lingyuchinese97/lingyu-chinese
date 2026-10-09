@@ -53,6 +53,7 @@ export default async function ReadingPage() {
   return (
     <div className="flex flex-col gap-4">
       <FeatureHero
+        iconImg="/brand/ui/nav-reading.png?v=2"
         id="rd-page-title"
         title={t("reading.title")}
         description={t("reading.subtitle")}

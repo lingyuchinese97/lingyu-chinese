@@ -35,6 +35,7 @@ export default async function TranslatePage() {
   return (
     <div className="flex flex-col gap-4">
       <FeatureHero
+        iconImg="/brand/ui/nav-translation.png?v=2"
         id="tr-page-title"
         title={t("translate.title")}
         description={t("translate.subtitle")}

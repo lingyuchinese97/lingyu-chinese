@@ -67,6 +67,7 @@ export function HskListView({ data, q: q0 }: { data: HskList; q: string }) {
         ]}
       />
       <FeatureHero
+        iconImg="/brand/ui/nav-library.png?v=2"
         id="lhsk-title"
         title={t("libhub.hskTitle", { level: data.level })}
         description={t("libhub.hskSub", { level: data.level })}

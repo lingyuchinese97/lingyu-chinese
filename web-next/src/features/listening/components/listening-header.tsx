@@ -18,6 +18,7 @@ export function ListeningHeader({ tab, actions }: { tab: "practice" | "mine"; ac
   return (
     <div className="flex flex-col gap-3">
       <FeatureHero
+        iconImg="/brand/ui/nav-listening.png?v=2"
         id="ls-title"
         title={tab === "practice" ? t("listening.pageTitle") : t("listening.tabs.mine")}
         description={t("listening.subtitle")}

@@ -57,6 +57,7 @@ export function PronunciationHeader({ mode = "library" }: { mode?: "library" | "
   return (
     <div className="flex flex-col gap-3">
       <FeatureHero
+        iconImg="/brand/ui/nav-pronunciation.png?v=2"
         id="pr-title"
         title={mode === "mine" ? t("pronunciation.mine.title") : t("pronunciation.title")}
         description={mode === "mine" ? t("pronunciation.mine.subtitle") : t("pronunciation.subtitle")}

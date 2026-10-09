@@ -333,6 +333,7 @@ export function Reader({
   return (
     <div className="flex flex-col gap-4">
       <FeatureHero
+        iconImg="/brand/ui/nav-reading.png?v=2"
         id="rd-title"
         eyebrow={`${t("reading.passageN", { n: nav.index })} · HSK ${passage.level} · ${t(`reading.types.${passage.type}`)}`}
         title={
