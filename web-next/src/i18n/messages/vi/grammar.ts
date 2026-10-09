@@ -217,4 +217,7 @@ export const grammar = {
     noteSaved: "Đã lưu ghi chú cá nhân.",
     shareNow: "Chia sẻ ngay",
   },
+  toolbar: "Tìm và lọc ngữ pháp",
+  filter: "Bộ lọc",
+  createNew: "Tạo mới",
 };

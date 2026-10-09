@@ -222,4 +222,7 @@ export const grammar: Messages["grammar"] = {
     noteSaved: "Personal note saved.",
     shareNow: "Share now",
   },
+  toolbar: "Search and filter grammar",
+  filter: "Filters",
+  createNew: "Create",
 };
