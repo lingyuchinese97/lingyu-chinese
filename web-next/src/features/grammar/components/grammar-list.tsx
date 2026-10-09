@@ -9,9 +9,6 @@ import {
   ChevronRight,
   Library,
   Eye,
-  Filter,
-  LayoutGrid,
-  List,
   Pencil,
   Plus,
   Search,
@@ -35,7 +32,7 @@ import type { GrammarItem, ReceivedShare } from "../service";
 import { createTagAction, deleteTagAction, renameTagAction } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
-import { FeatureHero, heroPrimary } from "@/components/feature-hero";
+import { FeatureHero } from "@/components/feature-hero";
 
 type Data = {
   items: GrammarItem[];
@@ -45,31 +42,6 @@ type Data = {
   hskCounts: Record<string, number>;
 };
 type TagRow = { id: string; name: string; count: number };
-
-/** Dạng lưới / danh sách, nhớ theo trình duyệt. */
-const LAYOUT_KEY = "lingyu.grammar.layout";
-const layoutListeners = new Set<() => void>();
-const layoutStore = {
-  get(): "grid" | "list" {
-    try {
-      return localStorage.getItem(LAYOUT_KEY) === "list" ? "list" : "grid";
-    } catch {
-      return "grid";
-    }
-  },
-  set(m: "grid" | "list") {
-    try {
-      localStorage.setItem(LAYOUT_KEY, m);
-    } catch {
-      /* trình duyệt chặn lưu trữ */
-    }
-    layoutListeners.forEach((f) => f());
-  },
-  subscribe(f: () => void) {
-    layoutListeners.add(f);
-    return () => void layoutListeners.delete(f);
-  },
-};
 
 export const fmtDate = (d: Date | string, tag = "vi-VN") =>
   new Date(d).toLocaleDateString(tag, { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -94,9 +66,16 @@ export function GrammarList({
   const [shareOf, setShareOf] = React.useState<GrammarItem | null>(null);
   const [acceptOf, setAcceptOf] = React.useState<PendingShare | null>(null);
   const [tagsOpen, setTagsOpen] = React.useState(false);
-  const activeFilters = (params.view !== "all" ? 1 : 0) + (params.tag ? 1 : 0);
-  const [filtersOpen, setFiltersOpen] = React.useState(activeFilters > 0);
-  const layout = React.useSyncExternalStore(layoutStore.subscribe, layoutStore.get, () => "grid" as const);
+  const userTags = tags.filter((tg) => hskOfTag(tg.name) === null);
+  // Một ô lọc gộp: chế độ xem, cấp HSK hoặc một thẻ (chọn một mục sẽ bỏ các mục kia).
+  const filterValue =
+    params.view !== "all"
+      ? `view:${params.view}`
+      : params.tag
+        ? `tag:${params.tag}`
+        : params.hsk
+          ? `hsk:${params.hsk}`
+          : "";
 
   const go = React.useCallback(
     (patch: Partial<GrammarListParams>) => {
@@ -111,6 +90,15 @@ export function GrammarList({
     },
     [params, pathname, router],
   );
+  const pickFilter = (v: string) => {
+    if (v === "manage") return setTagsOpen(true);
+    const [kind, val = ""] = v.split(":");
+    go({
+      view: kind === "view" ? (val as GrammarListParams["view"]) : "all",
+      hsk: kind === "hsk" ? (val as GrammarListParams["hsk"]) : "",
+      tag: kind === "tag" ? val : "",
+    });
+  };
   React.useEffect(() => {
     if (q === params.q) return;
     const timer = setTimeout(() => go({ q }), 350);
@@ -123,33 +111,17 @@ export function GrammarList({
     () => new Map(tags.filter((tg) => hskOfTag(tg.name) === null).map((tg, i) => [tg.name, i])),
     [tags],
   );
-  const views = [
-    { key: "all" as const, label: t("grammar.viewAll"), icon: <GrammarIcon />, n: data.totalAll },
-    { key: "saved" as const, label: t("grammar.viewSaved"), icon: <Bookmark />, n: data.savedCount },
-    { key: "shared" as const, label: t("grammar.viewShared"), icon: <Share2 />, n: received.length, alert: true },
-  ];
 
   return (
     <>
-      <FeatureHero
-        id="gl-title"
-        title={t("grammar.title")}
-        description={t("grammar.subtitle")}
-        actions={
-          <Link href="/grammar/new" className={heroPrimary}>
-            <Plus aria-hidden="true" />
-            {t("grammar.addNew")}
-          </Link>
-        }
-      />
+      <FeatureHero id="gl-title" title={t("grammar.title")} description={t("grammar.subtitle")} />
 
-      {/* Thanh công cụ (giống Từ vựng): tìm · HSK (mặc định Tất cả) · sắp xếp · bộ lọc · Tạo mới.
-          Bộ lọc mở ra: chế độ xem (Tất cả / Đã lưu / Được chia sẻ), thẻ, kiểu hiển thị. */}
+      {/* Thanh công cụ (giống Từ vựng): tìm · ô lọc (Tất cả / Đã lưu / Được chia sẻ / HSK / thẻ) · sắp xếp · Tạo mới. */}
       <section
         aria-label={t("grammar.toolbar")}
-        className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-border bg-white/95 p-3 shadow-card md:p-4"
+        className="rounded-[var(--radius-xl)] border border-border bg-white/95 p-3 shadow-card md:p-4"
       >
-        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-[minmax(0,1fr)_170px_230px_auto_auto] md:gap-3">
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-[minmax(0,1fr)_220px_230px_auto] md:gap-3">
           <label className="relative col-span-2 block md:col-span-1">
             <span className="sr-only">{t("grammar.searchLabel")}</span>
             <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
@@ -164,25 +136,39 @@ export function GrammarList({
             />
           </label>
           <label>
-            <span className="sr-only">{t("grammar.hskLabel")}</span>
+            <span className="sr-only">{t("grammar.filterLabel")}</span>
             <select
-              value={params.hsk}
-              disabled={!listMode}
-              onChange={(e) => go({ hsk: e.target.value as GrammarListParams["hsk"] })}
+              value={filterValue}
+              onChange={(e) => pickFilter(e.target.value)}
               className={cn(inputClass, "h-12 cursor-pointer font-semibold")}
             >
-              {(["", "1", "2", "3", "4", "5", "6", "other"] as const).map((h) => {
-                const n = h ? (data.hskCounts[h] ?? 0) : data.totalAll;
-                return (
-                  <option key={h || "all"} value={h}>
-                    {h === ""
-                      ? t("grammar.allCount", { count: n })
-                      : h === "other"
-                        ? t("grammar.hskOther", { count: n })
-                        : `HSK ${h} (${n})`}
-                  </option>
-                );
-              })}
+              <option value="">{t("grammar.allCount", { count: data.totalAll })}</option>
+              <option value="view:saved">
+                {t("grammar.viewSaved")} ({data.savedCount})
+              </option>
+              <option value="view:shared">
+                {t("grammar.viewShared")} ({received.length})
+              </option>
+              <optgroup label="HSK">
+                {(["1", "2", "3", "4", "5", "6", "other"] as const).map((h) => {
+                  const n = data.hskCounts[h] ?? 0;
+                  return (
+                    <option key={h} value={`hsk:${h}`}>
+                      {h === "other" ? t("grammar.hskOther", { count: n }) : `HSK ${h} (${n})`}
+                    </option>
+                  );
+                })}
+              </optgroup>
+              {userTags.length ? (
+                <optgroup label={t("grammar.tagsGroup")}>
+                  {userTags.map((tg) => (
+                    <option key={tg.id} value={`tag:${tg.id}`}>
+                      {tg.name} ({tg.count})
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              <option value="manage">{t("grammar.manageTags")}…</option>
             </select>
           </label>
           <label className="relative">
@@ -201,139 +187,14 @@ export function GrammarList({
               ))}
             </select>
           </label>
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((o) => !o)}
-            aria-expanded={filtersOpen}
-            aria-controls="gl-filters"
-            className={cn(
-              "relative inline-flex h-12 items-center justify-center gap-2 rounded-[12px] border-[1.5px] px-4 text-[15.5px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5",
-              filtersOpen || activeFilters
-                ? "border-blue-600 bg-blue-50 text-blue-700"
-                : "border-[#BCD6F5] bg-white text-blue-600 hover:bg-blue-50",
-            )}
-          >
-            <Filter aria-hidden="true" />
-            {t("grammar.filter")}
-            {activeFilters || received.length ? (
-              <span
-                className={cn(
-                  "absolute -top-1.5 -right-1.5 flex min-w-5 items-center justify-center rounded-full px-1 text-[11.5px] leading-5 font-bold text-white",
-                  received.length && !activeFilters ? "bg-rose" : "bg-blue-600",
-                )}
-              >
-                {activeFilters || received.length}
-              </span>
-            ) : null}
-          </button>
           <Link
             href="/grammar/new"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#1769C9] px-5 text-[16px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.25)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5"
+            className="col-span-2 inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#1769C9] px-5 text-[16px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.25)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] md:col-span-1 [&_svg]:size-5"
           >
             <Plus aria-hidden="true" />
             {t("grammar.createNew")}
           </Link>
         </div>
-
-        {filtersOpen ? (
-          <div id="gl-filters" className="flex flex-col gap-3 border-t border-border pt-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <div
-                role="tablist"
-                aria-label={t("grammar.viewMode")}
-                className="-mx-1 flex [scrollbar-width:none] gap-1 overflow-x-auto px-1"
-              >
-                {views.map((v) => {
-                  const on = params.view === v.key;
-                  return (
-                    <button
-                      key={v.key}
-                      type="button"
-                      role="tab"
-                      aria-selected={on}
-                      onClick={() => go({ view: v.key })}
-                      className={cn(
-                        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] px-3.5 text-[14.5px] font-semibold [&_svg]:size-[17px]",
-                        on
-                          ? "border-blue-600 bg-blue-50 text-blue-700"
-                          : "border-border bg-white text-text-2 hover:text-blue-600",
-                      )}
-                    >
-                      {v.icon}
-                      {v.label}
-                      {v.n ? (
-                        <span
-                          className={cn(
-                            "rounded-full px-2 text-xs leading-5",
-                            v.alert ? "bg-rose text-white" : "bg-[#E4EEF8] text-text-2",
-                          )}
-                        >
-                          {v.n}
-                        </span>
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-              {listMode ? (
-                <div
-                  role="group"
-                  aria-label={t("grammar.layout")}
-                  className="ml-auto flex gap-1 rounded-[14px] border border-border bg-white p-1"
-                >
-                  {(["grid", "list"] as const).map((m) => {
-                    const Icon = m === "grid" ? LayoutGrid : List;
-                    return (
-                      <button
-                        key={m}
-                        type="button"
-                        aria-pressed={layout === m}
-                        onClick={() => layoutStore.set(m)}
-                        className={cn(
-                          "inline-flex min-h-10 items-center gap-1.5 rounded-[10px] border px-3 text-[14px] font-semibold whitespace-nowrap outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px]",
-                          layout === m
-                            ? "border-blue-600 bg-blue-50 text-blue-700"
-                            : "border-transparent text-text-2 hover:text-blue-600",
-                        )}
-                      >
-                        <Icon aria-hidden="true" />
-                        <span className="max-sm:sr-only">
-                          {m === "grid" ? t("grammar.layoutGrid") : t("grammar.layoutList")}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-            {listMode ? (
-              <div
-                role="group"
-                aria-label={t("grammar.filterTag")}
-                className="-mx-4 flex min-w-0 [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
-              >
-                <Chip on={!params.tag} onClick={() => go({ tag: "" })} tone={-1}>
-                  {t("grammar.allTags")}
-                </Chip>
-                {tags
-                  .filter((tg) => hskOfTag(tg.name) === null)
-                  .map((tg, i) => (
-                    <Chip key={tg.id} on={tg.id === params.tag} onClick={() => go({ tag: tg.id })} tone={i}>
-                      {tg.name} <span className="opacity-70">({tg.count})</span>
-                    </Chip>
-                  ))}
-                <button
-                  type="button"
-                  onClick={() => setTagsOpen(true)}
-                  className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[12px] border-[1.5px] border-dashed border-[#BCD6F5] bg-white px-3.5 text-[14px] font-semibold whitespace-nowrap text-blue-600 hover:bg-blue-50"
-                >
-                  <Plus className="size-[18px]" />
-                  {t("grammar.addTagChip")}
-                </button>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
       </section>
 
       <section
@@ -380,7 +241,7 @@ export function GrammarList({
           ) : (
             <>
               <p className="mb-3 text-[13.5px] text-text-3">{t("grammar.total", { count: data.total })}</p>
-              <div className={cn("grid gap-3.5", layout === "grid" && "md:grid-cols-2 2xl:grid-cols-3")}>
+              <div className="grid gap-3.5 md:grid-cols-2 2xl:grid-cols-3">
                 {data.items.map((g, i) => (
                   <GrammarCard
                     key={g.id}
@@ -412,35 +273,6 @@ export function GrammarList({
   );
 }
 
-function Chip({
-  on,
-  onClick,
-  children,
-  tone,
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  tone: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={on}
-      className={cn(
-        "inline-flex min-h-10 shrink-0 items-center gap-1 rounded-[12px] border-[1.5px] px-3.5 text-[14px] font-semibold whitespace-nowrap",
-        on
-          ? "border-blue-600 bg-blue-50 text-blue-700 shadow-[0_0_0_1px_var(--color-blue-600)]"
-          : tone < 0
-            ? "border-border bg-white text-text-2 hover:bg-blue-50"
-            : cn(tagTone(tone), "hover:brightness-95"),
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 /** Bỏ nhãn "Tên dạng: " ở đầu dòng cấu trúc (xem `structureParts`). */
 export const formulaOf = (line: string) => line.replace(/^[^:：+]{1,40}[:：]\s*/, "");

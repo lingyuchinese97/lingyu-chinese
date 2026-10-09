@@ -129,3 +129,27 @@ test("người không được mời không xem được ngữ pháp của ngư�
   const edit = await c.goto(`${url}/edit`);
   expect(edit?.status()).toBe(404);
 });
+
+test("ô lọc gộp: Tất cả / Được chia sẻ / HSK / thẻ; không còn nút Bộ lọc và nút trên bìa", async ({ page }) => {
+  await register(page, "Người Lọc", "gfl");
+  await page.goto("/grammar");
+  await seedSample(page, "grammar");
+  await expect(page.getByRole("button", { name: /^Bộ lọc/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Thêm ngữ pháp mới" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Tạo mới" })).toBeVisible();
+  const filter = page.getByLabel("Lọc: chế độ xem, HSK hoặc thẻ");
+  const list = page.getByRole("region", { name: "Danh sách ngữ pháp" });
+  await expect(list.getByText("3 ngữ pháp", { exact: true })).toBeVisible();
+  await filter.selectOption("hsk:2");
+  await expect(page).toHaveURL(/hsk=2/);
+  await expect(list.getByText("1 ngữ pháp", { exact: true })).toBeVisible();
+  await filter.selectOption({ label: "Phủ định (1)" });
+  await expect(page).toHaveURL(/tag=/);
+  await expect(page).not.toHaveURL(/hsk=/);
+  await expect(list.getByText("1 ngữ pháp", { exact: true })).toBeVisible();
+  await filter.selectOption("view:shared");
+  await expect(page).toHaveURL(/view=shared/);
+  await filter.selectOption("");
+  await expect(page).toHaveURL(/\/grammar$/);
+  await expect(list.getByText("3 ngữ pháp", { exact: true })).toBeVisible();
+});
