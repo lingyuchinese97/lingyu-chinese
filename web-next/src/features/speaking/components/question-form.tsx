@@ -81,6 +81,7 @@ export function QuestionForm({
   return (
     <div className="flex flex-col gap-4">
       <FeatureHero
+        iconImg="/brand/ui/nav-speaking.png?v=2"
         id="sp-form-title"
         title={editing ? t("speaking.editTitle") : t("speaking.newTitle")}
         description={t("speaking.formSub")}

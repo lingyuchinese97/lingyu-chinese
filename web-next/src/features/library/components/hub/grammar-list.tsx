@@ -189,6 +189,7 @@ export function GrammarList({ data, params }: { data: LibGrammarList; params: Gr
         items={[{ href: "/library", text: t("libhub.breadcrumb") }, { text: t("libgram.title") }]}
       />
       <FeatureHero
+        iconImg="/brand/ui/nav-library.png?v=2"
         id="lg-title"
         title={t("libgram.title")}
         description={t("libgram.sub")}

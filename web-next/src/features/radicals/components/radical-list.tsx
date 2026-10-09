@@ -87,6 +87,7 @@ export function RadicalList({
   return (
     <>
       <FeatureHero
+        iconImg="/brand/ui/nav-radicals.png?v=2"
         id="rl-title"
         title={t("radicals.title")}
         description={t("radicals.subtitle")}

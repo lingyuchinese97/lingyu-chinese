@@ -19,7 +19,12 @@ export default async function LessonsPage() {
   const locale = await getLocale();
   return (
     <>
-      <FeatureHero id="ls-title" title={t("lessons.title")} description={t("lessons.subtitle")} />
+      <FeatureHero
+        iconImg="/brand/ui/nav-lessons.png?v=2"
+        id="ls-title"
+        title={t("lessons.title")}
+        description={t("lessons.subtitle")}
+      />
       <ul className="grid gap-4 md:grid-cols-2">
         {LESSONS.map((raw) => {
           const l = localizeLesson(raw, locale);

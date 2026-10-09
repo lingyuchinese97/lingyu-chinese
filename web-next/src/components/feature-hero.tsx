@@ -1,11 +1,13 @@
 import * as React from "react";
 import Image from "next/image";
-import { LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 
+/** Ảnh bìa chung (theo design Ngữ pháp): nền cửa sổ + bàn gỗ, mascot ngồi viết với sách HSK · 语法, vở, cốc trà. */
+const COVER = { src: "/brand/hero/cover-desk.webp", width: 2000, height: 471 };
+
 /**
- * Bìa đầu trang dùng chung cho mọi chức năng (theo design): ảnh bìa cố định (trời xanh, cửa sổ, lá bay), tiêu đề lớn có nhánh lá,
- * mô tả, nút thao tác; bên phải là mascot LingYu ngồi trên mặt bàn cạnh cửa sổ cầm sách đọc.
+ * Bìa đầu trang dùng chung cho mọi chức năng: ảnh bìa cửa sổ + mascot ngồi viết bên bàn ở bên phải; bên trái là ô icon của
+ * chức năng (tuỳ chọn), tiêu đề, mô tả và nút thao tác.
  * Không dùng hook → dùng được ở cả server lẫn client component.
  */
 export function FeatureHero({
@@ -17,8 +19,9 @@ export function FeatureHero({
   description,
   actions,
   aside,
-  art,
+  art = COVER,
   icon,
+  iconImg,
   className,
 }: {
   /** id của h1 (cho aria-labelledby). */
@@ -32,140 +35,86 @@ export function FeatureHero({
   actions?: React.ReactNode;
   /** Khối phụ (thẻ số liệu…) hiện dưới mô tả. */
   aside?: React.ReactNode;
-  /** Ảnh bìa riêng của màn (theo design: nền cửa sổ + mascot đã ghép sẵn) — thay cho ảnh bìa + mascot dùng chung. */
+  /** Ảnh bìa khác (mặc định: cửa sổ + mascot ngồi viết). */
   art?: { src: string; width: number; height: number };
-  /** Ô icon màu đứng trước tiêu đề (vd Ngữ pháp). */
+  /** Ô icon cam (icon trắng) trước tiêu đề — như Ngữ pháp. */
   icon?: React.ReactNode;
+  /** Hoặc ô icon trắng chứa icon màu của chức năng (ảnh `public/brand/ui/nav-*.png`). */
+  iconImg?: string;
   className?: string;
 }) {
-  const heading = (
-    <h1 id={id} className="text-navy-900">
-      {eyebrow ? (
-        <span className={eyebrowClassName ?? "block text-[16px] font-bold text-blue-600 md:text-[18px]"}>
-          {eyebrow}
-        </span>
-      ) : null}
-      <span
-        className={cn(
-          "mt-0.5 flex items-start gap-1 text-[30px] leading-[1.12] font-black tracking-tight",
-          art ? "md:text-[38px] xl:text-[46px]" : "md:text-[46px]",
-        )}
-      >
-        <span className="min-w-0">{title}</span>
-        {art ? null : <LeafDecor className="mt-[-4px] w-8 shrink-0 -rotate-12 md:w-11" />}
-      </span>
-    </h1>
-  );
-  if (art)
-    return (
-      <section
-        aria-labelledby={id}
-        className={cn(
-          "relative isolate overflow-hidden rounded-[26px] border border-[#D3E8F8] bg-[linear-gradient(90deg,#F4F9FF_0%,#EEF7FF_100%)] shadow-card",
-          className,
-        )}
-      >
-        <Image
-          unoptimized
-          src={art.src}
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="-z-10 object-cover object-[60%_100%] xl:hidden"
-        />
-        {/* Màn rộng: giữ nguyên chiều cao ảnh, neo phải (không cắt đầu mascot); mép trái mờ vào nền. */}
-        <Image
-          unoptimized
-          src={art.src}
-          alt=""
-          aria-hidden="true"
-          width={art.width}
-          height={art.height}
-          priority
-          className="pointer-events-none absolute right-0 bottom-0 -z-10 hidden h-full w-auto max-w-none [mask-image:linear-gradient(90deg,transparent_0%,#000_10%)] xl:block"
-        />
-        <div className="flex min-h-[200px] flex-col justify-center gap-6 px-5 py-7 md:min-h-[260px] md:max-w-[46%] md:py-9 md:pl-12 xl:max-w-[50%]">
-          <div className="flex items-center gap-5 md:gap-7">
-            {icon ? (
-              <span
-                aria-hidden="true"
-                className="flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-[linear-gradient(145deg,#FFCB57_0%,#F5A524_100%)] text-white shadow-[0_10px_22px_rgba(245,165,36,.32)] md:size-[104px] md:rounded-[26px] [&_svg]:size-8 md:[&_svg]:size-[52px]"
-              >
-                {icon}
-              </span>
-            ) : null}
-            <div className="min-w-0">
-              {heading}
-              {description ? (
-                <p className="mt-2 text-[15px] font-medium text-navy/75 md:text-[16px] xl:text-[18px]">{description}</p>
-              ) : null}
-            </div>
-          </div>
-          {actions ? <div className="flex flex-wrap gap-2.5">{actions}</div> : null}
-        </div>
-      </section>
-    );
+  const tile = icon ? (
+    <span
+      aria-hidden="true"
+      className="flex size-16 shrink-0 items-center justify-center rounded-[20px] bg-[linear-gradient(145deg,#FFCB57_0%,#F5A524_100%)] text-white shadow-[0_10px_22px_rgba(245,165,36,.32)] md:size-20 md:rounded-[22px] xl:size-[104px] xl:rounded-[26px] [&_svg]:size-8 md:[&_svg]:size-10 xl:[&_svg]:size-[52px]"
+    >
+      {icon}
+    </span>
+  ) : iconImg ? (
+    <span
+      aria-hidden="true"
+      className="flex size-16 shrink-0 items-center justify-center rounded-[20px] border border-white bg-white/95 shadow-[0_10px_22px_rgba(30,90,160,.14)] md:size-20 md:rounded-[22px] xl:size-[104px] xl:rounded-[26px]"
+    >
+      <Image unoptimized src={iconImg} alt="" width={96} height={96} className="size-9 object-contain md:size-11 xl:size-[60px]" />
+    </span>
+  ) : null;
   return (
     <section
       aria-labelledby={id}
       className={cn(
-        "@container relative isolate overflow-hidden rounded-[26px] border border-[#D3E8F8] bg-[#DCEFFD] shadow-card",
+        "relative isolate overflow-hidden rounded-[26px] border border-[#D3E8F8] bg-[linear-gradient(90deg,#F4F9FF_0%,#EEF7FF_100%)] shadow-card",
         className,
       )}
     >
-      <Image
-        unoptimized
-        src="/brand/hero/cover-bg.webp"
-        alt=""
-        aria-hidden="true"
-        fill
-        priority
-        sizes="100vw"
-        className="-z-20 object-cover object-bottom"
-      />
+      {/* Tranh cao tối đa 300px, neo đáy (bìa cao hơn vì có ô tìm / tiêu đề 2 dòng thì mascot không phóng to đè lên chữ);
+          mép trên + mép trái mờ dần vào nền. Điện thoại: chỉ nền nhạt để chữ dễ đọc. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,.72)_0%,rgba(255,255,255,.45)_42%,rgba(255,255,255,0)_68%)]"
-      />
-
-      {/* Ảnh bìa neo đáy (dư thì cắt phần trời phía trên) → mặt bàn cạnh cửa sổ luôn ở ~0–5cqw tính từ đáy. Mascot co giãn theo
-          bề ngang bìa (cqw) để luôn cùng tỉ lệ với cửa sổ, ngồi trên 2 cuốn sách (HSK · 汉语) đặt trên mặt bàn, có bóng đổ ngay dưới. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-[1.6cqw] left-[70%] -z-10 hidden h-[min(92%,23cqw)] -translate-x-1/2 md:block"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 hidden h-full max-h-[300px] [mask-composite:intersect] [mask-image:linear-gradient(180deg,transparent_0%,#000_14%),linear-gradient(90deg,transparent_0%,#000_10%)] md:block"
       >
-        <span className="absolute -bottom-[0.6cqw] left-1/2 h-[1.8cqw] w-[70%] -translate-x-1/2 rounded-[50%] bg-[rgba(120,80,30,.28)] blur-[6px]" />
+        {/* Màn vừa: phủ kín khung, neo 60% ngang để mascot luôn trong khung. */}
         <Image
           unoptimized
-          src="/brand/hero/mascot-books-2.webp"
+          src={art.src}
           alt=""
-          width={640}
-          height={575}
+          fill
           priority
-          className="relative h-full w-auto max-w-none drop-shadow-[0_6px_8px_rgba(20,70,40,.16)]"
+          sizes="100vw"
+          className="object-cover object-[60%_100%] xl:hidden"
+        />
+        {/* Màn rộng: giữ tỉ lệ ảnh, neo phải. */}
+        <Image
+          unoptimized
+          src={art.src}
+          alt=""
+          width={art.width}
+          height={art.height}
+          priority
+          className="absolute right-0 bottom-0 hidden h-full w-auto max-w-none xl:block"
         />
       </div>
-
-      <div className="flex min-h-[200px] flex-col justify-center px-5 py-7 md:min-h-[260px] md:max-w-[62%] md:py-9 md:pl-12">
-        <h1 id={id} className="text-navy-900">
-          {eyebrow ? (
-            <span className={eyebrowClassName ?? "block text-[16px] font-bold text-blue-600 md:text-[18px]"}>
-              {eyebrow}
-            </span>
-          ) : null}
-          <span className="mt-0.5 flex items-start gap-1 text-[30px] leading-[1.12] font-black tracking-tight md:text-[46px]">
-            <span className="min-w-0">{title}</span>
-            <LeafDecor className="mt-[-4px] w-8 shrink-0 -rotate-12 md:w-11" />
-          </span>
-        </h1>
-        {question ? <p className="mt-1.5 text-[16.5px] font-bold text-navy md:text-[19px]">{question}</p> : null}
-        {description ? (
-          <p className="mt-2 max-w-[620px] text-[15px] font-medium text-navy/75 md:text-[18px]">{description}</p>
-        ) : null}
-        {aside ? <div className="mt-4 max-w-[420px]">{aside}</div> : null}
-        {actions ? <div className="mt-5 flex flex-wrap gap-2.5">{actions}</div> : null}
+      <div className="flex min-h-[200px] flex-col justify-center gap-6 px-5 py-7 md:min-h-[260px] md:max-w-[52%] md:py-9 md:pl-10 xl:max-w-[50%] xl:pl-12">
+        <div className="flex items-center gap-5 xl:gap-7">
+          {tile}
+          <div className="min-w-0">
+            <h1 id={id} className="text-navy-900">
+              {eyebrow ? (
+                <span className={eyebrowClassName ?? "block text-[16px] font-bold text-blue-600 md:text-[18px]"}>
+                  {eyebrow}
+                </span>
+              ) : null}
+              <span className="mt-0.5 block text-[30px] leading-[1.12] font-black tracking-tight md:text-[32px] xl:text-[46px]">
+                {title}
+              </span>
+            </h1>
+            {question ? <p className="mt-1.5 text-[16.5px] font-bold text-navy md:text-[19px]">{question}</p> : null}
+            {description ? (
+              <p className="mt-2 text-[15px] font-medium text-navy/75 md:text-[16px] xl:text-[18px]">{description}</p>
+            ) : null}
+          </div>
+        </div>
+        {aside ? <div className="max-w-[420px]">{aside}</div> : null}
+        {actions ? <div className="flex flex-wrap gap-2.5">{actions}</div> : null}
       </div>
     </section>
   );
