@@ -237,4 +237,5 @@ export const grammar = {
   prevPage: "Trang trước",
   nextPage: "Trang sau",
   pageN: "Trang {n}",
+  openDetail: "Xem chi tiết",
 };

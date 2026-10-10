@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { structureLines } from "../schema";
+import { KeyHan } from "./hanzi-mark";
 
 /** "Câu phủ định: A + 不是 + B" → nhãn + công thức (nhãn không chứa chữ Hán, tối đa 30 ký tự). */
 export function splitStructure(line: string): { label: string; formula: string } {
@@ -39,45 +40,53 @@ export const formulaParts = (formula: string) =>
     .filter(Boolean);
 
 /**
- * Khối "Cấu trúc" ở trang chi tiết (theo thiết kế): mỗi dòng cấu trúc một hàng đánh số; các phần nối bằng "+",
- * phần chữ Hán (từ khoá) đỏ font Kai, phần còn lại xanh đậm. Màn hình hẹp: các phần tự xuống dòng.
+ * Khối "Cấu trúc" (trang chi tiết + popup xem nhanh, theo thiết kế): mỗi dòng cấu trúc một hàng nền xanh nhạt, số thứ tự
+ * trong ô tròn; các phần nối bằng "+", chữ Hán font Kai (chữ từ khoá đỏ, còn lại xanh đậm). Màn hình hẹp: tự xuống dòng.
  */
-export function StructureRows({ structure }: { structure: string }) {
+export function StructureRows({ structure, keys }: { structure: string; keys: Set<string> }) {
   const lines = structureLines(structure).map(splitStructure);
   if (!lines.length) return null;
   return (
     <ol className="flex flex-col gap-2.5">
       {lines.map((l, i) => (
-        <li
-          key={i}
-          className="flex items-start gap-3 rounded-[14px] border border-[#F1E3C8] bg-[#FFFBF3] px-3.5 py-3 md:px-4"
-        >
+        <li key={i} className="flex items-center gap-3.5 rounded-[12px] bg-[#F1F6FD] px-4 py-3">
           <span
             aria-hidden="true"
-            className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-[#FFE9C2] text-[13.5px] font-bold text-[#C2570C]"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#DCEBFC] text-[16px] font-semibold text-[#1668DC]"
           >
             {i + 1}
           </span>
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            {l.label ? <span className="text-[14px] font-semibold text-text-2">{l.label}</span> : null}
-            <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[17px] leading-snug font-bold text-navy-900 md:text-[18px]">
-              {formulaParts(l.formula).map((p, k) => (
-                <span key={k} className="inline-flex min-w-0 items-baseline gap-x-2 [overflow-wrap:anywhere]">
-                  {k ? (
-                    <span className="font-semibold text-text-3">+</span>
-                  ) : null}
-                  <span
-                    lang={/\p{Script=Han}/u.test(p) ? "zh" : undefined}
-                    className={cn(/\p{Script=Han}/u.test(p) && "kai-bold text-[1.12em] text-[#D9261C]")}
-                  >
-                    {p}
-                  </span>
-                </span>
-              ))}
-            </p>
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            {l.label ? <span className="text-[13.5px] font-semibold text-[#526B91]">{l.label}</span> : null}
+            <FormulaLine formula={l.formula} keys={keys} />
           </div>
         </li>
       ))}
     </ol>
+  );
+}
+
+/** Một công thức "Chủ ngữ + 也 + Động từ": phần chữ Việt xám xanh, "+" xám, chữ Hán Kai lớn (từ khoá đỏ). */
+export function FormulaLine({ formula, keys, className }: { formula: string; keys: Set<string>; className?: string }) {
+  return (
+    <p
+      className={cn(
+        "flex flex-wrap items-center gap-x-2 gap-y-1 text-[16px] leading-snug text-[#3B4A6B] [overflow-wrap:anywhere]",
+        className,
+      )}
+    >
+      {formulaParts(formula).map((p, k) => (
+        <span key={k} className="inline-flex min-w-0 items-center gap-x-2">
+          {k ? <span className="text-[#7A8AA6]">+</span> : null}
+          {/\p{Script=Han}/u.test(p) ? (
+            <span lang="zh" className="kai text-[1.5em] leading-none text-navy-900">
+              <KeyHan text={p} keys={keys} />
+            </span>
+          ) : (
+            <span>{p}</span>
+          )}
+        </span>
+      ))}
+    </p>
   );
 }

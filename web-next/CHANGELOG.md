@@ -23,12 +23,16 @@
 
 ### Changed
 
+- **Ngữ pháp — font & màu theo design**: chữ Hán dùng Kai nét thường (tiêu đề xanh đậm, từ khoá đỏ #E1251B); bảng danh sách dạng
+  thẻ từng hàng (hàng tiêu đề xanh nhạt, ô STT tách riêng, HSK viên xanh, tab Tất cả / Đã lưu kiểu nút). **Popup xem nhanh** khi bấm
+  con mắt hoặc hàng: tiêu đề · HSK · Lưu · Chia sẻ, Ý nghĩa, Cấu trúc + Ghi nhớ | Ví dụ (công tắc Ẩn pinyin, nút nghe), Đóng · Xem chi
+  tiết. Trang chi tiết dùng cùng bố cục. Chữ Hán ô Từ vựng đỏ đậm hơn (#A32A24, nét hơi dày).
 - **Ngữ pháp của tôi** theo design mới. Danh sách: bảng STT · Ngữ pháp (chữ Hán đỏ font Kai · pinyin tự sinh) · Cấu trúc (dòng đầu,
   "+N" nếu có thêm) · HSK · nút xem; tab Tất cả / Đã lưu, đếm số ngữ pháp, phân trang 10 dòng. Chi tiết: breadcrumb "Ngữ pháp / Chi tiết",
   tiêu đề chữ Hán đỏ + pinyin + thẻ HSK, nút Lưu · Chia sẻ · ⋯ (Chỉnh sửa, Xóa); dải "Ý nghĩa"; hai cột Cấu trúc (hàng đánh số, từ khoá
   chữ Hán đỏ) + Ghi nhớ | Ví dụ (nút Ẩn / Hiện pinyin, câu chữ Kai với chữ từ khoá màu đỏ, pinyin dưới từng từ, nghĩa, nghe, menu).
   Màn hình hẹp: chữ tự xuống dòng, cột xếp chồng.
-- **Từ vựng**: ô chữ Hán gọn hơn theo bảng thông số (Kai 26px nét thường #B93832, nền #FFF7EB, viền #F2DFC6, bo 8px); pinyin #526B91,
+- **Từ vựng**: ô chữ Hán gọn hơn theo bảng thông số (Kai 26px, đỏ đậm #A32A24 nét hơi dày, nền #FFF7EB, viền #F2DFC6, bo 8px); pinyin #526B91,
   nghĩa #172B4D, tiêu đề cột 14px, icon #1677FF, đường kẻ #E8EFF7.
 - **Từ vựng của tôi — theo design mới**: hàng công cụ "Từ vựng" + **Tổng: n từ** · ô tìm bo tròn · nút **HSK** / **Tag** / **Trạng thái**
   (menu thả xuống; Tag có tạo / đổi tên / xoá tag) · **Thêm từ**. Bảng: chữ Hán đỏ kiểu Khải trên ô be, pinyin + loa, cột **Ví dụ** lấy từ

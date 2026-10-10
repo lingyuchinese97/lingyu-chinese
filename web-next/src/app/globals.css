@@ -157,6 +157,12 @@
   paint-order: stroke fill;
 }
 
+/* Chữ Khải nét thường (thiết kế Ngữ pháp / Từ vựng). */
+@utility kai {
+  font-family: var(--font-paper);
+  font-weight: 400;
+}
+
 @utility hanzi {
   font-family: var(--font-cn);
   color: var(--color-red);

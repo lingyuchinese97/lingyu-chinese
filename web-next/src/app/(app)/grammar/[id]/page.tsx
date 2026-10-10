@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { AlertTriangle, Layers, Lightbulb, Lock, PenLine, Share2 } from "lucide-react";
+import { Lock, PenLine, Share2 } from "lucide-react";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { GrammarError, listGrammarTags, listSent, viewGrammar } from "@/features/grammar/service";
 import { OwnerActions, PreviewBar } from "@/features/grammar/components/grammar-detail-actions";
-import { ExampleList, PersonalNoteCard } from "@/features/grammar/components/grammar-detail-parts";
-import { StructureRows } from "@/features/grammar/components/structure-box";
+import { PersonalNoteCard } from "@/features/grammar/components/grammar-detail-parts";
+import { GrammarBody } from "@/features/grammar/components/grammar-view";
 import { Marked, grammarKeys } from "@/features/grammar/components/hanzi-mark";
 import { titlePinyin } from "@/features/grammar/title-pinyin";
 import { tagTone } from "@/features/grammar/tag-tones";
-import { hskOfTag, structureLines } from "@/features/grammar/schema";
+import { hskOfTag } from "@/features/grammar/schema";
 import { iconOf, pillClass } from "@/features/grammar/icons";
 import { getIntlTag, getT } from "@/i18n/server";
 
@@ -23,11 +23,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 export const dynamic = "force-dynamic";
 
-const lines = (text: string) =>
-  text
-    .split(/\n+/)
-    .map((l) => l.replace(/^[\s•\-*]+/, "").trim())
-    .filter(Boolean);
 const fmt = (d: Date, tag: string) =>
   `${d.toLocaleDateString(tag, { day: "2-digit", month: "2-digit", year: "numeric" })} ${d.toLocaleTimeString(tag, { hour: "2-digit", minute: "2-digit" })}`;
 
@@ -83,10 +78,8 @@ export default async function GrammarDetailPage({
   const toneOf = new Map(myTags.filter((x) => hskOfTag(x.name) === null).map((x, i) => [x.name, i]));
   const hskTags = g.tags.filter((x) => hskOfTag(x.name) !== null);
   const catTags = g.tags.filter((x) => hskOfTag(x.name) === null);
-  const notes = lines(g.notes);
   const keys = [...grammarKeys(g.title, g.structure)];
-  const empty = <p className="text-text-3">{t("grammar.detail.empty")}</p>;
-  const pill = "rounded-full px-3 py-1 text-[13px] font-semibold";
+  const pill = "rounded-full px-3.5 py-1 text-[14px] font-semibold";
 
   return (
     <>
@@ -106,16 +99,16 @@ export default async function GrammarDetailPage({
                 id="gd-title"
                 className="min-w-0 text-[26px] leading-tight font-extrabold tracking-tight [overflow-wrap:anywhere] text-navy-900 md:text-[32px]"
               >
-                <Marked text={g.title} />
+                <Marked text={g.title} hanClass="text-navy-900" />
                 {py ? (
-                  <span aria-hidden="true" className="font-semibold text-text-2">
+                  <span aria-hidden="true" className="font-medium text-navy-900">
                     {" "}
                     · <span className="pinyin">{py}</span>
                   </span>
                 ) : null}
               </h1>
               {hskTags.map((tg) => (
-                <span key={tg.id} className={cn(pill, "bg-[#E8F7EE] text-[#1E8A4C]")}>
+                <span key={tg.id} className={cn(pill, "bg-[#E6F1FD] text-[#1668DC]")}>
                   {tg.name}
                 </span>
               ))}
@@ -141,67 +134,19 @@ export default async function GrammarDetailPage({
           {!preview ? <OwnerActions g={{ id: g.id, title: g.title, isSaved: g.isSaved }} sent={sent} /> : null}
         </header>
 
-        {/* Ý nghĩa: một dải ngang (chữ Hán đỏ). */}
-        <section
-          aria-label={t("grammar.detail.meaning")}
-          className="flex items-start gap-3 rounded-[18px] border border-[#DDEBF8] bg-[#F3F8FE] px-4 py-3.5 md:px-5"
-        >
-          <span
-            aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#E1EEFC] text-blue-600 [&_svg]:size-5"
-          >
-            <Lightbulb />
-          </span>
-          <p className="min-w-0 flex-1 self-center text-[16.5px] whitespace-pre-line [overflow-wrap:anywhere] text-text">
-            <strong className="font-bold text-navy-900">{t("grammar.detail.meaning")}:</strong>{" "}
-            {g.meaning ? <Marked text={g.meaning} /> : <span className="text-text-3">{t("grammar.detail.empty")}</span>}
-          </p>
-        </section>
-
-        {/* Hai cột (màn hình lớn): Cấu trúc + Ghi nhớ | Ví dụ. Màn hình nhỏ: xếp chồng. */}
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
-          <div className="flex min-w-0 flex-col gap-4">
-            <Card
-              icon={<Layers />}
-              title={t("grammar.detail.structure")}
-              count={structureLines(g.structure).length || undefined}
-            >
-              {g.structure ? <StructureRows structure={g.structure} /> : empty}
-            </Card>
-            <Card icon={<AlertTriangle />} title={t("grammar.detail.remember")}>
-              {notes.length ? (
-                <ol className="flex flex-col gap-2.5">
-                  {notes.map((n, i) => (
-                    <li key={i} className="flex items-start gap-3 text-[15.5px] [overflow-wrap:anywhere] text-text">
-                      <span
-                        aria-hidden="true"
-                        className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#FFE1E6] text-[12.5px] font-bold text-[#E0302F]"
-                      >
-                        {i + 1}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <Marked text={n} />
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                empty
-              )}
-            </Card>
-          </div>
-          <ExampleList
-            examples={g.examples}
+        <section className="rounded-[20px] border border-[#E8EFF7] bg-white p-4 shadow-[0_4px_18px_rgba(34,93,150,.05)] md:p-6">
+          <GrammarBody
+            g={g}
             keys={keys}
-            grammarId={g.id}
             canEdit={!preview}
-            title={
-              g.examples.length
-                ? t("grammar.detail.examplesCount", { count: g.examples.length })
-                : t("grammar.detail.examples")
-            }
+            labels={{
+              meaning: t("grammar.detail.meaning"),
+              structure: t("grammar.detail.structure"),
+              remember: t("grammar.detail.remember"),
+              empty: t("grammar.detail.empty"),
+            }}
           />
-        </div>
+        </section>
 
         {!preview ? (
           <Card icon={<PenLine />} title={t("grammar.detail.personal")} hint={t("grammar.detail.personalHint")}>

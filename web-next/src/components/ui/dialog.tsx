@@ -18,14 +18,17 @@ export function DialogContent({
   description,
   icon,
   wide,
+  aside,
   className,
   children,
   ...props
-}: React.ComponentProps<typeof D.Content> & {
+}: Omit<React.ComponentProps<typeof D.Content>, "title"> & {
   title: React.ReactNode;
   description?: React.ReactNode;
   icon?: React.ReactNode;
   wide?: boolean;
+  /** Nút phụ đặt cùng hàng tiêu đề, trước nút đóng (vd Lưu · Chia sẻ). */
+  aside?: React.ReactNode;
 }) {
   const t = useT();
   return (
@@ -51,10 +54,11 @@ export function DialogContent({
               {icon}
             </span>
           ) : null}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <D.Title className="text-xl font-bold text-navy">{title}</D.Title>
             {description ? <D.Description className="mt-1 text-[15px] text-text-2">{description}</D.Description> : null}
           </div>
+          {aside ? <div className="flex shrink-0 flex-wrap items-center gap-1">{aside}</div> : null}
         </div>
         {children}
         <D.Close
