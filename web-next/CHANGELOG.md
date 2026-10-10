@@ -28,7 +28,7 @@
   tiêu đề chữ Hán đỏ + pinyin + thẻ HSK, nút Lưu · Chia sẻ · ⋯ (Chỉnh sửa, Xóa); dải "Ý nghĩa"; hai cột Cấu trúc (hàng đánh số, từ khoá
   chữ Hán đỏ) + Ghi nhớ | Ví dụ (nút Ẩn / Hiện pinyin, câu chữ Kai với chữ từ khoá màu đỏ, pinyin dưới từng từ, nghĩa, nghe, menu).
   Màn hình hẹp: chữ tự xuống dòng, cột xếp chồng.
-- **Từ vựng**: ô chữ Hán gọn hơn theo bảng thông số (Kai 26px nét thường #B93832, nền #FFF7EB, viền #F2DFC6, bo 8px); pinyin #526B91,
+- **Từ vựng**: ô chữ Hán gọn hơn theo bảng thông số (Kai 26px, đỏ đậm #A32A24 nét hơi dày, nền #FFF7EB, viền #F2DFC6, bo 8px); pinyin #526B91,
   nghĩa #172B4D, tiêu đề cột 14px, icon #1677FF, đường kẻ #E8EFF7.
 - **Từ vựng của tôi — theo design mới**: hàng công cụ "Từ vựng" + **Tổng: n từ** · ô tìm bo tròn · nút **HSK** / **Tag** / **Trạng thái**
   (menu thả xuống; Tag có tạo / đổi tên / xoá tag) · **Thêm từ**. Bảng: chữ Hán đỏ kiểu Khải trên ô be, pinyin + loa, cột **Ví dụ** lấy từ
