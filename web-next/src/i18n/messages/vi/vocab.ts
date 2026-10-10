@@ -254,4 +254,12 @@ export const vocab = {
   allHsk: "Tất cả HSK",
   moreFilters: "Bộ lọc: trạng thái, yêu thích, tag, kiểu hiển thị",
   createNew: "Tạo mới",
+  totalPill: "Tổng: {count} từ",
+  tagFilter: "Lọc theo tag",
+  statusFilter: "Lọc theo trạng thái",
+  renameTagN: "Đổi tên tag “{name}”",
+  deleteTagN: "Xóa tag “{name}”",
+  favShort: "Yêu thích",
+  addWord: "Thêm từ",
+  colExample: "Ví dụ",
 };

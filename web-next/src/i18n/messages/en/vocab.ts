@@ -262,4 +262,12 @@ export const vocab: Messages["vocab"] = {
   allHsk: "All HSK levels",
   moreFilters: "Filters: status, favourites, tags, view",
   createNew: "Create",
+  totalPill: "Total: {count} words",
+  tagFilter: "Filter by tag",
+  statusFilter: "Filter by status",
+  renameTagN: "Rename tag “{name}”",
+  deleteTagN: "Delete tag “{name}”",
+  favShort: "Favourites",
+  addWord: "Add word",
+  colExample: "Example",
 };

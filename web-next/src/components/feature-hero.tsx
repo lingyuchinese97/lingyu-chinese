@@ -73,11 +73,21 @@ export function FeatureHero({
         className,
       )}
     >
-      {/* Ảnh neo phải, cao bằng bìa (tối đa 340px, neo đáy); mép trái + mép trên mờ vào nền trời. Lớp sáng bên trái giúp chữ dễ đọc.
-          Điện thoại: chỉ phần trời của nền (cover-sky.webp), không có mascot. */}
+      {/* Lớp dưới: trời xanh của nền phủ kín bìa (cover-sky.webp). Lớp trên: bàn học + mascot neo phải, cao bằng bìa (tối đa 340px,
+          neo đáy), mép trái mờ dần vào lớp trời nên không lộ đường ghép ở mọi bề ngang. Lớp sáng bên trái giúp chữ dễ đọc. Điện thoại: chỉ lớp trời. */}
+      <Image
+        unoptimized
+        src="/brand/hero/cover-sky.webp"
+        alt=""
+        aria-hidden="true"
+        fill
+        priority
+        sizes="100vw"
+        className="-z-30 object-cover object-[30%_40%]"
+      />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-20 h-full md:max-h-[340px] md:[mask-image:linear-gradient(180deg,transparent_0%,#000_10%)]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-20 hidden h-full md:block md:max-h-[340px] md:[mask-image:linear-gradient(180deg,transparent_0%,#000_10%)]"
       >
         <Image
           unoptimized
@@ -86,16 +96,7 @@ export function FeatureHero({
           width={art.width}
           height={art.height}
           priority
-          className="absolute right-0 bottom-0 hidden h-full w-auto max-w-none [mask-image:linear-gradient(90deg,transparent_0%,#000_12%)] md:block"
-        />
-        <Image
-          unoptimized
-          src="/brand/hero/cover-sky.webp"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[30%_40%] md:hidden"
+          className="absolute right-0 bottom-0 h-full w-auto max-w-none [mask-image:linear-gradient(90deg,transparent_0%,#000_28%)]"
         />
       </div>
       <div
