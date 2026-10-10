@@ -7,6 +7,7 @@ import {
   ArrowUpDown,
   Bookmark,
   Check,
+  ChevronLeft,
   ChevronRight,
   Library,
   Eye,
@@ -29,8 +30,7 @@ import { toast } from "@/components/ui/toaster";
 import { GrammarIcon } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { G_LIMITS, G_SORTS, hskOfTag, structureLines, type GrammarListParams } from "../schema";
-import { iconOf, pillClass } from "../icons";
-import { tagTone } from "../tag-tones";
+import { Marked } from "./hanzi-mark";
 import type { GrammarItem, ReceivedShare } from "../service";
 import { createTagAction, deleteTagAction, renameTagAction } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
@@ -54,11 +54,14 @@ export function GrammarList({
   params,
   tags,
   received,
+  titlePy,
 }: {
   data: Data;
   params: GrammarListParams;
   tags: TagRow[];
   received: ReceivedShare[];
+  /** Pinyin của chữ Hán trong tiêu đề, theo id ngữ pháp (tính ở server). */
+  titlePy: Record<string, string>;
 }) {
   const router = useRouter();
   const t = useT();
@@ -110,10 +113,7 @@ export function GrammarList({
   const refresh = () => startTransition(() => router.refresh());
 
   const listMode = params.view !== "shared";
-  const toneOf = React.useMemo(
-    () => new Map(tags.filter((tg) => hskOfTag(tg.name) === null).map((tg, i) => [tg.name, i])),
-    [tags],
-  );
+
 
   return (
     <>
@@ -216,6 +216,28 @@ export function GrammarList({
         aria-label={t("grammar.list")}
         className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="flex gap-1 rounded-full bg-[#EEF4FB] p-1">
+            {(["all", "saved"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={params.view === v}
+                onClick={() => go({ view: v, hsk: "", tag: "" })}
+                className={cn(
+                  "min-h-10 rounded-full px-4 text-[15px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)]",
+                  params.view === v ? "bg-white text-blue-700 shadow-[0_2px_8px_rgba(20,90,170,.12)]" : "text-text-2",
+                )}
+              >
+                {v === "all" ? t("grammar.viewAll") : t("grammar.viewSaved")}{" "}
+                <span>({v === "all" ? data.totalAll : data.savedCount})</span>
+              </button>
+            ))}
+          </div>
+          {listMode && data.total ? (
+            <p className="ml-auto text-[14.5px] font-semibold text-text-2">{t("grammar.total", { count: data.total })}</p>
+          ) : null}
+        </div>
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
           {!listMode ? (
             <Received
@@ -254,20 +276,7 @@ export function GrammarList({
               ) : null}
             </div>
           ) : (
-            <>
-              <p className="mb-3 text-[13.5px] text-text-3">{t("grammar.total", { count: data.total })}</p>
-              <div className="grid gap-3.5 md:grid-cols-2 2xl:grid-cols-3">
-                {data.items.map((g, i) => (
-                  <GrammarCard
-                    key={g.id}
-                    g={g}
-                    n={i + 1}
-                    toneOf={toneOf}
-                    onOpen={() => router.push(`/grammar/${g.id}`)}
-                  />
-                ))}
-              </div>
-            </>
+            <GrammarTable items={data.items} titlePy={titlePy} onOpen={(g) => router.push(`/grammar/${g.id}`)} />
           )}
         </div>
       </section>
@@ -291,98 +300,177 @@ export function GrammarList({
 /** Bỏ nhãn "Tên dạng: " ở đầu dòng cấu trúc (xem `structureParts`). */
 export const formulaOf = (line: string) => line.replace(/^[^:：+]{1,40}[:：]\s*/, "");
 
-function GrammarCard({
-  g,
-  n,
-  toneOf,
+const PAGE = 10;
+
+/** Bảng ngữ pháp (theo thiết kế): STT · Ngữ pháp (chữ Hán đỏ · pinyin) · Cấu trúc (dòng đầu, +N) · HSK · xem; có phân trang. */
+function GrammarTable({
+  items,
+  titlePy,
   onOpen,
 }: {
-  g: GrammarItem;
-  n: number;
-  toneOf: Map<string, number>;
-  onOpen: () => void;
+  items: GrammarItem[];
+  titlePy: Record<string, string>;
+  onOpen: (g: GrammarItem) => void;
 }) {
   const t = useT();
-  const k = iconOf(g);
-  const main = structureLines(g.structure)[0];
-  const hsk = g.tags.filter((tg) => hskOfTag(tg.name) !== null);
-  const cats = g.tags.filter((tg) => hskOfTag(tg.name) === null).slice(0, 2);
-  const meaning = g.meaning.split(/\r?\n/).find((l) => l.trim()) ?? "";
+  // Trang hiện tại gắn với danh sách: lọc / tìm ra danh sách mới → về trang 1.
+  const [pg, setPg] = React.useState({ of: items, n: 1 });
+  const pages = Math.max(1, Math.ceil(items.length / PAGE));
+  const page = pg.of === items ? Math.min(pg.n, pages) : 1;
+  const from = (page - 1) * PAGE;
+  const rows = items.slice(from, from + PAGE);
+  const th = "px-3 py-3 text-left text-[13.5px] font-semibold text-text-2";
   return (
-    <article
-      onClick={(e) => {
-        if ((e.target as HTMLElement).closest("button, a")) return;
-        onOpen();
-      }}
-      className="flex min-w-0 cursor-pointer items-start gap-3 rounded-2xl border border-border bg-white px-4 py-4 transition-[border-color,box-shadow] hover:border-[#A9D3F8] hover:shadow-[0_8px_22px_rgba(20,90,170,.08)] md:px-5"
-    >
-      <span
-        aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#EAF4FF] text-[16px] font-extrabold text-blue-700"
-      >
-        {n}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-        <h2 className="min-w-0 text-[17px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[18.5px]">
-          <Link href={`/grammar/${g.id}`} className="hover:text-blue-600">
-            {g.title}
-          </Link>
-        </h2>
-        <span className="flex flex-wrap gap-1.5">
-          {hsk.map((tg) => (
-            <span
-              key={tg.id}
-              className="rounded-[9px] bg-[#F0EAFF] px-2.5 py-1 text-[13px] font-semibold text-[#6B3FD0]"
-            >
-              {tg.name}
-            </span>
-          ))}
-          {cats.length ? (
-            cats.map((tg) => (
-              <span
-                key={tg.id}
-                className={cn(
-                  "rounded-[9px] border px-2.5 py-1 text-[13px] font-semibold",
-                  tagTone(toneOf.get(tg.name) ?? 0),
-                )}
-              >
-                {tg.name}
-              </span>
-            ))
-          ) : (
-            <span className={cn("rounded-[9px] px-2.5 py-1 text-[13px] font-semibold", pillClass(k))}>
-              {t(`grammar.icon.${k}`)}
-            </span>
-          )}
-        </span>
-        {main ? (
-          <span
-            title={main}
-            className="max-w-full self-start truncate rounded-[10px] border border-[#FFD3DA] bg-[#FFF1F3] px-3.5 py-1.5 hanzi text-[16px] font-bold text-[#E0302F]"
-            lang="zh"
-          >
-            {formulaOf(main)}
-          </span>
-        ) : null}
-        {meaning ? <p className="line-clamp-2 text-[14.5px] text-text-2">{meaning}</p> : null}
-        {g.sourceGrammarId ? (
-          <span className="inline-flex items-center gap-1 text-[13px] text-green-700">
-            <Share2 className="size-[14px]" />
-            {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
-          </span>
-        ) : null}
+    <div className="flex flex-col gap-3">
+      <div className="overflow-hidden rounded-2xl border border-border">
+        <table className="w-full table-fixed border-collapse bg-white">
+          <thead className="bg-[#F6F9FD]">
+            <tr>
+              <th scope="col" className={cn(th, "hidden w-14 text-center sm:table-cell")}>
+                {t("grammar.colNo")}
+              </th>
+              <th scope="col" className={th}>
+                {t("grammar.colGrammar")}
+              </th>
+              <th scope="col" className={cn(th, "hidden md:table-cell")}>
+                {t("grammar.colStructure")}
+              </th>
+              <th scope="col" className={cn(th, "w-[84px] md:w-24")}>
+                HSK
+              </th>
+              <th scope="col" className={cn(th, "w-14")}>
+                <span className="sr-only">{t("grammar.colView")}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((g, i) => {
+              const lines = structureLines(g.structure);
+              const hsk = g.tags.filter((tg) => hskOfTag(tg.name) !== null);
+              const formula = lines[0] ? (
+                <span className="[overflow-wrap:anywhere]">
+                  <Marked text={formulaOf(lines[0])} hanClass="text-[1.1em]" />
+                  {lines.length > 1 ? (
+                    <span className="ml-2 rounded-full bg-[#EEF4FB] px-2 py-0.5 text-[12.5px] font-bold text-blue-700">
+                      +{lines.length - 1}
+                    </span>
+                  ) : null}
+                </span>
+              ) : null;
+              return (
+                <tr
+                  key={g.id}
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest("button, a")) return;
+                    onOpen(g);
+                  }}
+                  className="cursor-pointer align-middle transition-colors hover:bg-[#F7FBFF]"
+                >
+                  <td className="hidden px-3 py-3.5 text-center font-semibold text-text-3 tabular-nums sm:table-cell">
+                    {from + i + 1}
+                  </td>
+                  <td className="px-3 py-3.5">
+                    <h2 className="text-[16.5px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[17.5px]">
+                      <Link href={`/grammar/${g.id}`} className="hover:text-blue-600">
+                        <Marked text={g.title} />
+                      </Link>
+                      {titlePy[g.id] ? (
+                        <span aria-hidden="true" className="font-medium text-text-3">
+                          {" "}
+                          · <span className="pinyin">{titlePy[g.id]}</span>
+                        </span>
+                      ) : null}
+                    </h2>
+                    {formula ? (
+                      <p className="mt-1 text-[14.5px] font-semibold text-navy md:hidden">{formula}</p>
+                    ) : null}
+                    {g.sourceGrammarId ? (
+                      <span className="mt-1 inline-flex items-center gap-1 text-[13px] text-green-700">
+                        <Share2 className="size-[14px]" />
+                        {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="hidden px-3 py-3.5 text-[15.5px] font-semibold text-navy md:table-cell">
+                    {formula ?? <span className="text-text-3">—</span>}
+                  </td>
+                  <td className="px-3 py-3.5">
+                    <span className="flex flex-wrap gap-1">
+                      {hsk.length ? (
+                        hsk.map((tg) => (
+                          <span
+                            key={tg.id}
+                            className="rounded-full bg-[#E8F7EE] px-2.5 py-1 text-[12.5px] font-semibold whitespace-nowrap text-[#1E8A4C]"
+                          >
+                            {tg.name}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-text-3">—</span>
+                      )}
+                    </span>
+                  </td>
+                  <td className="px-2 py-3.5 text-center">
+                    <button
+                      type="button"
+                      onClick={() => onOpen(g)}
+                      aria-label={t("grammar.openItem", { title: g.title })}
+                      className="inline-flex size-10 items-center justify-center rounded-full text-text-2 outline-none hover:bg-blue-50 hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)]"
+                    >
+                      <Eye className="size-5" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-      <button
-        type="button"
-        onClick={onOpen}
-        aria-label={t("grammar.openItem", { title: g.title })}
-        className="inline-flex size-10 shrink-0 items-center justify-center self-center rounded-full text-text-2 outline-none hover:bg-blue-50 hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)]"
-      >
-        <ChevronRight className="size-5" />
-      </button>
-    </article>
+      {items.length > PAGE ? (
+        <nav aria-label={t("grammar.pagination")} className="flex flex-wrap items-center gap-2">
+          <span className="text-[14px] text-text-3 tabular-nums">
+            {from + 1}–{from + rows.length} / {items.length}
+          </span>
+          <span className="ml-auto flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() => setPg({ of: items, n: page - 1 })}
+              aria-label={t("grammar.prevPage")}
+              className={pageBtn}
+            >
+              <ChevronLeft className="size-[18px]" />
+            </button>
+            {Array.from({ length: pages }, (_, k) => k + 1).map((n) => (
+              <button
+                key={n}
+                type="button"
+                aria-current={n === page ? "page" : undefined}
+                aria-label={t("grammar.pageN", { n })}
+                onClick={() => setPg({ of: items, n })}
+                className={cn(pageBtn, n === page && "border-blue-600 bg-blue-600 text-white hover:bg-blue-600")}
+              >
+                {n}
+              </button>
+            ))}
+            <button
+              type="button"
+              disabled={page === pages}
+              onClick={() => setPg({ of: items, n: page + 1 })}
+              aria-label={t("grammar.nextPage")}
+              className={pageBtn}
+            >
+              <ChevronRight className="size-[18px]" />
+            </button>
+          </span>
+        </nav>
+      ) : null}
+    </div>
   );
 }
+
+const pageBtn =
+  "inline-flex size-10 items-center justify-center rounded-[10px] border border-border bg-white text-[14.5px] font-semibold text-text-2 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40";
 
 function Received({
   received,

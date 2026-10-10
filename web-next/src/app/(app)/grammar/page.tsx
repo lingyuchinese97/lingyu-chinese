@@ -3,6 +3,7 @@ import { requireUser } from "@/server/session";
 import { grammarListSchema } from "@/features/grammar/schema";
 import { listGrammar, listGrammarTags, listReceived } from "@/features/grammar/service";
 import { GrammarList } from "@/features/grammar/components/grammar-list";
+import { titlePinyin } from "@/features/grammar/title-pinyin";
 import { getT } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,5 +27,7 @@ export default async function GrammarPage({ searchParams }: { searchParams: SP }
   // Thẻ không còn tồn tại → bỏ lọc.
   const params = { ...parsed, tag: tags.some((t) => t.id === parsed.tag) ? parsed.tag : "" };
   const [data, received] = await Promise.all([listGrammar(user.id, params), listReceived(user.id)]);
-  return <GrammarList data={data} params={params} tags={tags} received={received} />;
+  const py = await titlePinyin(data.items.map((g) => g.title));
+  const titlePy = Object.fromEntries(data.items.map((g, i) => [g.id, py[i] ?? ""]));
+  return <GrammarList data={data} params={params} tags={tags} received={received} titlePy={titlePy} />;
 }

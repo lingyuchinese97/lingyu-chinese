@@ -4,7 +4,8 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bookmark, Check, Pencil, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, MoreHorizontal, Pencil, Share2, Trash2, X } from "lucide-react";
+import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "@/components/ui/menu";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ui/confirm";
 import { toast } from "@/components/ui/toaster";
@@ -18,6 +19,9 @@ import {
   type PendingShare,
   type SentItem,
 } from "./grammar-dialogs";
+
+const iconBtn =
+  "inline-flex size-11 items-center justify-center rounded-[12px] border-[1.5px] border-[#BFD7F2] bg-white text-blue-700 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5";
 
 /** Nút của chủ sở hữu: Lưu / Chia sẻ / Chỉnh sửa / Xóa + danh sách đã chia sẻ. */
 export function OwnerActions({
@@ -62,31 +66,42 @@ export function OwnerActions({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        <Button
-          variant="secondary"
-          size="sm"
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
           onClick={toggle}
           aria-pressed={saved}
-          className={cn(saved && "text-amber")}
+          className={cn(
+            "inline-flex min-h-11 items-center gap-2 rounded-[12px] border-[1.5px] bg-white px-4 text-[15px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px]",
+            saved ? "border-[#F5C46B] text-[#C27A00]" : "border-[#BFD7F2] text-blue-700 hover:bg-blue-50",
+          )}
         >
-          <Bookmark className={cn(saved && "fill-amber")} />
+          <Bookmark className={cn(saved && "fill-amber text-amber")} />
           {saved ? t("grammar.detail.saved") : t("grammar.save")}
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => setShare(true)}>
+        </button>
+        <button type="button" onClick={() => setShare(true)} aria-label={t("grammar.share")} className={iconBtn}>
           <Share2 />
-          {t("grammar.share")}
-        </Button>
-        <Button asChild variant="secondary" size="sm">
-          <Link href={`/grammar/${g.id}/edit`}>
-            <Pencil />
-            {t("grammar.editAction")}
-          </Link>
-        </Button>
-        <Button variant="danger-outline" size="sm" onClick={remove}>
-          <Trash2 />
-          {t("grammar.delete")}
-        </Button>
+        </button>
+        <Menu>
+          <MenuTrigger asChild>
+            <button type="button" aria-label={t("grammar.detail.more")} className={iconBtn}>
+              <MoreHorizontal />
+            </button>
+          </MenuTrigger>
+          <MenuContent align="end" className="w-[200px]">
+            <MenuItem asChild>
+              <Link href={`/grammar/${g.id}/edit`}>
+                <Pencil />
+                {t("grammar.editAction")}
+              </Link>
+            </MenuItem>
+            <MenuSeparator />
+            <MenuItem danger onSelect={remove}>
+              <Trash2 />
+              {t("grammar.delete")}
+            </MenuItem>
+          </MenuContent>
+        </Menu>
       </div>
       <ShareGrammarDialog grammar={share ? g : null} sent={sent} onClose={() => setShare(false)} onSent={setSent} />
       {confirmNode}

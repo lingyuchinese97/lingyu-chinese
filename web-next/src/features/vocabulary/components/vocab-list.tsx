@@ -438,7 +438,7 @@ export function VocabListView({
             </Menu>
             <Link
               href="/vocabulary/new"
-              className="inline-flex h-12 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#1C8BF2_0%,#1569D6_100%)] px-6 text-[16px] font-semibold text-white shadow-[0_8px_18px_rgba(23,105,201,.28)] outline-none hover:brightness-105 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5"
+              className="inline-flex h-12 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#1677FF_0%,#1468E0_100%)] px-6 text-[16px] font-semibold text-white shadow-[0_8px_18px_rgba(23,105,201,.28)] outline-none hover:brightness-105 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5"
             >
               <Plus aria-hidden="true" />
               {t("vocab.addWord")}
@@ -573,13 +573,13 @@ export function VocabListView({
               </div>
 
               {/* Máy tính: bảng (theo design) */}
-              <div className="hidden overflow-x-auto rounded-[var(--radius-xl)] border border-[#E3ECF6] bg-white shadow-card md:block">
+              <div className="hidden overflow-x-auto rounded-[var(--radius-xl)] border border-[#E8EFF7] bg-white shadow-card md:block">
                 <table className="w-full min-w-[820px] border-collapse text-[15.5px]">
                   <caption className="sr-only">
                     {t("vocab.caption", { page: data.page, count: data.pageCount })}
                   </caption>
                   <thead>
-                    <tr className="bg-[#F3F7FD] text-left text-[15px] text-navy-900 [&>th]:px-3 [&>th]:py-4 [&>th]:font-semibold [&>th]:whitespace-nowrap">
+                    <tr className="bg-white text-left text-[14px] text-[#172B4D] [&>th]:px-3 [&>th]:py-4 [&>th]:font-semibold [&>th]:whitespace-nowrap">
                       <th className="w-[56px] text-center">
                         <input
                           type="checkbox"
@@ -618,7 +618,7 @@ export function VocabListView({
                       <tr
                         key={v.id}
                         className={cn(
-                          "border-t border-[#EDF2F8] hover:bg-[#F9FBFF] [&>td]:px-3 [&>td]:py-3 [&>td]:align-middle",
+                          "border-t border-[#E8EFF7] hover:bg-[#F9FBFF] [&>td]:px-3 [&>td]:py-3 [&>td]:align-middle",
                           selected.has(v.id) && "bg-[#F1F8FF] hover:bg-[#F1F8FF]",
                         )}
                       >
@@ -637,11 +637,11 @@ export function VocabListView({
                         </td>
                         <td>
                           <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                            <span className="text-[16px] text-[#4A6079]">{v.pinyin}</span>
-                            <SpeakButton text={v.hanzi} label={t("vocab.listen", { word: v.hanzi })} />
+                            <span className="text-[16px] text-[#526B91]">{v.pinyin}</span>
+                            <SpeakButton text={v.hanzi} label={t("vocab.listen", { word: v.hanzi })} className="text-[#1677FF]" />
                           </span>
                         </td>
-                        <td className="max-w-[260px] text-[16px] text-navy-900">{v.meaningVi}</td>
+                        <td className="max-w-[260px] text-[16px] text-[#172B4D]">{v.meaningVi}</td>
                         <td className="hidden max-w-[320px] 2xl:table-cell">{example(v)}</td>
                         <td className="max-w-[200px] min-w-[120px]">
                           <div className="flex flex-wrap gap-1.5">
@@ -695,7 +695,7 @@ export function VocabListView({
                     </div>
                     <div className="flex items-center gap-1 text-[14.5px] [grid-area:py]">
                       <span className="pinyin">{v.pinyin}</span>
-                      <SpeakButton text={v.hanzi} label={t("vocab.listen", { word: v.hanzi })} />
+                      <SpeakButton text={v.hanzi} label={t("vocab.listen", { word: v.hanzi })} className="text-[#1677FF]" />
                     </div>
                     <div className="text-[15px] text-text [grid-area:mean]">{v.meaningVi}</div>
                     <div className="-mt-1.5 -mr-1 flex items-start justify-end [grid-area:act]">
@@ -812,7 +812,7 @@ export function VocabListView({
 }
 
 const iconBtn =
-  "inline-flex size-10 items-center justify-center rounded-full text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[22px]";
+  "inline-flex size-10 items-center justify-center rounded-full text-[#1677FF] outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[22px]";
 /** Nút mở bộ lọc dạng viên thuốc (HSK / Tag / Trạng thái) — theo design. */
 const pill = (on: boolean) =>
   cn(
@@ -852,7 +852,7 @@ function WordChip({ text }: { text: string }) {
   return (
     <span
       lang="zh"
-      className="inline-flex min-h-[60px] min-w-[64px] items-center justify-center rounded-[12px] border border-[#F3E3CC] bg-[#FFF6EA] px-3 py-1 kai-bold text-[32px] leading-tight whitespace-nowrap text-[#D9261C] shadow-[0_1px_0_rgba(200,140,60,.12)] max-md:min-h-[52px] max-md:text-[28px]"
+      className="inline-flex min-h-11 min-w-12 max-w-full items-center justify-center rounded-[8px] border border-[#F2DFC6] bg-[#FFF7EB] px-3 py-0.5 [font-family:var(--font-paper)] text-[26px] leading-tight font-normal tracking-[0.12em] text-[#B93832] max-md:min-h-10 max-md:text-[24px]"
     >
       {text}
     </span>

@@ -35,13 +35,15 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await expect(page.getByRole("heading", { level: 1, name: "Câu hỏi với 吗" })).toBeVisible();
   await expect(page.getByText("mẹo riêng của tôi")).toBeVisible();
   await expect(page.getByText("Giao tiếp", { exact: true })).toBeVisible();
-  // Cấu trúc: mỗi dòng là một tab; công thức tách thành từng ô theo dấu "+".
-  const tabs = page.getByRole("tablist", { name: "Cấu trúc" });
-  await expect(tabs.getByRole("tab")).toHaveCount(2);
-  await tabs.getByRole("tab", { name: /Dạng 2/ }).click();
-  const panel = page.getByRole("tabpanel");
+  // Cấu trúc: mỗi dòng một hàng đánh số; công thức tách theo dấu "+" (chữ Hán là từ khoá, font Kai đỏ).
+  const structure = page.locator("section").filter({ has: page.getByRole("heading", { name: "Cấu trúc", exact: true }) });
+  await expect(structure.locator("ol > li")).toHaveCount(2);
   for (const part of ["Chủ ngữ", "不", "động từ", "吗？"])
-    await expect(panel.getByText(part, { exact: true }).first()).toBeVisible();
+    await expect(structure.getByText(part, { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Ghi nhớ", { exact: true })).toBeVisible();
+  const hide = page.getByRole("button", { name: "Ẩn pinyin" });
+  await hide.click();
+  await expect(page.getByRole("button", { name: "Hiện pinyin" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("ol li").getByText("你是学生吗？", { exact: true }).first()).toBeAttached();
   await page.getByRole("button", { name: "Lưu", exact: true }).click();
   await expect(page.getByText("Đã lưu vào mục Đã lưu.")).toBeVisible();
@@ -56,11 +58,13 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   ).toBeVisible();
 
   await page.getByRole("link", { name: "Câu hỏi với 吗" }).click();
-  await page.getByRole("link", { name: "Chỉnh sửa" }).click();
+  await page.getByRole("button", { name: "Thao tác khác", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Chỉnh sửa" }).click();
   await page.getByLabel(/Tiêu đề/).fill("Câu hỏi với 吗 (đã sửa)");
   await page.getByRole("button", { name: "Lưu thay đổi" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Câu hỏi với 吗 (đã sửa)" })).toBeVisible();
-  await page.getByRole("button", { name: "Xóa" }).click();
+  await page.getByRole("button", { name: "Thao tác khác", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Xóa" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Xóa" }).click();
   await expect(page).toHaveURL(/\/grammar$/);
   await expect(page.getByRole("heading", { name: "Chưa có ngữ pháp nào" })).toBeVisible();
@@ -77,7 +81,8 @@ test("chia sẻ ngữ pháp: người nhận xem trước (không thấy ghi ch�
   await a.goto("/grammar");
   await seedSample(a, "grammar");
   await a.getByRole("link", { name: "Câu so sánh với 比" }).click();
-  await a.getByRole("link", { name: "Chỉnh sửa" }).click();
+  await a.getByRole("button", { name: "Thao tác khác", exact: true }).click();
+  await a.getByRole("menuitem", { name: "Chỉnh sửa" }).click();
   await a.getByLabel(/Ghi chú cá nhân/).fill("GHI CHÚ RIÊNG CỦA A");
   await a.getByRole("button", { name: "Lưu thay đổi" }).click();
   await a.getByRole("button", { name: "Chia sẻ", exact: true }).click();

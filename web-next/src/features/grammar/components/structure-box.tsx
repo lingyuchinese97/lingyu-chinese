@@ -1,50 +1,5 @@
-"use client";
-import * as React from "react";
-import { Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useT } from "@/i18n/client";
 import { structureLines } from "../schema";
-
-/**
- * Khung cấu trúc ngữ pháp (thẻ danh sách + trang chi tiết): nền vàng nhạt, biểu tượng cam, chữ đỏ đậm —
- * mỗi dòng là một cấu trúc (1 dòng chính + tối đa 3 dòng thêm).
- */
-export function StructureBox({ structure, size = "md" }: { structure: string; size?: "md" | "lg" }) {
-  const lines = structureLines(structure);
-  if (!lines.length) return null;
-  return (
-    <div
-      className={cn(
-        "flex items-start gap-3 rounded-[14px] border border-[#F7DC9A] bg-[linear-gradient(135deg,#FFF8E1_0%,#FFF1CC_100%)] px-3.5 py-3",
-        size === "lg" && "gap-4 px-4 py-3.5",
-      )}
-    >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "flex shrink-0 items-center justify-center rounded-xl bg-[#FFE2A8] text-[#E07A00]",
-          size === "lg" ? "size-12" : "size-10",
-        )}
-      >
-        <Layers className={size === "lg" ? "size-[26px]" : "size-[22px]"} />
-      </span>
-      <ul
-        lang="zh"
-        className={cn(
-          "flex min-w-0 flex-1 flex-col self-center font-cn leading-snug font-bold [overflow-wrap:anywhere] text-[#D92D20]",
-          size === "lg" ? "gap-2 text-[20px]" : "gap-1.5 text-[17px]",
-          lines.length > 1 && "divide-y divide-[#F3D58C]",
-        )}
-      >
-        {lines.map((l, i) => (
-          <li key={i} className={cn(lines.length > 1 && i > 0 && "pt-1.5")}>
-            {l}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 /** "Câu phủ định: A + 不是 + B" → nhãn + công thức (nhãn không chứa chữ Hán, tối đa 30 ký tự). */
 export function splitStructure(line: string): { label: string; formula: string } {
@@ -53,46 +8,8 @@ export function splitStructure(line: string): { label: string; formula: string }
   return { label: "", formula: line };
 }
 
-/** Cấu trúc ở trang chi tiết: mỗi dòng một khung (nhãn + công thức), chữ xanh đậm theo thiết kế. */
-export function StructureDetail({ structure }: { structure: string }) {
-  const lines = structureLines(structure);
-  if (!lines.length) return null;
-  return (
-    <ul className="flex flex-col gap-2.5">
-      {lines.map((l, i) => {
-        const { label, formula } = splitStructure(l);
-        return (
-          <li
-            key={i}
-            className="flex w-fit max-w-full flex-wrap items-baseline gap-x-5 gap-y-1 rounded-[14px] border border-dashed border-[#F2C96B] bg-[#FFF8E6] px-5 py-3"
-          >
-            {label ? <span className="text-[17px] font-semibold text-navy">{label}:</span> : null}
-            <span
-              lang="zh"
-              className="font-cn text-[22px] leading-snug font-bold [overflow-wrap:anywhere] text-navy md:text-[26px]"
-            >
-              {formula}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
 /** Vai trò của một phần công thức → màu + nhãn (S, V, O, thời gian, nơi chốn, chữ Hán = từ khoá…). */
 type Role = "subj" | "time" | "place" | "verb" | "obj" | "noun" | "adj" | "key" | "other";
-const ROLE_CLS: Record<Role, string> = {
-  subj: "border-[#FFC9D1] bg-[#FFECEF] text-[#E0302F]",
-  time: "border-[#FCE3A6] bg-[#FFF5D9] text-[#B26B00]",
-  place: "border-[#C8EED6] bg-[#E6F8EE] text-[#1E8A4C]",
-  verb: "border-[#CFE1FB] bg-[#EAF3FF] text-[#1F5FCC]",
-  obj: "border-[#E2D8FF] bg-[#F1ECFF] text-[#6B3FD0]",
-  noun: "border-[#C8EDED] bg-[#E6F8F8] text-[#0B7A7A]",
-  adj: "border-[#FFE0C7] bg-[#FFF1E6] text-[#C2570C]",
-  key: "border-[#FFC9D1] bg-[#FFF1F3] text-[#D92D20]",
-  other: "border-border bg-white text-navy",
-};
 const fold = (s: string) =>
   s
     .toLowerCase()
@@ -122,84 +39,45 @@ export const formulaParts = (formula: string) =>
     .filter(Boolean);
 
 /**
- * Cấu trúc ở trang chi tiết (theo thiết kế): mỗi dòng cấu trúc là một tab đánh số ("Tên: công thức" → tên tab);
- * tab đang chọn hiện công thức thành các ô màu theo vai trò, kèm nhãn vai trò bên dưới.
+ * Khối "Cấu trúc" ở trang chi tiết (theo thiết kế): mỗi dòng cấu trúc một hàng đánh số; các phần nối bằng "+",
+ * phần chữ Hán (từ khoá) đỏ font Kai, phần còn lại xanh đậm. Màn hình hẹp: các phần tự xuống dòng.
  */
-export function StructureTabs({ structure }: { structure: string }) {
-  const t = useT();
-  const labels = {
-    tab: (n: number) => (n === 1 ? t("grammar.detail.formulaBasic") : t("grammar.detail.formulaN", { n })),
-    role: (r: Role) => t(`grammar.detail.roles.${r as "subj"}`),
-  };
+export function StructureRows({ structure }: { structure: string }) {
   const lines = structureLines(structure).map(splitStructure);
-  const [on, setOn] = React.useState(0);
   if (!lines.length) return null;
-  const cur = lines[Math.min(on, lines.length - 1)]!;
-  const parts = formulaParts(cur.formula);
   return (
-    <div className="flex flex-col gap-3">
-      {lines.length > 1 ? (
-        <div role="tablist" aria-label={t("grammar.detail.structure")} className="flex flex-wrap gap-2">
-          {lines.map((l, i) => (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              aria-selected={i === on}
-              onClick={() => setOn(i)}
-              className={cn(
-                "inline-flex min-h-10 items-center gap-2 rounded-[12px] border-[1.5px] px-3 text-[14.5px] font-semibold",
-                i === on
-                  ? "border-blue-600 bg-white text-blue-700"
-                  : "border-[#F2DDA6] bg-white/70 text-text-2 hover:bg-white",
-              )}
-            >
-              <span
-                className={cn(
-                  "flex size-6 items-center justify-center rounded-full text-[12.5px] font-bold",
-                  i === on ? "bg-blue-600 text-white" : "bg-[#EEF2F7] text-text-2",
-                )}
-              >
-                {i + 1}
-              </span>
-              {l.label || labels.tab(i + 1)}
-            </button>
-          ))}
-        </div>
-      ) : cur.label ? (
-        <p className="font-semibold text-navy">{cur.label}</p>
-      ) : null}
-      <div
-        role={lines.length > 1 ? "tabpanel" : undefined}
-        className="w-fit max-w-full rounded-[16px] border border-[#F2DDA6] bg-white p-3 md:p-4"
-      >
-        <ol className="flex flex-wrap items-start gap-x-2 gap-y-3">
-          {parts.map((p, i) => {
-            const r = roleOf(p);
-            return (
-              <li key={i} className="flex items-start gap-2">
-                {i ? (
-                  <span aria-hidden="true" className="pt-2 text-[18px] font-bold text-text-3">
-                    +
-                  </span>
-                ) : null}
-                <span className="flex min-w-[64px] flex-col items-center gap-1 text-center">
+    <ol className="flex flex-col gap-2.5">
+      {lines.map((l, i) => (
+        <li
+          key={i}
+          className="flex items-start gap-3 rounded-[14px] border border-[#F1E3C8] bg-[#FFFBF3] px-3.5 py-3 md:px-4"
+        >
+          <span
+            aria-hidden="true"
+            className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-[#FFE9C2] text-[13.5px] font-bold text-[#C2570C]"
+          >
+            {i + 1}
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            {l.label ? <span className="text-[14px] font-semibold text-text-2">{l.label}</span> : null}
+            <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[17px] leading-snug font-bold text-navy-900 md:text-[18px]">
+              {formulaParts(l.formula).map((p, k) => (
+                <span key={k} className="inline-flex min-w-0 items-baseline gap-x-2 [overflow-wrap:anywhere]">
+                  {k ? (
+                    <span className="font-semibold text-text-3">+</span>
+                  ) : null}
                   <span
-                    lang="zh"
-                    className={cn(
-                      "rounded-[10px] border px-4 py-1.5 font-cn text-[19px] font-bold [overflow-wrap:anywhere] md:text-[21px]",
-                      ROLE_CLS[r],
-                    )}
+                    lang={/\p{Script=Han}/u.test(p) ? "zh" : undefined}
+                    className={cn(/\p{Script=Han}/u.test(p) && "kai-bold text-[1.12em] text-[#D9261C]")}
                   >
                     {p}
                   </span>
-                  {r !== "other" ? <span className="text-[13px] text-text-2">{labels.role(r)}</span> : null}
                 </span>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
-    </div>
+              ))}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }
