@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Copy, Eye, EyeOff, Loader2, MoreHorizontal, Pencil, Plus, Save } from "lucide-react";
+import { Copy, Loader2, MoreHorizontal, Pencil, Plus, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
@@ -9,7 +9,6 @@ import { toast } from "@/components/ui/toaster";
 import { SpeakButton } from "@/components/speak-button";
 import { useT } from "@/i18n/client";
 import { G_LIMITS } from "../schema";
-import { alignPinyin } from "../align";
 import { cn } from "@/lib/utils";
 import { KeyHan } from "./hanzi-mark";
 import { savePersonalNoteAction } from "../actions";
@@ -74,117 +73,103 @@ function ExampleMenu({
 }
 
 const roundBtn =
-  "inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-[#D6E6F7] bg-white text-blue-600 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px]";
+  "inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#E6F1FD] text-[#1668DC] outline-none hover:bg-[#D6E8FC] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5";
 
 /**
- * Khối "Ví dụ" (theo thiết kế): nút Ẩn / Hiện pinyin; mỗi ví dụ đánh số, câu chữ Kai lớn (chữ từ khoá màu đỏ),
- * pinyin dưới từng từ, nghĩa tiếng Việt, nút nghe và menu thao tác. Màn hình hẹp: các từ tự xuống dòng.
+ * Khối "Ví dụ" (theo thiết kế): công tắc "Ẩn pinyin"; mỗi ví dụ đánh số, câu chữ Kai (chữ từ khoá đỏ), pinyin, nghĩa tiếng
+ * Việt và nút nghe (+ menu sao chép / sửa ở trang chi tiết). Màn hình hẹp: câu tự xuống dòng.
  */
 export function ExampleList({
   examples,
   keys,
   grammarId,
   canEdit,
-  title,
+  menu = true,
 }: {
   examples: { id: string; chinese: string; pinyin: string; vietnamese: string }[];
   keys: string[];
   grammarId: string;
   canEdit: boolean;
-  title: string;
+  /** Hiện menu ⋯ (sao chép, sửa) — tắt trong popup xem nhanh. */
+  menu?: boolean;
 }) {
   const t = useT();
+  const id = React.useId();
   const [hide, setHide] = React.useState(false);
   const keySet = React.useMemo(() => new Set(keys), [keys]);
   return (
-    <section
-      aria-labelledby="gd-examples"
-      className="flex min-w-0 flex-col gap-3 rounded-[20px] border border-border bg-white p-4 shadow-[0_4px_18px_rgba(34,93,150,.05)] md:p-5"
-    >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 id="gd-examples" className="text-[19px] font-bold text-navy-900">
-          {title}
-        </h2>
+    <section aria-labelledby={`${id}-h`} className="flex min-w-0 flex-col">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-[#E8EFF7] pb-3">
+        <h3 id={`${id}-h`} className="text-[22px] font-bold text-navy-900">
+          {t("grammar.detail.examples")}
+        </h3>
         {examples.some((e) => e.pinyin) ? (
-          <button
-            type="button"
-            aria-pressed={hide}
-            onClick={() => setHide((h) => !h)}
-            className="ml-auto inline-flex min-h-10 items-center gap-2 rounded-full border border-[#D6E6F7] bg-white px-4 text-[14.5px] font-semibold text-blue-700 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[18px]"
-          >
-            {hide ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
-            {hide ? t("grammar.detail.showPinyin") : t("grammar.detail.hidePinyin")}
-          </button>
+          <label className="ml-auto inline-flex min-h-10 cursor-pointer items-center gap-2.5 text-[15px] text-[#3B4A6B]">
+            {t("grammar.detail.hidePinyin")}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={hide}
+              onClick={() => setHide((h) => !h)}
+              className={cn(
+                "relative h-7 w-12 rounded-full outline-none transition-colors focus-visible:shadow-[var(--focus-ring)]",
+                hide ? "bg-[#1668DC]" : "bg-[#D5DEEA]",
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                  hide && "translate-x-5",
+                )}
+              />
+            </button>
+          </label>
         ) : null}
       </div>
       {examples.length ? (
-        <ol className="flex flex-col divide-y divide-border">
+        <ol className="flex flex-col divide-y divide-[#E8EFF7]">
           {examples.map((e, i) => (
-            <li key={e.id} className="flex items-start gap-3 py-4 first:pt-1 last:pb-1 md:gap-4">
+            <li key={e.id} className="flex items-start gap-3.5 py-4">
               <span
                 aria-hidden="true"
-                className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[15px] font-bold text-blue-600"
+                className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#E6F1FD] text-[15px] font-semibold text-[#1668DC]"
               >
                 {i + 1}
               </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="sr-only">{t("grammar.form.example", { n: i + 1 })}: </span>
-                <KaiSentence chinese={e.chinese} pinyin={hide ? "" : e.pinyin} keys={keySet} />
+                <p lang="zh" className="kai text-[24px] leading-snug tracking-[0.08em] [overflow-wrap:anywhere] text-navy-900">
+                  <KeyHan text={e.chinese} keys={keySet} />
+                </p>
+                {e.pinyin && !hide ? (
+                  <p className="text-[15.5px] [overflow-wrap:anywhere] text-[#526B91]">{e.pinyin}</p>
+                ) : null}
                 {e.vietnamese ? (
-                  <p className="text-[15.5px] [overflow-wrap:anywhere] text-text-2">{e.vietnamese}</p>
+                  <p className="text-[15.5px] [overflow-wrap:anywhere] text-[#172B4D]">{e.vietnamese}</p>
                 ) : null}
               </div>
-              <div className="flex shrink-0 flex-col items-center gap-2 sm:flex-row">
+              <div className="flex shrink-0 flex-col items-center gap-2 self-center sm:flex-row">
                 <SpeakButton
                   text={e.chinese}
                   label={t("grammar.detail.listenExample", { n: i + 1 })}
                   className={roundBtn}
                 />
-                <ExampleMenu
-                  n={i + 1}
-                  example={{ chinese: e.chinese, pinyin: e.pinyin, vietnamese: e.vietnamese }}
-                  grammarId={grammarId}
-                  canEdit={canEdit}
-                />
+                {menu ? (
+                  <ExampleMenu
+                    n={i + 1}
+                    example={{ chinese: e.chinese, pinyin: e.pinyin, vietnamese: e.vietnamese }}
+                    grammarId={grammarId}
+                    canEdit={canEdit}
+                  />
+                ) : null}
               </div>
             </li>
           ))}
         </ol>
       ) : (
-        <p className="text-text-3">{t("grammar.detail.empty")}</p>
+        <p className="pt-3 text-text-3">{t("grammar.detail.empty")}</p>
       )}
     </section>
-  );
-}
-
-/** Câu ví dụ chữ Kai: mỗi từ có pinyin ngay bên dưới (không ghép được → câu rồi pinyin một dòng). */
-function KaiSentence({ chinese, pinyin, keys }: { chinese: string; pinyin: string; keys: Set<string> }) {
-  const parts = pinyin ? alignPinyin(chinese, pinyin) : null;
-  const han = "kai-bold text-[20px] leading-tight text-navy-900 md:text-[22px]";
-  if (!parts)
-    return (
-      <div className="min-w-0">
-        <p lang="zh" className={cn(han, "[overflow-wrap:anywhere]")}>
-          <KeyHan text={chinese} keys={keys} />
-        </p>
-        {pinyin ? <p className="text-[15px] [overflow-wrap:anywhere] pinyin">{pinyin}</p> : null}
-      </div>
-    );
-  return (
-    <p className="flex flex-wrap items-end gap-x-2.5 gap-y-2">
-      <span className="sr-only" lang="zh">
-        {chinese}
-      </span>
-      {parts.map((p, i) => (
-        <span key={i} aria-hidden="true" className="inline-flex flex-col items-center">
-          <span lang="zh" className={han}>
-            <KeyHan text={p.zh} keys={keys} />
-          </span>
-          <span className="text-[14px] leading-tight pinyin">{p.py}</span>
-        </span>
-      ))}
-      <span className="sr-only">{pinyin}</span>
-    </p>
   );
 }
 

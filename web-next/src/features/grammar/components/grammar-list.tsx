@@ -30,9 +30,11 @@ import { toast } from "@/components/ui/toaster";
 import { GrammarIcon } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
 import { G_LIMITS, G_SORTS, hskOfTag, structureLines, type GrammarListParams } from "../schema";
-import { Marked } from "./hanzi-mark";
+import { Marked, grammarKeys } from "./hanzi-mark";
+import { FormulaLine } from "./structure-box";
+import { GrammarBody } from "./grammar-view";
 import type { GrammarItem, ReceivedShare } from "../service";
-import { createTagAction, deleteTagAction, renameTagAction } from "../actions";
+import { createTagAction, deleteTagAction, renameTagAction, setBookmarkAction } from "../actions";
 import { AcceptShareDialog, ShareGrammarDialog, rejectWithConfirm, type PendingShare } from "./grammar-dialogs";
 import { useIntlTag, useT } from "@/i18n/client";
 import { FeatureHero, heroPrimary } from "@/components/feature-hero";
@@ -72,6 +74,7 @@ export function GrammarList({
   const [shareOf, setShareOf] = React.useState<GrammarItem | null>(null);
   const [acceptOf, setAcceptOf] = React.useState<PendingShare | null>(null);
   const [tagsOpen, setTagsOpen] = React.useState(false);
+  const [preview, setPreview] = React.useState<GrammarItem | null>(null);
   const userTags = tags.filter((tg) => hskOfTag(tg.name) === null);
   // Một ô lọc gộp: chế độ xem, cấp HSK hoặc một thẻ (chọn một mục sẽ bỏ các mục kia).
   const filterValue =
@@ -217,7 +220,7 @@ export function GrammarList({
         className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
       >
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <div className="flex gap-1 rounded-full bg-[#EEF4FB] p-1">
+          <div className="flex gap-3">
             {(["all", "saved"] as const).map((v) => (
               <button
                 key={v}
@@ -225,17 +228,18 @@ export function GrammarList({
                 aria-pressed={params.view === v}
                 onClick={() => go({ view: v, hsk: "", tag: "" })}
                 className={cn(
-                  "min-h-10 rounded-full px-4 text-[15px] font-semibold outline-none focus-visible:shadow-[var(--focus-ring)]",
-                  params.view === v ? "bg-white text-blue-700 shadow-[0_2px_8px_rgba(20,90,170,.12)]" : "text-text-2",
+                  "min-h-10 min-w-[100px] rounded-[6px] border px-5 text-[16px] outline-none focus-visible:shadow-[var(--focus-ring)]",
+                  params.view === v
+                    ? "border-[#1668DC] bg-[#1668DC] text-white"
+                    : "border-[#DCE6F2] bg-white text-[#3B4A6B] hover:bg-[#F1F6FD]",
                 )}
               >
-                {v === "all" ? t("grammar.viewAll") : t("grammar.viewSaved")}{" "}
-                <span>({v === "all" ? data.totalAll : data.savedCount})</span>
+                {v === "all" ? t("grammar.viewAll") : t("grammar.viewSaved")}
               </button>
             ))}
           </div>
           {listMode && data.total ? (
-            <p className="ml-auto text-[14.5px] font-semibold text-text-2">{t("grammar.total", { count: data.total })}</p>
+            <p className="ml-auto text-[16px] text-[#3B4A6B]">{t("grammar.total", { count: data.total })}</p>
           ) : null}
         </div>
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
@@ -276,11 +280,21 @@ export function GrammarList({
               ) : null}
             </div>
           ) : (
-            <GrammarTable items={data.items} titlePy={titlePy} onOpen={(g) => router.push(`/grammar/${g.id}`)} />
+            <GrammarTable items={data.items} titlePy={titlePy} onPreview={setPreview} />
           )}
         </div>
       </section>
 
+      <GrammarPreview
+        g={preview}
+        py={preview ? (titlePy[preview.id] ?? "") : ""}
+        onClose={() => setPreview(null)}
+        onShare={(g) => {
+          setPreview(null);
+          setShareOf(g);
+        }}
+        onChanged={refresh}
+      />
       <ShareGrammarDialog grammar={shareOf} sent={[]} onClose={() => setShareOf(null)} />
       <AcceptShareDialog
         share={acceptOf}
@@ -302,15 +316,18 @@ export const formulaOf = (line: string) => line.replace(/^[^:：+]{1,40}[:：]\s
 
 const PAGE = 10;
 
-/** Bảng ngữ pháp (theo thiết kế): STT · Ngữ pháp (chữ Hán đỏ · pinyin) · Cấu trúc (dòng đầu, +N) · HSK · xem; có phân trang. */
+/**
+ * Bảng ngữ pháp (theo thiết kế): hàng tiêu đề nền xanh nhạt; mỗi ngữ pháp một hàng thẻ trắng — STT · tên (chữ Hán Kai ·
+ * pinyin) · cấu trúc dòng đầu (chữ Hán Kai đỏ, "+N" nếu còn dòng khác) · HSK · con mắt (mở popup xem nhanh); phân trang.
+ */
 function GrammarTable({
   items,
   titlePy,
-  onOpen,
+  onPreview,
 }: {
   items: GrammarItem[];
   titlePy: Record<string, string>;
-  onOpen: (g: GrammarItem) => void;
+  onPreview: (g: GrammarItem) => void;
 }) {
   const t = useT();
   // Trang hiện tại gắn với danh sách: lọc / tìm ra danh sách mới → về trang 1.
@@ -319,119 +336,108 @@ function GrammarTable({
   const page = pg.of === items ? Math.min(pg.n, pages) : 1;
   const from = (page - 1) * PAGE;
   const rows = items.slice(from, from + PAGE);
-  const th = "px-3 py-3 text-left text-[13.5px] font-semibold text-text-2";
+  const th = "px-4 py-3.5 text-left text-[16px] font-semibold text-navy-900";
+  const td =
+    "border-y border-[#DCE6F2] bg-white px-4 py-3.5 first:rounded-l-[8px] first:border-l last:rounded-r-[8px] last:border-r";
   return (
-    <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-2xl border border-border">
-        <table className="w-full table-fixed border-collapse bg-white">
-          <thead className="bg-[#F6F9FD]">
-            <tr>
-              <th scope="col" className={cn(th, "hidden w-14 text-center sm:table-cell")}>
-                {t("grammar.colNo")}
-              </th>
-              <th scope="col" className={th}>
-                {t("grammar.colGrammar")}
-              </th>
-              <th scope="col" className={cn(th, "hidden md:table-cell")}>
-                {t("grammar.colStructure")}
-              </th>
-              <th scope="col" className={cn(th, "w-[84px] md:w-24")}>
-                HSK
-              </th>
-              <th scope="col" className={cn(th, "w-14")}>
-                <span className="sr-only">{t("grammar.colView")}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {rows.map((g, i) => {
-              const lines = structureLines(g.structure);
-              const hsk = g.tags.filter((tg) => hskOfTag(tg.name) !== null);
-              const formula = lines[0] ? (
-                <span className="[overflow-wrap:anywhere]">
-                  <Marked text={formulaOf(lines[0])} hanClass="text-[1.1em]" />
-                  {lines.length > 1 ? (
-                    <span className="ml-2 rounded-full bg-[#EEF4FB] px-2 py-0.5 text-[12.5px] font-bold text-blue-700">
-                      +{lines.length - 1}
-                    </span>
-                  ) : null}
-                </span>
-              ) : null;
-              return (
-                <tr
-                  key={g.id}
-                  onClick={(e) => {
-                    if ((e.target as HTMLElement).closest("button, a")) return;
-                    onOpen(g);
-                  }}
-                  className="cursor-pointer align-middle transition-colors hover:bg-[#F7FBFF]"
-                >
-                  <td className="hidden px-3 py-3.5 text-center font-semibold text-text-3 tabular-nums sm:table-cell">
-                    {from + i + 1}
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <h2 className="text-[16.5px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[17.5px]">
-                      <Link href={`/grammar/${g.id}`} className="hover:text-blue-600">
-                        <Marked text={g.title} />
-                      </Link>
-                      {titlePy[g.id] ? (
-                        <span aria-hidden="true" className="font-medium text-text-3">
-                          {" "}
-                          · <span className="pinyin">{titlePy[g.id]}</span>
-                        </span>
-                      ) : null}
-                    </h2>
-                    {formula ? (
-                      <p className="mt-1 text-[14.5px] font-semibold text-navy md:hidden">{formula}</p>
-                    ) : null}
-                    {g.sourceGrammarId ? (
-                      <span className="mt-1 inline-flex items-center gap-1 text-[13px] text-green-700">
-                        <Share2 className="size-[14px]" />
-                        {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
+    <div className="flex flex-col gap-4">
+      <table className="w-full table-fixed border-separate border-spacing-y-2">
+        <thead>
+          <tr className="bg-[#E6F0FC] [&>th:first-child]:rounded-l-[8px] [&>th:last-child]:rounded-r-[8px]">
+            <th scope="col" className={cn(th, "hidden w-20 text-center sm:table-cell")}>
+              {t("grammar.colNo")}
+            </th>
+            <th scope="col" className={th}>
+              {t("grammar.colGrammar")}
+            </th>
+            <th scope="col" className={cn(th, "hidden md:table-cell")}>
+              {t("grammar.colStructure")}
+            </th>
+            <th scope="col" className={cn(th, "w-[92px] md:w-28")}>
+              <span className="sr-only">HSK</span>
+            </th>
+            <th scope="col" className={cn(th, "w-14 md:w-20")}>
+              <span className="sr-only">{t("grammar.colView")}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((g, i) => {
+            const lines = structureLines(g.structure);
+            const keys = grammarKeys(g.title, g.structure);
+            const hsk = g.tags.filter((tg) => hskOfTag(tg.name) !== null);
+            const formula = lines[0] ? (
+              <span className="inline-flex max-w-full flex-wrap items-center gap-x-3">
+                <FormulaLine formula={formulaOf(lines[0])} keys={keys} className="text-[16.5px] text-[#3B4A6B]" />
+                {lines.length > 1 ? <span className="text-[15px] text-[#526B91]">+{lines.length - 1}</span> : null}
+              </span>
+            ) : null;
+            return (
+              <tr
+                key={g.id}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest("button, a")) return;
+                  onPreview(g);
+                }}
+                className="cursor-pointer align-middle [&:hover>td]:bg-[#F7FBFF]"
+              >
+                <td className={cn(td, "hidden border-r text-center text-[17px] text-[#3B4A6B] tabular-nums sm:table-cell")}>
+                  {from + i + 1}
+                </td>
+                <td className={td}>
+                  <h2 className="text-[18px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[19px]">
+                    <Link href={`/grammar/${g.id}`} className="hover:text-[#1668DC]">
+                      <Marked text={g.title} hanClass="text-navy-900" />
+                    </Link>
+                    {titlePy[g.id] ? (
+                      <span aria-hidden="true" className="font-normal text-[#3B4A6B]">
+                        {" "}
+                        · {titlePy[g.id]}
                       </span>
                     ) : null}
-                  </td>
-                  <td className="hidden px-3 py-3.5 text-[15.5px] font-semibold text-navy md:table-cell">
-                    {formula ?? <span className="text-text-3">—</span>}
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <span className="flex flex-wrap gap-1">
-                      {hsk.length ? (
-                        hsk.map((tg) => (
-                          <span
-                            key={tg.id}
-                            className="rounded-full bg-[#E8F7EE] px-2.5 py-1 text-[12.5px] font-semibold whitespace-nowrap text-[#1E8A4C]"
-                          >
-                            {tg.name}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-text-3">—</span>
-                      )}
+                  </h2>
+                  {formula ? <div className="mt-1 md:hidden">{formula}</div> : null}
+                  {g.sourceGrammarId ? (
+                    <span className="mt-1 inline-flex items-center gap-1 text-[13px] text-green-700">
+                      <Share2 className="size-[14px]" />
+                      {t("grammar.receivedFrom", { name: g.sourceOwnerName || t("grammar.someoneElse") })}
                     </span>
-                  </td>
-                  <td className="px-2 py-3.5 text-center">
-                    <button
-                      type="button"
-                      onClick={() => onOpen(g)}
-                      aria-label={t("grammar.openItem", { title: g.title })}
-                      className="inline-flex size-10 items-center justify-center rounded-full text-text-2 outline-none hover:bg-blue-50 hover:text-blue-600 focus-visible:shadow-[var(--focus-ring)]"
-                    >
-                      <Eye className="size-5" />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                  ) : null}
+                </td>
+                <td className={cn(td, "hidden md:table-cell")}>{formula ?? <span className="text-text-3">—</span>}</td>
+                <td className={td}>
+                  <span className="flex flex-wrap gap-1">
+                    {hsk.map((tg) => (
+                      <span
+                        key={tg.id}
+                        className="rounded-full bg-[#E6F1FD] px-3.5 py-1 text-[14.5px] whitespace-nowrap text-[#1668DC]"
+                      >
+                        {tg.name}
+                      </span>
+                    ))}
+                  </span>
+                </td>
+                <td className={cn(td, "px-2 text-center")}>
+                  <button
+                    type="button"
+                    onClick={() => onPreview(g)}
+                    aria-label={t("grammar.openItem", { title: g.title })}
+                    className="inline-flex size-11 items-center justify-center rounded-full text-[#1668DC] outline-none hover:bg-[#E6F1FD] focus-visible:shadow-[var(--focus-ring)]"
+                  >
+                    <Eye className="size-6" />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
       {items.length > PAGE ? (
         <nav aria-label={t("grammar.pagination")} className="flex flex-wrap items-center gap-2">
-          <span className="text-[14px] text-text-3 tabular-nums">
+          <span className="text-[16px] text-[#3B4A6B] tabular-nums">
             {from + 1}–{from + rows.length} / {items.length}
           </span>
-          <span className="ml-auto flex flex-wrap gap-1.5">
+          <span className="ml-auto flex flex-wrap gap-2">
             <button
               type="button"
               disabled={page === 1}
@@ -439,7 +445,7 @@ function GrammarTable({
               aria-label={t("grammar.prevPage")}
               className={pageBtn}
             >
-              <ChevronLeft className="size-[18px]" />
+              <ChevronLeft className="size-5" />
             </button>
             {Array.from({ length: pages }, (_, k) => k + 1).map((n) => (
               <button
@@ -448,7 +454,7 @@ function GrammarTable({
                 aria-current={n === page ? "page" : undefined}
                 aria-label={t("grammar.pageN", { n })}
                 onClick={() => setPg({ of: items, n })}
-                className={cn(pageBtn, n === page && "border-blue-600 bg-blue-600 text-white hover:bg-blue-600")}
+                className={cn(pageBtn, n === page && "border-[#1668DC] bg-[#1668DC] text-white hover:bg-[#1668DC]")}
               >
                 {n}
               </button>
@@ -460,7 +466,7 @@ function GrammarTable({
               aria-label={t("grammar.nextPage")}
               className={pageBtn}
             >
-              <ChevronRight className="size-[18px]" />
+              <ChevronRight className="size-5" />
             </button>
           </span>
         </nav>
@@ -470,7 +476,110 @@ function GrammarTable({
 }
 
 const pageBtn =
-  "inline-flex size-10 items-center justify-center rounded-[10px] border border-border bg-white text-[14.5px] font-semibold text-text-2 outline-none hover:bg-blue-50 focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40";
+  "inline-flex size-12 items-center justify-center rounded-[8px] border border-[#DCE6F2] bg-white text-[16px] text-[#172B4D] outline-none hover:bg-[#F1F6FD] focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40 [&_svg]:text-[#1668DC]";
+
+/** Popup xem nhanh (bấm con mắt / hàng): tiêu đề · HSK · Lưu · Chia sẻ; nội dung như trang chi tiết; Đóng · Xem chi tiết. */
+function GrammarPreview({
+  g,
+  py,
+  onClose,
+  onShare,
+  onChanged,
+}: {
+  g: GrammarItem | null;
+  py: string;
+  onClose: () => void;
+  onShare: (g: GrammarItem) => void;
+  onChanged: () => void;
+}) {
+  const t = useT();
+  const [saved, setSaved] = React.useState<{ id: string; on: boolean } | null>(null);
+  const isSaved = g ? (saved?.id === g.id ? saved.on : g.isSaved) : false;
+  async function toggle() {
+    if (!g) return;
+    const r = await setBookmarkAction(g.id, !isSaved);
+    if (!r.ok) return void toast.error(r.message);
+    setSaved({ id: g.id, on: r.data });
+    toast.success(r.data ? t("grammar.savedToast") : t("grammar.unsavedToast"));
+    onChanged();
+  }
+  const hsk = g?.tags.filter((tg) => hskOfTag(tg.name) !== null) ?? [];
+  const btn =
+    "inline-flex min-h-11 items-center gap-2 rounded-[10px] px-3 text-[16px] text-[#172B4D] outline-none hover:bg-[#F1F6FD] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[22px] [&_svg]:text-navy-900";
+  return (
+    <Dialog open={!!g} onOpenChange={(o) => !o && onClose()}>
+      {g ? (
+        <DialogContent
+          className="md:max-w-[1080px] md:p-8"
+          title={
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[24px] leading-tight font-extrabold [overflow-wrap:anywhere] text-navy-900 md:text-[30px]">
+              <span>
+                <Marked text={g.title} hanClass="text-navy-900" />
+                {py ? (
+                  <span aria-hidden="true" className="font-normal">
+                    {" "}
+                    · {py}
+                  </span>
+                ) : null}
+              </span>
+              {hsk.map((tg) => (
+                <span
+                  key={tg.id}
+                  className="rounded-full bg-[#E6F1FD] px-4 py-1 text-[16px] font-semibold text-[#1668DC]"
+                >
+                  {tg.name}
+                </span>
+              ))}
+            </span>
+          }
+          aside={
+            <>
+              <button type="button" onClick={toggle} aria-pressed={isSaved} className={btn}>
+                <Bookmark className={cn(isSaved && "fill-amber text-amber!")} />
+                {isSaved ? t("grammar.detail.saved") : t("grammar.save")}
+              </button>
+              <span aria-hidden="true" className="hidden h-6 w-px bg-[#DCE6F2] sm:block" />
+              <button type="button" onClick={() => onShare(g)} className={btn}>
+                <Share2 />
+                {t("grammar.share")}
+              </button>
+            </>
+          }
+        >
+          <GrammarBody
+            g={g}
+            keys={[...grammarKeys(g.title, g.structure)]}
+            canEdit
+            menu={false}
+            labels={{
+              meaning: t("grammar.detail.meaning"),
+              structure: t("grammar.detail.structure"),
+              remember: t("grammar.detail.remember"),
+              empty: t("grammar.detail.empty"),
+            }}
+          />
+          <div className="-mx-[18px] mt-1 flex flex-wrap justify-between gap-3 border-t border-[#E8EFF7] px-[18px] pt-5 md:-mx-8 md:px-8">
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="inline-flex min-h-12 min-w-[150px] items-center justify-center rounded-[8px] border-[1.5px] border-[#1668DC] bg-white px-6 text-[17px] font-semibold text-[#1668DC] outline-none hover:bg-[#F1F6FD] focus-visible:shadow-[var(--focus-ring)] max-sm:flex-1"
+              >
+                {t("common.close")}
+              </button>
+            </DialogClose>
+            <Link
+              href={`/grammar/${g.id}`}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#1668DC] px-7 text-[17px] font-semibold text-white outline-none hover:bg-[#135BC4] focus-visible:shadow-[var(--focus-ring)] max-sm:flex-1 [&_svg]:size-5"
+            >
+              {t("grammar.openDetail")}
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+        </DialogContent>
+      ) : null}
+    </Dialog>
+  );
+}
 
 function Received({
   received,

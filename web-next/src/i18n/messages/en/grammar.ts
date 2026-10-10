@@ -242,4 +242,5 @@ export const grammar: Messages["grammar"] = {
   prevPage: "Previous page",
   nextPage: "Next page",
   pageN: "Page {n}",
+  openDetail: "View details",
 };

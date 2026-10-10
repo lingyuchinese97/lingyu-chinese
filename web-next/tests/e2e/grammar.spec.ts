@@ -36,14 +36,17 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await expect(page.getByText("mẹo riêng của tôi")).toBeVisible();
   await expect(page.getByText("Giao tiếp", { exact: true })).toBeVisible();
   // Cấu trúc: mỗi dòng một hàng đánh số; công thức tách theo dấu "+" (chữ Hán là từ khoá, font Kai đỏ).
-  const structure = page.locator("section").filter({ has: page.getByRole("heading", { name: "Cấu trúc", exact: true }) });
+  const structure = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: "Cấu trúc", exact: true }) })
+    .last();
   await expect(structure.locator("ol > li")).toHaveCount(2);
   for (const part of ["Chủ ngữ", "不", "động từ", "吗？"])
     await expect(structure.getByText(part, { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("Ghi nhớ", { exact: true })).toBeVisible();
-  const hide = page.getByRole("button", { name: "Ẩn pinyin" });
+  await expect(page.getByText("Ghi nhớ:", { exact: true })).toBeVisible();
+  const hide = page.getByRole("switch", { name: "Ẩn pinyin" });
   await hide.click();
-  await expect(page.getByRole("button", { name: "Hiện pinyin" })).toHaveAttribute("aria-pressed", "true");
+  await expect(hide).toHaveAttribute("aria-checked", "true");
   await expect(page.locator("ol li").getByText("你是学生吗？", { exact: true }).first()).toBeAttached();
   await page.getByRole("button", { name: "Lưu", exact: true }).click();
   await expect(page.getByText("Đã lưu vào mục Đã lưu.")).toBeVisible();
@@ -157,4 +160,21 @@ test("ô lọc gộp: Tất cả / Được chia sẻ / HSK / thẻ; không còn
   await filter.selectOption("");
   await expect(page).toHaveURL(/\/grammar$/);
   await expect(list.getByText("3 ngữ pháp", { exact: true })).toBeVisible();
+});
+
+test("bấm con mắt mở popup xem nhanh: cấu trúc, ví dụ, Lưu, Xem chi tiết", async ({ page }) => {
+  await register(page, "Người Xem", "gpv");
+  await page.goto("/grammar");
+  await seedSample(page, "grammar");
+  await page.getByRole("button", { name: "Mở Câu so sánh với 比" }).click();
+  const dlg = page.getByRole("dialog", { name: /Câu so sánh với 比/ });
+  await expect(dlg).toBeVisible();
+  await expect(dlg.getByText("Ý nghĩa:")).toBeVisible();
+  await expect(dlg.getByRole("heading", { name: "Cấu trúc", exact: true })).toBeVisible();
+  await expect(dlg.getByRole("heading", { name: "Ví dụ", exact: true })).toBeVisible();
+  await dlg.getByRole("button", { name: "Lưu", exact: true }).click();
+  await expect(page.getByText("Đã lưu vào mục Đã lưu.")).toBeVisible();
+  await expect(dlg.getByRole("button", { name: "Đã lưu", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await dlg.getByRole("link", { name: "Xem chi tiết" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Câu so sánh với 比" })).toBeVisible();
 });

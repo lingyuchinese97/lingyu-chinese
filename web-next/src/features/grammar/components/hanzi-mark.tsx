@@ -21,7 +21,7 @@ export function Marked({ text, hanClass }: { text: string; hanClass?: string }) 
     <>
       {text.split(HAN).map((part, i) =>
         i % 2 ? (
-          <span key={i} lang="zh" className={cn("kai-bold text-[1.06em] text-[#D9261C]", hanClass)}>
+          <span key={i} lang="zh" className={cn("kai mx-0.5 text-[1.3em] leading-none text-[#E1251B]", hanClass)}>
             {part}
           </span>
         ) : (
@@ -32,12 +32,12 @@ export function Marked({ text, hanClass }: { text: string; hanClass?: string }) 
   );
 }
 
-/** Chữ Hán của câu ví dụ: chữ thuộc từ khoá tô đỏ, còn lại xanh đậm. */
+/** Chữ Hán: chữ thuộc từ khoá tô đỏ, còn lại giữ màu chữ xung quanh (xanh đậm). */
 export function KeyHan({ text, keys }: { text: string; keys: Set<string> }) {
   return (
     <>
       {[...text].map((c, i) => (
-        <span key={i} className={keys.has(c) ? "text-[#D9261C]" : undefined}>
+        <span key={i} className={keys.has(c) ? "text-[#E1251B]" : undefined}>
           {c}
         </span>
       ))}

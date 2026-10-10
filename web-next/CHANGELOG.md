@@ -23,6 +23,10 @@
 
 ### Changed
 
+- **Ngữ pháp — font & màu theo design**: chữ Hán dùng Kai nét thường (tiêu đề xanh đậm, từ khoá đỏ #E1251B); bảng danh sách dạng
+  thẻ từng hàng (hàng tiêu đề xanh nhạt, ô STT tách riêng, HSK viên xanh, tab Tất cả / Đã lưu kiểu nút). **Popup xem nhanh** khi bấm
+  con mắt hoặc hàng: tiêu đề · HSK · Lưu · Chia sẻ, Ý nghĩa, Cấu trúc + Ghi nhớ | Ví dụ (công tắc Ẩn pinyin, nút nghe), Đóng · Xem chi
+  tiết. Trang chi tiết dùng cùng bố cục. Chữ Hán ô Từ vựng đỏ đậm hơn (#A32A24, nét hơi dày).
 - **Ngữ pháp của tôi** theo design mới. Danh sách: bảng STT · Ngữ pháp (chữ Hán đỏ font Kai · pinyin tự sinh) · Cấu trúc (dòng đầu,
   "+N" nếu có thêm) · HSK · nút xem; tab Tất cả / Đã lưu, đếm số ngữ pháp, phân trang 10 dòng. Chi tiết: breadcrumb "Ngữ pháp / Chi tiết",
   tiêu đề chữ Hán đỏ + pinyin + thẻ HSK, nút Lưu · Chia sẻ · ⋯ (Chỉnh sửa, Xóa); dải "Ý nghĩa"; hai cột Cấu trúc (hàng đánh số, từ khoá
