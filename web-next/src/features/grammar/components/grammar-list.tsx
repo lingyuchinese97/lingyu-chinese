@@ -230,7 +230,7 @@ export function GrammarList({
                 )}
               >
                 {v === "all" ? t("grammar.viewAll") : t("grammar.viewSaved")}{" "}
-                <span className="opacity-80">({v === "all" ? data.totalAll : data.savedCount})</span>
+                <span>({v === "all" ? data.totalAll : data.savedCount})</span>
               </button>
             ))}
           </div>
