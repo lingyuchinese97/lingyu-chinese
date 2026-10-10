@@ -23,6 +23,7 @@
 
 ### Changed
 
+- **Từ vựng**: ô chữ Hán nhỏ gọn hơn (21px, điện thoại 20px).
 - **Ngữ pháp — danh sách và popup theo UI mới**: một khung "Ngữ pháp 🍃 n điểm ngữ pháp" + nút **Thêm ngữ pháp**; ô tìm "Tìm tên hoặc
   cấu trúc...", ô **HSK** và ô **tag** riêng (lọc kết hợp được; ô tag có thêm "Được chia sẻ" và "Quản lý thẻ"); tab gạch chân Tất cả / Đã
   lưu; bảng STT · Ngữ pháp · Cấu trúc (ô vàng kem, "+n cấu trúc") · con mắt, kẻ dòng mảnh. Popup / trang chi tiết: chữ Hán xanh đậm font
