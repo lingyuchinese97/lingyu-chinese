@@ -23,6 +23,11 @@
 
 ### Changed
 
+- **Ngữ pháp — danh sách và popup theo UI mới**: một khung "Ngữ pháp 🍃 n điểm ngữ pháp" + nút **Thêm ngữ pháp**; ô tìm "Tìm tên hoặc
+  cấu trúc...", ô **HSK** và ô **tag** riêng (lọc kết hợp được; ô tag có thêm "Được chia sẻ" và "Quản lý thẻ"); tab gạch chân Tất cả / Đã
+  lưu; bảng STT · Ngữ pháp · Cấu trúc (ô vàng kem, "+n cấu trúc") · con mắt, kẻ dòng mảnh. Popup / trang chi tiết: chữ Hán xanh đậm font
+  Kai (bỏ tô đỏ), tiêu đề mục dạng dải xanh, mỗi cấu trúc trong ô vàng kem kèm giải thích bên dưới, nút Ẩn pinyin (biểu tượng mắt), Lưu /
+  Chia sẻ dạng nút viền.
 - **Luyện giao tiếp** có bìa chung như các chức năng khác (trời xanh + mascot, icon Luyện giao tiếp); khung danh sách đổi tiêu đề
   thành "Câu hỏi của tôi". Trang luyện một câu trên điện thoại ẩn bìa để vào thẳng phần luyện.
 - **Ngữ pháp — font & màu theo design**: chữ Hán dùng Kai nét thường (tiêu đề xanh đậm, từ khoá đỏ #E1251B); bảng danh sách dạng

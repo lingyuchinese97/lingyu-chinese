@@ -58,7 +58,7 @@ export function DialogContent({
             <D.Title className="text-xl font-bold text-navy">{title}</D.Title>
             {description ? <D.Description className="mt-1 text-[15px] text-text-2">{description}</D.Description> : null}
           </div>
-          {aside ? <div className="flex shrink-0 flex-wrap items-center gap-1">{aside}</div> : null}
+          {aside ? <div className="flex shrink-0 flex-wrap items-center gap-2.5">{aside}</div> : null}
         </div>
         {children}
         <D.Close

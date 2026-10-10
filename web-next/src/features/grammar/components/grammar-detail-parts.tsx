@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Copy, Loader2, MoreHorizontal, Pencil, Plus, Save } from "lucide-react";
+import { Copy, Eye, EyeOff, Loader2, MoreHorizontal, Pencil, Plus, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
@@ -9,7 +9,6 @@ import { toast } from "@/components/ui/toaster";
 import { SpeakButton } from "@/components/speak-button";
 import { useT } from "@/i18n/client";
 import { G_LIMITS } from "../schema";
-import { cn } from "@/lib/utils";
 import { KeyHan } from "./hanzi-mark";
 import { savePersonalNoteAction } from "../actions";
 
@@ -73,7 +72,7 @@ function ExampleMenu({
 }
 
 const roundBtn =
-  "inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#E6F1FD] text-[#1668DC] outline-none hover:bg-[#D6E8FC] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5";
+  "inline-flex size-11 shrink-0 items-center justify-center rounded-full text-[#1668DC] outline-none hover:bg-[#E6F1FD] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-6";
 
 /**
  * Khối "Ví dụ" (theo thiết kế): công tắc "Ẩn pinyin"; mỗi ví dụ đánh số, câu chữ Kai (chữ từ khoá đỏ), pinyin, nghĩa tiếng
@@ -99,46 +98,35 @@ export function ExampleList({
   const keySet = React.useMemo(() => new Set(keys), [keys]);
   return (
     <section aria-labelledby={`${id}-h`} className="flex min-w-0 flex-col">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-[#E8EFF7] pb-3">
-        <h3 id={`${id}-h`} className="text-[22px] font-bold text-navy-900">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[6px] bg-[#E6F0FC] px-4 py-1.5">
+        <h3 id={`${id}-h`} className="py-1 text-[20px] font-bold text-navy-900">
           {t("grammar.detail.examples")}
         </h3>
         {examples.some((e) => e.pinyin) ? (
-          <label className="ml-auto inline-flex min-h-10 cursor-pointer items-center gap-2.5 text-[15px] text-[#3B4A6B]">
+          <button
+            type="button"
+            aria-pressed={hide}
+            onClick={() => setHide((h) => !h)}
+            className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-full px-2 text-[16px] text-[#172B4D] outline-none hover:bg-white/60 focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5 [&_svg]:text-[#1668DC]"
+          >
+            {hide ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
             {t("grammar.detail.hidePinyin")}
-            <button
-              type="button"
-              role="switch"
-              aria-checked={hide}
-              onClick={() => setHide((h) => !h)}
-              className={cn(
-                "relative h-7 w-12 rounded-full outline-none transition-colors focus-visible:shadow-[var(--focus-ring)]",
-                hide ? "bg-[#1668DC]" : "bg-[#D5DEEA]",
-              )}
-            >
-              <span
-                className={cn(
-                  "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
-                  hide && "translate-x-5",
-                )}
-              />
-            </button>
-          </label>
+          </button>
         ) : null}
       </div>
       {examples.length ? (
         <ol className="flex flex-col divide-y divide-[#E8EFF7]">
           {examples.map((e, i) => (
-            <li key={e.id} className="flex items-start gap-3.5 py-4">
+            <li key={e.id} className="flex items-start gap-4 px-1 py-5">
               <span
                 aria-hidden="true"
-                className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#E6F1FD] text-[15px] font-semibold text-[#1668DC]"
+                className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-[#E6F0FC] text-[17px] font-bold text-navy-900"
               >
                 {i + 1}
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="sr-only">{t("grammar.form.example", { n: i + 1 })}: </span>
-                <p lang="zh" className="kai text-[24px] leading-snug tracking-[0.08em] [overflow-wrap:anywhere] text-navy-900">
+                <p lang="zh" className="kai text-[26px] leading-snug tracking-[0.06em] [overflow-wrap:anywhere] text-navy-900">
                   <KeyHan text={e.chinese} keys={keySet} />
                 </p>
                 {e.pinyin && !hide ? (
@@ -148,7 +136,7 @@ export function ExampleList({
                   <p className="text-[15.5px] [overflow-wrap:anywhere] text-[#172B4D]">{e.vietnamese}</p>
                 ) : null}
               </div>
-              <div className="flex shrink-0 flex-col items-center gap-2 self-center sm:flex-row">
+              <div className="flex shrink-0 flex-col items-center gap-2 sm:flex-row">
                 <SpeakButton
                   text={e.chinese}
                   label={t("grammar.detail.listenExample", { n: i + 1 })}

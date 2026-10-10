@@ -243,4 +243,11 @@ export const grammar: Messages["grammar"] = {
   nextPage: "Next page",
   pageN: "Page {n}",
   openDetail: "View details",
+  points: "{count} grammar points",
+  addGrammar: "Add grammar",
+  searchShort: "Search title or structure...",
+  allHsk: "All HSK",
+  tagLabel: "Filter by tag",
+  moreStructures: "+{count} structures",
+  allTagsOpt: "All tags",
 };

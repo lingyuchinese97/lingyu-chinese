@@ -238,4 +238,11 @@ export const grammar = {
   nextPage: "Trang sau",
   pageN: "Trang {n}",
   openDetail: "Xem chi tiết",
+  points: "{count} điểm ngữ pháp",
+  addGrammar: "Thêm ngữ pháp",
+  searchShort: "Tìm tên hoặc cấu trúc...",
+  allHsk: "Tất cả HSK",
+  tagLabel: "Lọc theo tag",
+  moreStructures: "+{count} cấu trúc",
+  allTagsOpt: "Tất cả tag",
 };
