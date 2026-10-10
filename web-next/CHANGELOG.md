@@ -23,6 +23,8 @@
 
 ### Changed
 
+- **Luyện giao tiếp** có bìa chung như các chức năng khác (trời xanh + mascot, icon Luyện giao tiếp); khung danh sách đổi tiêu đề
+  thành "Câu hỏi của tôi". Trang luyện một câu trên điện thoại ẩn bìa để vào thẳng phần luyện.
 - **Ngữ pháp — font & màu theo design**: chữ Hán dùng Kai nét thường (tiêu đề xanh đậm, từ khoá đỏ #E1251B); bảng danh sách dạng
   thẻ từng hàng (hàng tiêu đề xanh nhạt, ô STT tách riêng, HSK viên xanh, tab Tất cả / Đã lưu kiểu nút). **Popup xem nhanh** khi bấm
   con mắt hoặc hàng: tiêu đề · HSK · Lưu · Chia sẻ, Ý nghĩa, Cấu trúc + Ghi nhớ | Ví dụ (công tắc Ẩn pinyin, nút nghe), Đóng · Xem chi

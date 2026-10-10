@@ -109,6 +109,7 @@ export const speaking: Messages["speaking"] = {
   tagsLabel: "Tags",
   illustration: "LingYu mascot",
   // Two-column layout (list + practice)
+  listTitle: "My questions",
   listSubtitle: "Manage questions and practise speaking by topic.",
   moreFilters: "More filters",
   pickQuestion: "Pick a question on the left to start practising.",

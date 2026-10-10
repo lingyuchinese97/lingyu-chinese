@@ -110,6 +110,7 @@ export const speaking = {
   tagsLabel: "Tag",
   illustration: "Mascot LingYu",
   // Bố cục 2 cột (danh sách + luyện tập)
+  listTitle: "Câu hỏi của tôi",
   listSubtitle: "Quản lý câu hỏi và luyện nói theo chủ đề.",
   moreFilters: "Bộ lọc khác",
   pickQuestion: "Chọn một câu hỏi bên trái để bắt đầu luyện.",

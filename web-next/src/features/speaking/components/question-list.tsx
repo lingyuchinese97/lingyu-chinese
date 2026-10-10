@@ -115,9 +115,9 @@ export function QuestionList({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 id="sp-title" className="text-[26px] leading-tight font-extrabold text-navy-900 md:text-[28px]">
-            {t("speaking.title")}
-          </h1>
+          <h2 id="sp-title" className="text-[24px] leading-tight font-extrabold text-navy-900 md:text-[26px]">
+            {t("speaking.listTitle")}
+          </h2>
           <p className="mt-1 text-[14.5px] text-text-2">{t("speaking.listSubtitle")}</p>
         </div>
         <Link
