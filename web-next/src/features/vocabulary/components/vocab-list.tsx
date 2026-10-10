@@ -852,7 +852,7 @@ function WordChip({ text }: { text: string }) {
   return (
     <span
       lang="zh"
-      className="inline-flex min-h-11 min-w-12 max-w-full items-center justify-center rounded-[8px] border border-[#F2DFC6] bg-[#FFF7EB] px-3 py-0.5 [font-family:var(--font-paper)] text-[26px] leading-tight font-normal tracking-[0.12em] text-[#A32A24] [-webkit-text-stroke:0.025em_#A32A24] max-md:min-h-10 max-md:text-[24px]"
+      className="inline-flex min-h-9 min-w-10 max-w-full items-center justify-center rounded-[8px] border border-[#F2DFC6] bg-[#FFF7EB] px-2.5 py-0.5 [font-family:var(--font-paper)] text-[21px] leading-tight font-normal tracking-[0.1em] text-[#A32A24] [-webkit-text-stroke:0.025em_#A32A24] max-md:min-h-9 max-md:text-[20px]"
     >
       {text}
     </span>
