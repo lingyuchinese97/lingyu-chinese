@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowRight,
-  ArrowUpDown,
   Bookmark,
   Check,
   ChevronLeft,
@@ -22,15 +21,15 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input, inputClass } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Tag } from "@/components/ui/badges";
 import { Dialog, DialogActions, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { useConfirm } from "@/components/ui/confirm";
 import { toast } from "@/components/ui/toaster";
-import { GrammarIcon } from "@/components/layout/icons";
+import { GrammarIcon, LeafDecor } from "@/components/layout/icons";
 import { cn } from "@/lib/utils";
-import { G_LIMITS, G_SORTS, hskOfTag, structureLines, type GrammarListParams } from "../schema";
-import { Marked, grammarKeys } from "./hanzi-mark";
+import { G_LIMITS, hskOfTag, structureLines, type GrammarListParams } from "../schema";
+import { Marked } from "./hanzi-mark";
 import { FormulaLine } from "./structure-box";
 import { GrammarBody } from "./grammar-view";
 import type { GrammarItem, ReceivedShare } from "../service";
@@ -76,16 +75,6 @@ export function GrammarList({
   const [tagsOpen, setTagsOpen] = React.useState(false);
   const [preview, setPreview] = React.useState<GrammarItem | null>(null);
   const userTags = tags.filter((tg) => hskOfTag(tg.name) === null);
-  // Một ô lọc gộp: chế độ xem, cấp HSK hoặc một thẻ (chọn một mục sẽ bỏ các mục kia).
-  const filterValue =
-    params.view !== "all"
-      ? `view:${params.view}`
-      : params.tag
-        ? `tag:${params.tag}`
-        : params.hsk
-          ? `hsk:${params.hsk}`
-          : "";
-
   const go = React.useCallback(
     (patch: Partial<GrammarListParams>) => {
       const n = { ...params, ...patch };
@@ -99,14 +88,10 @@ export function GrammarList({
     },
     [params, pathname, router],
   );
-  const pickFilter = (v: string) => {
+  const pickTag = (v: string) => {
     if (v === "manage") return setTagsOpen(true);
-    const [kind, val = ""] = v.split(":");
-    go({
-      view: kind === "view" ? (val as GrammarListParams["view"]) : "all",
-      hsk: kind === "hsk" ? (val as GrammarListParams["hsk"]) : "",
-      tag: kind === "tag" ? val : "",
-    });
+    if (v === "view:shared") return go({ view: "shared", tag: "" });
+    go({ view: params.view === "shared" ? "all" : params.view, tag: v.replace(/^tag:/, "") });
   };
   React.useEffect(() => {
     if (q === params.q) return;
@@ -134,114 +119,98 @@ export function GrammarList({
         }
       />
 
-      {/* Thanh công cụ (giống Từ vựng): tìm · ô lọc (Tất cả / Đã lưu / Được chia sẻ / HSK / thẻ) · sắp xếp · Tạo mới. */}
+      {/* Khung danh sách (theo design): "Ngữ pháp" + số điểm ngữ pháp + Thêm ngữ pháp · tìm · HSK · tag · tab Tất cả / Đã lưu · bảng. */}
       <section
-        aria-label={t("grammar.toolbar")}
-        className="rounded-[var(--radius-xl)] border border-border bg-white/95 p-3 shadow-card md:p-4"
+        aria-label={t("grammar.list")}
+        className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-[#E8EFF7] bg-white p-4 shadow-card md:p-7"
       >
-        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-[minmax(0,1fr)_220px_230px_auto] md:gap-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+          <h2 className="text-[30px] leading-none font-extrabold tracking-tight text-navy-900 md:text-[36px]">
+            {t("grammar.title")}
+          </h2>
+          <LeafDecor className="-ml-1 w-7" />
+          <span className="text-[16.5px] text-[#526B91]">{t("grammar.points", { count: data.totalAll })}</span>
+          <Link
+            href="/grammar/new"
+            className="ml-auto inline-flex h-12 items-center gap-2.5 rounded-[8px] bg-[#1668DC] px-5 text-[17px] text-white shadow-[0_6px_14px_rgba(22,104,220,.25)] outline-none hover:bg-[#135BC4] focus-visible:shadow-[var(--focus-ring)] max-sm:w-full max-sm:justify-center [&_svg]:size-5"
+          >
+            <Plus aria-hidden="true" />
+            {t("grammar.addGrammar")}
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-[minmax(0,1fr)_224px_256px]">
           <label className="relative col-span-2 block md:col-span-1">
             <span className="sr-only">{t("grammar.searchLabel")}</span>
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-3" />
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#526B91]" />
             <input
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={t("grammar.searchPlaceholder")}
+              placeholder={t("grammar.searchShort")}
               autoComplete="off"
               disabled={!listMode}
-              className={cn(inputClass, "h-12 pl-12")}
+              className={cn(selectCls, "pl-12")}
             />
           </label>
           <label>
-            <span className="sr-only">{t("grammar.filterLabel")}</span>
+            <span className="sr-only">{t("grammar.hskLabel")}</span>
             <select
-              value={filterValue}
-              onChange={(e) => pickFilter(e.target.value)}
-              className={cn(inputClass, "h-12 cursor-pointer font-semibold")}
+              value={params.hsk}
+              disabled={!listMode}
+              onChange={(e) => go({ hsk: e.target.value as GrammarListParams["hsk"] })}
+              className={cn(selectCls, "cursor-pointer")}
             >
-              <option value="">{t("grammar.allCount", { count: data.totalAll })}</option>
-              <option value="view:saved">
-                {t("grammar.viewSaved")} ({data.savedCount})
-              </option>
+              <option value="">{t("grammar.allHsk")}</option>
+              {(["1", "2", "3", "4", "5", "6", "other"] as const).map((h) => {
+                const n = data.hskCounts[h] ?? 0;
+                return (
+                  <option key={h} value={h}>
+                    {h === "other" ? t("grammar.hskOther", { count: n }) : `HSK ${h} (${n})`}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+          <label>
+            <span className="sr-only">{t("grammar.tagLabel")}</span>
+            <select
+              value={params.view === "shared" ? "view:shared" : params.tag ? `tag:${params.tag}` : ""}
+              onChange={(e) => pickTag(e.target.value)}
+              className={cn(selectCls, "cursor-pointer")}
+            >
+              <option value="">{t("grammar.allTagsOpt")}</option>
+              {userTags.map((tg) => (
+                <option key={tg.id} value={`tag:${tg.id}`}>
+                  {tg.name} ({tg.count})
+                </option>
+              ))}
               <option value="view:shared">
                 {t("grammar.viewShared")} ({received.length})
               </option>
-              <optgroup label="HSK">
-                {(["1", "2", "3", "4", "5", "6", "other"] as const).map((h) => {
-                  const n = data.hskCounts[h] ?? 0;
-                  return (
-                    <option key={h} value={`hsk:${h}`}>
-                      {h === "other" ? t("grammar.hskOther", { count: n }) : `HSK ${h} (${n})`}
-                    </option>
-                  );
-                })}
-              </optgroup>
-              {userTags.length ? (
-                <optgroup label={t("grammar.tagsGroup")}>
-                  {userTags.map((tg) => (
-                    <option key={tg.id} value={`tag:${tg.id}`}>
-                      {tg.name} ({tg.count})
-                    </option>
-                  ))}
-                </optgroup>
-              ) : null}
               <option value="manage">{t("grammar.manageTags")}…</option>
             </select>
           </label>
-          <label className="relative">
-            <span className="sr-only">{t("grammar.sort")}</span>
-            <ArrowUpDown className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-navy-900" />
-            <select
-              value={params.sort}
-              disabled={!listMode}
-              onChange={(e) => go({ sort: e.target.value as GrammarListParams["sort"] })}
-              className={cn(inputClass, "h-12 cursor-pointer pl-11 font-semibold")}
+        </div>
+        <div role="tablist" aria-label={t("grammar.list")} className="-mb-1 flex gap-2 border-b border-[#E8EFF7]">
+          {(["all", "saved"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={params.view === v}
+              onClick={() => go({ view: v })}
+              className={cn(
+                "-mb-px min-h-11 border-b-[3px] px-4 text-[17px] outline-none focus-visible:shadow-[var(--focus-ring)]",
+                params.view === v
+                  ? "border-[#1668DC] font-semibold text-[#1668DC]"
+                  : "border-transparent text-[#526B91] hover:text-navy-900",
+              )}
             >
-              {G_SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {t(s.label)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Link
-            href="/grammar/new"
-            className="col-span-2 inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#1769C9] px-5 text-[16px] font-semibold text-white shadow-[0_6px_14px_rgba(23,105,201,.25)] outline-none hover:bg-[#135AAD] focus-visible:shadow-[var(--focus-ring)] md:col-span-1 [&_svg]:size-5"
-          >
-            <Plus aria-hidden="true" />
-            {t("grammar.createNew")}
-          </Link>
+              {v === "all" ? t("grammar.viewAll") : t("grammar.viewSaved")}
+            </button>
+          ))}
         </div>
-      </section>
-
-      <section
-        aria-label={t("grammar.list")}
-        className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-white/92 p-4 shadow-card md:p-[22px]"
-      >
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <div className="flex gap-3">
-            {(["all", "saved"] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                aria-pressed={params.view === v}
-                onClick={() => go({ view: v, hsk: "", tag: "" })}
-                className={cn(
-                  "min-h-10 min-w-[100px] rounded-[6px] border px-5 text-[16px] outline-none focus-visible:shadow-[var(--focus-ring)]",
-                  params.view === v
-                    ? "border-[#1668DC] bg-[#1668DC] text-white"
-                    : "border-[#DCE6F2] bg-white text-[#3B4A6B] hover:bg-[#F1F6FD]",
-                )}
-              >
-                {v === "all" ? t("grammar.viewAll") : t("grammar.viewSaved")}
-              </button>
-            ))}
-          </div>
-          {listMode && data.total ? (
-            <p className="ml-auto text-[16px] text-[#3B4A6B]">{t("grammar.total", { count: data.total })}</p>
-          ) : null}
-        </div>
+        {listMode ? <p className="sr-only">{t("grammar.total", { count: data.total })}</p> : null}
         <div aria-live="polite" className={cn("transition-opacity", pending && "opacity-60")}>
           {!listMode ? (
             <Received
@@ -315,6 +284,9 @@ export function GrammarList({
 export const formulaOf = (line: string) => line.replace(/^[^:：+]{1,40}[:：]\s*/, "");
 
 const PAGE = 10;
+const NO_KEYS = new Set<string>();
+const selectCls =
+  "h-12 w-full rounded-[8px] border border-[#D5DEEA] bg-white px-4 text-[16.5px] text-[#172B4D] outline-none placeholder:text-[#7A8AA6] focus:border-[#1668DC] focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60";
 
 /**
  * Bảng ngữ pháp (theo thiết kế): hàng tiêu đề nền xanh nhạt; mỗi ngữ pháp một hàng thẻ trắng — STT · tên (chữ Hán Kai ·
@@ -336,27 +308,23 @@ function GrammarTable({
   const page = pg.of === items ? Math.min(pg.n, pages) : 1;
   const from = (page - 1) * PAGE;
   const rows = items.slice(from, from + PAGE);
-  const th = "px-4 py-3.5 text-left text-[16px] font-semibold text-navy-900";
-  const td =
-    "border-y border-[#DCE6F2] bg-white px-4 py-3.5 first:rounded-l-[8px] first:border-l last:rounded-r-[8px] last:border-r";
+  const th = "px-4 py-3.5 text-left text-[17px] font-semibold text-navy-900";
+  const td = "border-b border-[#E8EFF7] px-4 py-3";
   return (
     <div className="flex flex-col gap-4">
-      <table className="w-full table-fixed border-separate border-spacing-y-2">
+      <table className="w-full table-fixed border-collapse">
         <thead>
-          <tr className="bg-[#E6F0FC] [&>th:first-child]:rounded-l-[8px] [&>th:last-child]:rounded-r-[8px]">
-            <th scope="col" className={cn(th, "hidden w-20 text-center sm:table-cell")}>
+          <tr className="bg-[#E6F0FC]">
+            <th scope="col" className={cn(th, "hidden w-24 rounded-tl-[10px] pl-6 sm:table-cell")}>
               {t("grammar.colNo")}
             </th>
-            <th scope="col" className={th}>
+            <th scope="col" className={cn(th, "max-sm:rounded-tl-[10px]")}>
               {t("grammar.colGrammar")}
             </th>
             <th scope="col" className={cn(th, "hidden md:table-cell")}>
               {t("grammar.colStructure")}
             </th>
-            <th scope="col" className={cn(th, "w-[92px] md:w-28")}>
-              <span className="sr-only">HSK</span>
-            </th>
-            <th scope="col" className={cn(th, "w-14 md:w-20")}>
+            <th scope="col" className={cn(th, "w-16 rounded-tr-[10px] md:w-20")}>
               <span className="sr-only">{t("grammar.colView")}</span>
             </th>
           </tr>
@@ -364,12 +332,16 @@ function GrammarTable({
         <tbody>
           {rows.map((g, i) => {
             const lines = structureLines(g.structure);
-            const keys = grammarKeys(g.title, g.structure);
-            const hsk = g.tags.filter((tg) => hskOfTag(tg.name) !== null);
             const formula = lines[0] ? (
-              <span className="inline-flex max-w-full flex-wrap items-center gap-x-3">
-                <FormulaLine formula={formulaOf(lines[0])} keys={keys} className="text-[16.5px] text-[#3B4A6B]" />
-                {lines.length > 1 ? <span className="text-[15px] text-[#526B91]">+{lines.length - 1}</span> : null}
+              <span className="inline-flex max-w-full flex-wrap items-center gap-x-5 gap-y-1">
+                <span className="max-w-full rounded-[6px] bg-[#FFF4E3] px-4 py-1.5">
+                  <FormulaLine formula={lines[0]} keys={NO_KEYS} className="text-[17px] text-[#172B4D]" />
+                </span>
+                {lines.length > 1 ? (
+                  <span className="text-[15.5px] text-[#526B91]">
+                    {t("grammar.moreStructures", { count: lines.length - 1 })}
+                  </span>
+                ) : null}
               </span>
             ) : null;
             return (
@@ -379,24 +351,19 @@ function GrammarTable({
                   if ((e.target as HTMLElement).closest("button, a")) return;
                   onPreview(g);
                 }}
-                className="cursor-pointer align-middle [&:hover>td]:bg-[#F7FBFF]"
+                className="cursor-pointer align-middle hover:bg-[#F7FBFF]"
               >
-                <td className={cn(td, "hidden border-r text-center text-[17px] text-[#3B4A6B] tabular-nums sm:table-cell")}>
+                <td className={cn(td, "hidden pl-8 text-[17px] text-[#172B4D] tabular-nums sm:table-cell")}>
                   {from + i + 1}
                 </td>
                 <td className={td}>
                   <h2 className="text-[18px] leading-snug font-bold [overflow-wrap:anywhere] text-navy-900 md:text-[19px]">
                     <Link href={`/grammar/${g.id}`} className="hover:text-[#1668DC]">
-                      <Marked text={g.title} hanClass="text-navy-900" />
+                      <Marked text={g.title} hanClass="text-[1.1em] text-navy-900" />
                     </Link>
-                    {titlePy[g.id] ? (
-                      <span aria-hidden="true" className="font-normal text-[#3B4A6B]">
-                        {" "}
-                        · {titlePy[g.id]}
-                      </span>
-                    ) : null}
+                    {titlePy[g.id] ? <span aria-hidden="true"> · {titlePy[g.id]}</span> : null}
                   </h2>
-                  {formula ? <div className="mt-1 md:hidden">{formula}</div> : null}
+                  {formula ? <div className="mt-1.5 md:hidden">{formula}</div> : null}
                   {g.sourceGrammarId ? (
                     <span className="mt-1 inline-flex items-center gap-1 text-[13px] text-green-700">
                       <Share2 className="size-[14px]" />
@@ -405,18 +372,6 @@ function GrammarTable({
                   ) : null}
                 </td>
                 <td className={cn(td, "hidden md:table-cell")}>{formula ?? <span className="text-text-3">—</span>}</td>
-                <td className={td}>
-                  <span className="flex flex-wrap gap-1">
-                    {hsk.map((tg) => (
-                      <span
-                        key={tg.id}
-                        className="rounded-full bg-[#E6F1FD] px-3.5 py-1 text-[14.5px] whitespace-nowrap text-[#1668DC]"
-                      >
-                        {tg.name}
-                      </span>
-                    ))}
-                  </span>
-                </td>
                 <td className={cn(td, "px-2 text-center")}>
                   <button
                     type="button"
@@ -434,7 +389,7 @@ function GrammarTable({
       </table>
       {items.length > PAGE ? (
         <nav aria-label={t("grammar.pagination")} className="flex flex-wrap items-center gap-2">
-          <span className="text-[16px] text-[#3B4A6B] tabular-nums">
+          <span className="text-[16px] text-[#526B91] tabular-nums">
             {from + 1}–{from + rows.length} / {items.length}
           </span>
           <span className="ml-auto flex flex-wrap gap-2">
@@ -505,7 +460,7 @@ function GrammarPreview({
   }
   const hsk = g?.tags.filter((tg) => hskOfTag(tg.name) !== null) ?? [];
   const btn =
-    "inline-flex min-h-11 items-center gap-2 rounded-[10px] px-3 text-[16px] text-[#172B4D] outline-none hover:bg-[#F1F6FD] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-[22px] [&_svg]:text-navy-900";
+    "inline-flex min-h-11 items-center gap-2 rounded-[8px] border border-[#D5DEEA] bg-white px-4 text-[16px] text-[#172B4D] outline-none hover:bg-[#F1F6FD] focus-visible:shadow-[var(--focus-ring)] [&_svg]:size-5 [&_svg]:text-navy-900";
   return (
     <Dialog open={!!g} onOpenChange={(o) => !o && onClose()}>
       {g ? (
@@ -525,7 +480,7 @@ function GrammarPreview({
               {hsk.map((tg) => (
                 <span
                   key={tg.id}
-                  className="rounded-full bg-[#E6F1FD] px-4 py-1 text-[16px] font-semibold text-[#1668DC]"
+                  className="rounded-[6px] bg-[#E6F0FC] px-3 py-1 text-[16px] font-normal text-[#1668DC]"
                 >
                   {tg.name}
                 </span>
@@ -538,7 +493,6 @@ function GrammarPreview({
                 <Bookmark className={cn(isSaved && "fill-amber text-amber!")} />
                 {isSaved ? t("grammar.detail.saved") : t("grammar.save")}
               </button>
-              <span aria-hidden="true" className="hidden h-6 w-px bg-[#DCE6F2] sm:block" />
               <button type="button" onClick={() => onShare(g)} className={btn}>
                 <Share2 />
                 {t("grammar.share")}
@@ -548,7 +502,6 @@ function GrammarPreview({
         >
           <GrammarBody
             g={g}
-            keys={[...grammarKeys(g.title, g.structure)]}
             canEdit
             menu={false}
             labels={{

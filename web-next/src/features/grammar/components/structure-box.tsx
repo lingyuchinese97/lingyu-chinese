@@ -40,25 +40,27 @@ export const formulaParts = (formula: string) =>
     .filter(Boolean);
 
 /**
- * Khối "Cấu trúc" (trang chi tiết + popup xem nhanh, theo thiết kế): mỗi dòng cấu trúc một hàng nền xanh nhạt, số thứ tự
- * trong ô tròn; các phần nối bằng "+", chữ Hán font Kai (chữ từ khoá đỏ, còn lại xanh đậm). Màn hình hẹp: tự xuống dòng.
+ * Khối "Cấu trúc" (trang chi tiết + popup xem nhanh, theo thiết kế): mỗi dòng cấu trúc một hàng — số thứ tự trong ô tròn,
+ * công thức trong ô vàng kem (chữ Hán font Kai), giải thích (phần "nhãn:" của dòng) bên dưới. Màn hình hẹp: tự xuống dòng.
  */
 export function StructureRows({ structure, keys }: { structure: string; keys: Set<string> }) {
   const lines = structureLines(structure).map(splitStructure);
   if (!lines.length) return null;
   return (
-    <ol className="flex flex-col gap-2.5">
+    <ol className="flex flex-col divide-y divide-[#E8EFF7]">
       {lines.map((l, i) => (
-        <li key={i} className="flex items-center gap-3.5 rounded-[12px] bg-[#F1F6FD] px-4 py-3">
+        <li key={i} className="flex items-start gap-4 py-4">
           <span
             aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#DCEBFC] text-[16px] font-semibold text-[#1668DC]"
+            className="mt-1.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-[#E6F0FC] text-[17px] font-bold text-navy-900"
           >
             {i + 1}
           </span>
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            {l.label ? <span className="text-[13.5px] font-semibold text-[#526B91]">{l.label}</span> : null}
-            <FormulaLine formula={l.formula} keys={keys} />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <div className="rounded-[6px] bg-[#FFF4E3] px-4 py-2.5">
+              <FormulaLine formula={l.formula} keys={keys} className="text-[18px] text-[#172B4D]" />
+            </div>
+            {l.label ? <p className="px-1 text-[15.5px] text-[#526B91]">{l.label}</p> : null}
           </div>
         </li>
       ))}
@@ -77,7 +79,7 @@ export function FormulaLine({ formula, keys, className }: { formula: string; key
     >
       {formulaParts(formula).map((p, k) => (
         <span key={k} className="inline-flex min-w-0 items-center gap-x-2">
-          {k ? <span className="text-[#7A8AA6]">+</span> : null}
+          {k ? <span>+</span> : null}
           {/\p{Script=Han}/u.test(p) ? (
             <span lang="zh" className="kai text-[1.5em] leading-none text-navy-900">
               <KeyHan text={p} keys={keys} />

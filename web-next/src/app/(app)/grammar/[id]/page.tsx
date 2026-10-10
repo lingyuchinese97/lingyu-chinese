@@ -11,7 +11,7 @@ import { GrammarError, listGrammarTags, listSent, viewGrammar } from "@/features
 import { OwnerActions, PreviewBar } from "@/features/grammar/components/grammar-detail-actions";
 import { PersonalNoteCard } from "@/features/grammar/components/grammar-detail-parts";
 import { GrammarBody } from "@/features/grammar/components/grammar-view";
-import { Marked, grammarKeys } from "@/features/grammar/components/hanzi-mark";
+import { Marked } from "@/features/grammar/components/hanzi-mark";
 import { titlePinyin } from "@/features/grammar/title-pinyin";
 import { tagTone } from "@/features/grammar/tag-tones";
 import { hskOfTag } from "@/features/grammar/schema";
@@ -78,7 +78,6 @@ export default async function GrammarDetailPage({
   const toneOf = new Map(myTags.filter((x) => hskOfTag(x.name) === null).map((x, i) => [x.name, i]));
   const hskTags = g.tags.filter((x) => hskOfTag(x.name) !== null);
   const catTags = g.tags.filter((x) => hskOfTag(x.name) === null);
-  const keys = [...grammarKeys(g.title, g.structure)];
   const pill = "rounded-full px-3.5 py-1 text-[14px] font-semibold";
 
   return (
@@ -137,7 +136,6 @@ export default async function GrammarDetailPage({
         <section className="rounded-[20px] border border-[#E8EFF7] bg-white p-4 shadow-[0_4px_18px_rgba(34,93,150,.05)] md:p-6">
           <GrammarBody
             g={g}
-            keys={keys}
             canEdit={!preview}
             labels={{
               meaning: t("grammar.detail.meaning"),

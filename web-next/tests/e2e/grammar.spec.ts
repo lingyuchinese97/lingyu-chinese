@@ -43,10 +43,10 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await expect(structure.locator("ol > li")).toHaveCount(2);
   for (const part of ["Chủ ngữ", "不", "động từ", "吗？"])
     await expect(structure.getByText(part, { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("Ghi nhớ:", { exact: true })).toBeVisible();
-  const hide = page.getByRole("switch", { name: "Ẩn pinyin" });
+  await expect(page.getByRole("heading", { name: "Ghi nhớ", exact: true })).toBeVisible();
+  const hide = page.getByRole("button", { name: "Ẩn pinyin" });
   await hide.click();
-  await expect(hide).toHaveAttribute("aria-checked", "true");
+  await expect(hide).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("ol li").getByText("你是学生吗？", { exact: true }).first()).toBeAttached();
   await page.getByRole("button", { name: "Lưu", exact: true }).click();
   await expect(page.getByText("Đã lưu vào mục Đã lưu.")).toBeVisible();
@@ -54,7 +54,7 @@ test("tạo ngữ pháp (ví dụ, thẻ, ghi chú cá nhân), lưu, tìm kiếm
   await page.goto("/grammar?view=saved");
   await expect(page.getByRole("link", { name: "Câu hỏi với 吗" })).toBeVisible();
   await page.goto("/grammar");
-  await page.getByPlaceholder(/Tìm kiếm ngữ pháp/).fill("cau hoi");
+  await page.getByPlaceholder("Tìm tên hoặc cấu trúc...").fill("cau hoi");
   await expect(page).toHaveURL(/q=cau/);
   await expect(
     page.getByRole("region", { name: "Danh sách ngữ pháp" }).getByText("1 ngữ pháp", { exact: true }),
@@ -138,28 +138,32 @@ test("người không được mời không xem được ngữ pháp của ngư�
   expect(edit?.status()).toBe(404);
 });
 
-test("ô lọc gộp: Tất cả / Được chia sẻ / HSK / thẻ; không còn nút Bộ lọc và nút trên bìa", async ({ page }) => {
+test("khung danh sách: tìm · HSK · tag (có Được chia sẻ) · tab Tất cả / Đã lưu; nút Thêm ngữ pháp", async ({ page }) => {
   await register(page, "Người Lọc", "gfl");
   await page.goto("/grammar");
   await seedSample(page, "grammar");
-  await expect(page.getByRole("button", { name: /^Bộ lọc/ })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Thêm ngữ pháp mới" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Tạo mới" })).toBeVisible();
-  const filter = page.getByLabel("Lọc: chế độ xem, HSK hoặc thẻ");
   const list = page.getByRole("region", { name: "Danh sách ngữ pháp" });
-  await expect(list.getByText("3 ngữ pháp", { exact: true })).toBeVisible();
-  await filter.selectOption("hsk:2");
+  await expect(list.getByText("3 điểm ngữ pháp", { exact: true })).toBeVisible();
+  await expect(list.getByRole("link", { name: "Thêm ngữ pháp" })).toBeVisible();
+  const rows = list.locator("tbody tr");
+  await expect(rows).toHaveCount(3);
+  await page.getByLabel("Lọc theo cấp HSK").selectOption("2");
   await expect(page).toHaveURL(/hsk=2/);
-  await expect(list.getByText("1 ngữ pháp", { exact: true })).toBeVisible();
-  await filter.selectOption({ label: "Phủ định (1)" });
+  await expect(rows).toHaveCount(1);
+  const tag = page.getByLabel("Lọc theo tag");
+  await tag.selectOption({ label: "Phủ định (1)" });
   await expect(page).toHaveURL(/tag=/);
-  await expect(page).not.toHaveURL(/hsk=/);
-  await expect(list.getByText("1 ngữ pháp", { exact: true })).toBeVisible();
-  await filter.selectOption("view:shared");
+  await expect(page).toHaveURL(/hsk=2/);
+  await expect(list.getByText("Không có ngữ pháp phù hợp")).toBeVisible();
+  await page.getByLabel("Lọc theo cấp HSK").selectOption("");
+  await expect(rows).toHaveCount(1);
+  await tag.selectOption("view:shared");
   await expect(page).toHaveURL(/view=shared/);
-  await filter.selectOption("");
+  await tag.selectOption("");
   await expect(page).toHaveURL(/\/grammar$/);
-  await expect(list.getByText("3 ngữ pháp", { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(3);
+  await list.getByRole("tab", { name: "Đã lưu" }).click();
+  await expect(page).toHaveURL(/view=saved/);
 });
 
 test("bấm con mắt mở popup xem nhanh: cấu trúc, ví dụ, Lưu, Xem chi tiết", async ({ page }) => {
