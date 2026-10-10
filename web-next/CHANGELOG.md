@@ -23,6 +23,10 @@
 
 ### Changed
 
+- **Từ vựng của tôi — theo design mới**: hàng công cụ "Từ vựng" + **Tổng: n từ** · ô tìm bo tròn · nút **HSK** / **Tag** / **Trạng thái**
+  (menu thả xuống; Tag có tạo / đổi tên / xoá tag) · **Thêm từ**. Bảng: chữ Hán đỏ kiểu Khải trên ô be, pinyin + loa, cột **Ví dụ** lấy từ
+  ghi chú (câu chữ Hán kiểu Khải, nghĩa chữ xám), tag, trạng thái, thao tác; ô chọn tất cả ở đầu bảng, thanh thao tác hàng loạt chỉ hiện
+  khi đã chọn từ (máy tính). Bỏ nút Bộ lọc / dạng lưới / ô sắp xếp (bấm "Pinyin" để sắp xếp) và nút "Thêm từ vựng" trên bìa.
 - **Bìa đầu trang — nền mới**: nền trời xanh, rèm, cửa sổ, bàn gỗ có kệ sách / chậu hoa / cốc trà (theo design); mascot ngồi viết
   và chồng sách HSK · 语法 giữ nguyên, đặt trên mặt bàn (`cover-desk.webp`). Điện thoại dùng phần trời của nền (`cover-sky.webp`).
 - **Bìa đầu trang mọi màn = bìa Ngữ pháp**: `FeatureHero` dùng chung ảnh cửa sổ + bàn gỗ có mascot ngồi viết (`cover-desk.webp`) và

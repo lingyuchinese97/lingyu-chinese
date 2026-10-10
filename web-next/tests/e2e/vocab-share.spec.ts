@@ -16,7 +16,8 @@ test("chia sẻ từ vựng: chọn nhiều từ → gửi email → người nh
   await a.goto("/vocabulary");
   await seedSample(a, "vocab");
   await expect(a.getByText("24 từ vựng", { exact: true })).toBeVisible();
-  await expect(a.getByRole("button", { name: "Chia sẻ", exact: true })).toBeDisabled();
+  // Máy tính: thanh thao tác hàng loạt chỉ hiện khi đã chọn từ.
+  await expect(a.getByRole("button", { name: "Chia sẻ", exact: true })).toBeHidden();
   const table = a.locator("table");
   await table.getByRole("checkbox", { name: "Chọn 你", exact: true }).check();
   await table.getByRole("checkbox", { name: "Chọn 好", exact: true }).check();
